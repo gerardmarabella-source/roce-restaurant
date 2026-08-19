@@ -112,6 +112,11 @@ function initLogoGravity() {
   window.addEventListener('resize', () => {
     ({ w: stageW, h: stageH } = stageSize());
   });
+  // Dispatched by initArchScroll whenever it resizes the arch on scroll —
+  // separate from 'resize' so the two don't trigger each other in a loop.
+  window.addEventListener('archresize', () => {
+    ({ w: stageW, h: stageH } = stageSize());
+  });
 
   let last = performance.now();
 
@@ -157,20 +162,63 @@ function initLogoGravity() {
   tick();
 }
 
-// El texto sobre el arco se desvanece a medida que el arco sale de escena.
-function initArchFade() {
-  const arch = document.getElementById('archStage');
+// El arco crece con el scroll (como en brutal.restaurant) — cuanto más
+// bajas, más grande y más pantalla libre para arrastrar las letras. El
+// texto de dirección se desvanece al mismo ritmo.
+function initArchScroll() {
+  const archFrame = document.querySelector('.arch-frame');
   const caption = document.getElementById('archCaption');
-  if (!arch || !caption) return;
+  if (!archFrame) return;
+
+  const GROW_DISTANCE = 2200; // px de scroll para llegar al tamaño máximo
+
+  function baseSize() {
+    return {
+      w: Math.min(680, window.innerWidth * 0.88),
+      h: Math.min(window.innerHeight * 0.64, 560),
+    };
+  }
+
+  function maxSize() {
+    return {
+      w: Math.min(window.innerWidth * 0.96, 1100),
+      h: Math.min(window.innerHeight * 0.92, 900),
+    };
+  }
 
   function update() {
-    const rect = arch.getBoundingClientRect();
-    const progress = 1 - Math.min(Math.max(-rect.top / (rect.height * 0.6), 0), 1);
-    caption.style.opacity = progress;
+    const progress = Math.min(Math.max(window.scrollY / GROW_DISTANCE, 0), 1);
+    const base = baseSize();
+    const max = maxSize();
+    archFrame.style.width = `${base.w + (max.w - base.w) * progress}px`;
+    archFrame.style.height = `${base.h + (max.h - base.h) * progress}px`;
+    if (caption) caption.style.opacity = String(1 - progress);
+    window.dispatchEvent(new Event('archresize'));
   }
 
   window.addEventListener('scroll', update, { passive: true });
+  window.addEventListener('resize', update);
   update();
+}
+
+// Las palabras del manifiesto caen del cielo (como con gravedad) cuando
+// la sección entra en la pantalla al hacer scroll.
+function initManifestoFall() {
+  const section = document.getElementById('manifestoSection');
+  if (!section || !('IntersectionObserver' in window)) return;
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          section.classList.add('in-view');
+          observer.unobserve(section);
+        }
+      });
+    },
+    { threshold: 0.3 }
+  );
+  observer.observe(section);
 }
 
 function whenStageIsLaidOut(callback, attempts = 0) {
@@ -185,5 +233,6 @@ function whenStageIsLaidOut(callback, attempts = 0) {
 
 document.addEventListener('DOMContentLoaded', () => {
   whenStageIsLaidOut(initLogoGravity);
-  initArchFade();
+  initArchScroll();
+  initManifestoFall();
 });
