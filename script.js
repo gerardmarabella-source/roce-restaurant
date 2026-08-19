@@ -1,14 +1,22 @@
-// El logo real cae con gravedad y se puede arrastrar y lanzar con el
-// puntero (física propia, sin librerías): rebota suave contra el suelo y
-// las paredes del arco.
+// Las piezas del logo (R, O, C, E, ®) caen con gravedad, cada una se puede
+// arrastrar y lanzar por separado (física propia, sin librerías).
 function initLogoGravity() {
   const stage = document.getElementById('physicsStage');
-  const logo = document.getElementById('physLogo');
-  if (!stage || !logo) return;
+  if (!stage) return;
+  const pieces = Array.from(stage.querySelectorAll('.phys-piece'));
+  if (!pieces.length) return;
 
-  if (!logo.complete || logo.offsetWidth === 0) {
-    logo.addEventListener('load', () => initLogoGravity(), { once: true });
-    return;
+  const allLoaded = pieces.every((el) => el.complete && el.offsetWidth > 0);
+  if (!allLoaded) {
+    let remaining = pieces.length;
+    pieces.forEach((el) => {
+      if (el.complete) { remaining -= 1; return; }
+      el.addEventListener('load', () => {
+        remaining -= 1;
+        if (remaining <= 0) initLogoGravity();
+      }, { once: true });
+    });
+    if (remaining > 0) return;
   }
 
   const GRAVITY = 2400; // px/s²
@@ -16,6 +24,7 @@ function initLogoGravity() {
   const WALL_RESTITUTION = 0.35;
   const SETTLE_VELOCITY = 60;
   const MAX_DT = 0.05; // clamp so a slow/late frame can't move things too far
+  const CAPTION_RESERVE = 0.24; // leave room at the bottom for the address text
 
   function stageSize() {
     const r = stage.getBoundingClientRect();
@@ -24,62 +33,76 @@ function initLogoGravity() {
 
   let { w: stageW, h: stageH } = stageSize();
 
-  const w = logo.offsetWidth;
-  const h = logo.offsetHeight;
-  const item = {
-    el: logo, w, h,
-    x: (stageW - w) / 2,
-    y: -h - 40,
-    vx: 0, vy: 0,
-    angle: -6,
-    angularVel: 0,
-    dragging: false,
-    grabDX: 0, grabDY: 0,
-    history: [],
-  };
+  const items = pieces.map((el, i) => {
+    const w = el.offsetWidth;
+    const h = el.offsetHeight;
+    const slot = stageW / pieces.length;
+    return {
+      el, w, h,
+      x: slot * i + (slot - w) / 2,
+      y: -h - 60 - i * (h * 1.6),
+      vx: 0, vy: 0,
+      angle: Math.random() * 14 - 7,
+      angularVel: 0,
+      dragging: false,
+      grabDX: 0, grabDY: 0,
+      history: [],
+    };
+  });
 
-  function render() {
+  function render(item) {
     item.el.style.transform = `translate(${item.x}px, ${item.y}px) rotate(${item.angle}deg)`;
   }
 
-  item.el.style.cursor = 'grab';
-  item.el.addEventListener('pointerdown', (e) => {
-    item.dragging = true;
-    item.vx = 0;
-    item.vy = 0;
-    item.angularVel = 0;
-    item.history = [];
-    const stageRect = stage.getBoundingClientRect();
-    item.grabDX = e.clientX - stageRect.left - item.x;
-    item.grabDY = e.clientY - stageRect.top - item.y;
-    item.el.style.cursor = 'grabbing';
-    e.preventDefault();
+  // A single "what's being dragged" reference, with move/up listeners on
+  // window rather than per-element pointerId tracking — robust against
+  // automated/synthetic input where down/up pointerIds don't always match.
+  let activeItem = null;
+
+  items.forEach((item) => {
+    item.el.style.cursor = 'grab';
+    item.el.addEventListener('pointerdown', (e) => {
+      activeItem = item;
+      item.dragging = true;
+      item.vx = 0;
+      item.vy = 0;
+      item.angularVel = 0;
+      item.history = [];
+      const stageRect = stage.getBoundingClientRect();
+      item.grabDX = e.clientX - stageRect.left - item.x;
+      item.grabDY = e.clientY - stageRect.top - item.y;
+      item.el.style.cursor = 'grabbing';
+      item.el.style.zIndex = '5';
+      e.preventDefault();
+    });
   });
 
   window.addEventListener('pointermove', (e) => {
-    if (!item.dragging) return;
+    if (!activeItem) return;
     const stageRect = stage.getBoundingClientRect();
     const now = performance.now();
     const margin = 120; // allow a little overdrag past the edges, but bounded
-    item.x = Math.max(-margin, Math.min(stageW + margin - item.w, e.clientX - stageRect.left - item.grabDX));
-    item.y = Math.max(-margin, Math.min(stageH + margin - item.h, e.clientY - stageRect.top - item.grabDY));
-    item.history.push({ x: item.x, y: item.y, t: now });
-    if (item.history.length > 5) item.history.shift();
-    render();
+    activeItem.x = Math.max(-margin, Math.min(stageW + margin - activeItem.w, e.clientX - stageRect.left - activeItem.grabDX));
+    activeItem.y = Math.max(-margin, Math.min(stageH + margin - activeItem.h, e.clientY - stageRect.top - activeItem.grabDY));
+    activeItem.history.push({ x: activeItem.x, y: activeItem.y, t: now });
+    if (activeItem.history.length > 5) activeItem.history.shift();
+    render(activeItem);
   });
 
   function release() {
-    if (!item.dragging) return;
+    if (!activeItem) return;
+    const item = activeItem;
     item.dragging = false;
     item.el.style.cursor = 'grab';
-    const h2 = item.history;
-    if (h2.length >= 2) {
-      const first = h2[0];
-      const last = h2[h2.length - 1];
+    const h = item.history;
+    if (h.length >= 2) {
+      const first = h[0];
+      const last = h[h.length - 1];
       const dt = Math.max((last.t - first.t) / 1000, 0.001);
       item.vx = (last.x - first.x) / dt;
       item.vy = (last.y - first.y) / dt;
     }
+    activeItem = null;
   }
 
   window.addEventListener('pointerup', release);
@@ -97,14 +120,16 @@ function initLogoGravity() {
     const dt = Math.min((now - last) / 1000, MAX_DT);
     last = now;
 
-    if (!item.dragging) {
+    items.forEach((item) => {
+      if (item.dragging) return;
+
       item.vy += GRAVITY * dt;
       item.x += item.vx * dt;
       item.y += item.vy * dt;
       item.angle += item.angularVel * dt;
       item.angularVel *= 0.985;
 
-      const floor = stageH - item.h - stageH * 0.16; // leave room for the caption
+      const floor = stageH - item.h - stageH * CAPTION_RESERVE;
       if (item.y > floor) {
         item.y = floor;
         if (Math.abs(item.vy) > SETTLE_VELOCITY) {
@@ -124,8 +149,8 @@ function initLogoGravity() {
         item.vx = -item.vx * WALL_RESTITUTION;
       }
 
-      render();
-    }
+      render(item);
+    });
 
     setTimeout(tick, 1000 / 60);
   }
