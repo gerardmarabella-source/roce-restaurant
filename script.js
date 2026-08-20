@@ -228,8 +228,10 @@ function initManifestoFall() {
 
   const DROP = 650;
   // Pesos del tramo de scroll de cada palabra — el logo (última) tiene un
-  // tramo mucho más ancho, así que baja más despacio que el resto.
-  const weights = words.map((_, i) => (i === words.length - 1 ? 3.1 : 1));
+  // tramo mucho más ancho, así que baja más despacio que el resto. Las
+  // palabras normales suben de 1 a 1.6 (más despacio); la altura del
+  // wrapper se compensa para que el logo no pierda su duración absoluta.
+  const weights = words.map((_, i) => (i === words.length - 1 ? 3.1 : 1.6));
   const totalWeight = weights.reduce((a, b) => a + b, 0);
   // La caída ocupa solo el primer 80% del recorrido del wrapper — el 20%
   // restante es scroll "muerto" a propósito, para que el manifiesto ya
