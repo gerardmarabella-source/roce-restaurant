@@ -206,44 +206,70 @@ function initArchScroll() {
   update();
 }
 
-// Las palabras del manifiesto caen del cielo (como con gravedad) cuando
-// la sección entra en la pantalla al hacer scroll.
+// 0 antes de que el elemento entre en la "zona de revelado", 1 cuando ha
+// terminado de cruzarla — el rango entre startFrac/endFrac controla cuánto
+// scroll hace falta (más ancho = más lento / más ligado al gesto).
+function scrollRevealProgress(rect, startFrac, endFrac) {
+  const vh = window.innerHeight;
+  const start = vh * startFrac;
+  const end = vh * endFrac;
+  const raw = (start - rect.top) / (start - end);
+  return Math.min(Math.max(raw, 0), 1);
+}
+
+function easeOutCubic(t) {
+  return 1 - Math.pow(1 - t, 3);
+}
+
+// Las palabras de "todo empieza con un ROCE" caen una a una, ligadas al
+// scroll (no a un temporizador): cada una tiene su propio tramo de scroll
+// dentro del recorrido total de la sección.
 function initManifestoFall() {
   const section = document.getElementById('manifestoSection');
-  if (!section || !('IntersectionObserver' in window)) return;
+  const words = section ? Array.from(section.querySelectorAll('.fall-word')) : [];
+  if (!section || !words.length) return;
 
-  const observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          section.classList.add('in-view');
-          observer.unobserve(section);
-        }
-      });
-    },
-    { threshold: 0.3 }
-  );
-  observer.observe(section);
+  const DROP = 650;
+
+  function update() {
+    // Progreso general, muy estirado en scroll para que se note al bajar.
+    const overall = scrollRevealProgress(section.getBoundingClientRect(), 1.0, -1.4);
+    const n = words.length;
+    words.forEach((word, i) => {
+      const segStart = i / n;
+      const segEnd = (i + 1) / n;
+      const local = Math.min(Math.max((overall - segStart) / (segEnd - segStart), 0), 1);
+      const eased = easeOutCubic(local);
+      word.style.transform = `translateY(${(1 - eased) * -DROP}px)`;
+    });
+  }
+
+  window.addEventListener('scroll', update, { passive: true });
+  window.addEventListener('resize', update);
+  update();
 }
 
 // Cada tarjeta de "Experiencia" entra deslizándose desde un lado (alternando
-// izquierda/derecha) justo cuando aparece en pantalla al hacer scroll.
+// izquierda/derecha), su posición ligada directamente al scroll — no a un
+// disparador de una sola vez.
 function initPillarsReveal() {
-  const cards = document.querySelectorAll('.pillar-card');
-  if (!cards.length || !('IntersectionObserver' in window)) return;
+  const cards = Array.from(document.querySelectorAll('.pillar-card'));
+  if (!cards.length) return;
 
-  const observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('in-view');
-          observer.unobserve(entry.target);
-        }
-      });
-    },
-    { threshold: 0.25 }
-  );
-  cards.forEach((card) => observer.observe(card));
+  function update() {
+    cards.forEach((card, i) => {
+      const p = scrollRevealProgress(card.getBoundingClientRect(), 1.0, 0.15);
+      const eased = easeOutCubic(p);
+      const dir = i % 2 === 0 ? -1 : 1;
+      const dist = 130;
+      card.style.transform = `translateX(${(1 - eased) * dir * dist}px)`;
+      card.style.opacity = String(0.15 + eased * 0.85);
+    });
+  }
+
+  window.addEventListener('scroll', update, { passive: true });
+  window.addEventListener('resize', update);
+  update();
 }
 
 // Widget de newsletter fijo: sin backend todavía, así que el envío solo

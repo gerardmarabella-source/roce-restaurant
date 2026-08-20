@@ -66,6 +66,10 @@ a { color: inherit; }
   height: 400vh; /* scroll distance the arch stays pinned & grows for */
 }
 
+@media (max-width: 640px) {
+  .hero-wrapper { height: 300vh; }
+}
+
 .hero-sticky {
   position: sticky;
   top: 0;
@@ -162,9 +166,28 @@ a { color: inherit; }
 }
 
 .hero-info {
-  font-size: 0.95rem;
-  color: #4a4a3f;
-  line-height: 1.5;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  background: var(--black);
+  color: var(--white);
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+}
+
+.hero-claim {
+  font-family: var(--display);
+  font-size: 1.1rem;
+  letter-spacing: 0.03em;
+}
+
+.hero-info p {
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--camel);
 }
 
 /* Manifesto */
@@ -191,20 +214,13 @@ a { color: inherit; }
   gap: 0.15em 0.35em;
 }
 
+/* La posición real la fija el scroll, palabra por palabra
+   (ver initManifestoFall) — esto es solo el estado inicial. */
 .fall-word {
   display: inline-block;
   transform: translateY(-650px);
-  transition: transform 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
+  will-change: transform;
 }
-
-.manifesto.in-view .fall-word { transform: translateY(0); }
-
-/* Cada palabra cae por completo antes de que empiece la siguiente. */
-.manifesto.in-view .fall-line .fall-word:nth-child(1) { transition-delay: 0s; }
-.manifesto.in-view .fall-line .fall-word:nth-child(2) { transition-delay: 0.7s; }
-.manifesto.in-view .fall-line .fall-word:nth-child(3) { transition-delay: 1.4s; }
-.manifesto.in-view .fall-line .fall-word:nth-child(4) { transition-delay: 2.1s; }
-.manifesto.in-view .fall-logo { transition-delay: 2.8s; }
 
 .fall-logo {
   display: block;
@@ -229,38 +245,35 @@ a { color: inherit; }
 .pillar-cards {
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
-  max-width: 700px;
+  gap: 0.5rem;
+  max-width: 460px;
   margin: 0 auto;
 }
 
 .pillar-card {
   background: var(--card-color);
   color: var(--white);
-  aspect-ratio: 5/2;
+  aspect-ratio: 4/1.15;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  padding: 1rem 1.25rem;
+  padding: 0.8rem 1.1rem;
   border-radius: 4px;
   text-align: left;
-  opacity: 0;
-  transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.6s ease;
+  /* Posición/opacidad reales las fija el scroll (ver initPillarsReveal) —
+     esto es solo el estado antes de que el JS arranque. */
+  opacity: 0.15;
+  transform: translateX(-70px);
+  will-change: transform, opacity;
 }
 
-.pillar-card:nth-child(odd) { transform: translateX(-90px); }
-.pillar-card:nth-child(even) { transform: translateX(90px); }
+.pillar-card:nth-child(even) { transform: translateX(70px); }
 
-.pillar-card.in-view {
-  opacity: 1;
-  transform: translateX(0);
-}
-
-.pillar-card.in-view:hover { transform: translateY(-4px); }
+.pillar-card:hover { transform: translateY(-3px) !important; }
 
 .pillar-time {
-  font-size: 0.7rem;
+  font-size: 0.65rem;
   font-weight: 600;
   letter-spacing: 0.1em;
   opacity: 0.75;
@@ -268,17 +281,15 @@ a { color: inherit; }
 
 .pillar-name {
   font-family: var(--display);
-  font-size: 1.05rem;
+  font-size: 0.9rem;
   text-transform: uppercase;
   letter-spacing: 0.01em;
   text-align: right;
 }
 
 @media (max-width: 640px) {
-  .pillar-cards { gap: 0.5rem; }
-  .pillar-card { aspect-ratio: auto; padding: 0.9rem 1.1rem; }
-  .pillar-card:nth-child(odd) { transform: translateX(-50px); }
-  .pillar-card:nth-child(even) { transform: translateX(50px); }
+  .pillar-cards { gap: 0.4rem; max-width: 360px; }
+  .pillar-card { aspect-ratio: auto; padding: 0.7rem 0.9rem; }
 }
 
 /* Reserve */
