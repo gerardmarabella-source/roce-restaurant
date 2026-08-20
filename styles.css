@@ -70,7 +70,7 @@ a { color: inherit; }
 }
 
 @media (max-width: 640px) {
-  .hero-wrapper { height: 391vh; }
+  .hero-wrapper { height: 782vh; }
 }
 
 .hero-sticky {
@@ -192,7 +192,7 @@ a { color: inherit; }
 }
 
 @media (max-width: 640px) {
-  .manifesto-wrapper { height: 1853vh; }
+  .manifesto-wrapper { height: 3706vh; }
 }
 
 .manifesto-sticky {
@@ -257,7 +257,7 @@ a { color: inherit; }
 }
 
 @media (max-width: 640px) {
-  .pillars-wrapper { height: 1931vh; }
+  .pillars-wrapper { height: 3862vh; }
 }
 
 .pillars-sticky {
@@ -343,7 +343,7 @@ a { color: inherit; }
 }
 
 @media (max-width: 640px) {
-  .reserve-wrapper { height: 975vh; }
+  .reserve-wrapper { height: 1950vh; }
 }
 
 .reserve-sticky {
