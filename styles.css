@@ -6,6 +6,7 @@
   --camel: #9f8257;
   --cream: #ece7dd;
   --white: #ffffff;
+  --cement: #b0afa9; /* prueba: sustituye al verde oliva en el arco del hero */
 
   --display: "Archivo Black", "Helvetica Neue", Arial, sans-serif;
   --body: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
@@ -90,26 +91,15 @@ a { color: inherit; }
   height: min(64vh, 560px);
   border-radius: 50% 50% 0 0 / 22% 22% 0 0;
   overflow: hidden;
-  background: var(--olive);
+  background: var(--cement);
 }
 
 .arch-texture {
   position: absolute;
   inset: 0;
-  background:
-    radial-gradient(circle at 22% 15%, rgba(255,196,120,0.14), transparent 45%),
-    radial-gradient(circle at 78% 30%, rgba(255,255,255,0.08), transparent 50%),
-    radial-gradient(circle at 60% 85%, rgba(0,0,0,0.22), transparent 55%),
-    linear-gradient(160deg, #6b6f5e 0%, var(--olive) 50%, #33352a 100%);
-}
-
-.arch-texture::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  opacity: 0.35;
-  mix-blend-mode: overlay;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='matrix' values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.5 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  background-image: url("assets/textures/cemento.jpeg");
+  background-size: cover;
+  background-position: center;
 }
 
 .arch-physics {
@@ -192,14 +182,14 @@ a { color: inherit; }
 /* Manifesto — fijo en pantalla mientras las palabras caen en secuencia */
 .manifesto-wrapper {
   position: relative;
-  height: 300vh;
+  height: 500vh;
   margin-top: -4px; /* solapa el hero para cerrar cualquier hueco de subpíxel en el límite */
   z-index: 1; /* por debajo del hero, para que nunca se asome detrás del arco */
   background: var(--cream);
 }
 
 @media (max-width: 640px) {
-  .manifesto-wrapper { height: 672vh; }
+  .manifesto-wrapper { height: 850vh; }
 }
 
 .manifesto-sticky {
@@ -258,13 +248,13 @@ a { color: inherit; }
    una a una en secuencia (ver initPillarsReveal). */
 .pillars-wrapper {
   position: relative;
-  height: 300vh;
+  height: 500vh;
   z-index: 1;
   background: var(--cream);
 }
 
 @media (max-width: 640px) {
-  .pillars-wrapper { height: 768vh; }
+  .pillars-wrapper { height: 950vh; }
 }
 
 .pillars-sticky {
@@ -344,13 +334,13 @@ a { color: inherit; }
    emerge "desde atrás" y el botón cae como un misil que rebota al aterrizar. */
 .reserve-wrapper {
   position: relative;
-  height: 500vh; /* mucho más recorrido: todo el reveal (fondo, título, botón) va bastante más lento */
+  height: 700vh; /* mucho más recorrido: todo el reveal (fondo, título, botón) va bastante más lento */
   z-index: 1;
   background: var(--cream);
 }
 
 @media (max-width: 640px) {
-  .reserve-wrapper { height: 560vh; }
+  .reserve-wrapper { height: 750vh; }
 }
 
 .reserve-sticky {
