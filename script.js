@@ -201,10 +201,12 @@ function initArchScroll() {
 
   function update() {
     const raw = pinnedProgress(wrapper);
-    // El arco llega a pantalla completa en el primer 80% del recorrido;
-    // el 20% restante es scroll "muerto" a propósito, para que se quede
-    // fijo a pantalla completa un momento antes de soltar al manifiesto.
-    const ACTIVE_SPAN = 0.8;
+    // El arco llega a pantalla completa en el primer 55% del recorrido;
+    // el resto es scroll "muerto" a propósito, para que se quede fijo a
+    // pantalla completa un buen rato antes de soltar al manifiesto (el
+    // wrapper se agrandó a la vez para que el crecimiento en sí no se
+    // ralentice, solo el bloqueo final).
+    const ACTIVE_SPAN = 0.55;
     const activeRaw = Math.min(raw / ACTIVE_SPAN, 1);
     const progress = activeRaw * activeRaw; // ease-in: sutil al principio, más notable después
     const base = baseSize();

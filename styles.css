@@ -64,13 +64,13 @@ a { color: inherit; }
 /* Hero + arch */
 .hero-wrapper {
   position: relative;
-  height: 400vh; /* scroll distance the arch stays pinned & grows for */
+  height: 536vh; /* scroll distance the arch stays pinned & grows for */
   z-index: 2;
   background: var(--cream);
 }
 
 @media (max-width: 640px) {
-  .hero-wrapper { height: 300vh; }
+  .hero-wrapper { height: 391vh; }
 }
 
 .hero-sticky {
