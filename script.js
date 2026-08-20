@@ -383,28 +383,11 @@ function whenStageIsLaidOut(callback, attempts = 0) {
   }
 }
 
-// El botón "Reservar" del header salta directo al tramo de la sección de
-// reserva donde el fondo rojo, el título y el botón ya están desplegados,
-// en vez de al principio del recorrido fijado (que arrancaría en blanco).
-function initReserveJumpLink() {
-  const link = document.querySelector('a[href="#contacto"]');
-  const wrapper = document.getElementById('reserveWrapper');
-  if (!link || !wrapper) return;
-
-  link.addEventListener('click', (e) => {
-    e.preventDefault();
-    const range = wrapper.offsetHeight - window.innerHeight;
-    const target = wrapper.offsetTop + range * 0.8;
-    window.scrollTo({ top: target, behavior: 'smooth' });
-  });
-}
-
 document.addEventListener('DOMContentLoaded', () => {
   whenStageIsLaidOut(initLogoGravity);
   initArchScroll();
   initManifestoFall();
   initPillarsReveal();
   initReserveReveal();
-  initReserveJumpLink();
   initNewsletterWidget();
 });
