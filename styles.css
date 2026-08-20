@@ -525,7 +525,7 @@ a { color: inherit; }
 .newsletter-text {
   font-size: 0.85rem;
   line-height: 1.4;
-  color: var(--camel);
+  color: #9a9a9a;
   margin-bottom: 0.9rem;
 }
 
@@ -581,4 +581,7 @@ a { color: inherit; }
     bottom: 0.75rem;
     width: calc(100vw - 1.5rem);
   }
+
+  /* iOS hace zoom automático al enfocar un input con font-size < 16px */
+  .newsletter-input { font-size: 16px; }
 }
