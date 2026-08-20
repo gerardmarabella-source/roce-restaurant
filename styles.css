@@ -467,12 +467,16 @@ a { color: inherit; }
   margin-top: 3rem;
   display: flex;
   justify-content: center;
-  gap: 2rem;
+  flex-wrap: wrap;
+  gap: 0.5rem 2rem;
   font-size: 0.8rem;
   opacity: 0.6;
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
+
+.footer-bottom a { text-decoration: none; }
+.footer-bottom a:hover { text-decoration: underline; }
 
 @media (max-width: 640px) {
   .topnav { gap: 1rem; }
