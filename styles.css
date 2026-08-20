@@ -206,6 +206,7 @@ a { color: inherit; }
   position: sticky;
   top: 0;
   height: 100vh;
+  padding-top: 5rem; /* que el header fijo no tape "TODO" en pantallas anchas y no muy altas */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -222,9 +223,11 @@ a { color: inherit; }
 
 .manifesto-title {
   font-family: var(--display);
-  font-size: clamp(3rem, 12vw, 6.5rem);
+  /* También limitado por altura de viewport, no solo anchura, para que en
+     pantallas anchas pero bajas el bloque siga cabiendo bajo el header. */
+  font-size: clamp(3rem, min(12vw, 11vh), 6.5rem);
   line-height: 0.95;
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
 }
 
 .fall-line {
@@ -246,7 +249,7 @@ a { color: inherit; }
 
 .fall-logo {
   display: block;
-  height: clamp(10.8rem, 41vw, 24rem);
+  height: clamp(10.8rem, min(41vw, 34vh), 24rem);
   width: auto;
   margin: 0.3em auto 0;
 }
