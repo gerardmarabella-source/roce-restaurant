@@ -570,6 +570,12 @@ a { color: inherit; }
   line-height: 1.4;
 }
 
+.newsletter-error {
+  font-size: 0.75rem;
+  color: #ff8a7a;
+  margin-top: 0.4rem;
+}
+
 @media (max-width: 640px) {
   .newsletter-widget {
     bottom: 0.75rem;

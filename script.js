@@ -367,9 +367,31 @@ function initNewsletterWidget() {
     widget.classList.add('is-hidden');
   });
 
-  form.addEventListener('submit', (e) => {
+  form.addEventListener('submit', async (e) => {
     e.preventDefault();
-    body.innerHTML = '<p class="newsletter-thanks">¡Gracias! Te avisaremos antes de la apertura.</p>';
+    const submitBtn = form.querySelector('.newsletter-submit');
+    submitBtn.disabled = true;
+    submitBtn.textContent = '...';
+
+    try {
+      const res = await fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify(Object.fromEntries(new FormData(form))),
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.message || 'Error desconocido');
+      body.innerHTML = '<p class="newsletter-thanks">¡Gracias! Te avisaremos antes de la apertura.</p>';
+    } catch (err) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Enviar';
+      const existing = body.querySelector('.newsletter-error');
+      if (existing) existing.remove();
+      body.querySelector('.newsletter-text').insertAdjacentHTML(
+        'afterend',
+        '<p class="newsletter-error">No se ha podido enviar, inténtalo de nuevo.</p>'
+      );
+    }
   });
 }
 
