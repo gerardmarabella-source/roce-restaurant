@@ -344,13 +344,13 @@ a { color: inherit; }
    emerge "desde atrás" y el botón cae como un misil que rebota al aterrizar. */
 .reserve-wrapper {
   position: relative;
-  height: 300vh; /* algo de recorrido tras el reveal, para que la pantalla roja se quede fija un momento antes de soltar */
+  height: 500vh; /* mucho más recorrido: todo el reveal (fondo, título, botón) va bastante más lento */
   z-index: 1;
   background: var(--cream);
 }
 
 @media (max-width: 640px) {
-  .reserve-wrapper { height: 240vh; }
+  .reserve-wrapper { height: 420vh; }
 }
 
 .reserve-sticky {
