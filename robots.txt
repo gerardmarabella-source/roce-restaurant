@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /privacidad.html
+
+Sitemap: https://roce.es/sitemap.xml
