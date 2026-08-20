@@ -319,8 +319,6 @@ a { color: inherit; }
 
 .pillar-card:nth-child(even) { transform: translateX(70px); }
 
-.pillar-card:hover { transform: translateY(-3px) !important; }
-
 .pillar-time {
   font-size: 0.65rem;
   font-weight: 600;
