@@ -77,12 +77,14 @@
   }
   .reserve-submit:hover { transform: translateY(-2px); }
 
-  .reserve-form-note {
+  .reserve-form-status {
     margin-top: 1.25rem;
-    font-size: 0.78rem;
-    opacity: 0.75;
+    font-size: 0.9rem;
     line-height: 1.5;
   }
+  .reserve-form-status.is-error { color: #ffb4a8; }
+  .reserve-submit:disabled { opacity: 0.6; cursor: default; }
+  .reserve-submit:disabled:hover { transform: none; }
 
   .reserve-back {
     display: inline-block;
@@ -114,11 +116,15 @@
     <a class="reserve-back" href="/">&larr; Volver a ROCE</a>
     <h1>Reserva<br>tu mesa</h1>
     <p class="reserve-form-intro">
-      Rellena el formulario y se abrirá tu email con todo ya escrito, listo para enviarnos.
-      Te confirmamos la reserva por email en cuanto lo leamos.
+      Rellena el formulario y te confirmamos la reserva por email en cuanto lo leamos.
     </p>
 
     <form class="reserve-form" id="reservationForm">
+      <input type="hidden" name="access_key" value="b8af37ee-e300-4bd5-8c98-8223cad17cbe">
+      <input type="hidden" name="subject" value="Nueva reserva — ROCE">
+      <input type="hidden" name="from_name" value="Formulario de reservas ROCE">
+      <input type="checkbox" name="botcheck" class="botcheck" style="display: none;">
+
       <label>
         Nombre
         <input type="text" name="nombre" placeholder="Tu nombre" required>
@@ -156,13 +162,9 @@
         <textarea name="comentarios" placeholder="Alergias, celebraciones, preferencias..."></textarea>
       </label>
 
-      <button type="submit" class="reserve-submit">Enviar reserva</button>
+      <button type="submit" class="reserve-submit" id="reserveSubmitBtn">Enviar reserva</button>
     </form>
-
-    <p class="reserve-form-note">
-      Al enviar se abrirá tu aplicación de correo con un email ya redactado a booking@roce.es —
-      solo tienes que darle a enviar.
-    </p>
+    <p class="reserve-form-status" id="reserveFormStatus" role="status" aria-live="polite"></p>
   </div>
 </main>
 
@@ -182,32 +184,50 @@
 </footer>
 
 <script>
-  document.getElementById('reservationForm').addEventListener('submit', (e) => {
+  const form = document.getElementById('reservationForm');
+  const btn = document.getElementById('reserveSubmitBtn');
+  const status = document.getElementById('reserveFormStatus');
+
+  form.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const f = new FormData(e.target);
-    const nombre = f.get('nombre').trim();
-    const email = f.get('email').trim();
-    const telefono = f.get('telefono').trim();
-    const personas = f.get('personas').trim();
-    const fecha = f.get('fecha');
-    const hora = f.get('hora');
-    const comentarios = f.get('comentarios').trim();
 
-    const fechaFmt = fecha ? new Date(fecha + 'T00:00:00').toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' }) : '';
+    // Formatea la fecha en el propio payload para que el email que llega
+    // a booking@roce.es sea legible ("12 de septiembre de 2026"), no la
+    // fecha en crudo del <input type="date">.
+    const fecha = form.fecha.value;
+    const fechaFmt = fecha
+      ? new Date(fecha + 'T00:00:00').toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' })
+      : '';
 
-    const subject = `Reserva ROCE — ${nombre} — ${fechaFmt} ${hora}`.trim();
-    const bodyLines = [
-      `Nombre: ${nombre}`,
-      `Email: ${email}`,
-      telefono ? `Teléfono: ${telefono}` : null,
-      `Personas: ${personas}`,
-      `Fecha: ${fechaFmt}`,
-      `Hora: ${hora}`,
-      comentarios ? `Comentarios: ${comentarios}` : null,
-    ].filter(Boolean);
+    const payload = Object.fromEntries(new FormData(form));
+    payload.fecha = fechaFmt;
 
-    const mailto = `mailto:booking@roce.es?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(bodyLines.join('\n'))}`;
-    window.location.href = mailto;
+    btn.disabled = true;
+    btn.textContent = 'Enviando...';
+    status.textContent = '';
+    status.classList.remove('is-error');
+
+    try {
+      const res = await fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        form.reset();
+        form.style.display = 'none';
+        status.textContent = '¡Reserva enviada! Te confirmamos por email en cuanto la leamos.';
+      } else {
+        throw new Error(data.message || 'Error desconocido');
+      }
+    } catch (err) {
+      status.textContent = 'No se ha podido enviar. Escríbenos directamente a booking@roce.es.';
+      status.classList.add('is-error');
+      btn.disabled = false;
+      btn.textContent = 'Enviar reserva';
+    }
   });
 </script>
 
