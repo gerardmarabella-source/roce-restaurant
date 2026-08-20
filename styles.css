@@ -196,7 +196,7 @@ a { color: inherit; }
 .manifesto.in-view .fall-word:nth-child(5) { transition-delay: 2.8s; }
 
 .fall-logo {
-  height: clamp(4.5rem, 17vw, 9.5rem);
+  height: clamp(9rem, 34vw, 20rem);
   width: auto;
   vertical-align: baseline;
   position: relative;

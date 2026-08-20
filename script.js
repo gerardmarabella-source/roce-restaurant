@@ -170,7 +170,7 @@ function initArchScroll() {
   const caption = document.getElementById('archCaption');
   if (!archFrame) return;
 
-  const GROW_DISTANCE = 2200; // px de scroll para llegar al tamaño máximo
+  const GROW_DISTANCE = 11000; // px de scroll para llegar al tamaño máximo
 
   function baseSize() {
     return {
@@ -187,7 +187,8 @@ function initArchScroll() {
   }
 
   function update() {
-    const progress = Math.min(Math.max(window.scrollY / GROW_DISTANCE, 0), 1);
+    const raw = Math.min(Math.max(window.scrollY / GROW_DISTANCE, 0), 1);
+    const progress = raw * raw; // ease-in: sutil al principio, más notable después
     const base = baseSize();
     const max = maxSize();
     archFrame.style.width = `${base.w + (max.w - base.w) * progress}px`;
