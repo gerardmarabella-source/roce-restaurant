@@ -199,7 +199,7 @@ a { color: inherit; }
 }
 
 @media (max-width: 640px) {
-  .manifesto-wrapper { height: 360vh; }
+  .manifesto-wrapper { height: 672vh; }
 }
 
 .manifesto-sticky {
@@ -264,7 +264,7 @@ a { color: inherit; }
 }
 
 @media (max-width: 640px) {
-  .pillars-wrapper { height: 360vh; }
+  .pillars-wrapper { height: 768vh; }
 }
 
 .pillars-sticky {
@@ -350,7 +350,7 @@ a { color: inherit; }
 }
 
 @media (max-width: 640px) {
-  .reserve-wrapper { height: 420vh; }
+  .reserve-wrapper { height: 560vh; }
 }
 
 .reserve-sticky {
