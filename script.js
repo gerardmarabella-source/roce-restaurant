@@ -242,6 +242,10 @@ function initManifestoFall() {
       // ver mucho antes de que el scroll acabe, dejando un tramo donde no
       // pasa nada — con progreso lineal el trayecto se nota todo el rato.
       word.style.transform = `translateY(${(1 - local) * -DROP}px)`;
+      // Opacidad ligada al mismo progreso: garantiza que la palabra/logo
+      // sea invisible hasta que su tramo de scroll haya empezado de
+      // verdad, sin depender de que el clipping/stacking sea perfecto.
+      word.style.opacity = local;
     });
   }
 
