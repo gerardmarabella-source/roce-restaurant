@@ -343,13 +343,13 @@ a { color: inherit; }
    emerge "desde atrás" y el botón cae como un misil que rebota al aterrizar. */
 .reserve-wrapper {
   position: relative;
-  height: 280vh;
+  height: 340vh; /* más recorrido tras el reveal, para que la pantalla roja se quede fija un rato antes de soltar */
   z-index: 1;
   background: var(--cream);
 }
 
 @media (max-width: 640px) {
-  .reserve-wrapper { height: 220vh; }
+  .reserve-wrapper { height: 260vh; }
 }
 
 .reserve-sticky {

@@ -271,10 +271,12 @@ function initPillarsReveal() {
       const segStart = i / n;
       const segEnd = (i + 1) / n;
       const local = Math.min(Math.max((overall - segStart) / (segEnd - segStart), 0), 1);
-      const eased = easeOutCubic(local);
+      // Lineal a propósito (igual que el manifiesto): con ease-out la
+      // tarjeta se coloca casi del todo en el primer tercio del tramo y
+      // luego se queda quieta el resto, dando sensación de entrada rara.
       const dir = i % 2 === 0 ? -1 : 1;
-      card.style.transform = `translateX(${(1 - eased) * dir * DIST}px)`;
-      card.style.opacity = String(0.1 + eased * 0.9);
+      card.style.transform = `translateX(${(1 - local) * dir * DIST}px)`;
+      card.style.opacity = String(0.1 + local * 0.9);
     });
   }
 
@@ -301,17 +303,20 @@ function initReserveReveal() {
     const overall = maxProgress;
 
     // El fondo es un círculo que crece hasta cubrir toda la pantalla.
-    const bgLocal = Math.min(overall / 0.45, 1);
+    const bgLocal = Math.min(overall / 0.34, 1);
     bg.style.transform = `scale(${easeOutCubic(bgLocal) * 3})`;
 
     // El título aparece agrandándose, como si emergiera desde atrás.
-    const titleLocal = Math.min(Math.max((overall - 0.28) / 0.32, 0), 1);
+    const titleLocal = Math.min(Math.max((overall - 0.21) / 0.24, 0), 1);
     const titleEased = easeOutCubic(titleLocal);
     title.style.opacity = String(titleEased);
     title.style.transform = `scale(${0.25 + titleEased * 0.75})`;
 
     // El botón cae como un misil una única vez, al llegar a este punto.
-    if (overall > 0.62 && !bounced) {
+    // A partir de aquí (overall ~0.47) el resto del scroll del wrapper es
+    // recorrido "muerto" a propósito: la pantalla roja se queda fija y
+    // bloqueada un rato antes de soltar a la siguiente sección.
+    if (overall > 0.47 && !bounced) {
       bounced = true;
       cta.classList.add('bounce-in');
     }
