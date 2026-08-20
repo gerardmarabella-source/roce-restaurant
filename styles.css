@@ -258,13 +258,13 @@ a { color: inherit; }
    una a una en secuencia (ver initPillarsReveal). */
 .pillars-wrapper {
   position: relative;
-  height: 360vh;
+  height: 300vh;
   z-index: 1;
   background: var(--cream);
 }
 
 @media (max-width: 640px) {
-  .pillars-wrapper { height: 200vh; }
+  .pillars-wrapper { height: 360vh; }
 }
 
 .pillars-sticky {
