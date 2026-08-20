@@ -162,13 +162,28 @@ function initLogoGravity() {
   tick();
 }
 
-// El arco crece con el scroll (como en brutal.restaurant) — cuanto más
-// bajas, más grande y más pantalla libre para arrastrar las letras. El
-// texto de dirección se desvanece al mismo ritmo.
+function easeOutCubic(t) {
+  return 1 - Math.pow(1 - t, 3);
+}
+
+// Progreso 0→1 de una sección "pin-and-scroll": el wrapper es mucho más
+// alto que el viewport, y su hijo .xxx-sticky queda fijo (position:
+// sticky) mientras se recorre esa altura extra — así el contenido
+// permanece en pantalla en vez de desplazarse con el resto de la página.
+function pinnedProgress(wrapper) {
+  const range = wrapper.offsetHeight - window.innerHeight;
+  const scrolledInto = -wrapper.getBoundingClientRect().top;
+  return range > 0 ? Math.min(Math.max(scrolledInto / range, 0), 1) : 0;
+}
+
+// El arco crece con el scroll hasta ocupar toda la pantalla (como en
+// brutal.restaurant) — el badge de apertura sólo aparece al final de ese
+// recorrido, cuando ya está a pantalla completa.
 function initArchScroll() {
   const wrapper = document.getElementById('heroWrapper');
   const archFrame = document.querySelector('.arch-frame');
   const caption = document.getElementById('archCaption');
+  const badge = document.getElementById('heroInfo');
   if (!wrapper || !archFrame) return;
 
   function baseSize() {
@@ -178,26 +193,18 @@ function initArchScroll() {
     };
   }
 
-  function maxSize() {
-    return {
-      w: Math.min(window.innerWidth * 0.98, 1400),
-      h: Math.min(window.innerHeight * 0.98, 1100),
-    };
-  }
-
   function update() {
-    // El wrapper es mucho más alto que el viewport; .hero-sticky queda
-    // fijo (position: sticky) mientras se recorre esa altura extra, así
-    // que el arco permanece en pantalla en vez de desplazarse con el resto.
-    const range = wrapper.offsetHeight - window.innerHeight;
-    const scrolledInto = -wrapper.getBoundingClientRect().top;
-    const raw = range > 0 ? Math.min(Math.max(scrolledInto / range, 0), 1) : 0;
+    const raw = pinnedProgress(wrapper);
     const progress = raw * raw; // ease-in: sutil al principio, más notable después
     const base = baseSize();
-    const max = maxSize();
-    archFrame.style.width = `${base.w + (max.w - base.w) * progress}px`;
-    archFrame.style.height = `${base.h + (max.h - base.h) * progress}px`;
-    if (caption) caption.style.opacity = String(1 - progress);
+    // A pantalla completa de verdad al final del recorrido.
+    archFrame.style.width = `${base.w + (window.innerWidth - base.w) * progress}px`;
+    archFrame.style.height = `${base.h + (window.innerHeight - base.h) * progress}px`;
+    // El arco pierde su forma curva al llegar a pantalla completa.
+    const radius = 22 * (1 - progress);
+    archFrame.style.borderRadius = `50% 50% 0 0 / ${radius}% ${radius}% 0 0`;
+    if (caption) caption.style.opacity = String(1 - Math.min(progress * 1.6, 1));
+    if (badge) badge.style.opacity = String(Math.max((raw - 0.75) / 0.25, 0));
     window.dispatchEvent(new Event('archresize'));
   }
 
@@ -206,38 +213,30 @@ function initArchScroll() {
   update();
 }
 
-// 0 antes de que el elemento entre en la "zona de revelado", 1 cuando ha
-// terminado de cruzarla — el rango entre startFrac/endFrac controla cuánto
-// scroll hace falta (más ancho = más lento / más ligado al gesto).
-function scrollRevealProgress(rect, startFrac, endFrac) {
-  const vh = window.innerHeight;
-  const start = vh * startFrac;
-  const end = vh * endFrac;
-  const raw = (start - rect.top) / (start - end);
-  return Math.min(Math.max(raw, 0), 1);
-}
-
-function easeOutCubic(t) {
-  return 1 - Math.pow(1 - t, 3);
-}
-
 // Las palabras de "todo empieza con un ROCE" caen una a una, ligadas al
-// scroll (no a un temporizador): cada una tiene su propio tramo de scroll
-// dentro del recorrido total de la sección.
+// scroll (no a un temporizador): la sección queda fija en pantalla
+// mientras cada palabra ocupa su propio tramo del recorrido.
 function initManifestoFall() {
-  const section = document.getElementById('manifestoSection');
-  const words = section ? Array.from(section.querySelectorAll('.fall-word')) : [];
-  if (!section || !words.length) return;
+  const wrapper = document.getElementById('manifestoWrapper');
+  const words = wrapper ? Array.from(wrapper.querySelectorAll('.fall-word')) : [];
+  if (!wrapper || !words.length) return;
 
   const DROP = 650;
+  // Pesos del tramo de scroll de cada palabra — el logo (última) tiene un
+  // tramo mucho más ancho, así que baja más despacio que el resto.
+  const weights = words.map((_, i) => (i === words.length - 1 ? 3.1 : 1));
+  const totalWeight = weights.reduce((a, b) => a + b, 0);
+  const segments = [];
+  let acc = 0;
+  weights.forEach((w) => {
+    segments.push([acc / totalWeight, (acc + w) / totalWeight]);
+    acc += w;
+  });
 
   function update() {
-    // Progreso general, muy estirado en scroll para que se note al bajar.
-    const overall = scrollRevealProgress(section.getBoundingClientRect(), 1.0, -1.4);
-    const n = words.length;
+    const overall = pinnedProgress(wrapper);
     words.forEach((word, i) => {
-      const segStart = i / n;
-      const segEnd = (i + 1) / n;
+      const [segStart, segEnd] = segments[i];
       const local = Math.min(Math.max((overall - segStart) / (segEnd - segStart), 0), 1);
       const eased = easeOutCubic(local);
       word.style.transform = `translateY(${(1 - eased) * -DROP}px)`;
@@ -253,17 +252,23 @@ function initManifestoFall() {
 // izquierda/derecha), su posición ligada directamente al scroll — no a un
 // disparador de una sola vez.
 function initPillarsReveal() {
-  const cards = Array.from(document.querySelectorAll('.pillar-card'));
-  if (!cards.length) return;
+  const wrapper = document.getElementById('pillarsWrapper');
+  const cards = wrapper ? Array.from(wrapper.querySelectorAll('.pillar-card')) : [];
+  if (!wrapper || !cards.length) return;
+
+  const DIST = 130;
 
   function update() {
+    const overall = pinnedProgress(wrapper);
+    const n = cards.length;
     cards.forEach((card, i) => {
-      const p = scrollRevealProgress(card.getBoundingClientRect(), 1.0, 0.15);
-      const eased = easeOutCubic(p);
+      const segStart = i / n;
+      const segEnd = (i + 1) / n;
+      const local = Math.min(Math.max((overall - segStart) / (segEnd - segStart), 0), 1);
+      const eased = easeOutCubic(local);
       const dir = i % 2 === 0 ? -1 : 1;
-      const dist = 130;
-      card.style.transform = `translateX(${(1 - eased) * dir * dist}px)`;
-      card.style.opacity = String(0.15 + eased * 0.85);
+      card.style.transform = `translateX(${(1 - eased) * dir * DIST}px)`;
+      card.style.opacity = String(0.1 + eased * 0.9);
     });
   }
 

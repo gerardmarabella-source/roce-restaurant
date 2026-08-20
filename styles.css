@@ -74,13 +74,10 @@ a { color: inherit; }
   position: sticky;
   top: 0;
   height: 100vh;
-  padding: 7rem 1.5rem 3rem;
+  width: 100%;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  text-align: center;
-  gap: 1.5rem;
   overflow: hidden;
 }
 
@@ -91,7 +88,6 @@ a { color: inherit; }
   border-radius: 50% 50% 0 0 / 22% 22% 0 0;
   overflow: hidden;
   background: var(--olive);
-  transition: width 0.2s ease-out, height 0.2s ease-out;
 }
 
 .arch-texture {
@@ -165,38 +161,56 @@ a { color: inherit; }
   color: var(--cream);
 }
 
+/* Aparece tarde en el scroll del hero (ver initArchScroll), no desde el
+   principio — por eso empieza en opacity 0 y sin click hasta entonces. */
 .hero-info {
-  display: inline-flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.3rem;
+  position: absolute;
+  left: 50%;
+  bottom: 6%;
+  transform: translateX(-50%);
+  z-index: 5;
   background: var(--black);
   color: var(--white);
-  padding: 0.75rem 1.5rem;
+  padding: 0.75rem 1.75rem;
   border-radius: 6px;
-}
-
-.hero-claim {
-  font-family: var(--display);
-  font-size: 1.1rem;
-  letter-spacing: 0.03em;
+  opacity: 0;
+  pointer-events: none;
 }
 
 .hero-info p {
-  font-size: 0.8rem;
-  font-weight: 600;
+  font-size: 0.85rem;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.12em;
-  color: var(--camel);
+  color: var(--white);
+  white-space: nowrap;
 }
 
-/* Manifesto */
+/* Manifesto — fijo en pantalla mientras las palabras caen en secuencia */
+.manifesto-wrapper {
+  position: relative;
+  height: 160vh;
+}
+
+@media (max-width: 640px) {
+  .manifesto-wrapper { height: 130vh; }
+}
+
+.manifesto-sticky {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
 .manifesto {
-  padding: 7rem 1.5rem;
+  padding: 1.5rem;
   max-width: 900px;
   margin: 0 auto;
   text-align: center;
-  overflow: hidden;
 }
 
 .manifesto-title {
@@ -229,11 +243,31 @@ a { color: inherit; }
   margin: 0.3em auto 0;
 }
 
-/* Pillars (experience) */
+/* Pillars (experience) — fijo en pantalla mientras las tarjetas aparecen
+   una a una en secuencia (ver initPillarsReveal). */
+.pillars-wrapper {
+  position: relative;
+  height: 320vh;
+}
+
+@media (max-width: 640px) {
+  .pillars-wrapper { height: 200vh; }
+}
+
+.pillars-sticky {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
 .pillars {
-  padding: 7rem 1.5rem;
+  padding: 1.5rem;
   text-align: center;
-  scroll-margin-top: 80px;
+  width: 100%;
 }
 
 .pillars-title {

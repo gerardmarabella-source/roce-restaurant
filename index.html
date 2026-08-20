@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=5">
+<link rel="stylesheet" href="styles.css?v=9">
 </head>
 <body>
 
@@ -35,48 +35,54 @@
         <span>Gran Vía Marqués del Turia, 16 — Valencia</span>
       </p>
     </div>
-    <div class="hero-info">
-      <span class="hero-claim">¡YA LLEGAMOS!</span>
+    <div class="hero-info" id="heroInfo">
       <p>Apertura Octubre 2026</p>
     </div>
   </div>
 </section>
 
-<section class="manifesto" id="manifestoSection">
-  <h2 class="manifesto-title">
-    <span class="fall-line">
-      <span class="fall-word">TODO</span>
-      <span class="fall-word">EMPIEZA</span>
-      <span class="fall-word">CON</span>
-      <span class="fall-word">UN</span>
-    </span>
-    <img class="fall-word fall-logo" src="assets/logo/roce-vertical-black.png" alt="ROCE">
-  </h2>
+<section class="manifesto-wrapper" id="manifestoWrapper">
+  <div class="manifesto-sticky">
+    <section class="manifesto" id="manifestoSection">
+      <h2 class="manifesto-title">
+        <span class="fall-line">
+          <span class="fall-word">TODO</span>
+          <span class="fall-word">EMPIEZA</span>
+          <span class="fall-word">CON</span>
+          <span class="fall-word">UN</span>
+        </span>
+        <img class="fall-word fall-logo" src="assets/logo/roce-vertical-black.png" alt="ROCE">
+      </h2>
+    </section>
+  </div>
 </section>
 
-<section id="experiencia" class="pillars">
-  <h2 class="pillars-title">Experiencia</h2>
-  <div class="pillar-cards">
-    <div class="pillar-card" style="--card-color:#9F8257">
-      <span class="pillar-time">06:00</span>
-      <span class="pillar-name">Bakery</span>
-    </div>
-    <div class="pillar-card" style="--card-color:#832F2F">
-      <span class="pillar-time">10:00</span>
-      <span class="pillar-name">Brunch</span>
-    </div>
-    <div class="pillar-card" style="--card-color:#111111">
-      <span class="pillar-time">13:00</span>
-      <span class="pillar-name">Restaurant</span>
-    </div>
-    <div class="pillar-card" style="--card-color:#595934">
-      <span class="pillar-time">19:00</span>
-      <span class="pillar-name">Cocktail Bar</span>
-    </div>
-    <div class="pillar-card" style="--card-color:#3d241f">
-      <span class="pillar-time">23:00</span>
-      <span class="pillar-name">Club, Events &amp; Community</span>
-    </div>
+<section class="pillars-wrapper" id="pillarsWrapper">
+  <div class="pillars-sticky">
+    <section id="experiencia" class="pillars">
+      <div class="pillar-cards">
+        <div class="pillar-card" style="--card-color:#9F8257">
+          <span class="pillar-time">06:00</span>
+          <span class="pillar-name">Bakery</span>
+        </div>
+        <div class="pillar-card" style="--card-color:#832F2F">
+          <span class="pillar-time">10:00</span>
+          <span class="pillar-name">Brunch</span>
+        </div>
+        <div class="pillar-card" style="--card-color:#111111">
+          <span class="pillar-time">13:00</span>
+          <span class="pillar-name">Restaurant</span>
+        </div>
+        <div class="pillar-card" style="--card-color:#595934">
+          <span class="pillar-time">19:00</span>
+          <span class="pillar-name">Cocktail Bar</span>
+        </div>
+        <div class="pillar-card" style="--card-color:#3d241f">
+          <span class="pillar-time">23:00</span>
+          <span class="pillar-name">Club, Events &amp; Community</span>
+        </div>
+      </div>
+    </section>
   </div>
 </section>
 
@@ -110,6 +116,6 @@
   </div>
 </div>
 
-<script src="script.js?v=8"></script>
+<script src="script.js?v=12"></script>
 </body>
 </html>
