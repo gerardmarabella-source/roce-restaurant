@@ -285,7 +285,7 @@ function initPillarsReveal() {
       // Lineal a propósito (igual que el manifiesto): con ease-out la
       // tarjeta se coloca casi del todo en el primer tercio del tramo y
       // luego se queda quieta el resto, dando sensación de entrada rara.
-      const dir = i % 2 === 0 ? -1 : 1;
+      const dir = i % 2 === 0 ? 1 : -1;
       card.style.transform = `translateX(${(1 - local) * dir * DIST}px)`;
       card.style.opacity = String(0.1 + local * 0.9);
     });

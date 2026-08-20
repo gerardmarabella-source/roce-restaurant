@@ -182,14 +182,14 @@ a { color: inherit; }
 /* Manifesto — fijo en pantalla mientras las palabras caen en secuencia */
 .manifesto-wrapper {
   position: relative;
-  height: 670vh;
+  height: 871vh;
   margin-top: -4px; /* solapa el hero para cerrar cualquier hueco de subpíxel en el límite */
   z-index: 1; /* por debajo del hero, para que nunca se asome detrás del arco */
   background: var(--cream);
 }
 
 @media (max-width: 640px) {
-  .manifesto-wrapper { height: 1140vh; }
+  .manifesto-wrapper { height: 1482vh; }
 }
 
 .manifesto-sticky {
@@ -248,13 +248,13 @@ a { color: inherit; }
    una a una en secuencia (ver initPillarsReveal). */
 .pillars-wrapper {
   position: relative;
-  height: 500vh;
+  height: 650vh;
   z-index: 1;
   background: var(--cream);
 }
 
 @media (max-width: 640px) {
-  .pillars-wrapper { height: 950vh; }
+  .pillars-wrapper { height: 1235vh; }
 }
 
 .pillars-sticky {
@@ -284,49 +284,49 @@ a { color: inherit; }
 .pillar-cards {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  max-width: 460px;
+  align-items: stretch;
+  gap: 0.4rem;
+  max-width: 400px;
   margin: 0 auto;
 }
 
 .pillar-card {
   background: var(--card-color);
   color: var(--white);
-  aspect-ratio: 4/1.15;
+  width: 68%;
+  aspect-ratio: 4/0.85;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  padding: 0.8rem 1.1rem;
+  justify-content: center;
+  padding: 0.5rem 0.8rem;
   border-radius: 4px;
-  text-align: left;
+  text-align: center;
   /* Posición/opacidad reales las fija el scroll (ver initPillarsReveal) —
      esto es solo el estado antes de que el JS arranque. */
   opacity: 0.15;
-  transform: translateX(-70px);
+  transform: translateX(70px);
   will-change: transform, opacity;
 }
 
-.pillar-card:nth-child(even) { transform: translateX(70px); }
-
-.pillar-time {
-  font-size: 0.65rem;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  opacity: 0.75;
+/* Cada tarjeta se queda alineada al lado por el que entra: la que sale de
+   la izquierda queda a la izquierda, la que sale de la derecha a la
+   derecha (ver dir en initPillarsReveal, que sigue la misma paridad). */
+.pillar-card:nth-child(odd) { align-self: flex-end; }
+.pillar-card:nth-child(even) {
+  align-self: flex-start;
+  transform: translateX(-70px);
 }
 
 .pillar-name {
   font-family: var(--display);
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   text-transform: uppercase;
   letter-spacing: 0.01em;
-  text-align: right;
 }
 
 @media (max-width: 640px) {
-  .pillar-cards { gap: 0.4rem; max-width: 360px; }
-  .pillar-card { aspect-ratio: auto; padding: 0.7rem 0.9rem; }
+  .pillar-cards { gap: 0.35rem; max-width: 320px; }
+  .pillar-card { width: 74%; aspect-ratio: 4/1; padding: 0.5rem 0.7rem; }
 }
 
 /* Reserve */
@@ -334,13 +334,13 @@ a { color: inherit; }
    emerge "desde atrás" y el botón cae como un misil que rebota al aterrizar. */
 .reserve-wrapper {
   position: relative;
-  height: 700vh; /* mucho más recorrido: todo el reveal (fondo, título, botón) va bastante más lento */
+  height: 910vh; /* mucho más recorrido: todo el reveal (fondo, título, botón) va bastante más lento */
   z-index: 1;
   background: var(--cream);
 }
 
 @media (max-width: 640px) {
-  .reserve-wrapper { height: 750vh; }
+  .reserve-wrapper { height: 975vh; }
 }
 
 .reserve-sticky {
