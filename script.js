@@ -274,13 +274,17 @@ function initPillarsReveal() {
   if (!wrapper || !cards.length) return;
 
   const DIST = 130;
+  // Las tarjetas ocupan solo el primer 80% del recorrido — el 20% restante
+  // es scroll "muerto" a propósito, para que la última (Club) se quede
+  // fija un momento antes de soltar a la sección de reserva.
+  const ACTIVE_SPAN = 0.8;
 
   function update() {
     const overall = pinnedProgress(wrapper);
     const n = cards.length;
     cards.forEach((card, i) => {
-      const segStart = i / n;
-      const segEnd = (i + 1) / n;
+      const segStart = (i / n) * ACTIVE_SPAN;
+      const segEnd = ((i + 1) / n) * ACTIVE_SPAN;
       const local = Math.min(Math.max((overall - segStart) / (segEnd - segStart), 0), 1);
       // Lineal a propósito (igual que el manifiesto): con ease-out la
       // tarjeta se coloca casi del todo en el primer tercio del tramo y
@@ -327,10 +331,10 @@ function initReserveReveal() {
     title.style.transform = `scale(${0.25 + titleEased * 0.75})`;
 
     // El botón cae como un misil una única vez, al llegar a este punto.
-    // A partir de aquí (overall ~0.65) el resto del scroll del wrapper es
-    // recorrido "muerto" a propósito: la pantalla roja se queda fija un
-    // momento antes de soltar a la siguiente sección.
-    if (overall > 0.65 && !bounced) {
+    // Antes estaba en 0.65, pero con el wrapper ya tan alto tardaba
+    // demasiado en aparecer — ahora cae hacia el final del título (~0.45),
+    // dejando aún de sobra recorrido "muerto" después para el bloqueo.
+    if (overall > 0.45 && !bounced) {
       bounced = true;
       cta.classList.add('bounce-in');
     }
