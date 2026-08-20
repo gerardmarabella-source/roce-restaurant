@@ -306,7 +306,8 @@ function initReserveReveal() {
     // Tramos mucho más anchos que antes: el wrapper es ahora bastante más
     // alto (500vh/420vh), así que aunque las fracciones se parezcan a las
     // de siempre, en scroll real cada fase dura mucho más.
-    const bgLocal = Math.min(overall / 0.45, 1);
+    // +30% adicional solo para esta fase (fondo rojo), sin tocar título/botón.
+    const bgLocal = Math.min(overall / (0.45 * 1.3), 1);
     bg.style.transform = `scale(${easeOutCubic(bgLocal) * 3})`;
 
     // El título aparece agrandándose, como si emergiera desde atrás.

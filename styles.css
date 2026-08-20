@@ -192,14 +192,14 @@ a { color: inherit; }
 /* Manifesto — fijo en pantalla mientras las palabras caen en secuencia */
 .manifesto-wrapper {
   position: relative;
-  height: 300vh;
+  height: 420vh; /* +40% de recorrido por palabra */
   margin-top: -4px; /* solapa el hero para cerrar cualquier hueco de subpíxel en el límite */
   z-index: 1; /* por debajo del hero, para que nunca se asome detrás del arco */
   background: var(--cream);
 }
 
 @media (max-width: 640px) {
-  .manifesto-wrapper { height: 480vh; }
+  .manifesto-wrapper { height: 672vh; }
 }
 
 .manifesto-sticky {
@@ -258,13 +258,13 @@ a { color: inherit; }
    una a una en secuencia (ver initPillarsReveal). */
 .pillars-wrapper {
   position: relative;
-  height: 300vh;
+  height: 480vh; /* +60% de recorrido por tarjeta */
   z-index: 1;
   background: var(--cream);
 }
 
 @media (max-width: 640px) {
-  .pillars-wrapper { height: 480vh; }
+  .pillars-wrapper { height: 768vh; }
 }
 
 .pillars-sticky {
