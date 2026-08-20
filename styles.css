@@ -192,20 +192,21 @@ a { color: inherit; }
 /* Manifesto — fijo en pantalla mientras las palabras caen en secuencia */
 .manifesto-wrapper {
   position: relative;
-  height: 220vh;
+  height: 300vh;
   margin-top: -4px; /* solapa el hero para cerrar cualquier hueco de subpíxel en el límite */
   z-index: 1; /* por debajo del hero, para que nunca se asome detrás del arco */
   background: var(--cream);
 }
 
 @media (max-width: 640px) {
-  .manifesto-wrapper { height: 260vh; }
+  .manifesto-wrapper { height: 360vh; }
 }
 
 .manifesto-sticky {
   position: sticky;
   top: 0;
   height: 100vh;
+  padding-top: 5rem; /* que el header fijo no tape "TODO" en pantallas anchas y no muy altas */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -222,9 +223,11 @@ a { color: inherit; }
 
 .manifesto-title {
   font-family: var(--display);
-  font-size: clamp(3rem, 12vw, 6.5rem);
+  /* También limitado por altura de viewport, no solo anchura, para que en
+     pantallas anchas pero bajas el bloque siga cabiendo bajo el header. */
+  font-size: clamp(3rem, min(12vw, 11vh), 6.5rem);
   line-height: 0.95;
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
 }
 
 .fall-line {
@@ -246,7 +249,7 @@ a { color: inherit; }
 
 .fall-logo {
   display: block;
-  height: clamp(10.8rem, 41vw, 24rem);
+  height: clamp(10.8rem, min(41vw, 34vh), 24rem);
   width: auto;
   margin: 0.3em auto 0;
 }
@@ -255,13 +258,13 @@ a { color: inherit; }
    una a una en secuencia (ver initPillarsReveal). */
 .pillars-wrapper {
   position: relative;
-  height: 320vh;
+  height: 300vh;
   z-index: 1;
   background: var(--cream);
 }
 
 @media (max-width: 640px) {
-  .pillars-wrapper { height: 200vh; }
+  .pillars-wrapper { height: 360vh; }
 }
 
 .pillars-sticky {
@@ -316,8 +319,6 @@ a { color: inherit; }
 
 .pillar-card:nth-child(even) { transform: translateX(70px); }
 
-.pillar-card:hover { transform: translateY(-3px) !important; }
-
 .pillar-time {
   font-size: 0.65rem;
   font-weight: 600;
@@ -343,13 +344,13 @@ a { color: inherit; }
    emerge "desde atrás" y el botón cae como un misil que rebota al aterrizar. */
 .reserve-wrapper {
   position: relative;
-  height: 300vh; /* algo de recorrido tras el reveal, para que la pantalla roja se quede fija un momento antes de soltar */
+  height: 500vh; /* mucho más recorrido: todo el reveal (fondo, título, botón) va bastante más lento */
   z-index: 1;
   background: var(--cream);
 }
 
 @media (max-width: 640px) {
-  .reserve-wrapper { height: 240vh; }
+  .reserve-wrapper { height: 420vh; }
 }
 
 .reserve-sticky {
