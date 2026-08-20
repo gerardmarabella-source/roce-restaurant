@@ -22,6 +22,7 @@ function initLogoGravity() {
   const GRAVITY = 2400; // px/s²
   const FLOOR_RESTITUTION = 0.3;
   const WALL_RESTITUTION = 0.35;
+  const CEILING_RESTITUTION = 0.12; // rebote seco: no puede salir por arriba del cuadro
   const SETTLE_VELOCITY = 60;
   const MAX_DT = 0.05; // clamp so a slow/late frame can't move things too far
   const CAPTION_RESERVE = 0.24; // leave room at the bottom for the address text
@@ -134,6 +135,11 @@ function initLogoGravity() {
       item.angle += item.angularVel * dt;
       item.angularVel *= 0.985;
 
+      if (item.y < 0) {
+        item.y = 0;
+        item.vy = Math.abs(item.vy) * CEILING_RESTITUTION;
+      }
+
       const floor = stageH - item.h - stageH * CAPTION_RESERVE;
       if (item.y > floor) {
         item.y = floor;
@@ -195,7 +201,14 @@ function initArchScroll() {
 
   function update() {
     const raw = pinnedProgress(wrapper);
-    const progress = raw * raw; // ease-in: sutil al principio, más notable después
+    // El arco llega a pantalla completa en el primer 55% del recorrido;
+    // el resto es scroll "muerto" a propósito, para que se quede fijo a
+    // pantalla completa un buen rato antes de soltar al manifiesto (el
+    // wrapper se agrandó a la vez para que el crecimiento en sí no se
+    // ralentice, solo el bloqueo final).
+    const ACTIVE_SPAN = 0.55;
+    const activeRaw = Math.min(raw / ACTIVE_SPAN, 1);
+    const progress = activeRaw * activeRaw; // ease-in: sutil al principio, más notable después
     const base = baseSize();
     // A pantalla completa de verdad al final del recorrido.
     archFrame.style.width = `${base.w + (window.innerWidth - base.w) * progress}px`;
@@ -223,13 +236,19 @@ function initManifestoFall() {
 
   const DROP = 650;
   // Pesos del tramo de scroll de cada palabra — el logo (última) tiene un
-  // tramo mucho más ancho, así que baja más despacio que el resto.
-  const weights = words.map((_, i) => (i === words.length - 1 ? 3.1 : 1));
+  // tramo mucho más ancho, así que baja más despacio que el resto. Las
+  // palabras normales suben de 1 a 1.6 (más despacio); la altura del
+  // wrapper se compensa para que el logo no pierda su duración absoluta.
+  const weights = words.map((_, i) => (i === words.length - 1 ? 3.1 : 1.6));
   const totalWeight = weights.reduce((a, b) => a + b, 0);
+  // La caída ocupa solo el primer 80% del recorrido del wrapper — el 20%
+  // restante es scroll "muerto" a propósito, para que el manifiesto ya
+  // asentado se quede fijo un momento antes de soltar a experiencia.
+  const ACTIVE_SPAN = 0.8;
   const segments = [];
   let acc = 0;
   weights.forEach((w) => {
-    segments.push([acc / totalWeight, (acc + w) / totalWeight]);
+    segments.push([(acc / totalWeight) * ACTIVE_SPAN, ((acc + w) / totalWeight) * ACTIVE_SPAN]);
     acc += w;
   });
 
@@ -263,18 +282,22 @@ function initPillarsReveal() {
   if (!wrapper || !cards.length) return;
 
   const DIST = 130;
+  // Las tarjetas ocupan solo el primer 80% del recorrido — el 20% restante
+  // es scroll "muerto" a propósito, para que la última (Club) se quede
+  // fija un momento antes de soltar a la sección de reserva.
+  const ACTIVE_SPAN = 0.8;
 
   function update() {
     const overall = pinnedProgress(wrapper);
     const n = cards.length;
     cards.forEach((card, i) => {
-      const segStart = i / n;
-      const segEnd = (i + 1) / n;
+      const segStart = (i / n) * ACTIVE_SPAN;
+      const segEnd = ((i + 1) / n) * ACTIVE_SPAN;
       const local = Math.min(Math.max((overall - segStart) / (segEnd - segStart), 0), 1);
       // Lineal a propósito (igual que el manifiesto): con ease-out la
       // tarjeta se coloca casi del todo en el primer tercio del tramo y
       // luego se queda quieta el resto, dando sensación de entrada rara.
-      const dir = i % 2 === 0 ? -1 : 1;
+      const dir = i % 2 === 0 ? 1 : -1;
       card.style.transform = `translateX(${(1 - local) * dir * DIST}px)`;
       card.style.opacity = String(0.1 + local * 0.9);
     });
@@ -306,7 +329,7 @@ function initReserveReveal() {
     // En móvil, +30% adicional solo para esta fase (fondo rojo), sin tocar
     // título/botón ni el escritorio.
     const isMobile = window.matchMedia('(max-width: 640px)').matches;
-    const bgLocal = Math.min(overall / (isMobile ? 0.45 * 1.3 : 0.45), 1);
+    const bgLocal = Math.min(overall / (isMobile ? 0.45 * 1.3 * 1.3 * 1.3 : 0.45 * 1.3 * 1.3), 1);
     bg.style.transform = `scale(${easeOutCubic(bgLocal) * 3})`;
 
     // El título aparece agrandándose, como si emergiera desde atrás.
@@ -316,10 +339,10 @@ function initReserveReveal() {
     title.style.transform = `scale(${0.25 + titleEased * 0.75})`;
 
     // El botón cae como un misil una única vez, al llegar a este punto.
-    // A partir de aquí (overall ~0.65) el resto del scroll del wrapper es
-    // recorrido "muerto" a propósito: la pantalla roja se queda fija un
-    // momento antes de soltar a la siguiente sección.
-    if (overall > 0.65 && !bounced) {
+    // Antes estaba en 0.65, pero con el wrapper ya tan alto tardaba
+    // demasiado en aparecer — ahora cae hacia el final del título (~0.45),
+    // dejando aún de sobra recorrido "muerto" después para el bloqueo.
+    if (overall > 0.45 && !bounced) {
       bounced = true;
       cta.classList.add('bounce-in');
     }
@@ -361,11 +384,28 @@ function whenStageIsLaidOut(callback, attempts = 0) {
   }
 }
 
+// El botón "Reservar" del header salta directo al tramo de la sección de
+// reserva donde el fondo rojo, el título y el botón ya están desplegados,
+// en vez de al principio del recorrido fijado (que arrancaría en blanco).
+function initReserveJumpLink() {
+  const link = document.querySelector('a[href="#contacto"]');
+  const wrapper = document.getElementById('reserveWrapper');
+  if (!link || !wrapper) return;
+
+  link.addEventListener('click', (e) => {
+    e.preventDefault();
+    const range = wrapper.offsetHeight - window.innerHeight;
+    const target = wrapper.offsetTop + range * 0.8;
+    window.scrollTo({ top: target, behavior: 'smooth' });
+  });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   whenStageIsLaidOut(initLogoGravity);
   initArchScroll();
   initManifestoFall();
   initPillarsReveal();
   initReserveReveal();
+  initReserveJumpLink();
   initNewsletterWidget();
 });

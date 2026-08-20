@@ -6,6 +6,7 @@
   --camel: #9f8257;
   --cream: #ece7dd;
   --white: #ffffff;
+  --cement: #b0afa9; /* prueba: sustituye al verde oliva en el arco del hero */
 
   --display: "Archivo Black", "Helvetica Neue", Arial, sans-serif;
   --body: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
@@ -63,13 +64,13 @@ a { color: inherit; }
 /* Hero + arch */
 .hero-wrapper {
   position: relative;
-  height: 400vh; /* scroll distance the arch stays pinned & grows for */
+  height: 536vh; /* scroll distance the arch stays pinned & grows for */
   z-index: 2;
   background: var(--cream);
 }
 
 @media (max-width: 640px) {
-  .hero-wrapper { height: 300vh; }
+  .hero-wrapper { height: 391vh; }
 }
 
 .hero-sticky {
@@ -90,26 +91,15 @@ a { color: inherit; }
   height: min(64vh, 560px);
   border-radius: 50% 50% 0 0 / 22% 22% 0 0;
   overflow: hidden;
-  background: var(--olive);
+  background: var(--cement);
 }
 
 .arch-texture {
   position: absolute;
   inset: 0;
-  background:
-    radial-gradient(circle at 22% 15%, rgba(255,196,120,0.14), transparent 45%),
-    radial-gradient(circle at 78% 30%, rgba(255,255,255,0.08), transparent 50%),
-    radial-gradient(circle at 60% 85%, rgba(0,0,0,0.22), transparent 55%),
-    linear-gradient(160deg, #6b6f5e 0%, var(--olive) 50%, #33352a 100%);
-}
-
-.arch-texture::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  opacity: 0.35;
-  mix-blend-mode: overlay;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='matrix' values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.5 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  background-image: url("assets/textures/cemento.jpeg");
+  background-size: cover;
+  background-position: center;
 }
 
 .arch-physics {
@@ -140,28 +130,31 @@ a { color: inherit; }
 .arch-caption {
   position: absolute;
   left: 50%;
-  bottom: 10%;
+  bottom: 3%;
   transform: translateX(-50%);
   z-index: 3;
   width: 100%;
   padding: 0 1.5rem;
   color: var(--cream);
-  font-size: 0.85rem;
-  font-weight: 600;
-  letter-spacing: 0.15em;
+  font-family: "Helvetica Neue", Arial, sans-serif;
+  font-weight: 800;
+  font-size: clamp(1rem, 3.2vw, 1.7rem);
+  line-height: 1.08;
+  letter-spacing: 0.01em;
   text-transform: uppercase;
   text-align: center;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
   pointer-events: none;
   transition: opacity 0.2s linear;
 }
 
-.arch-caption span {
+.arch-caption .caption-line {
   display: block;
-  margin-top: 0.5rem;
-  font-size: 0.75rem;
-  font-weight: 500;
-  letter-spacing: 0.05em;
-  color: var(--cream);
+}
+
+@media (max-width: 640px) {
+  /* Más pequeño para que "Gran Vía Marqués del Turia, 16" no salte de línea. */
+  .arch-caption { font-size: clamp(0.72rem, 4.2vw, 1.7rem); letter-spacing: 0; }
 }
 
 /* Aparece tarde en el scroll del hero (ver initArchScroll), no desde el
@@ -192,14 +185,14 @@ a { color: inherit; }
 /* Manifesto — fijo en pantalla mientras las palabras caen en secuencia */
 .manifesto-wrapper {
   position: relative;
-  height: 300vh;
+  height: 1089vh;
   margin-top: -4px; /* solapa el hero para cerrar cualquier hueco de subpíxel en el límite */
   z-index: 1; /* por debajo del hero, para que nunca se asome detrás del arco */
   background: var(--cream);
 }
 
 @media (max-width: 640px) {
-  .manifesto-wrapper { height: 672vh; }
+  .manifesto-wrapper { height: 1853vh; }
 }
 
 .manifesto-sticky {
@@ -258,13 +251,13 @@ a { color: inherit; }
    una a una en secuencia (ver initPillarsReveal). */
 .pillars-wrapper {
   position: relative;
-  height: 300vh;
+  height: 1019vh;
   z-index: 1;
   background: var(--cream);
 }
 
 @media (max-width: 640px) {
-  .pillars-wrapper { height: 768vh; }
+  .pillars-wrapper { height: 1931vh; }
 }
 
 .pillars-sticky {
@@ -294,49 +287,49 @@ a { color: inherit; }
 .pillar-cards {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  max-width: 460px;
+  align-items: stretch;
+  gap: 0.4rem;
+  max-width: 400px;
   margin: 0 auto;
 }
 
 .pillar-card {
   background: var(--card-color);
   color: var(--white);
-  aspect-ratio: 4/1.15;
+  width: 68%;
+  aspect-ratio: 4/0.85;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  padding: 0.8rem 1.1rem;
+  justify-content: center;
+  padding: 0.5rem 0.8rem;
   border-radius: 4px;
-  text-align: left;
+  text-align: center;
   /* Posición/opacidad reales las fija el scroll (ver initPillarsReveal) —
      esto es solo el estado antes de que el JS arranque. */
   opacity: 0.15;
-  transform: translateX(-70px);
+  transform: translateX(70px);
   will-change: transform, opacity;
 }
 
-.pillar-card:nth-child(even) { transform: translateX(70px); }
-
-.pillar-time {
-  font-size: 0.65rem;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  opacity: 0.75;
+/* Cada tarjeta se queda alineada al lado por el que entra: la que sale de
+   la izquierda queda a la izquierda, la que sale de la derecha a la
+   derecha (ver dir en initPillarsReveal, que sigue la misma paridad). */
+.pillar-card:nth-child(odd) { align-self: flex-end; }
+.pillar-card:nth-child(even) {
+  align-self: flex-start;
+  transform: translateX(-70px);
 }
 
 .pillar-name {
   font-family: var(--display);
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   text-transform: uppercase;
   letter-spacing: 0.01em;
-  text-align: right;
 }
 
 @media (max-width: 640px) {
-  .pillar-cards { gap: 0.4rem; max-width: 360px; }
-  .pillar-card { aspect-ratio: auto; padding: 0.7rem 0.9rem; }
+  .pillar-cards { gap: 0.35rem; max-width: 320px; }
+  .pillar-card { width: 74%; aspect-ratio: 4/1; padding: 0.5rem 0.7rem; }
 }
 
 /* Reserve */
@@ -344,13 +337,13 @@ a { color: inherit; }
    emerge "desde atrás" y el botón cae como un misil que rebota al aterrizar. */
 .reserve-wrapper {
   position: relative;
-  height: 500vh; /* mucho más recorrido: todo el reveal (fondo, título, botón) va bastante más lento */
+  height: 910vh; /* mucho más recorrido: todo el reveal (fondo, título, botón) va bastante más lento */
   z-index: 1;
   background: var(--cream);
 }
 
 @media (max-width: 640px) {
-  .reserve-wrapper { height: 560vh; }
+  .reserve-wrapper { height: 975vh; }
 }
 
 .reserve-sticky {
@@ -436,17 +429,22 @@ a { color: inherit; }
 }
 
 .footer-info p {
-  font-size: 1rem;
-  line-height: 1.6;
+  font-family: "Helvetica Neue", Arial, sans-serif;
+  font-weight: 800;
+  font-size: clamp(1.1rem, 2.6vw, 1.5rem);
+  line-height: 1.1;
   color: var(--white);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.01em;
+}
+
+@media (max-width: 640px) {
+  /* Más pequeño para que "Gran Vía Marqués del Turia, 16" no salte de línea. */
+  .footer-info p { font-size: clamp(0.8rem, 5vw, 1.5rem); letter-spacing: 0; }
 }
 
 .footer-headline {
-  font-weight: 700;
-  font-size: 1.1rem;
-  letter-spacing: 0.1em;
+  margin-bottom: 0.3em;
 }
 
 .footer-instagram {
