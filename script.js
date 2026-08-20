@@ -22,6 +22,7 @@ function initLogoGravity() {
   const GRAVITY = 2400; // px/s²
   const FLOOR_RESTITUTION = 0.3;
   const WALL_RESTITUTION = 0.35;
+  const CEILING_RESTITUTION = 0.12; // rebote seco: no puede salir por arriba del cuadro
   const SETTLE_VELOCITY = 60;
   const MAX_DT = 0.05; // clamp so a slow/late frame can't move things too far
   const CAPTION_RESERVE = 0.24; // leave room at the bottom for the address text
@@ -133,6 +134,11 @@ function initLogoGravity() {
       item.y += item.vy * dt;
       item.angle += item.angularVel * dt;
       item.angularVel *= 0.985;
+
+      if (item.y < 0) {
+        item.y = 0;
+        item.vy = Math.abs(item.vy) * CEILING_RESTITUTION;
+      }
 
       const floor = stageH - item.h - stageH * CAPTION_RESERVE;
       if (item.y > floor) {
