@@ -64,6 +64,8 @@ a { color: inherit; }
 .hero-wrapper {
   position: relative;
   height: 400vh; /* scroll distance the arch stays pinned & grows for */
+  z-index: 2;
+  background: var(--cream);
 }
 
 @media (max-width: 640px) {
@@ -189,11 +191,13 @@ a { color: inherit; }
 /* Manifesto — fijo en pantalla mientras las palabras caen en secuencia */
 .manifesto-wrapper {
   position: relative;
-  height: 160vh;
+  height: 220vh;
+  z-index: 1; /* por debajo del hero, para que nunca se asome detrás del arco */
+  background: var(--cream);
 }
 
 @media (max-width: 640px) {
-  .manifesto-wrapper { height: 130vh; }
+  .manifesto-wrapper { height: 190vh; }
 }
 
 .manifesto-sticky {
@@ -248,6 +252,8 @@ a { color: inherit; }
 .pillars-wrapper {
   position: relative;
   height: 320vh;
+  z-index: 1;
+  background: var(--cream);
 }
 
 @media (max-width: 640px) {
@@ -327,12 +333,44 @@ a { color: inherit; }
 }
 
 /* Reserve */
-.reserve {
-  background: var(--maroon);
+/* Reserve — el fondo rojo se expande hasta llenar la pantalla, el título
+   emerge "desde atrás" y el botón cae como un misil que rebota al aterrizar. */
+.reserve-wrapper {
+  position: relative;
+  height: 280vh;
+  z-index: 1;
+  background: var(--cream);
+}
+
+@media (max-width: 640px) {
+  .reserve-wrapper { height: 220vh; }
+}
+
+.reserve-sticky {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: var(--cream);
   color: var(--cream);
-  padding: 7rem 1.5rem;
   text-align: center;
-  scroll-margin-top: 80px;
+}
+
+.reserve-bg {
+  position: absolute;
+  inset: 0;
+  background: var(--maroon);
+  border-radius: 50%;
+  transform: scale(0);
+  will-change: transform;
+}
+
+.reserve-content {
+  position: relative;
+  z-index: 2;
 }
 
 .reserve-title {
@@ -340,6 +378,9 @@ a { color: inherit; }
   font-size: clamp(2.5rem, 9vw, 5rem);
   line-height: 0.95;
   margin-bottom: 2.5rem;
+  opacity: 0;
+  transform: scale(0.25);
+  will-change: transform, opacity;
 }
 
 .reserve-cta {
@@ -353,10 +394,25 @@ a { color: inherit; }
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  transition: transform 0.2s ease;
+  transform: translateY(-1400px);
 }
 
-.reserve-cta:hover { transform: translateY(-2px); }
+.reserve-cta.bounce-in {
+  animation: reserveMissile 1.15s cubic-bezier(0.2, 0.6, 0.3, 1) forwards;
+}
+
+.reserve-cta:not(.bounce-in):hover,
+.reserve-cta.bounce-in:hover { transform: translateY(-2px); }
+
+@keyframes reserveMissile {
+  0%   { transform: translateY(-1400px); }
+  55%  { transform: translateY(18px); }
+  68%  { transform: translateY(-36px); }
+  80%  { transform: translateY(10px); }
+  89%  { transform: translateY(-14px); }
+  95%  { transform: translateY(4px); }
+  100% { transform: translateY(0); }
+}
 
 /* Footer */
 .site-footer {
@@ -418,16 +474,17 @@ a { color: inherit; }
   .topnav a:not(.nav-cta) { display: none; }
 }
 
-/* Newsletter widget (fixed, follows scroll) */
+/* Newsletter widget (fixed, follows scroll, permanent) */
 .newsletter-widget {
   position: fixed;
-  right: 1.25rem;
+  left: 50%;
   bottom: 1.25rem;
+  transform: translateX(-50%);
   z-index: 200;
-  width: min(280px, calc(100vw - 2.5rem));
+  width: min(320px, calc(100vw - 2.5rem));
   background: var(--black);
   color: var(--cream);
-  border-radius: 12px;
+  border-radius: 16px;
   padding: 1.1rem 1.25rem 1.25rem;
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.28);
 }
@@ -506,9 +563,7 @@ a { color: inherit; }
 
 @media (max-width: 640px) {
   .newsletter-widget {
-    right: 0.75rem;
     bottom: 0.75rem;
-    left: 0.75rem;
-    width: auto;
+    width: calc(100vw - 1.5rem);
   }
 }

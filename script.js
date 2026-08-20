@@ -238,8 +238,10 @@ function initManifestoFall() {
     words.forEach((word, i) => {
       const [segStart, segEnd] = segments[i];
       const local = Math.min(Math.max((overall - segStart) / (segEnd - segStart), 0), 1);
-      const eased = easeOutCubic(local);
-      word.style.transform = `translateY(${(1 - eased) * -DROP}px)`;
+      // Lineal a propósito: con un ease-out el movimiento se "termina" de
+      // ver mucho antes de que el scroll acabe, dejando un tramo donde no
+      // pasa nada — con progreso lineal el trayecto se nota todo el rato.
+      word.style.transform = `translateY(${(1 - local) * -DROP}px)`;
     });
   }
 
@@ -277,9 +279,49 @@ function initPillarsReveal() {
   update();
 }
 
-// Widget de newsletter fijo: sin backend todavía, así que el envío solo
-// confirma visualmente — falta conectarlo a un servicio real (Mailchimp,
-// Brevo, etc.) para guardar los emails de verdad.
+// "Reserva tu mesa": el fondo rojo se expande hasta cubrir toda la
+// pantalla, el título crece "desde atrás" y, al final, el botón cae de
+// golpe como un misil que rebota al aterrizar (una sola vez).
+function initReserveReveal() {
+  const wrapper = document.getElementById('reserveWrapper');
+  const bg = document.getElementById('reserveBg');
+  const title = document.getElementById('reserveTitle');
+  const cta = document.getElementById('reserveCta');
+  if (!wrapper || !bg || !title || !cta) return;
+
+  let bounced = false;
+  let maxProgress = 0; // una vez revelado, no vuelve atrás si subes el scroll
+
+  function update() {
+    maxProgress = Math.max(maxProgress, pinnedProgress(wrapper));
+    const overall = maxProgress;
+
+    // El fondo es un círculo que crece hasta cubrir toda la pantalla.
+    const bgLocal = Math.min(overall / 0.45, 1);
+    bg.style.transform = `scale(${easeOutCubic(bgLocal) * 3})`;
+
+    // El título aparece agrandándose, como si emergiera desde atrás.
+    const titleLocal = Math.min(Math.max((overall - 0.28) / 0.32, 0), 1);
+    const titleEased = easeOutCubic(titleLocal);
+    title.style.opacity = String(titleEased);
+    title.style.transform = `scale(${0.25 + titleEased * 0.75})`;
+
+    // El botón cae como un misil una única vez, al llegar a este punto.
+    if (overall > 0.62 && !bounced) {
+      bounced = true;
+      cta.classList.add('bounce-in');
+    }
+  }
+
+  window.addEventListener('scroll', update, { passive: true });
+  window.addEventListener('resize', update);
+  update();
+}
+
+// Widget de newsletter fijo y permanente (reaparece en cada visita — no se
+// guarda que se cerró). Sin backend todavía, así que el envío solo confirma
+// visualmente — falta conectarlo a un servicio real (Mailchimp, Brevo,
+// etc.) para guardar los emails de verdad.
 function initNewsletterWidget() {
   const widget = document.getElementById('newsletterWidget');
   const closeBtn = document.getElementById('newsletterClose');
@@ -287,21 +329,13 @@ function initNewsletterWidget() {
   const body = document.getElementById('newsletterBody');
   if (!widget || !closeBtn || !form || !body) return;
 
-  if (localStorage.getItem('roce-newsletter-dismissed') === '1') {
-    widget.classList.add('is-hidden');
-    return;
-  }
-
   closeBtn.addEventListener('click', () => {
     widget.classList.add('is-hidden');
-    localStorage.setItem('roce-newsletter-dismissed', '1');
   });
 
   form.addEventListener('submit', (e) => {
     e.preventDefault();
     body.innerHTML = '<p class="newsletter-thanks">¡Gracias! Te avisaremos antes de la apertura.</p>';
-    localStorage.setItem('roce-newsletter-dismissed', '1');
-    setTimeout(() => widget.classList.add('is-hidden'), 2200);
   });
 }
 
@@ -320,5 +354,6 @@ document.addEventListener('DOMContentLoaded', () => {
   initArchScroll();
   initManifestoFall();
   initPillarsReveal();
+  initReserveReveal();
   initNewsletterWidget();
 });

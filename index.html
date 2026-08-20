@@ -8,12 +8,12 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=9">
+<link rel="stylesheet" href="styles.css?v=13">
 </head>
 <body>
 
 <header class="topbar">
-  <img class="nav-logo" src="assets/logo/roce-horizontal-black.png" alt="ROCE">
+  <a href="/" aria-label="ROCE — inicio"><img class="nav-logo" src="assets/logo/roce-horizontal-black.png" alt="ROCE"></a>
   <nav class="topnav">
     <a href="#contacto" class="nav-cta">Reservar</a>
   </nav>
@@ -86,9 +86,14 @@
   </div>
 </section>
 
-<section id="contacto" class="reserve">
-  <h2 class="reserve-title">RESERVA<br>TU MESA</h2>
-  <a class="reserve-cta" href="mailto:booking@roce.es">Contactar</a>
+<section class="reserve-wrapper" id="reserveWrapper">
+  <div class="reserve-sticky" id="contacto">
+    <div class="reserve-bg" id="reserveBg" aria-hidden="true"></div>
+    <div class="reserve-content">
+      <h2 class="reserve-title" id="reserveTitle">RESERVA<br>TU MESA</h2>
+      <a class="reserve-cta" id="reserveCta" href="mailto:booking@roce.es">Contactar</a>
+    </div>
+  </div>
 </section>
 
 <footer class="site-footer">
@@ -116,6 +121,6 @@
   </div>
 </div>
 
-<script src="script.js?v=12"></script>
+<script src="script.js?v=16"></script>
 </body>
 </html>
