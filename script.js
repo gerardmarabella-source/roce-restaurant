@@ -326,10 +326,9 @@ function initReserveReveal() {
     const overall = maxProgress;
 
     // El fondo es un círculo que crece hasta cubrir toda la pantalla.
-    // En móvil, +30% adicional solo para esta fase (fondo rojo), sin tocar
-    // título/botón ni el escritorio.
-    const isMobile = window.matchMedia('(max-width: 640px)').matches;
-    const bgLocal = Math.min(overall / (isMobile ? 0.45 * 1.3 * 1.3 * 1.3 : 0.45 * 1.3 * 1.3), 1);
+    // Mismo ritmo en móvil y escritorio ahora (antes tenían fracciones
+    // distintas que se habían ido desincronizando entre sí).
+    const bgLocal = Math.min(overall / 0.7605, 1);
     bg.style.transform = `scale(${easeOutCubic(bgLocal) * 3})`;
 
     // El título aparece agrandándose, como si emergiera desde atrás.
