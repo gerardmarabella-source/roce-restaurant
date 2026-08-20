@@ -152,6 +152,11 @@ a { color: inherit; }
   display: block;
 }
 
+@media (max-width: 640px) {
+  /* Más pequeño para que "Gran Vía Marqués del Turia, 16" no salte de línea. */
+  .arch-caption { font-size: clamp(0.72rem, 4.2vw, 1.7rem); letter-spacing: 0; }
+}
+
 /* Aparece tarde en el scroll del hero (ver initArchScroll), no desde el
    principio — por eso empieza en opacity 0 y sin click hasta entonces. */
 .hero-info {
@@ -431,6 +436,11 @@ a { color: inherit; }
   color: var(--white);
   text-transform: uppercase;
   letter-spacing: 0.01em;
+}
+
+@media (max-width: 640px) {
+  /* Más pequeño para que "Gran Vía Marqués del Turia, 16" no salte de línea. */
+  .footer-info p { font-size: clamp(0.8rem, 5vw, 1.5rem); letter-spacing: 0; }
 }
 
 .footer-headline {
