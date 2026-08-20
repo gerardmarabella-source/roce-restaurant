@@ -1,0 +1,575 @@
+:root {
+  --black: #0a0a0a;
+  --olive: #595934;
+  --olive-light: #71714a;
+  --maroon: #832f2f;
+  --camel: #9f8257;
+  --cream: #ece7dd;
+  --white: #ffffff;
+
+  --display: "Archivo Black", "Helvetica Neue", Arial, sans-serif;
+  --body: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--cream);
+  color: var(--black);
+  font-family: var(--body);
+  overflow-x: hidden;
+}
+
+a { color: inherit; }
+
+/* Topbar */
+.topbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 2rem;
+  background: rgba(236, 231, 221, 0.85);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.nav-logo { height: 30px; width: auto; }
+
+.topnav { display: flex; gap: 1.75rem; align-items: center; }
+
+.topnav a {
+  color: var(--black);
+  text-decoration: none;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.topnav a.nav-cta {
+  color: var(--white);
+  background: var(--black);
+  padding: 0.5rem 1.1rem;
+  border-radius: 999px;
+}
+
+/* Hero + arch */
+.hero-wrapper {
+  position: relative;
+  height: 400vh; /* scroll distance the arch stays pinned & grows for */
+  z-index: 2;
+  background: var(--cream);
+}
+
+@media (max-width: 640px) {
+  .hero-wrapper { height: 300vh; }
+}
+
+.hero-sticky {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: var(--cream);
+}
+
+.arch-frame {
+  position: relative;
+  width: min(680px, 88vw);
+  height: min(64vh, 560px);
+  border-radius: 50% 50% 0 0 / 22% 22% 0 0;
+  overflow: hidden;
+  background: var(--olive);
+}
+
+.arch-texture {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 22% 15%, rgba(255,196,120,0.14), transparent 45%),
+    radial-gradient(circle at 78% 30%, rgba(255,255,255,0.08), transparent 50%),
+    radial-gradient(circle at 60% 85%, rgba(0,0,0,0.22), transparent 55%),
+    linear-gradient(160deg, #6b6f5e 0%, var(--olive) 50%, #33352a 100%);
+}
+
+.arch-texture::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0.35;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='matrix' values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.5 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+}
+
+.arch-physics {
+  position: absolute;
+  inset: 0;
+}
+
+.phys-piece {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 92px;
+  width: auto;
+  user-select: none;
+  cursor: grab;
+  touch-action: none;
+  will-change: transform;
+  -webkit-user-drag: none;
+}
+
+.piece-reg {
+  height: 48px;
+  clip-path: circle(46%);
+}
+
+.phys-piece:active { cursor: grabbing; }
+
+.arch-caption {
+  position: absolute;
+  left: 50%;
+  bottom: 10%;
+  transform: translateX(-50%);
+  z-index: 3;
+  width: 100%;
+  padding: 0 1.5rem;
+  color: var(--cream);
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  text-align: center;
+  pointer-events: none;
+  transition: opacity 0.2s linear;
+}
+
+.arch-caption span {
+  display: block;
+  margin-top: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  color: var(--cream);
+}
+
+/* Aparece tarde en el scroll del hero (ver initArchScroll), no desde el
+   principio — por eso empieza en opacity 0 y sin click hasta entonces. */
+.hero-info {
+  position: absolute;
+  left: 50%;
+  bottom: 6%;
+  transform: translateX(-50%);
+  z-index: 5;
+  background: var(--black);
+  color: var(--white);
+  padding: 0.75rem 1.75rem;
+  border-radius: 6px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.hero-info p {
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--white);
+  white-space: nowrap;
+}
+
+/* Manifesto — fijo en pantalla mientras las palabras caen en secuencia */
+.manifesto-wrapper {
+  position: relative;
+  height: 220vh;
+  margin-top: -4px; /* solapa el hero para cerrar cualquier hueco de subpíxel en el límite */
+  z-index: 1; /* por debajo del hero, para que nunca se asome detrás del arco */
+  background: var(--cream);
+}
+
+@media (max-width: 640px) {
+  .manifesto-wrapper { height: 260vh; }
+}
+
+.manifesto-sticky {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: var(--cream);
+}
+
+.manifesto {
+  padding: 1.5rem;
+  max-width: 900px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.manifesto-title {
+  font-family: var(--display);
+  font-size: clamp(3rem, 12vw, 6.5rem);
+  line-height: 0.95;
+  margin-bottom: 2rem;
+}
+
+.fall-line {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 0.15em 0.35em;
+}
+
+/* La posición real la fija el scroll, palabra por palabra
+   (ver initManifestoFall) — esto es solo el estado inicial. */
+.fall-word {
+  display: inline-block;
+  transform: translateY(-650px);
+  opacity: 0;
+  will-change: transform, opacity;
+}
+
+.fall-logo {
+  display: block;
+  height: clamp(10.8rem, 41vw, 24rem);
+  width: auto;
+  margin: 0.3em auto 0;
+}
+
+/* Pillars (experience) — fijo en pantalla mientras las tarjetas aparecen
+   una a una en secuencia (ver initPillarsReveal). */
+.pillars-wrapper {
+  position: relative;
+  height: 320vh;
+  z-index: 1;
+  background: var(--cream);
+}
+
+@media (max-width: 640px) {
+  .pillars-wrapper { height: 200vh; }
+}
+
+.pillars-sticky {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  padding-top: 5rem; /* que el header fijo no tape la primera tarjeta */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: var(--cream);
+}
+
+.pillars {
+  padding: 1.5rem;
+  text-align: center;
+  width: 100%;
+}
+
+.pillars-title {
+  font-family: var(--display);
+  font-size: clamp(2rem, 5vw, 3rem);
+  margin-bottom: 3rem;
+}
+
+.pillar-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-width: 460px;
+  margin: 0 auto;
+}
+
+.pillar-card {
+  background: var(--card-color);
+  color: var(--white);
+  aspect-ratio: 4/1.15;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.8rem 1.1rem;
+  border-radius: 4px;
+  text-align: left;
+  /* Posición/opacidad reales las fija el scroll (ver initPillarsReveal) —
+     esto es solo el estado antes de que el JS arranque. */
+  opacity: 0.15;
+  transform: translateX(-70px);
+  will-change: transform, opacity;
+}
+
+.pillar-card:nth-child(even) { transform: translateX(70px); }
+
+.pillar-card:hover { transform: translateY(-3px) !important; }
+
+.pillar-time {
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  opacity: 0.75;
+}
+
+.pillar-name {
+  font-family: var(--display);
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  text-align: right;
+}
+
+@media (max-width: 640px) {
+  .pillar-cards { gap: 0.4rem; max-width: 360px; }
+  .pillar-card { aspect-ratio: auto; padding: 0.7rem 0.9rem; }
+}
+
+/* Reserve */
+/* Reserve — el fondo rojo se expande hasta llenar la pantalla, el título
+   emerge "desde atrás" y el botón cae como un misil que rebota al aterrizar. */
+.reserve-wrapper {
+  position: relative;
+  height: 300vh; /* algo de recorrido tras el reveal, para que la pantalla roja se quede fija un momento antes de soltar */
+  z-index: 1;
+  background: var(--cream);
+}
+
+@media (max-width: 640px) {
+  .reserve-wrapper { height: 240vh; }
+}
+
+.reserve-sticky {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: var(--cream);
+  color: var(--cream);
+  text-align: center;
+}
+
+.reserve-bg {
+  position: absolute;
+  inset: 0;
+  background: var(--maroon);
+  border-radius: 50%;
+  transform: scale(0);
+  will-change: transform;
+}
+
+.reserve-content {
+  position: relative;
+  z-index: 2;
+}
+
+.reserve-title {
+  font-family: var(--display);
+  font-size: clamp(2.5rem, 9vw, 5rem);
+  line-height: 0.95;
+  margin-bottom: 2.5rem;
+  opacity: 0;
+  transform: scale(0.25);
+  will-change: transform, opacity;
+}
+
+.reserve-cta {
+  display: inline-block;
+  text-decoration: none;
+  color: var(--maroon);
+  background: var(--cream);
+  padding: 0.9rem 2rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transform: translateY(-1400px);
+}
+
+.reserve-cta.bounce-in {
+  animation: reserveMissile 1.15s cubic-bezier(0.2, 0.6, 0.3, 1) forwards;
+}
+
+.reserve-cta:not(.bounce-in):hover,
+.reserve-cta.bounce-in:hover { transform: translateY(-2px); }
+
+@keyframes reserveMissile {
+  0%   { transform: translateY(-1400px); }
+  55%  { transform: translateY(18px); }
+  68%  { transform: translateY(-36px); }
+  80%  { transform: translateY(10px); }
+  89%  { transform: translateY(-14px); }
+  95%  { transform: translateY(4px); }
+  100% { transform: translateY(0); }
+}
+
+/* Footer */
+.site-footer {
+  background: var(--black);
+  color: var(--cream);
+  padding: 6rem 1.5rem 2.5rem;
+  text-align: center;
+}
+
+.footer-logo {
+  width: clamp(220px, 42vw, 480px);
+  height: auto;
+  margin-bottom: 2.5rem;
+}
+
+.footer-info p {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--white);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.footer-headline {
+  font-weight: 700;
+  font-size: 1.1rem;
+  letter-spacing: 0.1em;
+}
+
+.footer-instagram {
+  display: inline-block;
+  margin-top: 2rem;
+  text-decoration: none;
+  color: var(--black);
+  background: var(--white);
+  padding: 0.7rem 1.6rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  transition: transform 0.2s ease;
+}
+
+.footer-instagram:hover { transform: translateY(-2px); }
+
+.footer-bottom {
+  margin-top: 3rem;
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  font-size: 0.8rem;
+  opacity: 0.6;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+@media (max-width: 640px) {
+  .topnav { gap: 1rem; }
+  .topnav a:not(.nav-cta) { display: none; }
+}
+
+/* Newsletter widget (fixed, follows scroll, permanent) */
+.newsletter-widget {
+  position: fixed;
+  left: 50%;
+  bottom: 1.25rem;
+  transform: translateX(-50%);
+  z-index: 200;
+  width: min(320px, calc(100vw - 2.5rem));
+  background: var(--black);
+  color: var(--cream);
+  border-radius: 16px;
+  padding: 1.1rem 1.25rem 1.25rem;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.28);
+}
+
+.newsletter-close {
+  position: absolute;
+  top: 0.4rem;
+  right: 0.6rem;
+  background: none;
+  border: none;
+  color: var(--cream);
+  font-size: 1.3rem;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0.6;
+  padding: 0.25rem;
+}
+
+.newsletter-close:hover { opacity: 1; }
+
+.newsletter-title {
+  font-family: var(--display);
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.4rem;
+}
+
+.newsletter-text {
+  font-size: 0.85rem;
+  line-height: 1.4;
+  color: var(--camel);
+  margin-bottom: 0.9rem;
+}
+
+.newsletter-form {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.newsletter-input {
+  flex: 1;
+  min-width: 0;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 999px;
+  padding: 0.55rem 0.9rem;
+  font-size: 0.85rem;
+  color: var(--white);
+  font-family: var(--body);
+}
+
+.newsletter-input::placeholder { color: rgba(236, 231, 221, 0.5); }
+.newsletter-input:focus { outline: none; border-color: var(--camel); }
+
+.newsletter-submit {
+  background: var(--cream);
+  color: var(--black);
+  border: none;
+  border-radius: 999px;
+  padding: 0.55rem 1rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.newsletter-submit:hover { transform: translateY(-1px); }
+
+.newsletter-widget.is-hidden { display: none; }
+
+.newsletter-thanks {
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+@media (max-width: 640px) {
+  .newsletter-widget {
+    bottom: 0.75rem;
+    width: calc(100vw - 1.5rem);
+  }
+}
