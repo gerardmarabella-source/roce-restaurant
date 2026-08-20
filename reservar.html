@@ -5,10 +5,20 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Reserva tu mesa — ROCE</title>
 <meta name="description" content="Reserva tu mesa en ROCE, Valencia. Cuéntanos día, hora y personas y te confirmamos por email.">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" href="assets/meta/favicon-32.png" sizes="32x32">
+<link rel="apple-touch-icon" href="assets/meta/apple-touch-icon.png">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Reserva tu mesa — ROCE">
+<meta property="og:description" content="Reserva tu mesa en ROCE, Valencia. Cuéntanos día, hora y personas y te confirmamos por email.">
+<meta property="og:image" content="https://roce.es/assets/meta/og-image.png">
+<meta property="og:url" content="https://roce.es/reservar.html">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://roce.es/assets/meta/og-image.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=47">
+<link rel="stylesheet" href="styles.css?v=48">
 <style>
   .reserve-form-page {
     min-height: 100vh;
@@ -122,6 +132,7 @@
     <h1>Reserva<br>tu mesa</h1>
     <p class="reserve-form-intro">
       Rellena el formulario y te confirmamos la reserva por email en cuanto lo leamos.
+      Abrimos el 12 de octubre de 2026 — solo aceptamos reservas a partir de esa fecha.
     </p>
 
     <form class="reserve-form" id="reservationForm">
@@ -154,7 +165,7 @@
       <div class="field-row">
         <label>
           Fecha
-          <input type="date" name="fecha" required>
+          <input type="date" name="fecha" min="2026-10-12" required>
         </label>
         <label>
           Hora
@@ -197,13 +208,24 @@
   const btn = document.getElementById('reserveSubmitBtn');
   const status = document.getElementById('reserveFormStatus');
 
+  const OPENING_DATE = '2026-10-12';
+
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
+
+    // El input min="2026-10-12" ya bloquea esto en el selector nativo,
+    // pero algunos navegadores permiten teclear la fecha a mano, así que
+    // lo revalidamos aquí antes de enviar nada.
+    const fecha = form.fecha.value;
+    if (fecha < OPENING_DATE) {
+      status.textContent = 'Solo aceptamos reservas a partir del 12 de octubre de 2026 (apertura).';
+      status.classList.add('is-error');
+      return;
+    }
 
     // Formatea la fecha en el propio payload para que el email que llega
     // a booking@roce.es sea legible ("12 de septiembre de 2026"), no la
     // fecha en crudo del <input type="date">.
-    const fecha = form.fecha.value;
     const fechaFmt = fecha
       ? new Date(fecha + 'T00:00:00').toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' })
       : '';
