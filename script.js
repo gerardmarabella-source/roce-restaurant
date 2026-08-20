@@ -226,6 +226,26 @@ function initManifestoFall() {
   observer.observe(section);
 }
 
+// Cada tarjeta de "Experiencia" entra deslizándose desde un lado (alternando
+// izquierda/derecha) justo cuando aparece en pantalla al hacer scroll.
+function initPillarsReveal() {
+  const cards = document.querySelectorAll('.pillar-card');
+  if (!cards.length || !('IntersectionObserver' in window)) return;
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('in-view');
+          observer.unobserve(entry.target);
+        }
+      });
+    },
+    { threshold: 0.25 }
+  );
+  cards.forEach((card) => observer.observe(card));
+}
+
 // Widget de newsletter fijo: sin backend todavía, así que el envío solo
 // confirma visualmente — falta conectarlo a un servicio real (Mailchimp,
 // Brevo, etc.) para guardar los emails de verdad.
@@ -268,5 +288,6 @@ document.addEventListener('DOMContentLoaded', () => {
   whenStageIsLaidOut(initLogoGravity);
   initArchScroll();
   initManifestoFall();
+  initPillarsReveal();
   initNewsletterWidget();
 });

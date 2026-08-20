@@ -63,7 +63,7 @@ a { color: inherit; }
 /* Hero + arch */
 .hero-wrapper {
   position: relative;
-  height: 500vh; /* scroll distance the arch stays pinned & grows for */
+  height: 400vh; /* scroll distance the arch stays pinned & grows for */
 }
 
 .hero-sticky {
@@ -204,11 +204,12 @@ a { color: inherit; }
 .manifesto.in-view .fall-word:nth-child(5) { transition-delay: 2.8s; }
 
 .fall-logo {
-  height: clamp(9rem, 34vw, 20rem);
+  flex-basis: 100%;
+  height: clamp(10.8rem, 41vw, 24rem);
   width: auto;
   vertical-align: baseline;
   position: relative;
-  top: 0.62em;
+  margin-top: 0.3em;
 }
 
 /* Pillars (experience) */
@@ -225,10 +226,10 @@ a { color: inherit; }
 }
 
 .pillar-cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  display: flex;
+  flex-direction: column;
   gap: 0.6rem;
-  max-width: 1000px;
+  max-width: 700px;
   margin: 0 auto;
 }
 
@@ -243,10 +244,19 @@ a { color: inherit; }
   padding: 1rem 1.25rem;
   border-radius: 4px;
   text-align: left;
-  transition: transform 0.25s ease;
+  opacity: 0;
+  transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.6s ease;
 }
 
-.pillar-card:hover { transform: translateY(-4px); }
+.pillar-card:nth-child(odd) { transform: translateX(-90px); }
+.pillar-card:nth-child(even) { transform: translateX(90px); }
+
+.pillar-card.in-view {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.pillar-card.in-view:hover { transform: translateY(-4px); }
 
 .pillar-time {
   font-size: 0.7rem;
@@ -264,8 +274,10 @@ a { color: inherit; }
 }
 
 @media (max-width: 640px) {
-  .pillar-cards { grid-template-columns: 1fr; gap: 0.5rem; }
+  .pillar-cards { gap: 0.5rem; }
   .pillar-card { aspect-ratio: auto; padding: 0.9rem 1.1rem; }
+  .pillar-card:nth-child(odd) { transform: translateX(-50px); }
+  .pillar-card:nth-child(even) { transform: translateX(50px); }
 }
 
 /* Reserve */
