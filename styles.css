@@ -185,14 +185,14 @@ a { color: inherit; }
 /* Manifesto — fijo en pantalla mientras las palabras caen en secuencia */
 .manifesto-wrapper {
   position: relative;
-  height: 1089vh;
+  height: 450vh;
   margin-top: -4px; /* solapa el hero para cerrar cualquier hueco de subpíxel en el límite */
   z-index: 1; /* por debajo del hero, para que nunca se asome detrás del arco */
   background: var(--cream);
 }
 
 @media (max-width: 640px) {
-  .manifesto-wrapper { height: 1525vh; }
+  .manifesto-wrapper { height: 500vh; }
 }
 
 .manifesto-sticky {
@@ -251,13 +251,13 @@ a { color: inherit; }
    una a una en secuencia (ver initPillarsReveal). */
 .pillars-wrapper {
   position: relative;
-  height: 1019vh;
+  height: 450vh;
   z-index: 1;
   background: var(--cream);
 }
 
 @media (max-width: 640px) {
-  .pillars-wrapper { height: 1427vh; }
+  .pillars-wrapper { height: 500vh; }
 }
 
 .pillars-sticky {
@@ -337,13 +337,13 @@ a { color: inherit; }
    emerge "desde atrás" y el botón cae como un misil que rebota al aterrizar. */
 .reserve-wrapper {
   position: relative;
-  height: 910vh; /* mucho más recorrido: todo el reveal (fondo, título, botón) va bastante más lento */
+  height: 400vh;
   z-index: 1;
   background: var(--cream);
 }
 
 @media (max-width: 640px) {
-  .reserve-wrapper { height: 1274vh; }
+  .reserve-wrapper { height: 450vh; }
 }
 
 .reserve-sticky {
