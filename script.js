@@ -166,11 +166,10 @@ function initLogoGravity() {
 // bajas, más grande y más pantalla libre para arrastrar las letras. El
 // texto de dirección se desvanece al mismo ritmo.
 function initArchScroll() {
+  const wrapper = document.getElementById('heroWrapper');
   const archFrame = document.querySelector('.arch-frame');
   const caption = document.getElementById('archCaption');
-  if (!archFrame) return;
-
-  const GROW_DISTANCE = 11000; // px de scroll para llegar al tamaño máximo
+  if (!wrapper || !archFrame) return;
 
   function baseSize() {
     return {
@@ -181,13 +180,18 @@ function initArchScroll() {
 
   function maxSize() {
     return {
-      w: Math.min(window.innerWidth * 0.96, 1100),
-      h: Math.min(window.innerHeight * 0.92, 900),
+      w: Math.min(window.innerWidth * 0.98, 1400),
+      h: Math.min(window.innerHeight * 0.98, 1100),
     };
   }
 
   function update() {
-    const raw = Math.min(Math.max(window.scrollY / GROW_DISTANCE, 0), 1);
+    // El wrapper es mucho más alto que el viewport; .hero-sticky queda
+    // fijo (position: sticky) mientras se recorre esa altura extra, así
+    // que el arco permanece en pantalla en vez de desplazarse con el resto.
+    const range = wrapper.offsetHeight - window.innerHeight;
+    const scrolledInto = -wrapper.getBoundingClientRect().top;
+    const raw = range > 0 ? Math.min(Math.max(scrolledInto / range, 0), 1) : 0;
     const progress = raw * raw; // ease-in: sutil al principio, más notable después
     const base = baseSize();
     const max = maxSize();
@@ -222,6 +226,34 @@ function initManifestoFall() {
   observer.observe(section);
 }
 
+// Widget de newsletter fijo: sin backend todavía, así que el envío solo
+// confirma visualmente — falta conectarlo a un servicio real (Mailchimp,
+// Brevo, etc.) para guardar los emails de verdad.
+function initNewsletterWidget() {
+  const widget = document.getElementById('newsletterWidget');
+  const closeBtn = document.getElementById('newsletterClose');
+  const form = document.getElementById('newsletterForm');
+  const body = document.getElementById('newsletterBody');
+  if (!widget || !closeBtn || !form || !body) return;
+
+  if (localStorage.getItem('roce-newsletter-dismissed') === '1') {
+    widget.classList.add('is-hidden');
+    return;
+  }
+
+  closeBtn.addEventListener('click', () => {
+    widget.classList.add('is-hidden');
+    localStorage.setItem('roce-newsletter-dismissed', '1');
+  });
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    body.innerHTML = '<p class="newsletter-thanks">¡Gracias! Te avisaremos antes de la apertura.</p>';
+    localStorage.setItem('roce-newsletter-dismissed', '1');
+    setTimeout(() => widget.classList.add('is-hidden'), 2200);
+  });
+}
+
 function whenStageIsLaidOut(callback, attempts = 0) {
   const stage = document.getElementById('physicsStage');
   const rect = stage && stage.getBoundingClientRect();
@@ -236,4 +268,5 @@ document.addEventListener('DOMContentLoaded', () => {
   whenStageIsLaidOut(initLogoGravity);
   initArchScroll();
   initManifestoFall();
+  initNewsletterWidget();
 });
