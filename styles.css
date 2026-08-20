@@ -258,7 +258,7 @@ a { color: inherit; }
    una a una en secuencia (ver initPillarsReveal). */
 .pillars-wrapper {
   position: relative;
-  height: 320vh;
+  height: 360vh;
   z-index: 1;
   background: var(--cream);
 }
