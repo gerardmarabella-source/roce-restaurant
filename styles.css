@@ -81,6 +81,7 @@ a { color: inherit; }
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  background: var(--cream);
 }
 
 .arch-frame {
@@ -197,7 +198,7 @@ a { color: inherit; }
 }
 
 @media (max-width: 640px) {
-  .manifesto-wrapper { height: 190vh; }
+  .manifesto-wrapper { height: 260vh; }
 }
 
 .manifesto-sticky {
@@ -208,6 +209,7 @@ a { color: inherit; }
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  background: var(--cream);
 }
 
 .manifesto {
@@ -264,10 +266,12 @@ a { color: inherit; }
   position: sticky;
   top: 0;
   height: 100vh;
+  padding-top: 5rem; /* que el header fijo no tape la primera tarjeta */
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  background: var(--cream);
 }
 
 .pillars {
