@@ -177,15 +177,18 @@ a { color: inherit; }
 }
 
 .manifesto-title {
+  font-family: var(--display);
+  font-size: clamp(3rem, 12vw, 6.5rem);
+  line-height: 0.95;
+  margin-bottom: 2rem;
+}
+
+.fall-line {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
   align-items: center;
   gap: 0.15em 0.35em;
-  font-family: var(--display);
-  font-size: clamp(3rem, 12vw, 6.5rem);
-  line-height: 0.95;
-  margin-bottom: 2rem;
 }
 
 .fall-word {
@@ -197,19 +200,17 @@ a { color: inherit; }
 .manifesto.in-view .fall-word { transform: translateY(0); }
 
 /* Cada palabra cae por completo antes de que empiece la siguiente. */
-.manifesto.in-view .fall-word:nth-child(1) { transition-delay: 0s; }
-.manifesto.in-view .fall-word:nth-child(2) { transition-delay: 0.7s; }
-.manifesto.in-view .fall-word:nth-child(3) { transition-delay: 1.4s; }
-.manifesto.in-view .fall-word:nth-child(4) { transition-delay: 2.1s; }
-.manifesto.in-view .fall-word:nth-child(5) { transition-delay: 2.8s; }
+.manifesto.in-view .fall-line .fall-word:nth-child(1) { transition-delay: 0s; }
+.manifesto.in-view .fall-line .fall-word:nth-child(2) { transition-delay: 0.7s; }
+.manifesto.in-view .fall-line .fall-word:nth-child(3) { transition-delay: 1.4s; }
+.manifesto.in-view .fall-line .fall-word:nth-child(4) { transition-delay: 2.1s; }
+.manifesto.in-view .fall-logo { transition-delay: 2.8s; }
 
 .fall-logo {
-  flex-basis: 100%;
+  display: block;
   height: clamp(10.8rem, 41vw, 24rem);
   width: auto;
-  vertical-align: baseline;
-  position: relative;
-  margin-top: 0.3em;
+  margin: 0.3em auto 0;
 }
 
 /* Pillars (experience) */
