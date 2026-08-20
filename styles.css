@@ -192,7 +192,7 @@ a { color: inherit; }
 /* Manifesto — fijo en pantalla mientras las palabras caen en secuencia */
 .manifesto-wrapper {
   position: relative;
-  height: 420vh; /* +40% de recorrido por palabra */
+  height: 300vh;
   margin-top: -4px; /* solapa el hero para cerrar cualquier hueco de subpíxel en el límite */
   z-index: 1; /* por debajo del hero, para que nunca se asome detrás del arco */
   background: var(--cream);
@@ -258,7 +258,7 @@ a { color: inherit; }
    una a una en secuencia (ver initPillarsReveal). */
 .pillars-wrapper {
   position: relative;
-  height: 480vh; /* +60% de recorrido por tarjeta */
+  height: 300vh;
   z-index: 1;
   background: var(--cream);
 }
