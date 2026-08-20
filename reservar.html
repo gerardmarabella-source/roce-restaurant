@@ -43,6 +43,7 @@
   }
 
   .reserve-form input,
+  .reserve-form select,
   .reserve-form textarea {
     width: 100%;
     background: rgba(255, 255, 255, 0.1);
@@ -54,9 +55,13 @@
     color: var(--cream);
   }
 
+  .reserve-form select { appearance: none; }
+  .reserve-form select option { color: var(--black); }
+
   .reserve-form input::placeholder,
   .reserve-form textarea::placeholder { color: rgba(236, 231, 221, 0.5); }
   .reserve-form input:focus,
+  .reserve-form select:focus,
   .reserve-form textarea:focus { outline: none; border-color: var(--cream); }
 
   .reserve-form textarea { resize: vertical; min-height: 90px; }
@@ -153,7 +158,11 @@
         </label>
         <label>
           Hora
-          <input type="time" name="hora" required>
+          <select name="hora" required>
+            <option value="" disabled selected>Elige un turno</option>
+            <option value="20:00">20:00</option>
+            <option value="22:00">22:00</option>
+          </select>
         </label>
       </div>
 
