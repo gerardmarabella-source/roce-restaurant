@@ -303,20 +303,20 @@ function initReserveReveal() {
     const overall = maxProgress;
 
     // El fondo es un círculo que crece hasta cubrir toda la pantalla.
-    const bgLocal = Math.min(overall / 0.34, 1);
+    const bgLocal = Math.min(overall / 0.405, 1);
     bg.style.transform = `scale(${easeOutCubic(bgLocal) * 3})`;
 
     // El título aparece agrandándose, como si emergiera desde atrás.
-    const titleLocal = Math.min(Math.max((overall - 0.21) / 0.24, 0), 1);
+    const titleLocal = Math.min(Math.max((overall - 0.252) / 0.288, 0), 1);
     const titleEased = easeOutCubic(titleLocal);
     title.style.opacity = String(titleEased);
     title.style.transform = `scale(${0.25 + titleEased * 0.75})`;
 
     // El botón cae como un misil una única vez, al llegar a este punto.
-    // A partir de aquí (overall ~0.47) el resto del scroll del wrapper es
-    // recorrido "muerto" a propósito: la pantalla roja se queda fija y
-    // bloqueada un rato antes de soltar a la siguiente sección.
-    if (overall > 0.47 && !bounced) {
+    // A partir de aquí (overall ~0.56) el resto del scroll del wrapper es
+    // recorrido "muerto" a propósito: la pantalla roja se queda fija un
+    // momento antes de soltar a la siguiente sección (sin pasarse).
+    if (overall > 0.56 && !bounced) {
       bounced = true;
       cta.classList.add('bounce-in');
     }
