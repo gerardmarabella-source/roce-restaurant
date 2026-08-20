@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reserva tu mesa — ROCE</title>
+<meta name="description" content="Reserva tu mesa en ROCE, Valencia. Cuéntanos día, hora y personas y te confirmamos por email.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css?v=47">
+<style>
+  .reserve-form-page {
+    min-height: 100vh;
+    background: var(--maroon);
+    color: var(--cream);
+    padding: 8rem 1.5rem 5rem;
+    display: flex;
+    justify-content: center;
+  }
+  .reserve-form-wrap { width: 100%; max-width: 520px; }
+  .reserve-form-wrap h1 {
+    font-family: var(--display);
+    font-size: clamp(2.2rem, 7vw, 3.2rem);
+    line-height: 0.95;
+    text-transform: uppercase;
+    margin-bottom: 0.75rem;
+  }
+  .reserve-form-intro { font-size: 0.95rem; opacity: 0.85; margin-bottom: 2.5rem; line-height: 1.5; }
+
+  .reserve-form { display: flex; flex-direction: column; gap: 1.1rem; }
+  .field-row { display: flex; gap: 1rem; }
+  .field-row > label { flex: 1; }
+
+  .reserve-form label {
+    display: block;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 0.4rem;
+    opacity: 0.85;
+  }
+
+  .reserve-form input,
+  .reserve-form select,
+  .reserve-form textarea {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    border-radius: 8px;
+    padding: 0.75rem 0.9rem;
+    font-family: var(--body);
+    font-size: 0.95rem;
+    color: var(--cream);
+  }
+
+  .reserve-form select { appearance: none; }
+  .reserve-form select option { color: var(--black); }
+
+  .reserve-form input::placeholder,
+  .reserve-form textarea::placeholder { color: rgba(236, 231, 221, 0.5); }
+  .reserve-form input:focus,
+  .reserve-form select:focus,
+  .reserve-form textarea:focus { outline: none; border-color: var(--cream); }
+
+  .reserve-form textarea { resize: vertical; min-height: 90px; }
+
+  .reserve-submit {
+    margin-top: 0.5rem;
+    background: var(--cream);
+    color: var(--maroon);
+    border: none;
+    border-radius: 999px;
+    padding: 1rem 1.5rem;
+    font-family: var(--display);
+    font-size: 0.95rem;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    transition: transform 0.15s ease;
+  }
+  .reserve-submit:hover { transform: translateY(-2px); }
+
+  .reserve-form-status {
+    margin-top: 1.25rem;
+    font-size: 0.9rem;
+    line-height: 1.5;
+  }
+  .reserve-form-status.is-error { color: #ffb4a8; }
+  .reserve-submit:disabled { opacity: 0.6; cursor: default; }
+  .reserve-submit:disabled:hover { transform: none; }
+
+  .reserve-back {
+    display: inline-block;
+    margin-bottom: 2.5rem;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    text-decoration: none;
+    color: var(--cream);
+    opacity: 0.85;
+  }
+
+  @media (max-width: 480px) {
+    .field-row { flex-direction: column; gap: 1.1rem; }
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <a href="/" aria-label="ROCE — inicio"><img class="nav-logo" src="assets/logo/roce-horizontal-black.png" alt="ROCE"></a>
+  <nav class="topnav">
+    <a href="reservar.html" class="nav-cta">Reservar</a>
+  </nav>
+</header>
+
+<main class="reserve-form-page">
+  <div class="reserve-form-wrap">
+    <a class="reserve-back" href="/">&larr; Volver a ROCE</a>
+    <h1>Reserva<br>tu mesa</h1>
+    <p class="reserve-form-intro">
+      Rellena el formulario y te confirmamos la reserva por email en cuanto lo leamos.
+    </p>
+
+    <form class="reserve-form" id="reservationForm">
+      <input type="hidden" name="access_key" value="b8af37ee-e300-4bd5-8c98-8223cad17cbe">
+      <input type="hidden" name="subject" value="Nueva reserva — ROCE">
+      <input type="hidden" name="from_name" value="Formulario de reservas ROCE">
+      <input type="checkbox" name="botcheck" class="botcheck" style="display: none;">
+
+      <label>
+        Nombre
+        <input type="text" name="nombre" placeholder="Tu nombre" required>
+      </label>
+
+      <label>
+        Email
+        <input type="email" name="email" placeholder="tu@email.com" required>
+      </label>
+
+      <div class="field-row">
+        <label>
+          Teléfono
+          <input type="tel" name="telefono" placeholder="600 000 000">
+        </label>
+        <label>
+          Personas
+          <input type="number" name="personas" min="1" max="30" placeholder="2" required>
+        </label>
+      </div>
+
+      <div class="field-row">
+        <label>
+          Fecha
+          <input type="date" name="fecha" required>
+        </label>
+        <label>
+          Hora
+          <select name="hora" required>
+            <option value="" disabled selected>Elige un turno</option>
+            <option value="20:00">20:00</option>
+            <option value="22:00">22:00</option>
+          </select>
+        </label>
+      </div>
+
+      <label>
+        Comentarios
+        <textarea name="comentarios" placeholder="Alergias, celebraciones, preferencias..."></textarea>
+      </label>
+
+      <button type="submit" class="reserve-submit" id="reserveSubmitBtn">Enviar reserva</button>
+    </form>
+    <p class="reserve-form-status" id="reserveFormStatus" role="status" aria-live="polite"></p>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <img class="footer-logo" src="assets/logo/roce-tilted-white.png" alt="ROCE">
+  <div class="footer-info">
+    <p class="footer-headline">Restaurant &amp; Cocktails</p>
+    <p class="footer-line">Gran Vía Marqués del Turia, 16</p>
+    <p class="footer-line">Valencia, Spain</p>
+  </div>
+  <a class="footer-instagram" href="https://www.instagram.com/somosroce" target="_blank" rel="noopener">@somosroce ↗</a>
+  <div class="footer-bottom">
+    <span>© 2026 ROCE</span>
+    <span>All rights reserved</span>
+    <a href="privacidad.html">Política de privacidad</a>
+  </div>
+</footer>
+
+<script>
+  const form = document.getElementById('reservationForm');
+  const btn = document.getElementById('reserveSubmitBtn');
+  const status = document.getElementById('reserveFormStatus');
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    // Formatea la fecha en el propio payload para que el email que llega
+    // a booking@roce.es sea legible ("12 de septiembre de 2026"), no la
+    // fecha en crudo del <input type="date">.
+    const fecha = form.fecha.value;
+    const fechaFmt = fecha
+      ? new Date(fecha + 'T00:00:00').toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' })
+      : '';
+
+    const payload = Object.fromEntries(new FormData(form));
+    payload.fecha = fechaFmt;
+
+    btn.disabled = true;
+    btn.textContent = 'Enviando...';
+    status.textContent = '';
+    status.classList.remove('is-error');
+
+    try {
+      const res = await fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        form.reset();
+        form.style.display = 'none';
+        status.textContent = '¡Reserva enviada! Te confirmamos por email en cuanto la leamos.';
+      } else {
+        throw new Error(data.message || 'Error desconocido');
+      }
+    } catch (err) {
+      status.textContent = 'No se ha podido enviar. Escríbenos directamente a booking@roce.es.';
+      status.classList.add('is-error');
+      btn.disabled = false;
+      btn.textContent = 'Enviar reserva';
+    }
+  });
+</script>
+
+</body>
+</html>
