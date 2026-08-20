@@ -321,7 +321,7 @@ function initReserveReveal() {
     // En móvil, +30% adicional solo para esta fase (fondo rojo), sin tocar
     // título/botón ni el escritorio.
     const isMobile = window.matchMedia('(max-width: 640px)').matches;
-    const bgLocal = Math.min(overall / (isMobile ? 0.45 * 1.3 : 0.45), 1);
+    const bgLocal = Math.min(overall / (isMobile ? 0.45 * 1.3 * 1.3 : 0.45 * 1.3), 1);
     bg.style.transform = `scale(${easeOutCubic(bgLocal) * 3})`;
 
     // El título aparece agrandándose, como si emergiera desde atrás.
