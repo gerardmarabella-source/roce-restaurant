@@ -35,7 +35,21 @@
     height: 100dvh;
     color: var(--cream);
     overflow: hidden;
-    background: var(--black) url("assets/teaser/bg-restaurant.jpg") center 75% / auto 130% no-repeat;
+    background: var(--black);
+  }
+
+  /* Imagen real (no CSS background) para que el zoom con transform:scale
+     nunca deje franjas negras, sea cual sea la proporción de pantalla —
+     con background-size esto dependía de qué eje fuera el limitante. */
+  .teaser-bg {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    transform: scale(1.1);
   }
 
   /* Oscurece la foto de fondo lo justo para que el texto/letras crema
@@ -107,7 +121,8 @@
   .teaser-contact {
     position: absolute;
     top: calc(50% + 90px);
-    right: 1.75rem;
+    right: 1.5rem;
+    width: 41px;
     z-index: 4;
     display: flex;
     flex-direction: column;
@@ -121,7 +136,7 @@
     line-height: 0;
   }
   .teaser-contact a:hover { opacity: 1; }
-  .teaser-contact svg { width: 41px; height: 41px; }
+  .teaser-contact svg { width: 20px; height: 20px; }
 
   .teaser-footer {
     position: absolute;
@@ -142,16 +157,20 @@
   @media (max-width: 640px) {
     .teaser-caption { bottom: 5.5rem; padding: 0 1rem; }
     .teaser-reserve-btn { padding: 1.2rem 0.7rem; font-size: 0.7rem; }
-    /* En móvil la foto ya llena la altura exacta con "cover" (no hay
-       margen vertical que desplazar), así que para subirla/centrarla de
-       verdad hace falta además ampliarla un poco. */
-    .teaser-page { background-size: auto 115%; background-position: center 40%; }
+    /* Foto propia para móvil (1080x1920, ya compuesta para vertical) y
+       sin el zoom de escritorio. */
+    .teaser-bg { transform: none; }
   }
 </style>
 </head>
 <body>
 
 <div class="teaser-page">
+  <picture>
+    <source media="(max-width: 640px)" srcset="assets/teaser/bg-mobile.jpg">
+    <img class="teaser-bg" src="assets/teaser/bg-desktop.jpg" alt="">
+  </picture>
+
   <div class="teaser-lightbox">
     <img class="lightbox-logo" src="assets/logo/roce-vertical-cream.png" alt="ROCE">
   </div>
