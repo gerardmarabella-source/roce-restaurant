@@ -164,13 +164,14 @@
 
   /* En esta pantalla única no hay hueco libre para un widget siempre
      visible sin chocar con la leyenda o el pie — así que por defecto
-     queda colapsado en una píldora en la esquina y solo se expande al
-     pulsarla. Arriba a la derecha, encima del bloque de Reservas. */
+     queda colapsado en una píldora vertical justo encima del botón de
+     Reservas, con el mismo lenguaje visual, y solo se expande al
+     pulsarla. */
   .newsletter-widget {
-    top: 1.75rem;
+    top: auto;
     left: auto;
     right: 1.5rem;
-    bottom: auto;
+    bottom: calc(50% + 80px);
     transform: none;
     transition: background 0.15s ease;
   }
@@ -186,26 +187,30 @@
   .newsletter-widget:not(.is-collapsed) .newsletter-toggle { display: none; }
 
   .newsletter-toggle {
+    writing-mode: vertical-rl;
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    justify-content: center;
+    gap: 0.35rem;
     background: var(--black);
     color: var(--cream);
-    border: 1px solid rgba(236, 231, 221, 0.3);
+    border: 1px solid rgba(236, 231, 221, 0.25);
     border-radius: 2px;
-    padding: 0.65rem 1.15rem;
     font-family: var(--body);
-    font-size: 0.8rem;
+    font-size: 0.68rem;
     font-weight: 600;
     letter-spacing: 0.02em;
+    text-transform: lowercase;
+    padding: 0.9rem 0.55rem;
     cursor: pointer;
     transition: border-color 0.15s ease;
   }
   .newsletter-toggle:hover { border-color: var(--camel); }
-  .newsletter-toggle svg { width: 15px; height: 15px; }
+  .newsletter-toggle svg { width: 13px; height: 13px; flex-shrink: 0; }
 
   @media (max-width: 640px) {
-    .newsletter-widget { right: 0.75rem; top: 1.5rem; width: min(260px, calc(100vw - 1.5rem)); }
+    .newsletter-widget { right: 1.5rem; bottom: calc(50% + 68px); width: min(260px, calc(100vw - 1.5rem)); }
+    .newsletter-toggle { padding: 0.8rem 0.5rem; font-size: 0.62rem; }
   }
 </style>
 </head>
@@ -246,7 +251,7 @@
 <div class="newsletter-widget is-collapsed" id="newsletterWidget">
   <button class="newsletter-toggle" id="newsletterToggle">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2.5" y="4.5" width="19" height="15" rx="1.5"/><path d="M3 6l9 7 9-7"/></svg>
-    Newsletter
+    newsletter
   </button>
   <button class="newsletter-close" id="newsletterClose" aria-label="Cerrar">&times;</button>
   <div class="newsletter-body" id="newsletterBody">
