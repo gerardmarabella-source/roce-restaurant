@@ -6,17 +6,12 @@ function initLogoGravity() {
   const pieces = Array.from(stage.querySelectorAll('.phys-piece'));
   if (!pieces.length) return;
 
-  const allLoaded = pieces.every((el) => el.complete && el.offsetWidth > 0);
-  if (!allLoaded) {
-    let remaining = pieces.length;
-    pieces.forEach((el) => {
-      if (el.complete) { remaining -= 1; return; }
-      el.addEventListener('load', () => {
-        remaining -= 1;
-        if (remaining <= 0) initLogoGravity();
-      }, { once: true });
-    });
-    if (remaining > 0) return;
+  // Las piezas son texto (no imágenes) con la tipografía de la web, así
+  // que hay que esperar a que la fuente esté cargada antes de medirlas —
+  // si no, se miden con la fuente de sistema y salen mal de tamaño.
+  if (document.fonts && document.fonts.status !== 'loaded') {
+    document.fonts.ready.then(() => initLogoGravity());
+    return;
   }
 
   const GRAVITY = 2400; // px/s²
