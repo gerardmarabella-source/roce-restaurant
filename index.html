@@ -62,23 +62,16 @@
     background: linear-gradient(180deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.25) 35%, rgba(0,0,0,0.35) 70%, rgba(0,0,0,0.7) 100%);
   }
 
-  /* Caja de luz estilo vitrina de neón, con el logo dentro — entra
-     deslizándose de izquierda a derecha al cargar la página. */
   .teaser-lightbox {
     position: absolute;
     top: 1.75rem;
     left: 1.75rem;
     z-index: 4;
-    transform: translateX(-160%);
-    animation: lightboxSlideIn 1.1s cubic-bezier(0.16, 0.8, 0.3, 1) 0.4s forwards;
   }
   .teaser-lightbox .lightbox-logo {
     height: clamp(90px, 15vw, 130px);
     width: auto;
     display: block;
-  }
-  @keyframes lightboxSlideIn {
-    to { transform: translateX(0); }
   }
 
   .teaser-reserve-btn {
@@ -162,19 +155,12 @@
     .teaser-bg { transform: none; }
   }
 
-  /* En esta pantalla única no hay hueco libre para un widget siempre
-     visible sin chocar con la leyenda o el pie — así que por defecto
-     queda colapsado en una píldora vertical justo encima del botón de
-     Reservas, con el mismo lenguaje visual, y solo se expande al
-     pulsarla. */
+  /* Horizontal, arriba a la derecha. */
   .newsletter-widget {
-    top: auto;
+    top: 1.75rem;
     left: auto;
     right: 1.5rem;
-    /* Mismo desplazamiento desde el centro que .teaser-contact (abajo),
-       para que la distancia arriba y abajo del botón de Reservas sea
-       idéntica. */
-    bottom: calc(50% + 90px);
+    bottom: auto;
     transform: none;
     transition: background 0.15s ease;
   }
@@ -190,30 +176,27 @@
   .newsletter-widget:not(.is-collapsed) .newsletter-toggle { display: none; }
 
   .newsletter-toggle {
-    writing-mode: vertical-rl;
     display: flex;
     align-items: center;
-    justify-content: center;
-    gap: 0.35rem;
-    /* Mismo ancho que .teaser-reserve-btn para quedar centrado con él. */
-    width: 41px;
+    gap: 0.5rem;
     background: var(--black);
     color: var(--cream);
     border: 1px solid rgba(236, 231, 221, 0.25);
     border-radius: 2px;
     font-family: var(--body);
-    font-size: 0.68rem;
+    font-size: 0.75rem;
     font-weight: 600;
     letter-spacing: 0.02em;
-    padding: 0.9rem 0;
+    padding: 0.65rem 1rem;
     cursor: pointer;
     transition: border-color 0.15s ease;
   }
   .newsletter-toggle:hover { border-color: var(--camel); }
-  .newsletter-toggle svg { width: 13px; height: 13px; flex-shrink: 0; transform: rotate(90deg); }
+  .newsletter-toggle svg { width: 14px; height: 14px; flex-shrink: 0; }
 
   @media (max-width: 640px) {
-    .newsletter-toggle { width: 35px; padding: 0.8rem 0; font-size: 0.62rem; }
+    .newsletter-widget { top: 1.5rem; right: 1.25rem; }
+    .newsletter-toggle { padding: 0.55rem 0.85rem; font-size: 0.68rem; }
   }
 </style>
 </head>
