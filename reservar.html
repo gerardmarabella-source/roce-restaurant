@@ -119,17 +119,15 @@
     .field-row { flex-direction: column; gap: 1.1rem; }
   }
 
-  /* Cuadrado, a juego con el resto de botones de esta página. */
-  .topnav a.nav-cta { border-radius: 2px; }
+  /* Header negro y logo en blanco en esta página; sin botón de reservar
+     (ya estamos en la página de reservas). */
+  .topbar { background: var(--black); backdrop-filter: none; -webkit-backdrop-filter: none; }
 </style>
 </head>
 <body>
 
 <header class="topbar">
-  <a href="/" aria-label="ROCE — inicio"><img class="nav-logo" src="assets/logo/roce-horizontal-black.png" alt="ROCE"></a>
-  <nav class="topnav">
-    <a href="reservar.html" class="nav-cta">Reservar</a>
-  </nav>
+  <a href="/" aria-label="ROCE — inicio"><img class="nav-logo" src="assets/logo/roce-horizontal-white.png" alt="ROCE"></a>
 </header>
 
 <main class="reserve-form-page">
