@@ -35,7 +35,7 @@
     height: 100dvh;
     color: var(--cream);
     overflow: hidden;
-    background: var(--black) url("assets/teaser/bg-restaurant.jpg") center 55% / cover no-repeat;
+    background: var(--black) url("assets/teaser/bg-restaurant.jpg") center 75% / auto 130% no-repeat;
   }
 
   /* Oscurece la foto de fondo lo justo para que el texto/letras crema
@@ -69,9 +69,11 @@
 
   .teaser-reserve-btn {
     position: absolute;
-    top: 1.5rem;
+    top: 50%;
     right: 1.5rem;
     z-index: 4;
+    transform: translateY(-50%);
+    writing-mode: vertical-rl;
     background: var(--cream);
     color: var(--black);
     text-decoration: none;
@@ -79,11 +81,11 @@
     font-size: 0.8rem;
     letter-spacing: 0.04em;
     text-transform: uppercase;
-    padding: 0.85rem 1.6rem;
+    padding: 1.6rem 0.85rem;
     border-radius: 2px;
     transition: transform 0.15s ease;
   }
-  .teaser-reserve-btn:hover { transform: translateY(-2px); }
+  .teaser-reserve-btn:hover { transform: translateY(-50%) translateX(-2px); }
 
   .teaser-caption {
     position: absolute;
@@ -104,7 +106,7 @@
 
   .teaser-contact {
     position: absolute;
-    bottom: 4.5rem;
+    top: calc(50% + 90px);
     right: 1.75rem;
     z-index: 4;
     display: flex;
@@ -137,25 +139,9 @@
   }
   .teaser-footer a:hover { text-decoration: underline; }
 
-  /* El área de juego de las letras ocupa toda la pantalla, por debajo del
-     resto de elementos de la interfaz. */
-  .teaser-physics-stage {
-    position: absolute;
-    inset: 0;
-    z-index: 2;
-  }
-
-  .teaser-page .phys-piece {
-    font-size: clamp(80px, 13vw, 170px);
-  }
-  .teaser-page .piece-reg {
-    font-size: clamp(42px, 6.8vw, 88px);
-  }
-
   @media (max-width: 640px) {
     .teaser-caption { bottom: 5.5rem; padding: 0 1rem; }
-    .teaser-contact { bottom: 5.5rem; }
-    .teaser-reserve-btn { padding: 0.7rem 1.2rem; font-size: 0.7rem; }
+    .teaser-reserve-btn { padding: 1.2rem 0.7rem; font-size: 0.7rem; }
     /* En móvil la foto ya llena la altura exacta con "cover" (no hay
        margen vertical que desplazar), así que para subirla/centrarla de
        verdad hace falta además ampliarla un poco. */
@@ -172,14 +158,6 @@
 
   <a class="teaser-reserve-btn" href="reservar.html">Reservas</a>
 
-  <div class="teaser-physics-stage" id="physicsStage">
-    <span class="phys-piece piece-R">R</span>
-    <span class="phys-piece piece-O">O</span>
-    <span class="phys-piece piece-C">C</span>
-    <span class="phys-piece piece-E">E</span>
-    <span class="phys-piece piece-reg">®</span>
-  </div>
-
   <p class="teaser-caption">
     <span>Restaurant &amp; Cocktails</span>
     <span>Marqués del Turía 16</span>
@@ -190,7 +168,7 @@
     <a href="mailto:booking@roce.es" aria-label="Email">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2.5" y="4.5" width="19" height="15" rx="1.5"/><path d="M3 6l9 7 9-7"/></svg>
     </a>
-    <a href="https://www.instagram.com/somosroce" target="_blank" rel="noopener" aria-label="Instagram">
+    <a href="https://roce.es" aria-label="Instagram">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.3" cy="6.7" r="1"/></svg>
     </a>
   </div>
@@ -200,6 +178,5 @@
   </div>
 </div>
 
-<script src="script.js?v=39"></script>
 </body>
 </html>
