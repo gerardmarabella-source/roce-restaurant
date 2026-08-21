@@ -161,6 +161,52 @@
        sin el zoom de escritorio. */
     .teaser-bg { transform: none; }
   }
+
+  /* En esta pantalla única no hay hueco libre para un widget siempre
+     visible sin chocar con la leyenda o el pie — así que por defecto
+     queda colapsado en una píldora en la esquina y solo se expande al
+     pulsarla. Arriba a la derecha, encima del bloque de Reservas. */
+  .newsletter-widget {
+    top: 1.75rem;
+    left: auto;
+    right: 1.5rem;
+    bottom: auto;
+    transform: none;
+    transition: background 0.15s ease;
+  }
+  .newsletter-widget.is-collapsed {
+    background: transparent;
+    box-shadow: none;
+    border-radius: 2px;
+    padding: 0;
+    width: auto;
+  }
+  .newsletter-widget.is-collapsed .newsletter-close,
+  .newsletter-widget.is-collapsed .newsletter-body { display: none; }
+  .newsletter-widget:not(.is-collapsed) .newsletter-toggle { display: none; }
+
+  .newsletter-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--black);
+    color: var(--cream);
+    border: 1px solid rgba(236, 231, 221, 0.3);
+    border-radius: 2px;
+    padding: 0.65rem 1.15rem;
+    font-family: var(--body);
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    transition: border-color 0.15s ease;
+  }
+  .newsletter-toggle:hover { border-color: var(--camel); }
+  .newsletter-toggle svg { width: 15px; height: 15px; }
+
+  @media (max-width: 640px) {
+    .newsletter-widget { right: 0.75rem; top: 1.5rem; width: min(260px, calc(100vw - 1.5rem)); }
+  }
 </style>
 </head>
 <body>
@@ -196,6 +242,73 @@
     <a href="privacidad.html">Política de privacidad</a>
   </div>
 </div>
+
+<div class="newsletter-widget is-collapsed" id="newsletterWidget">
+  <button class="newsletter-toggle" id="newsletterToggle">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2.5" y="4.5" width="19" height="15" rx="1.5"/><path d="M3 6l9 7 9-7"/></svg>
+    Newsletter
+  </button>
+  <button class="newsletter-close" id="newsletterClose" aria-label="Cerrar">&times;</button>
+  <div class="newsletter-body" id="newsletterBody">
+    <p class="newsletter-title">Newsletter</p>
+    <p class="newsletter-text">Entérate antes que nadie de todo.</p>
+    <form class="newsletter-form" id="newsletterForm">
+      <input type="hidden" name="access_key" value="b8af37ee-e300-4bd5-8c98-8223cad17cbe">
+      <input type="hidden" name="subject" value="Nueva suscripción — Newsletter ROCE">
+      <input type="hidden" name="from_name" value="Newsletter ROCE">
+      <input type="email" name="email" class="newsletter-input" placeholder="tu@email.com" required>
+      <button type="submit" class="newsletter-submit">Enviar</button>
+    </form>
+  </div>
+</div>
+
+<script>
+  function initNewsletterWidget() {
+    const widget = document.getElementById('newsletterWidget');
+    const toggleBtn = document.getElementById('newsletterToggle');
+    const closeBtn = document.getElementById('newsletterClose');
+    const form = document.getElementById('newsletterForm');
+    const body = document.getElementById('newsletterBody');
+    if (!widget || !toggleBtn || !closeBtn || !form || !body) return;
+
+    toggleBtn.addEventListener('click', () => {
+      widget.classList.remove('is-collapsed');
+    });
+
+    closeBtn.addEventListener('click', () => {
+      widget.classList.add('is-collapsed');
+    });
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const submitBtn = form.querySelector('.newsletter-submit');
+      submitBtn.disabled = true;
+      submitBtn.textContent = '...';
+
+      try {
+        const res = await fetch('https://api.web3forms.com/submit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+          body: JSON.stringify(Object.fromEntries(new FormData(form))),
+        });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.message || 'Error desconocido');
+        body.innerHTML = '<p class="newsletter-thanks">¡Gracias! Te avisaremos antes de la apertura.</p>';
+      } catch (err) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Enviar';
+        const existing = body.querySelector('.newsletter-error');
+        if (existing) existing.remove();
+        body.querySelector('.newsletter-text').insertAdjacentHTML(
+          'afterend',
+          '<p class="newsletter-error">No se ha podido enviar, inténtalo de nuevo.</p>'
+        );
+      }
+    });
+  }
+
+  initNewsletterWidget();
+</script>
 
 </body>
 </html>

@@ -494,7 +494,7 @@ a { color: inherit; }
   width: min(320px, calc(100vw - 2.5rem));
   background: var(--black);
   color: var(--cream);
-  border-radius: 16px;
+  border-radius: 2px;
   padding: 1.1rem 1.25rem 1.25rem;
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.28);
 }
@@ -540,7 +540,7 @@ a { color: inherit; }
   min-width: 0;
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 999px;
+  border-radius: 2px;
   padding: 0.55rem 0.9rem;
   font-size: 0.85rem;
   color: var(--white);
@@ -554,7 +554,7 @@ a { color: inherit; }
   background: var(--cream);
   color: var(--black);
   border: none;
-  border-radius: 999px;
+  border-radius: 2px;
   padding: 0.55rem 1rem;
   font-size: 0.8rem;
   font-weight: 600;

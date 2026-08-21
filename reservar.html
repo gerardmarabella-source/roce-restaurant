@@ -305,22 +305,12 @@
 
 <section class="private-events" id="eventos-privados">
   <div class="private-events-wrap">
-    <span class="pe-eyebrow">Grupos &amp; eventos privados</span>
+    <span class="pe-eyebrow">Eventos privados</span>
     <h2>Algo más<br>exclusivo</h2>
     <p class="pe-intro">
       Reserva nuestro privado y disfruta de la experiencia de una forma
       mucho más íntima.
     </p>
-
-    <div class="pe-field">
-      <span class="pe-label">¿Qué celebráis?</span>
-      <div class="pe-chips" id="peEventType">
-        <button type="button" class="pe-chip" data-value="un cumpleaños">Cumpleaños</button>
-        <button type="button" class="pe-chip" data-value="un evento de empresa">Empresa</button>
-        <button type="button" class="pe-chip" data-value="una despedida">Despedida</button>
-        <button type="button" class="pe-chip" data-value="otro tipo de evento">Otro</button>
-      </div>
-    </div>
 
     <div class="pe-field">
       <span class="pe-label">¿Cuántos sois?</span>
@@ -413,7 +403,7 @@
   });
 
   const WHATSAPP_NUMBER = '34621014066';
-  const peState = { type: '', guests: '' };
+  const peState = { guests: '' };
 
   function setupPeChips(groupId, stateKey) {
     const group = document.getElementById(groupId);
@@ -433,9 +423,7 @@
   }
 
   function updatePeLink() {
-    let msg = 'Hola! Nos gustaría organizar';
-    msg += peState.type ? ` ${peState.type}` : ' un evento privado';
-    msg += ' en ROCE.';
+    let msg = 'Hola! Nos gustaría organizar un evento privado en ROCE.';
     if (peState.guests) msg += ` Seríamos ${peState.guests} personas.`;
     msg += ' ¿Nos contáis disponibilidad?';
 
@@ -443,7 +431,6 @@
       `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
   }
 
-  setupPeChips('peEventType', 'type');
   setupPeChips('peGuestCount', 'guests');
   updatePeLink();
 </script>
