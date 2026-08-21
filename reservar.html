@@ -39,7 +39,22 @@
     text-transform: uppercase;
     margin-bottom: 0.75rem;
   }
-  .reserve-form-intro { font-size: 0.95rem; opacity: 0.85; margin-bottom: 2.5rem; line-height: 1.5; }
+  .reserve-form-intro { font-size: 0.95rem; opacity: 0.85; margin-bottom: 1.5rem; line-height: 1.5; }
+
+  .pe-teaser-link {
+    display: inline-block;
+    margin-bottom: 2.5rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--camel);
+    text-decoration: none;
+    border-bottom: 1px solid rgba(159, 130, 87, 0.5);
+    padding-bottom: 0.2rem;
+    transition: opacity 0.15s ease;
+  }
+  .pe-teaser-link:hover { opacity: 0.75; }
 
   .reserve-form { display: flex; flex-direction: column; gap: 1.1rem; }
   .field-row { display: flex; gap: 1rem; }
@@ -126,14 +141,31 @@
   /* Eventos privados / grupos: sin describir el espacio, todo el detalle
      se resuelve por WhatsApp con un mensaje ya precompuesto. */
   .private-events {
-    background: var(--black);
+    background: radial-gradient(120% 100% at 50% 0%, #171410 0%, var(--black) 55%);
     color: var(--white);
-    padding: 5rem 1.5rem 6rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.12);
+    padding: 6rem 1.5rem 6.5rem;
+    border-top: 1px solid rgba(159, 130, 87, 0.35);
     display: flex;
     justify-content: center;
   }
   .private-events-wrap { width: 100%; max-width: 520px; }
+  .pe-eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--camel);
+    margin-bottom: 1.25rem;
+  }
+  .pe-eyebrow::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: rgba(159, 130, 87, 0.4);
+  }
   .private-events-wrap h2 {
     font-family: var(--display);
     font-size: clamp(1.8rem, 6vw, 2.6rem);
@@ -165,11 +197,11 @@
     cursor: pointer;
     transition: background 0.15s ease, border-color 0.15s ease;
   }
-  .pe-chip:hover { border-color: rgba(255, 255, 255, 0.55); }
+  .pe-chip:hover { border-color: var(--camel); }
   .pe-chip.is-active {
-    background: var(--white);
+    background: var(--camel);
     color: var(--black);
-    border-color: var(--white);
+    border-color: var(--camel);
   }
 
   .pe-submit {
@@ -177,7 +209,7 @@
     align-items: center;
     gap: 0.6rem;
     margin-top: 0.5rem;
-    background: var(--white);
+    background: var(--cream);
     color: var(--black);
     border: none;
     border-radius: 2px;
@@ -208,6 +240,8 @@
       Rellena el formulario y te confirmamos la reserva por email en cuanto lo leamos.
       Abrimos el 12 de octubre de 2026 — solo aceptamos reservas a partir de esa fecha.
     </p>
+
+    <a class="pe-teaser-link" href="#eventos-privados">¿Sois un grupo? Reserva un espacio privado ↓</a>
 
     <form class="reserve-form" id="reservationForm">
       <input type="hidden" name="access_key" value="b8af37ee-e300-4bd5-8c98-8223cad17cbe">
@@ -262,12 +296,13 @@
   </div>
 </main>
 
-<section class="private-events">
+<section class="private-events" id="eventos-privados">
   <div class="private-events-wrap">
-    <h2>Eventos privados<br>y grupos</h2>
+    <span class="pe-eyebrow">Grupos &amp; eventos privados</span>
+    <h2>Algo más<br>exclusivo</h2>
     <p class="pe-intro">
       Cumpleaños, cenas de empresa, despedidas... Contadnos qué celebráis
-      y lo cuadramos todo directamente por WhatsApp.
+      y os montamos algo a medida. Lo cerramos directamente por WhatsApp.
     </p>
 
     <div class="pe-field">
@@ -283,10 +318,9 @@
     <div class="pe-field">
       <span class="pe-label">¿Cuántos sois?</span>
       <div class="pe-chips" id="peGuestCount">
-        <button type="button" class="pe-chip" data-value="menos de 10">&lt; 10</button>
-        <button type="button" class="pe-chip" data-value="entre 10 y 20">10-20</button>
-        <button type="button" class="pe-chip" data-value="entre 20 y 40">20-40</button>
-        <button type="button" class="pe-chip" data-value="más de 40">40+</button>
+        <button type="button" class="pe-chip" data-value="entre 2 y 6">2-6</button>
+        <button type="button" class="pe-chip" data-value="entre 6 y 12">6-12</button>
+        <button type="button" class="pe-chip" data-value="entre 12 y 18">12-18</button>
       </div>
     </div>
 
