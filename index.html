@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="format-detection" content="telephone=no, address=no, email=no, date=no">
 <title>ROCE — Restaurant &amp; Cocktails, Valencia</title>
 <meta name="description" content="ROCE. Restaurant & Cocktails, Valencia. Apertura octubre de 2026.">
 <link rel="icon" href="favicon.ico" sizes="any">
@@ -55,10 +56,18 @@
 
   /* Al abrir el desplegable de Reservas, la foto hace un ligero
      push-in hacia la derecha, como si la cámara reaccionara — sin
-     necesidad de una foto distinta donde la pareja señale. */
-  .teaser-page:has(.teaser-reserve:hover) .teaser-bg,
+     necesidad de una foto distinta donde la pareja señale. El :hover
+     va aparte y solo con (hover:hover): en iOS, cualquier regla :hover
+     que alcance el botón hace que el primer toque solo "active" el
+     hover y haga falta un segundo toque para navegar — con el media
+     query fuera, en táctil todo pasa por la clase .is-open del JS. */
   .teaser-page:has(.teaser-reserve.is-open) .teaser-bg {
     transform: scale(1.18) translateX(-2%);
+  }
+  @media (hover: hover) {
+    .teaser-page:has(.teaser-reserve:hover) .teaser-bg {
+      transform: scale(1.18) translateX(-2%);
+    }
   }
 
   /* Oscurece la foto de fondo lo justo para que el texto/letras crema
@@ -127,15 +136,24 @@
     box-shadow: 0 12px 32px rgba(0, 0, 0, 0.28);
     transition: max-width 0.3s ease, max-height 0.3s ease, opacity 0.2s ease;
   }
-  .teaser-reserve:hover .teaser-reserve-btn,
   .teaser-reserve.is-open .teaser-reserve-btn { opacity: 0; pointer-events: none; }
 
-  .teaser-reserve:hover .teaser-reserve-panel,
   .teaser-reserve.is-open .teaser-reserve-panel {
     max-width: 240px;
     max-height: 200px;
     opacity: 1;
     pointer-events: auto;
+  }
+
+  @media (hover: hover) {
+    .teaser-reserve:hover .teaser-reserve-btn { opacity: 0; pointer-events: none; }
+    .teaser-reserve:hover .teaser-reserve-panel {
+      max-width: 240px;
+      max-height: 200px;
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .teaser-reserve-row:hover { background: rgba(10, 10, 10, 0.06); }
   }
 
   .teaser-reserve-row {
@@ -150,7 +168,6 @@
     transition: background 0.15s ease;
   }
   .teaser-reserve-row:last-child { border-bottom: none; }
-  .teaser-reserve-row:hover { background: rgba(10, 10, 10, 0.06); }
   .tr-row-title {
     font-family: var(--display);
     font-size: 0.85rem;
@@ -229,8 +246,12 @@
     /* Foto propia para móvil (1080x1920, ya compuesta para vertical) y
        sin el zoom de escritorio. */
     .teaser-bg { transform: none; }
-    .teaser-page:has(.teaser-reserve:hover) .teaser-bg,
     .teaser-page:has(.teaser-reserve.is-open) .teaser-bg {
+      transform: scale(1.08);
+    }
+  }
+  @media (max-width: 640px) and (hover: hover) {
+    .teaser-page:has(.teaser-reserve:hover) .teaser-bg {
       transform: scale(1.08);
     }
   }
