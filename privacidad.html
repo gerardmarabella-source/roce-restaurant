@@ -12,7 +12,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=55">
+<link rel="stylesheet" href="styles.css?v=56">
 <style>
   .legal-wrapper { max-width: 760px; margin: 0 auto; padding: 8rem 1.5rem 5rem; }
   .legal-wrapper h1 { font-family: var(--display); font-size: clamp(1.8rem, 5vw, 2.6rem); margin-bottom: 0.5rem; }
@@ -30,16 +30,16 @@
 <header class="topbar">
   <a href="/" aria-label="ROCE — inicio"><img class="nav-logo" src="assets/logo/roce-horizontal-black.png" alt="ROCE"></a>
   <nav class="topnav">
-    <a href="reservar.html" class="nav-cta">Reservar</a>
+    <a href="reservar.html" class="nav-cta" data-i18n="nav_reservar">Reservar</a>
   </nav>
 </header>
 
 <main class="legal-wrapper">
-  <a class="legal-back" href="/">&larr; Volver a ROCE</a>
-  <h1>Política de privacidad</h1>
-  <p class="legal-updated">Última actualización: agosto de 2026</p>
+  <a class="legal-back" href="/" data-i18n="back_to_home">&larr; Volver a ROCE</a>
+  <h1 data-i18n="privacy_title">Política de privacidad</h1>
+  <p class="legal-updated" data-i18n="privacy_updated">Última actualización: agosto de 2026</p>
 
-  <h2>1. Responsable del tratamiento</h2>
+  <h2 data-i18n="privacy_h1">1. Responsable del tratamiento</h2>
   <p>
     BRUNCH DINNER ETC. SL (en adelante, "ROCE")<br>
     CIF: B25943804<br>
@@ -47,59 +47,59 @@
     Email de contacto: <a href="mailto:booking@roce.es">booking@roce.es</a>
   </p>
 
-  <h2>2. Datos que tratamos y finalidad</h2>
-  <p>Tratamos los datos que nos facilitas voluntariamente a través de este sitio web, concretamente:</p>
+  <h2 data-i18n="privacy_h2">2. Datos que tratamos y finalidad</h2>
+  <p data-i18n="privacy_p2_intro">Tratamos los datos que nos facilitas voluntariamente a través de este sitio web, concretamente:</p>
   <ul>
-    <li><strong>Contacto y reservas:</strong> cuando nos escribes a booking@roce.es para pedir información o reservar mesa, tratamos tu nombre, email y el contenido del mensaje para gestionar tu solicitud.</li>
-    <li><strong>Newsletter:</strong> si dejas tu email en el formulario de suscripción, lo usamos para enviarte comunicaciones comerciales sobre ROCE (aperturas, eventos, novedades).</li>
+    <li data-i18n-html="privacy_li_contact"><strong>Contacto y reservas:</strong> cuando nos escribes a booking@roce.es para pedir información o reservar mesa, tratamos tu nombre, email y el contenido del mensaje para gestionar tu solicitud.</li>
+    <li data-i18n-html="privacy_li_newsletter"><strong>Newsletter:</strong> si dejas tu email en el formulario de suscripción, lo usamos para enviarte comunicaciones comerciales sobre ROCE (aperturas, eventos, novedades).</li>
   </ul>
-  <p>No recopilamos datos de navegación, analítica ni cookies de terceros: esta web no utiliza cookies de seguimiento. Solo usamos una cookie técnica propia para recordar si has aceptado o rechazado el aviso de cookies, que no requiere consentimiento por ser estrictamente necesaria para el funcionamiento del propio aviso.</p>
+  <p data-i18n="privacy_p2_cookies">No recopilamos datos de navegación, analítica ni cookies de terceros: esta web no utiliza cookies de seguimiento. Solo usamos una cookie técnica propia para recordar si has aceptado o rechazado el aviso de cookies, que no requiere consentimiento por ser estrictamente necesaria para el funcionamiento del propio aviso.</p>
 
-  <h2>3. Legitimación</h2>
-  <p>
+  <h2 data-i18n="privacy_h3">3. Legitimación</h2>
+  <p data-i18n="privacy_p3">
     La base legal para el tratamiento de tus datos es el consentimiento que nos das al enviarnos tu email o tu mensaje
     (art. 6.1.a del RGPD), y en el caso de las reservas, la ejecución de medidas precontractuales a petición tuya
     (art. 6.1.b del RGPD).
   </p>
 
-  <h2>4. Destinatarios</h2>
-  <p>
+  <h2 data-i18n="privacy_h4">4. Destinatarios</h2>
+  <p data-i18n="privacy_p4">
     No cedemos tus datos a terceros, salvo obligación legal. Si en el futuro utilizamos un proveedor externo para el
     envío de la newsletter (por ejemplo, una plataforma de email marketing), este actuará como encargado del
     tratamiento bajo contrato, cumpliendo con el RGPD.
   </p>
 
-  <h2>5. Conservación</h2>
-  <p>
+  <h2 data-i18n="privacy_h5">5. Conservación</h2>
+  <p data-i18n="privacy_p5">
     Conservamos tus datos mientras exista una relación con ROCE (por ejemplo, mientras sigas suscrito a la
     newsletter) y, en todo caso, hasta que solicites su supresión.
   </p>
 
-  <h2>6. Tus derechos</h2>
-  <p>Puedes ejercer en cualquier momento tus derechos de:</p>
+  <h2 data-i18n="privacy_h6">6. Tus derechos</h2>
+  <p data-i18n="privacy_p6_intro">Puedes ejercer en cualquier momento tus derechos de:</p>
   <ul>
-    <li>Acceso a tus datos</li>
-    <li>Rectificación de datos inexactos</li>
-    <li>Supresión ("derecho al olvido")</li>
-    <li>Oposición al tratamiento</li>
-    <li>Limitación del tratamiento</li>
-    <li>Portabilidad de los datos</li>
+    <li data-i18n="privacy_li_access">Acceso a tus datos</li>
+    <li data-i18n="privacy_li_rectification">Rectificación de datos inexactos</li>
+    <li data-i18n="privacy_li_erasure">Supresión ("derecho al olvido")</li>
+    <li data-i18n="privacy_li_objection">Oposición al tratamiento</li>
+    <li data-i18n="privacy_li_limitation">Limitación del tratamiento</li>
+    <li data-i18n="privacy_li_portability">Portabilidad de los datos</li>
   </ul>
-  <p>
+  <p data-i18n-html="privacy_p6_outro">
     Para ello, escríbenos a <a href="mailto:booking@roce.es">booking@roce.es</a> indicando el derecho que quieres
     ejercer, adjuntando copia de tu DNI o documento equivalente. También tienes derecho a presentar una reclamación
     ante la Agencia Española de Protección de Datos (<a href="https://www.aepd.es" target="_blank" rel="noopener">www.aepd.es</a>)
     si consideras que no hemos tratado tus datos correctamente.
   </p>
 
-  <h2>7. Menores de edad</h2>
-  <p>
+  <h2 data-i18n="privacy_h7">7. Menores de edad</h2>
+  <p data-i18n="privacy_p7">
     Este sitio web no está dirigido a menores de 14 años. Si eres menor de esa edad, no debes facilitarnos tus datos
     sin el consentimiento de tus padres o tutores legales.
   </p>
 
-  <h2>8. Cambios en esta política</h2>
-  <p>
+  <h2 data-i18n="privacy_h8">8. Cambios en esta política</h2>
+  <p data-i18n="privacy_p8">
     Podemos actualizar esta política de privacidad para adaptarla a novedades legislativas o cambios en nuestros
     servicios. Te recomendamos revisarla periódicamente.
   </p>
@@ -116,19 +116,24 @@
   <div class="footer-bottom">
     <span>© 2026 ROCE</span>
     <span>All rights reserved</span>
-    <a href="privacidad.html">Política de privacidad</a>
-    <a href="cookies.html">Política de cookies</a>
+    <a href="privacidad.html" data-i18n="footer_privacy">Política de privacidad</a>
+    <a href="cookies.html" data-i18n="footer_cookies">Política de cookies</a>
+    <span class="lang-switch">
+      <button type="button" data-lang="es">ES</button>
+      <button type="button" data-lang="en">EN</button>
+    </span>
   </div>
 </footer>
 
 <div class="cookie-banner" id="cookieBanner">
-  <p class="cookie-text">Usamos una cookie técnica para recordar tu elección. Sin analítica ni publicidad. <a href="cookies.html">Más información</a>.</p>
+  <p class="cookie-text"><span data-i18n="cookie_text">Usamos una cookie técnica para recordar tu elección. Sin analítica ni publicidad.</span> <a href="cookies.html" data-i18n="cookie_more_info">Más información</a>.</p>
   <div class="cookie-actions">
-    <button class="cookie-reject" id="cookieReject">Rechazar</button>
-    <button class="cookie-accept" id="cookieAccept">Aceptar</button>
+    <button class="cookie-reject" id="cookieReject" data-i18n="cookie_reject">Rechazar</button>
+    <button class="cookie-accept" id="cookieAccept" data-i18n="cookie_accept">Aceptar</button>
   </div>
 </div>
 <script src="cookies.js?v=1"></script>
+<script src="i18n.js?v=1"></script>
 
 </body>
 </html>
