@@ -444,9 +444,6 @@ a { color: inherit; }
   .footer-info p { font-size: clamp(0.8rem, 5vw, 1.5rem); letter-spacing: 0; }
 }
 
-.footer-headline {
-  margin-bottom: 0.3em;
-}
 
 .footer-instagram {
   display: inline-block;
