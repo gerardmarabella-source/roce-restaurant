@@ -79,25 +79,30 @@
   .teaser-vertical-mark {
     position: absolute;
     top: 50%;
-    right: 1.75rem;
+    right: 1.5rem;
     z-index: 4;
-    transform: translateY(-50%) rotate(180deg);
-    writing-mode: vertical-rl;
-    font-family: var(--display);
-    font-size: clamp(1.1rem, 2.6vw, 1.6rem);
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    opacity: 0.9;
+    transform: translateY(-50%);
+    height: clamp(150px, 24vh, 260px);
+    width: auto;
+    opacity: 0.95;
   }
 
-  .teaser-address {
+  .teaser-caption {
     position: absolute;
     bottom: 4.5rem;
-    left: 1.75rem;
+    left: 0;
+    right: 0;
     z-index: 4;
-    font-size: 0.85rem;
-    color: rgba(236, 231, 221, 0.75);
+    text-align: center;
+    color: var(--cream);
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-weight: 800;
+    font-size: clamp(0.95rem, 2.4vw, 1.35rem);
+    line-height: 1.15;
+    letter-spacing: 0.01em;
+    text-transform: uppercase;
   }
+  .teaser-caption span { display: block; }
 
   .teaser-contact {
     position: absolute;
@@ -150,8 +155,9 @@
   }
 
   @media (max-width: 640px) {
-    .teaser-address, .teaser-contact { bottom: 5.5rem; }
-    .teaser-vertical-mark { font-size: 1rem; }
+    .teaser-caption { bottom: 5.5rem; padding: 0 1rem; }
+    .teaser-contact { bottom: 5.5rem; }
+    .teaser-vertical-mark { height: clamp(90px, 16vh, 150px); right: 1rem; }
     .teaser-eyebrow { max-width: 42vw; font-size: 0.6rem; }
     .teaser-reserve-btn { padding: 0.7rem 1.2rem; font-size: 0.7rem; }
   }
@@ -167,7 +173,7 @@
 
   <a class="teaser-reserve-btn" href="reservar.html">Reservas</a>
 
-  <div class="teaser-vertical-mark">ROCE.</div>
+  <img class="teaser-vertical-mark" src="assets/logo/roce-vertical-cream.png" alt="ROCE">
 
   <div class="teaser-physics-stage" id="physicsStage">
     <img class="phys-piece piece-R" src="assets/logo/pieces/letter-R-cream.png" alt="R" draggable="false">
@@ -177,7 +183,11 @@
     <img class="phys-piece piece-reg" src="assets/logo/pieces/letter-reg-cream.png" alt="®" draggable="false">
   </div>
 
-  <p class="teaser-address">Gran Vía Marqués del Turia, 16, Valencia</p>
+  <p class="teaser-caption">
+    <span>Restaurant &amp; Cocktails</span>
+    <span>Marqués del Turía 16</span>
+    <span>Valencia (Spain)</span>
+  </p>
 
   <div class="teaser-contact">
     <a href="mailto:booking@roce.es" aria-label="Email">
