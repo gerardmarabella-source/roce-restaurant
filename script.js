@@ -6,17 +6,12 @@ function initLogoGravity() {
   const pieces = Array.from(stage.querySelectorAll('.phys-piece'));
   if (!pieces.length) return;
 
-  const allLoaded = pieces.every((el) => el.complete && el.offsetWidth > 0);
-  if (!allLoaded) {
-    let remaining = pieces.length;
-    pieces.forEach((el) => {
-      if (el.complete) { remaining -= 1; return; }
-      el.addEventListener('load', () => {
-        remaining -= 1;
-        if (remaining <= 0) initLogoGravity();
-      }, { once: true });
-    });
-    if (remaining > 0) return;
+  // Las piezas son texto (no imágenes) con la tipografía de la web, así
+  // que hay que esperar a que la fuente esté cargada antes de medirlas —
+  // si no, se miden con la fuente de sistema y salen mal de tamaño.
+  if (document.fonts && document.fonts.status !== 'loaded') {
+    document.fonts.ready.then(() => initLogoGravity());
+    return;
   }
 
   const GRAVITY = 2400; // px/s²
@@ -25,22 +20,40 @@ function initLogoGravity() {
   const CEILING_RESTITUTION = 0.12; // rebote seco: no puede salir por arriba del cuadro
   const SETTLE_VELOCITY = 60;
   const MAX_DT = 0.05; // clamp so a slow/late frame can't move things too far
-  const CAPTION_RESERVE = 0.24; // leave room at the bottom for the address text
 
   function stageSize() {
     const r = stage.getBoundingClientRect();
     return { w: r.width, h: r.height };
   }
 
-  let { w: stageW, h: stageH } = stageSize();
+  // Cuánto del final del stage se reserva para el texto de debajo (la
+  // dirección/caption) — calculado a partir de dónde empieza ese texto
+  // de verdad, en vez de un porcentaje fijo a ojo, así las letras llegan
+  // justo hasta ahí sea cual sea la página (hero o teaser).
+  function captionReserve() {
+    const caption = document.querySelector('.arch-caption, .teaser-caption');
+    if (!caption) return 0.24;
+    const stageRect = stage.getBoundingClientRect();
+    const capRect = caption.getBoundingClientRect();
+    if (capRect.top <= stageRect.top || capRect.top >= stageRect.bottom) return 0.24;
+    const gap = stageRect.bottom - capRect.top + 10; // pequeño margen para no tocar el texto
+    return Math.max(0, Math.min(0.9, gap / stageRect.height));
+  }
 
+  let { w: stageW, h: stageH } = stageSize();
+  let captionReservePct = captionReserve();
+
+  // Las piezas caen apiladas en el centro (como si cayera el logo entero)
+  // y, una vez asentadas, "se desmontan" de golpe hacia su hueco — así el
+  // usuario ve claramente que se han separado y ya puede jugar con ellas.
   const items = pieces.map((el, i) => {
     const w = el.offsetWidth;
     const h = el.offsetHeight;
     const slot = stageW / pieces.length;
     return {
       el, w, h,
-      x: slot * i + (slot - w) / 2,
+      x: (stageW - w) / 2,
+      restX: slot * i + (slot - w) / 2,
       y: -h - 60 - i * (h * 1.6),
       vx: 0, vy: 0,
       angle: Math.random() * 14 - 7,
@@ -50,6 +63,7 @@ function initLogoGravity() {
       history: [],
     };
   });
+  let exploded = false;
 
   function render(item) {
     item.el.style.transform = `translate(${item.x}px, ${item.y}px) rotate(${item.angle}deg)`;
@@ -112,11 +126,13 @@ function initLogoGravity() {
 
   window.addEventListener('resize', () => {
     ({ w: stageW, h: stageH } = stageSize());
+    captionReservePct = captionReserve();
   });
   // Dispatched by initArchScroll whenever it resizes the arch on scroll —
   // separate from 'resize' so the two don't trigger each other in a loop.
   window.addEventListener('archresize', () => {
     ({ w: stageW, h: stageH } = stageSize());
+    captionReservePct = captionReserve();
   });
 
   let last = performance.now();
@@ -126,6 +142,8 @@ function initLogoGravity() {
     const dt = Math.min((now - last) / 1000, MAX_DT);
     last = now;
 
+    let allSettled = true;
+
     items.forEach((item) => {
       if (item.dragging) return;
 
@@ -134,13 +152,14 @@ function initLogoGravity() {
       item.y += item.vy * dt;
       item.angle += item.angularVel * dt;
       item.angularVel *= 0.985;
+      item.vx *= 0.988; // fricción del aire: si no, cruzan todo el escenario y se apilan en la pared
 
       if (item.y < 0) {
         item.y = 0;
         item.vy = Math.abs(item.vy) * CEILING_RESTITUTION;
       }
 
-      const floor = stageH - item.h - stageH * CAPTION_RESERVE;
+      const floor = stageH - item.h - stageH * captionReservePct;
       if (item.y > floor) {
         item.y = floor;
         if (Math.abs(item.vy) > SETTLE_VELOCITY) {
@@ -160,8 +179,29 @@ function initLogoGravity() {
         item.vx = -item.vx * WALL_RESTITUTION;
       }
 
+      if (Math.abs(item.vy) > 8 || Math.abs(item.vx) > 8 || item.y < floor - 2) {
+        allSettled = false;
+      }
+
       render(item);
     });
+
+    // En cuanto se asientan todas juntas en el centro, "explotan" hacia
+    // fuera de golpe — un evento claro y visible de que ya son piezas
+    // sueltas con las que se puede jugar.
+    if (!exploded && allSettled) {
+      exploded = true;
+      items.forEach((item, i) => {
+        const dx = item.restX - item.x;
+        const dir = Math.sign(dx) || (i % 2 === 0 ? -1 : 1);
+        // El impulso escala con la distancia real hasta su hueco, si no
+        // todas salen disparadas con la misma fuerza y las de los
+        // extremos se quedan cortas / las del medio se pasan.
+        item.vx = dir * Math.min(950, Math.abs(dx) * 2.3 + 160);
+        item.vy = -(420 + Math.random() * 220);
+        item.angularVel += dir * (120 + Math.random() * 80);
+      });
+    }
 
     setTimeout(tick, 1000 / 60);
   }

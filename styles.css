@@ -107,12 +107,16 @@ a { color: inherit; }
   inset: 0;
 }
 
+/* Letras generadas con la propia tipografía de la web (no recortadas del
+   logo fusionado) — así nunca salen mal cortadas o con muescas. */
 .phys-piece {
   position: absolute;
   top: 0;
   left: 0;
-  height: 92px;
-  width: auto;
+  font-family: var(--display);
+  color: var(--cream);
+  font-size: 92px;
+  line-height: 1;
   user-select: none;
   cursor: grab;
   touch-action: none;
@@ -120,10 +124,7 @@ a { color: inherit; }
   -webkit-user-drag: none;
 }
 
-.piece-reg {
-  height: 48px;
-  clip-path: circle(46%);
-}
+.piece-reg { font-size: 48px; }
 
 .phys-piece:active { cursor: grabbing; }
 
