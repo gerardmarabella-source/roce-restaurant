@@ -50,6 +50,15 @@
     object-fit: cover;
     object-position: center;
     transform: scale(1.1);
+    transition: transform 0.6s ease;
+  }
+
+  /* Al abrir el desplegable de Reservas, la foto hace un ligero
+     push-in hacia la derecha, como si la cámara reaccionara — sin
+     necesidad de una foto distinta donde la pareja señale. */
+  .teaser-page:has(.teaser-reserve:hover) .teaser-bg,
+  .teaser-page:has(.teaser-reserve.is-open) .teaser-bg {
+    transform: scale(1.18) translateX(-2%);
   }
 
   /* Oscurece la foto de fondo lo justo para que el texto/letras crema
@@ -74,12 +83,16 @@
     display: block;
   }
 
-  .teaser-reserve-btn {
+  .teaser-reserve {
     position: absolute;
     top: 50%;
     right: 1.5rem;
     z-index: 4;
     transform: translateY(-50%);
+  }
+
+  .teaser-reserve-btn {
+    display: block;
     writing-mode: vertical-rl;
     background: var(--cream);
     color: var(--black);
@@ -90,9 +103,71 @@
     text-transform: uppercase;
     padding: 1.6rem 0.85rem;
     border-radius: 2px;
-    transition: transform 0.15s ease;
+    white-space: nowrap;
+    transition: opacity 0.15s ease;
   }
-  .teaser-reserve-btn:hover { transform: translateY(-50%) translateX(-2px); }
+
+  /* El propio botón crema se transforma en un panel horizontal con las
+     dos opciones y un breve resumen de cada una — mismo color, sin
+     recurrir a un menú negro aparte. Colapsado por defecto; se abre
+     al pasar el ratón (escritorio) o al pulsar (móvil, sin hover). */
+  .teaser-reserve-panel {
+    position: absolute;
+    top: 0;
+    right: 0;
+    display: flex;
+    flex-direction: column;
+    background: var(--cream);
+    border-radius: 2px;
+    overflow: hidden;
+    max-width: 0;
+    max-height: 0;
+    opacity: 0;
+    pointer-events: none;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.28);
+    transition: max-width 0.3s ease, max-height 0.3s ease, opacity 0.2s ease;
+  }
+  .teaser-reserve:hover .teaser-reserve-btn,
+  .teaser-reserve.is-open .teaser-reserve-btn { opacity: 0; pointer-events: none; }
+
+  .teaser-reserve:hover .teaser-reserve-panel,
+  .teaser-reserve.is-open .teaser-reserve-panel {
+    max-width: 240px;
+    max-height: 200px;
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .teaser-reserve-row {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    width: 220px;
+    padding: 1rem 1.2rem;
+    text-decoration: none;
+    color: var(--black);
+    border-bottom: 1px solid rgba(10, 10, 10, 0.12);
+    transition: background 0.15s ease;
+  }
+  .teaser-reserve-row:last-child { border-bottom: none; }
+  .teaser-reserve-row:hover { background: rgba(10, 10, 10, 0.06); }
+  .tr-row-title {
+    font-family: var(--display);
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+  }
+  .tr-row-sub {
+    font-family: var(--body);
+    font-size: 0.72rem;
+    opacity: 0.65;
+  }
+
+  @media (max-width: 640px) {
+    .teaser-reserve-row { width: 190px; padding: 0.85rem 1rem; }
+    .tr-row-title { font-size: 0.78rem; }
+    .tr-row-sub { font-size: 0.68rem; }
+  }
 
   .teaser-caption {
     position: absolute;
@@ -153,6 +228,10 @@
     /* Foto propia para móvil (1080x1920, ya compuesta para vertical) y
        sin el zoom de escritorio. */
     .teaser-bg { transform: none; }
+    .teaser-page:has(.teaser-reserve:hover) .teaser-bg,
+    .teaser-page:has(.teaser-reserve.is-open) .teaser-bg {
+      transform: scale(1.08);
+    }
   }
 
   /* Horizontal, arriba a la derecha. */
@@ -232,7 +311,19 @@
     <img class="lightbox-logo" src="assets/logo/roce-vertical-cream.png" alt="ROCE">
   </div>
 
-  <a class="teaser-reserve-btn" href="reservar.html">Reservas</a>
+  <div class="teaser-reserve" id="teaserReserve">
+    <a class="teaser-reserve-btn" id="teaserReserveBtn" href="reservar.html">Reservas</a>
+    <div class="teaser-reserve-panel" id="teaserReserveMenu">
+      <a href="reservar.html" class="teaser-reserve-row">
+        <span class="tr-row-title">Restaurante</span>
+        <span class="tr-row-sub">Reserva tu mesa</span>
+      </a>
+      <a href="reservar.html#eventos-privados" class="teaser-reserve-row">
+        <span class="tr-row-title">Privado</span>
+        <span class="tr-row-sub">Experiencia íntima</span>
+      </a>
+    </div>
+  </div>
 
   <p class="teaser-caption">
     <span>Restaurant &amp; Cocktails</span>
@@ -328,6 +419,31 @@
   }
 
   initNewsletterWidget();
+
+  function initTeaserReserveMenu() {
+    const wrap = document.getElementById('teaserReserve');
+    const btn = document.getElementById('teaserReserveBtn');
+    if (!wrap || !btn) return;
+
+    // En escritorio (con hover real) el panel se abre solo con :hover
+    // vía CSS; en táctil no hay hover, así que el primer toque abre el
+    // panel en vez de navegar directamente.
+    const canHover = window.matchMedia('(hover: hover)').matches;
+    if (canHover) return;
+
+    btn.addEventListener('click', (e) => {
+      if (!wrap.classList.contains('is-open')) {
+        e.preventDefault();
+        wrap.classList.add('is-open');
+      }
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!wrap.contains(e.target)) wrap.classList.remove('is-open');
+    });
+  }
+
+  initTeaserReserveMenu();
 </script>
 
 </body>
