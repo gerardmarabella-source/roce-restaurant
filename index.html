@@ -21,7 +21,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=55">
+<link rel="stylesheet" href="styles.css?v=56">
 <style>
   html, body {
     height: 100%;
@@ -221,6 +221,7 @@
     text-decoration: none;
   }
   .teaser-footer a:hover { text-decoration: underline; }
+  .teaser-footer .lang-switch { display: flex; justify-content: center; margin-bottom: 0.4rem; }
 
   @media (max-width: 640px) {
     .teaser-caption { bottom: 5.5rem; padding: 0 1rem; }
@@ -282,7 +283,7 @@
      con la leyenda y el pie — aquí queda compacto en la esquina
      inferior izquierda. */
   .cookie-banner {
-    top: 10.5rem;
+    top: 16rem;
     left: 1.75rem;
     right: auto;
     bottom: auto;
@@ -295,7 +296,7 @@
   .cookie-actions { justify-content: flex-end; }
 
   @media (max-width: 640px) {
-    .cookie-banner { top: 9rem; left: 1.25rem; max-width: min(260px, calc(100vw - 2.5rem)); }
+    .cookie-banner { top: 13rem; left: 1.25rem; max-width: min(260px, calc(100vw - 2.5rem)); }
   }
 </style>
 </head>
@@ -312,15 +313,15 @@
   </div>
 
   <div class="teaser-reserve" id="teaserReserve">
-    <a class="teaser-reserve-btn" id="teaserReserveBtn" href="reservar.html">Reservas</a>
+    <a class="teaser-reserve-btn" id="teaserReserveBtn" href="reservar.html" data-i18n="home_reservas_btn">Reservas</a>
     <div class="teaser-reserve-panel" id="teaserReserveMenu">
       <a href="reservar.html" class="teaser-reserve-row">
-        <span class="tr-row-title">Restaurante</span>
-        <span class="tr-row-sub">Reserva tu mesa</span>
+        <span class="tr-row-title" data-i18n="home_restaurant_title">Restaurante</span>
+        <span class="tr-row-sub" data-i18n="home_restaurant_sub">Reserva tu mesa</span>
       </a>
       <a href="reservar.html#eventos-privados" class="teaser-reserve-row">
-        <span class="tr-row-title">Privado</span>
-        <span class="tr-row-sub">Experiencia íntima</span>
+        <span class="tr-row-title" data-i18n="home_private_title">Privado</span>
+        <span class="tr-row-sub" data-i18n="home_private_sub">Experiencia íntima</span>
       </a>
     </div>
   </div>
@@ -341,7 +342,11 @@
   </div>
 
   <div class="teaser-footer">
-    <a href="privacidad.html">Política de privacidad</a> · <a href="cookies.html">Cookies</a>
+    <div class="lang-switch">
+      <button type="button" data-lang="es">ES</button>
+      <button type="button" data-lang="en">EN</button>
+    </div>
+    <a href="privacidad.html" data-i18n="footer_privacy">Política de privacidad</a> · <a href="cookies.html">Cookies</a>
   </div>
 </div>
 
@@ -353,25 +358,26 @@
   <button class="newsletter-close" id="newsletterClose" aria-label="Cerrar">&times;</button>
   <div class="newsletter-body" id="newsletterBody">
     <p class="newsletter-title">Newsletter</p>
-    <p class="newsletter-text">Entérate antes que nadie de todo.</p>
+    <p class="newsletter-text" data-i18n="newsletter_text">Entérate antes que nadie de todo.</p>
     <form class="newsletter-form" id="newsletterForm">
       <input type="hidden" name="access_key" value="b8af37ee-e300-4bd5-8c98-8223cad17cbe">
       <input type="hidden" name="subject" value="Nueva suscripción — Newsletter ROCE">
       <input type="hidden" name="from_name" value="Newsletter ROCE">
-      <input type="email" name="email" class="newsletter-input" placeholder="tu@email.com" required>
-      <button type="submit" class="newsletter-submit">Enviar</button>
+      <input type="email" name="email" class="newsletter-input" placeholder="tu@email.com" data-i18n-placeholder="newsletter_placeholder" required>
+      <button type="submit" class="newsletter-submit" data-i18n="newsletter_submit">Enviar</button>
     </form>
   </div>
 </div>
 
 <div class="cookie-banner" id="cookieBanner">
-  <p class="cookie-text">Usamos una cookie técnica para recordar tu elección. Sin analítica ni publicidad. <a href="cookies.html">Más información</a>.</p>
+  <p class="cookie-text"><span data-i18n="cookie_text">Usamos una cookie técnica para recordar tu elección. Sin analítica ni publicidad.</span> <a href="cookies.html" data-i18n="cookie_more_info">Más información</a>.</p>
   <div class="cookie-actions">
-    <button class="cookie-reject" id="cookieReject">Rechazar</button>
-    <button class="cookie-accept" id="cookieAccept">Aceptar</button>
+    <button class="cookie-reject" id="cookieReject" data-i18n="cookie_reject">Rechazar</button>
+    <button class="cookie-accept" id="cookieAccept" data-i18n="cookie_accept">Aceptar</button>
   </div>
 </div>
 <script src="cookies.js?v=1"></script>
+<script src="i18n.js?v=1"></script>
 
 <script>
   function initNewsletterWidget() {
@@ -404,15 +410,15 @@
         });
         const data = await res.json();
         if (!data.success) throw new Error(data.message || 'Error desconocido');
-        body.innerHTML = '<p class="newsletter-thanks">¡Gracias! Te avisaremos antes de la apertura.</p>';
+        body.innerHTML = `<p class="newsletter-thanks">${window.ROCE_I18N.t('newsletter_thanks')}</p>`;
       } catch (err) {
         submitBtn.disabled = false;
-        submitBtn.textContent = 'Enviar';
+        submitBtn.textContent = window.ROCE_I18N.t('newsletter_submit');
         const existing = body.querySelector('.newsletter-error');
         if (existing) existing.remove();
         body.querySelector('.newsletter-text').insertAdjacentHTML(
           'afterend',
-          '<p class="newsletter-error">No se ha podido enviar, inténtalo de nuevo.</p>'
+          `<p class="newsletter-error">${window.ROCE_I18N.t('newsletter_error')}</p>`
         );
       }
     });

@@ -12,7 +12,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=55">
+<link rel="stylesheet" href="styles.css?v=56">
 <style>
   .legal-wrapper { max-width: 760px; margin: 0 auto; padding: 8rem 1.5rem 5rem; }
   .legal-wrapper h1 { font-family: var(--display); font-size: clamp(1.8rem, 5vw, 2.6rem); margin-bottom: 0.5rem; }
@@ -33,54 +33,54 @@
 <header class="topbar">
   <a href="/" aria-label="ROCE — inicio"><img class="nav-logo" src="assets/logo/roce-horizontal-black.png" alt="ROCE"></a>
   <nav class="topnav">
-    <a href="reservar.html" class="nav-cta">Reservar</a>
+    <a href="reservar.html" class="nav-cta" data-i18n="nav_reservar">Reservar</a>
   </nav>
 </header>
 
 <main class="legal-wrapper">
-  <a class="legal-back" href="/">&larr; Volver a ROCE</a>
-  <h1>Política de cookies</h1>
-  <p class="legal-updated">Última actualización: agosto de 2026</p>
+  <a class="legal-back" href="/" data-i18n="back_to_home">&larr; Volver a ROCE</a>
+  <h1 data-i18n="cookies_title">Política de cookies</h1>
+  <p class="legal-updated" data-i18n="privacy_updated">Última actualización: agosto de 2026</p>
 
-  <h2>1. Qué son las cookies</h2>
-  <p>
+  <h2 data-i18n="cookies_h1">1. Qué son las cookies</h2>
+  <p data-i18n="cookies_p1">
     Las cookies son pequeños archivos de texto que un sitio web guarda en tu navegador cuando lo visitas. Sirven
     para que la web funcione correctamente, recuerde tus preferencias o, en algunos casos, analice cómo la usas.
   </p>
 
-  <h2>2. Qué cookies usa esta web</h2>
-  <p>
+  <h2 data-i18n="cookies_h2">2. Qué cookies usa esta web</h2>
+  <p data-i18n="cookies_p2">
     roce.es no utiliza cookies de analítica, publicidad ni de terceros. Solo instalamos una cookie propia,
     estrictamente técnica, cuando aceptas o rechazas el aviso de cookies que aparece en tu primera visita:
   </p>
   <table>
     <tr>
-      <th>Nombre</th>
-      <th>Finalidad</th>
-      <th>Titular</th>
-      <th>Duración</th>
+      <th data-i18n="cookies_th_name">Nombre</th>
+      <th data-i18n="cookies_th_purpose">Finalidad</th>
+      <th data-i18n="cookies_th_owner">Titular</th>
+      <th data-i18n="cookies_th_duration">Duración</th>
     </tr>
     <tr>
       <td>roce_cookie_consent</td>
-      <td>Recordar si has aceptado o rechazado el aviso de cookies, para no volver a mostrártelo.</td>
-      <td>Propia (ROCE)</td>
-      <td>Persistente, hasta que borres los datos de navegación de tu dispositivo</td>
+      <td data-i18n="cookies_td_purpose">Recordar si has aceptado o rechazado el aviso de cookies, para no volver a mostrártelo.</td>
+      <td data-i18n="cookies_td_owner">Propia (ROCE)</td>
+      <td data-i18n="cookies_td_duration">Persistente, hasta que borres los datos de navegación de tu dispositivo</td>
     </tr>
   </table>
-  <p>
+  <p data-i18n="cookies_p2b">
     Al ser estrictamente necesaria para el funcionamiento del propio aviso, esta cookie no requiere tu
     consentimiento previo, conforme al artículo 22.2 de la LSSI-CE.
   </p>
 
-  <h2>3. Cómo gestionar las cookies</h2>
-  <p>
+  <h2 data-i18n="cookies_h3">3. Cómo gestionar las cookies</h2>
+  <p data-i18n="cookies_p3">
     Puedes eliminar esta cookie en cualquier momento borrando los datos de navegación de tu navegador. Volveremos
     a mostrarte el aviso en tu siguiente visita. La mayoría de navegadores también te permiten bloquear cookies
     desde su configuración de privacidad.
   </p>
 
-  <h2>4. Más información</h2>
-  <p>
+  <h2 data-i18n="cookies_h4">4. Más información</h2>
+  <p data-i18n-html="cookies_p4">
     Para saber cómo tratamos tus datos personales, consulta nuestra
     <a href="privacidad.html">política de privacidad</a>.
   </p>
@@ -97,19 +97,24 @@
   <div class="footer-bottom">
     <span>© 2026 ROCE</span>
     <span>All rights reserved</span>
-    <a href="privacidad.html">Política de privacidad</a>
-    <a href="cookies.html">Política de cookies</a>
+    <a href="privacidad.html" data-i18n="footer_privacy">Política de privacidad</a>
+    <a href="cookies.html" data-i18n="footer_cookies">Política de cookies</a>
+    <span class="lang-switch">
+      <button type="button" data-lang="es">ES</button>
+      <button type="button" data-lang="en">EN</button>
+    </span>
   </div>
 </footer>
 
 <div class="cookie-banner" id="cookieBanner">
-  <p class="cookie-text">Usamos una cookie técnica para recordar tu elección. Sin analítica ni publicidad. <a href="cookies.html">Más información</a>.</p>
+  <p class="cookie-text"><span data-i18n="cookie_text">Usamos una cookie técnica para recordar tu elección. Sin analítica ni publicidad.</span> <a href="cookies.html" data-i18n="cookie_more_info">Más información</a>.</p>
   <div class="cookie-actions">
-    <button class="cookie-reject" id="cookieReject">Rechazar</button>
-    <button class="cookie-accept" id="cookieAccept">Aceptar</button>
+    <button class="cookie-reject" id="cookieReject" data-i18n="cookie_reject">Rechazar</button>
+    <button class="cookie-accept" id="cookieAccept" data-i18n="cookie_accept">Aceptar</button>
   </div>
 </div>
 <script src="cookies.js?v=1"></script>
+<script src="i18n.js?v=1"></script>
 
 </body>
 </html>

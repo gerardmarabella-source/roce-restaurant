@@ -21,7 +21,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=55">
+<link rel="stylesheet" href="styles.css?v=56">
 <style>
   .reserve-form-page {
     min-height: 100vh;
@@ -242,14 +242,14 @@
 
 <main class="reserve-form-page">
   <div class="reserve-form-wrap">
-    <a class="reserve-back" href="/">&larr; Volver a ROCE</a>
-    <h1>Reserva<br>tu mesa</h1>
-    <p class="reserve-form-intro">
+    <a class="reserve-back" href="/" data-i18n="back_to_home">&larr; Volver a ROCE</a>
+    <h1 data-i18n-html="reservar_h1">Reserva<br>tu mesa</h1>
+    <p class="reserve-form-intro" data-i18n="reservar_intro">
       Rellena el formulario y te confirmamos la reserva por email en cuanto lo leamos.
       Abrimos el 12 de octubre de 2026 — solo aceptamos reservas a partir de esa fecha.
     </p>
 
-    <a class="pe-teaser-link" href="#eventos-privados">Reserva nuestro privado ↓</a>
+    <a class="pe-teaser-link" href="#eventos-privados" data-i18n="reservar_private_link">Reserva nuestro privado ↓</a>
 
     <form class="reserve-form" id="reservationForm">
       <input type="hidden" name="access_key" value="b8af37ee-e300-4bd5-8c98-8223cad17cbe">
@@ -258,35 +258,35 @@
       <input type="checkbox" name="botcheck" class="botcheck" style="display: none;">
 
       <label>
-        Nombre
-        <input type="text" name="nombre" placeholder="Tu nombre" required>
+        <span data-i18n="label_name">Nombre</span>
+        <input type="text" name="nombre" placeholder="Tu nombre" data-i18n-placeholder="placeholder_name" required>
       </label>
 
       <label>
-        Email
-        <input type="email" name="email" placeholder="tu@email.com" required>
+        <span data-i18n="label_email">Email</span>
+        <input type="email" name="email" placeholder="tu@email.com" data-i18n-placeholder="placeholder_email" required>
       </label>
 
       <div class="field-row">
         <label>
-          Teléfono
+          <span data-i18n="label_phone">Teléfono</span>
           <input type="tel" name="telefono" placeholder="600 000 000">
         </label>
         <label>
-          Personas
+          <span data-i18n="label_guests_count">Personas</span>
           <input type="number" name="personas" min="1" max="30" placeholder="2" required>
         </label>
       </div>
 
       <div class="field-row">
         <label>
-          Fecha
+          <span data-i18n="label_date">Fecha</span>
           <input type="date" name="fecha" min="2026-10-12" required>
         </label>
         <label>
-          Hora
+          <span data-i18n="label_time">Hora</span>
           <select name="hora" required>
-            <option value="" disabled selected>Elige un turno</option>
+            <option value="" disabled selected data-i18n="option_choose_time">Elige un turno</option>
             <option value="20:00">20:00</option>
             <option value="22:00">22:00</option>
           </select>
@@ -294,11 +294,11 @@
       </div>
 
       <label>
-        Comentarios
-        <textarea name="comentarios" placeholder="Alergias, celebraciones, preferencias..."></textarea>
+        <span data-i18n="label_comments">Comentarios</span>
+        <textarea name="comentarios" placeholder="Alergias, celebraciones, preferencias..." data-i18n-placeholder="placeholder_comments"></textarea>
       </label>
 
-      <button type="submit" class="reserve-submit" id="reserveSubmitBtn">Enviar reserva</button>
+      <button type="submit" class="reserve-submit" id="reserveSubmitBtn" data-i18n="submit_booking">Enviar reserva</button>
     </form>
     <p class="reserve-form-status" id="reserveFormStatus" role="status" aria-live="polite"></p>
   </div>
@@ -306,27 +306,27 @@
 
 <section class="private-events" id="eventos-privados">
   <div class="private-events-wrap">
-    <span class="pe-eyebrow">Eventos privados</span>
-    <h2>Algo más<br>exclusivo</h2>
-    <p class="pe-intro">
+    <span class="pe-eyebrow" data-i18n="pe_eyebrow">Eventos privados</span>
+    <h2 data-i18n-html="pe_title">Algo más<br>exclusivo</h2>
+    <p class="pe-intro" data-i18n="pe_intro">
       Reserva nuestro privado y disfruta de la experiencia de una forma
       mucho más íntima.
     </p>
 
     <div class="pe-field">
-      <span class="pe-label">¿Cuántos sois?</span>
+      <span class="pe-label" data-i18n="pe_label_guests">¿Cuántos sois?</span>
       <div class="pe-chips" id="peGuestCount">
-        <button type="button" class="pe-chip" data-value="entre 2 y 6">2-6</button>
-        <button type="button" class="pe-chip" data-value="entre 6 y 12">6-12</button>
-        <button type="button" class="pe-chip" data-value="entre 12 y 18">12-18</button>
+        <button type="button" class="pe-chip" data-value="2-6">2-6</button>
+        <button type="button" class="pe-chip" data-value="6-12">6-12</button>
+        <button type="button" class="pe-chip" data-value="12-18">12-18</button>
       </div>
     </div>
 
     <a class="pe-submit" id="peWhatsappBtn" href="#" target="_blank" rel="noopener">
       <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.46 1.32 4.96L2 22l5.25-1.38a9.9 9.9 0 0 0 4.79 1.22h.01c5.46 0 9.91-4.45 9.91-9.92C21.96 6.45 17.5 2 12.04 2Zm0 18.15h-.01a8.2 8.2 0 0 1-4.18-1.14l-.3-.18-3.12.82.83-3.04-.2-.31a8.24 8.24 0 0 1-1.26-4.39c0-4.55 3.7-8.25 8.25-8.25 2.2 0 4.27.86 5.83 2.42a8.19 8.19 0 0 1 2.41 5.83c0 4.55-3.7 8.24-8.25 8.24Zm4.52-6.17c-.25-.12-1.47-.72-1.7-.81-.23-.08-.39-.12-.56.13-.17.25-.64.81-.78.97-.14.17-.29.18-.53.06-.25-.12-1.05-.39-2-1.23-.74-.66-1.24-1.48-1.39-1.73-.14-.25-.02-.38.11-.51.11-.11.25-.29.37-.43.12-.14.16-.25.25-.41.08-.17.04-.31-.02-.44-.06-.12-.56-1.34-.76-1.84-.2-.48-.41-.42-.56-.43h-.48c-.17 0-.44.06-.67.31-.23.25-.87.85-.87 2.08s.89 2.42 1.02 2.58c.12.17 1.75 2.67 4.24 3.75.59.26 1.05.41 1.41.52.59.19 1.13.16 1.55.1.47-.07 1.47-.6 1.68-1.18.21-.58.21-1.07.14-1.18-.06-.11-.23-.17-.48-.29Z"/></svg>
-      Hablar por WhatsApp
+      <span data-i18n="pe_whatsapp_btn">Hablar por WhatsApp</span>
     </a>
-    <p class="pe-note">Consumo mínimo por persona. Te contamos los detalles por WhatsApp.</p>
+    <p class="pe-note" data-i18n="pe_note">Consumo mínimo por persona. Te contamos los detalles por WhatsApp.</p>
   </div>
 </section>
 
@@ -341,19 +341,24 @@
   <div class="footer-bottom">
     <span>© 2026 ROCE</span>
     <span>All rights reserved</span>
-    <a href="privacidad.html">Política de privacidad</a>
-    <a href="cookies.html">Política de cookies</a>
+    <a href="privacidad.html" data-i18n="footer_privacy">Política de privacidad</a>
+    <a href="cookies.html" data-i18n="footer_cookies">Política de cookies</a>
+    <span class="lang-switch">
+      <button type="button" data-lang="es">ES</button>
+      <button type="button" data-lang="en">EN</button>
+    </span>
   </div>
 </footer>
 
 <div class="cookie-banner" id="cookieBanner">
-  <p class="cookie-text">Usamos una cookie técnica para recordar tu elección. Sin analítica ni publicidad. <a href="cookies.html">Más información</a>.</p>
+  <p class="cookie-text"><span data-i18n="cookie_text">Usamos una cookie técnica para recordar tu elección. Sin analítica ni publicidad.</span> <a href="cookies.html" data-i18n="cookie_more_info">Más información</a>.</p>
   <div class="cookie-actions">
-    <button class="cookie-reject" id="cookieReject">Rechazar</button>
-    <button class="cookie-accept" id="cookieAccept">Aceptar</button>
+    <button class="cookie-reject" id="cookieReject" data-i18n="cookie_reject">Rechazar</button>
+    <button class="cookie-accept" id="cookieAccept" data-i18n="cookie_accept">Aceptar</button>
   </div>
 </div>
 <script src="cookies.js?v=1"></script>
+<script src="i18n.js?v=1"></script>
 
 <script>
   const form = document.getElementById('reservationForm');
@@ -370,7 +375,7 @@
     // lo revalidamos aquí antes de enviar nada.
     const fecha = form.fecha.value;
     if (fecha < OPENING_DATE) {
-      status.textContent = 'Solo aceptamos reservas a partir del 12 de octubre de 2026 (apertura).';
+      status.textContent = window.ROCE_I18N.t('status_too_early');
       status.classList.add('is-error');
       return;
     }
@@ -386,7 +391,7 @@
     payload.fecha = fechaFmt;
 
     btn.disabled = true;
-    btn.textContent = 'Enviando...';
+    btn.textContent = window.ROCE_I18N.t('submit_sending');
     status.textContent = '';
     status.classList.remove('is-error');
 
@@ -401,15 +406,15 @@
       if (data.success) {
         form.reset();
         form.style.display = 'none';
-        status.textContent = '¡Reserva enviada! Te confirmamos por email en cuanto la leamos.';
+        status.textContent = window.ROCE_I18N.t('status_success');
       } else {
         throw new Error(data.message || 'Error desconocido');
       }
     } catch (err) {
-      status.textContent = 'No se ha podido enviar. Escríbenos directamente a booking@roce.es.';
+      status.textContent = window.ROCE_I18N.t('status_error');
       status.classList.add('is-error');
       btn.disabled = false;
-      btn.textContent = 'Enviar reserva';
+      btn.textContent = window.ROCE_I18N.t('submit_booking');
     }
   });
 
@@ -434,9 +439,9 @@
   }
 
   function updatePeLink() {
-    let msg = 'Hola! Nos gustaría organizar un evento privado en ROCE.';
-    if (peState.guests) msg += ` Seríamos ${peState.guests} personas.`;
-    msg += ' ¿Nos contáis disponibilidad?';
+    let msg = window.ROCE_I18N.t('wa_intro');
+    if (peState.guests) msg += ' ' + window.ROCE_I18N.t('wa_guests').replace('{n}', peState.guests);
+    msg += ' ' + window.ROCE_I18N.t('wa_outro');
 
     document.getElementById('peWhatsappBtn').href =
       `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
