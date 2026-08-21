@@ -20,14 +20,28 @@ function initLogoGravity() {
   const CEILING_RESTITUTION = 0.12; // rebote seco: no puede salir por arriba del cuadro
   const SETTLE_VELOCITY = 60;
   const MAX_DT = 0.05; // clamp so a slow/late frame can't move things too far
-  const CAPTION_RESERVE = 0.24; // leave room at the bottom for the address text
 
   function stageSize() {
     const r = stage.getBoundingClientRect();
     return { w: r.width, h: r.height };
   }
 
+  // Cuánto del final del stage se reserva para el texto de debajo (la
+  // dirección/caption) — calculado a partir de dónde empieza ese texto
+  // de verdad, en vez de un porcentaje fijo a ojo, así las letras llegan
+  // justo hasta ahí sea cual sea la página (hero o teaser).
+  function captionReserve() {
+    const caption = document.querySelector('.arch-caption, .teaser-caption');
+    if (!caption) return 0.24;
+    const stageRect = stage.getBoundingClientRect();
+    const capRect = caption.getBoundingClientRect();
+    if (capRect.top <= stageRect.top || capRect.top >= stageRect.bottom) return 0.24;
+    const gap = stageRect.bottom - capRect.top + 10; // pequeño margen para no tocar el texto
+    return Math.max(0, Math.min(0.9, gap / stageRect.height));
+  }
+
   let { w: stageW, h: stageH } = stageSize();
+  let captionReservePct = captionReserve();
 
   // Las piezas caen apiladas en el centro (como si cayera el logo entero)
   // y, una vez asentadas, "se desmontan" de golpe hacia su hueco — así el
@@ -112,11 +126,13 @@ function initLogoGravity() {
 
   window.addEventListener('resize', () => {
     ({ w: stageW, h: stageH } = stageSize());
+    captionReservePct = captionReserve();
   });
   // Dispatched by initArchScroll whenever it resizes the arch on scroll —
   // separate from 'resize' so the two don't trigger each other in a loop.
   window.addEventListener('archresize', () => {
     ({ w: stageW, h: stageH } = stageSize());
+    captionReservePct = captionReserve();
   });
 
   let last = performance.now();
@@ -143,7 +159,7 @@ function initLogoGravity() {
         item.vy = Math.abs(item.vy) * CEILING_RESTITUTION;
       }
 
-      const floor = stageH - item.h - stageH * CAPTION_RESERVE;
+      const floor = stageH - item.h - stageH * captionReservePct;
       if (item.y > floor) {
         item.y = floor;
         if (Math.abs(item.vy) > SETTLE_VELOCITY) {
