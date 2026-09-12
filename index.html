@@ -197,7 +197,22 @@
     width: auto;
   }
   .newsletter-widget:not(.is-collapsed) .newsletter-toggle { opacity: 0; pointer-events: none; }
-  .newsletter-toggle.is-subscribed { opacity: 0.45; cursor: default; }
+  .newsletter-toggle { position: relative; }
+  .newsletter-toggle.is-subscribed { opacity: 0.6; cursor: default; }
+  .newsletter-strike {
+    display: none;
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+  .newsletter-strike path {
+    fill: none;
+    stroke: #c0392b;
+    stroke-width: 10;
+    stroke-linecap: round;
+  }
+  .newsletter-toggle.is-subscribed .newsletter-strike { display: block; }
 
   /* El formulario aparece dentro de un plato real (foto pasada por
      el usuario) en vez de una caja — el contenido queda encajado en
@@ -358,6 +373,9 @@
       <div class="newsletter-widget is-collapsed" id="newsletterWidget">
         <button class="teaser-cta teaser-cta-img newsletter-toggle" id="newsletterToggle" aria-label="Newsletter">
           <img src="assets/logo/label-newsletter.png" alt="Newsletter">
+          <svg class="newsletter-strike" viewBox="0 0 200 50" preserveAspectRatio="none" aria-hidden="true">
+            <path d="M6 23 C 40 19, 70 27, 100 22 S 160 18, 194 22" />
+          </svg>
         </button>
         <div class="newsletter-body" id="newsletterBody">
           <button class="newsletter-close" id="newsletterClose" aria-label="Cerrar">&times;</button>
