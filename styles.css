@@ -5,6 +5,16 @@
   font-style: normal;
   font-display: swap;
 }
+@font-face {
+  /* Peso real en negrita: sin esto, cualquier font-weight:700/800
+     sobre var(--display) forzaría un negrita sintético (borroso) del
+     regular en vez de usar el trazo real de Helvetica Neue Bold. */
+  font-family: "Helvetica Neue Web";
+  src: url("/assets/fonts/HelveticaNeue-Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
 
 :root {
   --black: #0a0a0a;
@@ -16,7 +26,10 @@
   --white: #ffffff;
   --cement: #b0afa9; /* prueba: sustituye al verde oliva en el arco del hero */
 
-  --display: "Archivo Black", "Helvetica Neue", Arial, sans-serif;
+  /* Tipografía de marca: Helvetica Neue real (la fuente que usa el
+     negocio), no Archivo Black — se mantiene solo como último
+     fallback por si el archivo no llega a cargar. */
+  --display: "Helvetica Neue Web", "Helvetica Neue", Arial, "Archivo Black", sans-serif;
   --body: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
@@ -438,8 +451,8 @@ a { color: inherit; }
 }
 
 .footer-info p {
-  font-family: "Helvetica Neue", Arial, sans-serif;
-  font-weight: 800;
+  font-family: var(--display);
+  font-weight: 700;
   font-size: clamp(1.1rem, 2.6vw, 1.5rem);
   line-height: 1.1;
   color: var(--white);
