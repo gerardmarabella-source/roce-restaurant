@@ -47,26 +47,15 @@
 <link rel="stylesheet" href="styles.css?v=65">
 <style>
   html, body {
-    min-height: 100dvh;
-    overscroll-behavior: none;
+    height: 100%;
+    overflow: hidden;
     background: var(--black);
   }
 
-  /* Antes esto se bloqueaba del todo (overflow:hidden + altura exacta)
-     para que se viera como una sola pantalla fija, sin scroll. Pero en
-     algunos móviles (confirmado: iPhone, Chrome abierto desde
-     WhatsApp) el navegador informa mal de su propio alto disponible, a
-     veces durante toda la sesión, sin forma de detectarlo ni corregirlo
-     por JS — ni forzando la medida ni recargando la página se arregla
-     siempre. Usar 100lvh (el alto "grande", con la barra del navegador
-     recogida) en vez de 100dvh sobrestima un poco el alto en vez de
-     quedarse corto, así que en el peor caso hace falta un pequeño
-     scroll para llegar al pie — mucho mejor que un hueco negro roto e
-     inalcanzable. */
   .teaser-page {
     position: relative;
     width: 100vw;
-    height: 100lvh;
+    height: 100dvh;
     color: var(--cream);
     overflow: hidden;
     background: var(--black);
