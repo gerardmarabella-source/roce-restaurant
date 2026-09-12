@@ -22,7 +22,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/styles.css?v=58">
+<link rel="stylesheet" href="/styles.css?v=59">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.css">
 <style>
   .reserve-form-page {
@@ -35,7 +35,7 @@
   }
   .reserve-form-wrap { width: 100%; max-width: 520px; }
   .reserve-form-wrap h1 {
-    font-family: "Helvetica Neue Web", "Helvetica Neue", Arial, sans-serif;
+    font-family: var(--display);
     font-size: clamp(2.2rem, 7vw, 3.2rem);
     line-height: 0.95;
     text-transform: uppercase;
@@ -202,10 +202,6 @@
   .topbar { background: var(--black); backdrop-filter: none; -webkit-backdrop-filter: none; }
   .nav-logo { height: 56px; }
 
-  /* Leyenda del footer como imagen (tipografía exacta pedida por el
-     usuario, extraída de su propia captura), no texto vivo. */
-  .footer-info p { font-weight: 700; }
-
   /* Eventos privados / grupos: sin describir el espacio, todo el detalle
      se resuelve por WhatsApp con un mensaje ya precompuesto. */
   .private-events {
@@ -235,7 +231,7 @@
     background: rgba(159, 130, 87, 0.4);
   }
   .private-events-wrap h2 {
-    font-family: "Helvetica Neue Web", "Helvetica Neue", Arial, sans-serif;
+    font-family: var(--display);
     font-size: clamp(1.8rem, 6vw, 2.6rem);
     line-height: 1;
     text-transform: uppercase;
