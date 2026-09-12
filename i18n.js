@@ -50,7 +50,7 @@
     newsletter_confirm_yes: { es: 'Sí, cerrar', en: 'Yes, close' },
 
     // reservar.html
-    reservar_h1: { es: 'Reserva<br>tu mesa', en: 'Book<br>your table' },
+    reservar_h1: { es: 'Reserva<br>tu lugar', en: 'Reserve<br>your spot' },
     reservar_intro: {
       es: 'Rellena el formulario y te confirmamos la reserva por email en cuanto lo leamos. Abrimos pronto — solo aceptamos reservas viernes y sábados.',
       en: "Fill in the form and we'll confirm your booking by email as soon as we read it. We're opening soon — we only accept bookings on Fridays and Saturdays.",
