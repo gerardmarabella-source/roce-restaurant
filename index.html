@@ -177,16 +177,18 @@
 
   @media (max-width: 640px) {
     /* A este ancho, "Reservas" y "Newsletter" no caben lado a lado —
-       se apilan en vertical, cada una ocupando casi todo el ancho. */
+       se apilan en vertical. Misma altura para las dos (igual que en
+       la imagen de referencia), cada una con su ancho natural — así
+       "Newsletter" (más letras) llega casi al borde y "Reservas"
+       queda proporcionalmente más corta, sin verse desigual. */
     .teaser-cta-row {
       flex-direction: column;
-      align-items: stretch;
+      align-items: flex-start;
       gap: 0.3rem;
       padding: 0 1rem 0.75rem;
     }
     .teaser-cta { font-size: clamp(2.1rem, 12.5vw, 3rem); }
-    .newsletter-widget { width: 100%; }
-    .teaser-cta-img img { width: 100%; height: auto; }
+    .teaser-cta-img img { height: clamp(2.4rem, 11.5vw, 3.2rem); width: auto; }
     .newsletter-widget .newsletter-body { right: auto; left: 0; }
     /* Foto propia para móvil (1080x1920, ya compuesta para vertical) y
        sin el zoom de escritorio. */
