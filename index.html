@@ -197,6 +197,7 @@
     width: auto;
   }
   .newsletter-widget:not(.is-collapsed) .newsletter-toggle { opacity: 0; pointer-events: none; }
+  .newsletter-toggle.is-subscribed { opacity: 0.45; cursor: default; }
 
   /* El formulario aparece dentro de un plato real (foto pasada por
      el usuario) en vez de una caja — el contenido queda encajado en
@@ -418,6 +419,16 @@
     const emailInput = form ? form.querySelector('.newsletter-input') : null;
     if (!widget || !toggleBtn || !closeBtn || !form || !body) return;
 
+    // Si ya se ha suscrito antes (en esta visita o en una anterior), no
+    // tiene sentido volver a abrirle el formulario ni hacerle pasar por
+    // el "¿seguro que quieres abandonar?" para cerrarlo — se deja el
+    // botón inhabilitado directamente.
+    const SUBSCRIBED_KEY = 'roce_newsletter_subscribed';
+    if (localStorage.getItem(SUBSCRIBED_KEY)) {
+      toggleBtn.disabled = true;
+      toggleBtn.classList.add('is-subscribed');
+    }
+
     // El input de email es pequeño a propósito (para que quepa en el
     // plato) y eso hace que iOS haga zoom al enfocarlo — es lo que se
     // quiere, para que se vea bien lo que escribes. El problema era que
@@ -493,9 +504,12 @@
         const data = await res.json();
         if (!data.success) throw new Error(data.message || 'Error desconocido');
         plateContent.innerHTML = `<p class="newsletter-thanks">${window.ROCE_I18N.t('newsletter_thanks')}</p>`;
+        localStorage.setItem(SUBSCRIBED_KEY, '1');
+        toggleBtn.disabled = true;
+        toggleBtn.classList.add('is-subscribed');
         // Ya se ha suscrito, no tiene sentido preguntarle si quiere
         // irse (ni mostrarle el plato roto) — se cierra solo.
-        setTimeout(() => widget.classList.add('is-collapsed'), 3000);
+        setTimeout(() => widget.classList.add('is-collapsed'), 2000);
       } catch (err) {
         submitBtn.disabled = false;
         submitBtn.textContent = window.ROCE_I18N.t('newsletter_submit');
