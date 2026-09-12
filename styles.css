@@ -1,3 +1,11 @@
+@font-face {
+  font-family: "Helvetica Neue Web";
+  src: url("/assets/fonts/HelveticaNeue-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   --black: #0a0a0a;
   --olive: #595934;
