@@ -22,16 +22,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=57">
+<link rel="stylesheet" href="styles.css?v=58">
 <style>
-  @font-face {
-    font-family: "Helvetica Neue Web";
-    src: url("assets/fonts/HelveticaNeue-Regular.woff2") format("woff2");
-    font-weight: 400;
-    font-style: normal;
-    font-display: swap;
-  }
-
   html, body {
     height: 100%;
     overflow: hidden;
@@ -108,10 +100,16 @@
   }
   .teaser-contact a:hover { opacity: 1; }
   .teaser-contact svg { width: 20px; height: 20px; }
+  /* El sobre ocupa menos alto que su viewBox que el círculo de
+     Instagram (15/24 vs 18/24), así que a igual tamaño de caja se ve
+     más bajo — se agranda su caja proporcionalmente para que la
+     altura visible de ambos iconos quede igual. */
+  .teaser-contact .icon-mail svg { width: 24px; height: 24px; }
 
   @media (max-width: 640px) {
     .teaser-contact { top: 1.5rem; right: 1.25rem; gap: 0.5rem; }
     .teaser-contact svg { width: 18px; height: 18px; }
+    .teaser-contact .icon-mail svg { width: 21.6px; height: 21.6px; }
   }
 
   /* Franja inferior: pie compacto (idioma/legal) encima de las dos
@@ -316,7 +314,7 @@
     <a href="https://www.instagram.com/somosroce" target="_blank" rel="noopener" aria-label="Instagram">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.3" cy="6.7" r="1"/></svg>
     </a>
-    <a href="mailto:reservas@roce.es" aria-label="Email">
+    <a href="mailto:reservas@roce.es" aria-label="Email" class="icon-mail">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2.5" y="4.5" width="19" height="15" rx="1.5"/><path d="M3 6l9 7 9-7"/></svg>
     </a>
   </div>
