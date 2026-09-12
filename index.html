@@ -434,6 +434,13 @@
     window.visualViewport.addEventListener('resize', fixTeaserHeight);
   }
   [100, 300, 600, 1200].forEach((ms) => setTimeout(fixTeaserHeight, ms));
+  // Por si Chrome pre-renderiza la página en segundo plano antes de
+  // mostrarla (algo que apps como WhatsApp usan para que parezca más
+  // rápido) con un tamaño que no es el real, y no vuelve a medir hasta
+  // que el usuario toca la pantalla.
+  document.addEventListener('visibilitychange', fixTeaserHeight);
+  window.addEventListener('focus', fixTeaserHeight);
+  document.addEventListener('touchstart', fixTeaserHeight, { once: true, passive: true });
 
   function initNewsletterWidget() {
     const widget = document.getElementById('newsletterWidget');
