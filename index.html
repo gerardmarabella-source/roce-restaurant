@@ -50,6 +50,13 @@
     height: 100%;
     overflow: hidden;
     background: var(--black);
+    /* En iOS Safari, overflow:hidden por sí solo no siempre evita el
+       scroll — cuando la barra de direcciones se recoge/expande, el
+       viewport cambia de alto y a veces deja hacer scroll un momento,
+       dejando ver hueco negro debajo de la pantalla. position:fixed
+       bloquea el scroll de verdad, pase lo que pase con la barra. */
+    position: fixed;
+    width: 100%;
   }
 
   .teaser-page {
