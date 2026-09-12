@@ -16,6 +16,8 @@
     cookie_accept: { es: 'Aceptar', en: 'Accept' },
 
     // Compartido: footer
+    footer_legal: { es: 'Aviso legal', en: 'Legal Disclaimer' },
+    footer_terms: { es: 'Términos y condiciones', en: 'Terms & Conditions' },
     footer_privacy: { es: 'Política de privacidad', en: 'Privacy Policy' },
     footer_cookies: { es: 'Política de cookies', en: 'Cookie Policy' },
     nav_reservar: { es: 'Reservar', en: 'Book' },
@@ -212,6 +214,68 @@
     cookies_p4: {
       es: 'Para saber cómo tratamos tus datos personales, consulta nuestra <a href="privacidad.html">política de privacidad</a>.',
       en: 'To find out how we handle your personal data, see our <a href="privacidad.html">privacy policy</a>.',
+    },
+
+    // aviso-legal.html
+    legal_title: { es: 'Aviso legal', en: 'Legal Disclaimer' },
+    legal_h1: { es: '1. Datos identificativos', en: '1. Identification details' },
+    legal_h2: { es: '2. Objeto', en: '2. Purpose' },
+    legal_p2: {
+      es: 'Este aviso legal regula el acceso y uso del sitio web roce.es (en adelante, "el sitio web"), del que es titular ROCE. El acceso y uso del sitio web atribuye la condición de usuario e implica la aceptación de las condiciones aquí recogidas.',
+      en: 'This legal disclaimer governs access to and use of the website roce.es (the "website"), owned by ROCE. Accessing and using the website makes you a user and implies acceptance of the conditions set out here.',
+    },
+    legal_h3: { es: '3. Condiciones de uso', en: '3. Terms of use' },
+    legal_p3: {
+      es: 'El sitio web tiene como finalidad informar sobre ROCE y permitir la solicitud de reservas de mesa o de nuestro espacio privado. El usuario se compromete a hacer un uso adecuado y lícito del sitio web, así como a facilitar información veraz al rellenar cualquier formulario, en particular el de reservas.',
+      en: 'The website is intended to provide information about ROCE and to allow requests for table or private-space bookings. Users agree to make appropriate and lawful use of the website, and to provide truthful information when filling in any form, in particular the booking form.',
+    },
+    legal_h4: { es: '4. Propiedad intelectual e industrial', en: '4. Intellectual and industrial property' },
+    legal_p4: {
+      es: 'Los contenidos del sitio web (textos, imágenes, logotipos, diseño y demás elementos) son propiedad de ROCE o de terceros que han autorizado su uso, y están protegidos por la normativa de propiedad intelectual e industrial. Queda prohibida su reproducción, distribución o modificación sin autorización expresa.',
+      en: "The website's contents (text, images, logos, design and other elements) are owned by ROCE or by third parties who have authorized their use, and are protected under intellectual and industrial property law. Reproducing, distributing or modifying them without express authorization is prohibited.",
+    },
+    legal_h5: { es: '5. Exclusión de responsabilidad', en: '5. Disclaimer of liability' },
+    legal_p5: {
+      es: 'ROCE no garantiza la disponibilidad y continuidad del funcionamiento del sitio web, ni se hace responsable de los daños que pudieran derivarse de la falta de disponibilidad o de errores en su contenido. La información sobre disponibilidad de mesas y horarios está sujeta a confirmación por parte de ROCE.',
+      en: 'ROCE does not guarantee the availability or continuity of the website, and is not liable for any damages arising from its unavailability or from errors in its content. Information about table availability and time slots is subject to confirmation by ROCE.',
+    },
+    legal_h6: { es: '6. Legislación aplicable', en: '6. Governing law' },
+    legal_p6: {
+      es: 'Las presentes condiciones se rigen por la legislación española. Para cualquier controversia derivada del acceso o uso del sitio web, las partes se someten a los juzgados y tribunales de Valencia, salvo que la normativa de consumidores establezca otro fuero.',
+      en: 'These terms are governed by Spanish law. For any dispute arising from access to or use of the website, the parties submit to the courts of Valencia, unless consumer protection law establishes a different jurisdiction.',
+    },
+
+    // terminos.html
+    terms_title: { es: 'Términos y condiciones', en: 'Terms & Conditions' },
+    terms_h1: { es: '1. Objeto', en: '1. Purpose' },
+    terms_p1: {
+      es: 'Estos términos y condiciones regulan la solicitud de reservas de mesa y de nuestro espacio privado a través de roce.es. Al enviar el formulario de reservas, aceptas estas condiciones.',
+      en: 'These terms and conditions govern requests for table or private-space bookings made through roce.es. By submitting the booking form, you accept these conditions.',
+    },
+    terms_h2: { es: '2. Reservas', en: '2. Bookings' },
+    terms_p2: {
+      es: 'Las reservas realizadas a través del formulario del sitio web son solicitudes, no confirmaciones automáticas: ROCE las revisa y las confirma por email o teléfono en cuanto sea posible. ROCE se reserva el derecho de proponer un cambio de fecha, hora o número de comensales según disponibilidad.',
+      en: "Bookings made through the website form are requests, not automatic confirmations: ROCE reviews them and confirms by email or phone as soon as possible. ROCE reserves the right to propose a different date, time or number of guests based on availability.",
+    },
+    terms_h3: { es: '3. Modificaciones y cancelaciones', en: '3. Changes and cancellations' },
+    terms_p3: {
+      es: 'Si necesitas modificar o cancelar tu reserva, escríbenos con la mayor antelación posible a <a href="mailto:reservas@roce.es">reservas@roce.es</a>. ROCE podrá liberar la mesa reservada transcurridos 15 minutos desde la hora acordada sin previo aviso del cliente.',
+      en: 'If you need to change or cancel your booking, please write to us as early as possible at <a href="mailto:reservas@roce.es">reservas@roce.es</a>. ROCE may release the reserved table if 15 minutes pass after the agreed time without notice from the customer.',
+    },
+    terms_h4: { es: '4. Eventos privados y grupos', en: '4. Private events and groups' },
+    terms_p4: {
+      es: 'Las reservas de nuestro espacio privado están sujetas a un consumo mínimo por persona, que se informa por WhatsApp al gestionar la solicitud. Los detalles concretos (aforo, horario y condiciones) se confirman de forma individual con cada grupo.',
+      en: 'Bookings for our private space are subject to a minimum spend per person, communicated over WhatsApp when handling the request. Specific details (capacity, timing and conditions) are confirmed individually with each group.',
+    },
+    terms_h5: { es: '5. Modificación de estas condiciones', en: '5. Changes to these terms' },
+    terms_p5: {
+      es: 'ROCE puede actualizar estos términos y condiciones en cualquier momento. Te recomendamos consultarlos periódicamente; la versión vigente es siempre la publicada en esta página.',
+      en: 'ROCE may update these terms and conditions at any time. We recommend checking them periodically; the version published on this page is always the one in force.',
+    },
+    terms_h6: { es: '6. Legislación aplicable', en: '6. Governing law' },
+    terms_p6: {
+      es: 'Estas condiciones se rigen por la legislación española. Para cualquier controversia, las partes se someten a los juzgados y tribunales de Valencia, salvo que la normativa de consumidores establezca otro fuero.',
+      en: 'These terms are governed by Spanish law. For any dispute, the parties submit to the courts of Valencia, unless consumer protection law establishes a different jurisdiction.',
     },
   };
 

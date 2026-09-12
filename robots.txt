@@ -1,5 +1,8 @@
 User-agent: *
 Allow: /
 Disallow: /privacidad.html
+Disallow: /cookies.html
+Disallow: /aviso-legal.html
+Disallow: /terminos.html
 
 Sitemap: https://roce.es/sitemap.xml

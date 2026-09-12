@@ -22,7 +22,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=61">
+<link rel="stylesheet" href="styles.css?v=62">
 <style>
   html, body {
     height: 100%;
@@ -387,7 +387,7 @@
         <button type="button" data-lang="es">ES</button>
         <button type="button" data-lang="en">EN</button>
       </div>
-      <a href="privacidad.html" data-i18n="footer_privacy">Política de privacidad</a> · <a href="cookies.html" data-i18n="footer_cookies">Política de cookies</a>
+      <a href="aviso-legal.html" data-i18n="footer_legal">Aviso legal</a> · <a href="terminos.html" data-i18n="footer_terms">Términos y condiciones</a> · <a href="cookies.html" data-i18n="footer_cookies">Política de cookies</a> · <a href="privacidad.html" data-i18n="footer_privacy">Política de privacidad</a>
     </div>
   </div>
 </div>
@@ -400,7 +400,7 @@
   </div>
 </div>
 <script src="cookies.js?v=1"></script>
-<script src="i18n.js?v=6"></script>
+<script src="i18n.js?v=8"></script>
 
 <script>
   function initNewsletterWidget() {
@@ -413,7 +413,23 @@
     const confirmClose = document.getElementById('newsletterConfirmClose');
     const confirmStayBtn = document.getElementById('newsletterConfirmStay');
     const confirmYesBtn = document.getElementById('newsletterConfirmYes');
+    const emailInput = form ? form.querySelector('.newsletter-input') : null;
     if (!widget || !toggleBtn || !closeBtn || !form || !body) return;
+
+    // El input de email es pequeño a propósito (para que quepa en el
+    // plato) y eso hace que iOS haga zoom al enfocarlo — es lo que se
+    // quiere, para que se vea bien lo que escribes. El problema era que
+    // ese zoom se quedaba puesto después. Forzamos que se quite al
+    // cerrar el teclado (blur) o al enviar, subiendo un momento
+    // maximum-scale y devolviéndolo enseguida a su valor original.
+    function resetZoom() {
+      const viewport = document.querySelector('meta[name="viewport"]');
+      if (!viewport) return;
+      const original = viewport.getAttribute('content');
+      viewport.setAttribute('content', original + ', maximum-scale=1.0');
+      setTimeout(() => viewport.setAttribute('content', original), 300);
+    }
+    if (emailInput) emailInput.addEventListener('blur', resetZoom);
 
     toggleBtn.addEventListener('click', () => {
       widget.classList.remove('is-collapsed');
@@ -460,6 +476,8 @@
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
+      if (emailInput) emailInput.blur();
+      resetZoom();
       const submitBtn = form.querySelector('.newsletter-submit');
       submitBtn.disabled = true;
       submitBtn.textContent = '...';
