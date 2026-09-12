@@ -23,10 +23,6 @@
 
     // Home (index.html)
     home_reservas_btn: { es: 'Reservas', en: 'Book' },
-    home_reservas_img: {
-      es: 'assets/logo/label-reservas.png',
-      en: 'assets/logo/label-bookings.png',
-    },
     home_restaurant_title: { es: 'Restaurante', en: 'Restaurant' },
     home_restaurant_sub: { es: 'Reserva tu mesa', en: 'Book your table' },
     home_private_title: { es: 'Privado', en: 'Private' },
