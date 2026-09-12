@@ -471,6 +471,7 @@
         confirmClose.hidden = true;
         body.classList.remove('is-broken');
       }
+      closeBtn.style.display = '';
     });
 
     // En vez de cerrar directamente, la X pregunta primero — un
@@ -526,7 +527,9 @@
         toggleBtn.disabled = true;
         toggleBtn.classList.add('is-subscribed');
         // Ya se ha suscrito, no tiene sentido preguntarle si quiere
-        // irse (ni mostrarle el plato roto) — se cierra solo.
+        // irse (ni mostrarle el plato roto) — se cierra solo, así que
+        // la X tampoco pinta nada aquí.
+        closeBtn.style.display = 'none';
         setTimeout(() => widget.classList.add('is-collapsed'), 2000);
       } catch (err) {
         submitBtn.disabled = false;
