@@ -47,7 +47,7 @@
 <link rel="stylesheet" href="styles.css?v=65">
 <style>
   html, body {
-    height: 100%;
+    height: 100dvh;
     overflow: hidden;
     background: var(--black);
     /* En iOS Safari, overflow:hidden por sí solo no siempre evita el
@@ -412,21 +412,28 @@
 <script src="i18n.js?v=9"></script>
 
 <script>
-  // Los navegadores integrados (WhatsApp, Instagram) a veces miden el
-  // alto de pantalla antes de que su propia barra termine de acomodarse,
-  // así que la primera carga sale con hueco de más — por eso al refrescar
-  // ya se ve bien. Fijamos el alto real por JS y lo recalculamos cuando
-  // el navegador nos avisa de que el viewport ha cambiado de verdad.
+  // Al abrir el link desde WhatsApp (Chrome se abre de cero, no es su
+  // navegador interno) la primera medida del alto de pantalla sale mal
+  // mientras la barra de Chrome termina de asentarse — por eso al
+  // refrescar ya se ve bien. Un solo cálculo al cargar no basta porque
+  // no sabemos en qué momento exacto se asienta, así que usamos la
+  // medida más fiable disponible (visualViewport) y la repetimos varias
+  // veces tras la carga, no solo una vez ni solo en "resize".
   function fixTeaserHeight() {
     const page = document.querySelector('.teaser-page');
-    if (page) page.style.height = window.innerHeight + 'px';
+    if (!page) return;
+    const h = (window.visualViewport && window.visualViewport.height) || window.innerHeight;
+    page.style.height = h + 'px';
   }
   fixTeaserHeight();
+  window.addEventListener('load', fixTeaserHeight);
+  window.addEventListener('pageshow', fixTeaserHeight);
   window.addEventListener('resize', fixTeaserHeight);
   window.addEventListener('orientationchange', fixTeaserHeight);
   if (window.visualViewport) {
     window.visualViewport.addEventListener('resize', fixTeaserHeight);
   }
+  [100, 300, 600, 1200].forEach((ms) => setTimeout(fixTeaserHeight, ms));
 
   function initNewsletterWidget() {
     const widget = document.getElementById('newsletterWidget');
