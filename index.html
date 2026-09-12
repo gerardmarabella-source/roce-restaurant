@@ -493,6 +493,9 @@
         const data = await res.json();
         if (!data.success) throw new Error(data.message || 'Error desconocido');
         plateContent.innerHTML = `<p class="newsletter-thanks">${window.ROCE_I18N.t('newsletter_thanks')}</p>`;
+        // Ya se ha suscrito, no tiene sentido preguntarle si quiere
+        // irse (ni mostrarle el plato roto) — se cierra solo.
+        setTimeout(() => widget.classList.add('is-collapsed'), 3000);
       } catch (err) {
         submitBtn.disabled = false;
         submitBtn.textContent = window.ROCE_I18N.t('newsletter_submit');
