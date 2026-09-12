@@ -40,6 +40,12 @@
       es: 'No se ha podido enviar, inténtalo de nuevo.',
       en: 'Something went wrong, please try again.',
     },
+    newsletter_confirm_close: {
+      es: '¿Seguro que quieres seguir siendo un desconocido para nosotros?',
+      en: 'Are you sure you want to stay a stranger to us?',
+    },
+    newsletter_confirm_stay: { es: 'No, quedarme', en: 'No, stay' },
+    newsletter_confirm_yes: { es: 'Sí, cerrar', en: 'Yes, close' },
 
     // reservar.html
     reservar_h1: { es: 'Reserva<br>tu mesa', en: 'Book<br>your table' },

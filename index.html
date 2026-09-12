@@ -83,35 +83,6 @@
     display: block;
   }
 
-  .teaser-contact {
-    position: absolute;
-    top: 1.75rem;
-    right: 1.5rem;
-    z-index: 4;
-    display: flex;
-    gap: 0.6rem;
-    align-items: center;
-  }
-  .teaser-contact a {
-    color: var(--cream);
-    opacity: 0.85;
-    transition: opacity 0.15s ease;
-    line-height: 0;
-  }
-  .teaser-contact a:hover { opacity: 1; }
-  .teaser-contact svg { width: 20px; height: 20px; }
-  /* El sobre ocupa menos alto que su viewBox que el círculo de
-     Instagram (15/24 vs 18/24), así que a igual tamaño de caja se ve
-     más bajo — se agranda su caja proporcionalmente para que la
-     altura visible de ambos iconos quede igual. */
-  .teaser-contact .icon-mail svg { width: 24px; height: 24px; }
-
-  @media (max-width: 640px) {
-    .teaser-contact { top: 1.5rem; right: 1.25rem; gap: 0.5rem; }
-    .teaser-contact svg { width: 18px; height: 18px; }
-    .teaser-contact .icon-mail svg { width: 21.6px; height: 21.6px; }
-  }
-
   /* Franja inferior: pie compacto (idioma/legal) encima de las dos
      llamadas a la acción a toda anchura. */
   .teaser-bottom {
@@ -205,55 +176,110 @@
   }
   .newsletter-widget:not(.is-collapsed) .newsletter-toggle { opacity: 0; pointer-events: none; }
 
-  /* Grande y centrado, casi a pantalla completa — no un desplegable
-     pequeño junto al botón. */
+  /* El formulario aparece dentro de un plato real (foto pasada por
+     el usuario) en vez de una caja — el contenido queda encajado en
+     el hueco central plano del plato, como si estuviera grabado ahí. */
   .newsletter-widget .newsletter-body {
     position: fixed;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
     margin: 0;
-    width: min(94vw, 780px);
-    max-height: 88vh;
-    overflow-y: auto;
-    background: var(--black);
-    color: var(--cream);
-    border-radius: 2px;
-    padding: clamp(2rem, 6vw, 4rem);
-    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.55);
+    width: min(92vw, 560px);
+    aspect-ratio: 1 / 1;
+    background: url("assets/logo/newsletter-plate.png") center / contain no-repeat;
+    padding: 0;
+    box-shadow: none;
+    border-radius: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     z-index: 500;
   }
   .newsletter-widget.is-collapsed .newsletter-body { display: none; }
 
+  .newsletter-plate-content,
+  .newsletter-confirm-close {
+    width: 42%;
+    text-align: center;
+    color: var(--black);
+  }
+
   .newsletter-body .newsletter-title {
     font-family: var(--display);
-    font-size: clamp(2rem, 6vw, 3.4rem);
+    font-size: clamp(0.85rem, 2.1vw, 1.15rem);
     letter-spacing: 0;
-    margin-bottom: 1rem;
+    margin-bottom: 0.35rem;
   }
-  .newsletter-body .newsletter-text {
-    font-size: clamp(1rem, 2vw, 1.3rem);
-    color: var(--cream);
-    opacity: 0.75;
-    margin-bottom: 2rem;
+  .newsletter-body .newsletter-text,
+  .newsletter-body .newsletter-thanks {
+    font-size: clamp(0.55rem, 1.3vw, 0.75rem);
+    color: rgba(10, 10, 10, 0.7);
+    margin-bottom: 0.6rem;
+    line-height: 1.35;
   }
-  .newsletter-body .newsletter-form { flex-direction: column; gap: 1rem; }
+  .newsletter-body .newsletter-form { flex-direction: column; gap: 0.45rem; }
   .newsletter-body .newsletter-input {
-    padding: 1.1rem 1.3rem;
-    font-size: clamp(1rem, 2vw, 1.2rem);
+    padding: 0.5rem 0.6rem;
+    font-size: clamp(0.55rem, 1.3vw, 0.75rem);
     border-radius: 2px;
+    background: rgba(10, 10, 10, 0.05);
+    border: 1px solid rgba(10, 10, 10, 0.25);
+    color: var(--black);
   }
+  .newsletter-body .newsletter-input::placeholder { color: rgba(10, 10, 10, 0.4); }
   .newsletter-body .newsletter-submit {
-    padding: 1.1rem 1.3rem;
-    font-size: clamp(1rem, 2vw, 1.2rem);
+    padding: 0.5rem 0.7rem;
+    font-size: clamp(0.55rem, 1.3vw, 0.75rem);
     font-family: var(--display);
     text-transform: uppercase;
     letter-spacing: 0.02em;
+    background: var(--black);
+    color: var(--white);
   }
   .newsletter-body .newsletter-close {
-    top: 1.25rem;
-    right: 1.5rem;
-    font-size: 2.2rem;
+    top: 0.75rem;
+    right: 2.25rem;
+    width: 1.9rem;
+    height: 1.9rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(10, 10, 10, 0.75);
+    border-radius: 50%;
+    color: var(--white);
+    opacity: 1;
+    font-size: 1.2rem;
+  }
+  .newsletter-body .newsletter-close:hover { background: rgba(10, 10, 10, 0.9); }
+
+  @media (max-width: 640px) {
+    .newsletter-body .newsletter-close { right: 1.5rem; }
+  }
+
+  .newsletter-confirm-text {
+    font-size: clamp(0.6rem, 1.4vw, 0.8rem);
+    line-height: 1.35;
+    margin-bottom: 0.7rem;
+  }
+  .newsletter-confirm-actions { display: flex; flex-direction: column; gap: 0.4rem; }
+  .newsletter-confirm-actions button {
+    border: none;
+    border-radius: 2px;
+    padding: 0.45rem 0.6rem;
+    font-family: var(--body);
+    font-size: clamp(0.55rem, 1.2vw, 0.72rem);
+    cursor: pointer;
+  }
+  #newsletterConfirmStay { background: var(--black); color: var(--white); }
+  #newsletterConfirmYes {
+    background: none;
+    color: rgba(10, 10, 10, 0.55);
+    text-decoration: underline;
+  }
+
+  @media (max-width: 640px) {
+    .newsletter-widget .newsletter-body { width: min(92vw, 400px); }
   }
 
   @media (max-width: 640px) {
@@ -310,15 +336,6 @@
     <img class="lockup" src="assets/logo/roce-lockup-cream.png" alt="ROCE — Restaurant &amp; Cocktails, Marqués del Turia 16, Valencia (Spain)">
   </div>
 
-  <div class="teaser-contact">
-    <a href="https://www.instagram.com/somosroce" target="_blank" rel="noopener" aria-label="Instagram">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.3" cy="6.7" r="1"/></svg>
-    </a>
-    <a href="mailto:reservas@roce.es" aria-label="Email" class="icon-mail">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2.5" y="4.5" width="19" height="15" rx="1.5"/><path d="M3 6l9 7 9-7"/></svg>
-    </a>
-  </div>
-
   <div class="teaser-bottom">
     <div class="teaser-cta-row">
       <a class="teaser-cta teaser-cta-img" href="fuck-u" aria-label="Reservas">
@@ -332,15 +349,26 @@
         </button>
         <div class="newsletter-body" id="newsletterBody">
           <button class="newsletter-close" id="newsletterClose" aria-label="Cerrar">&times;</button>
-          <p class="newsletter-title">Newsletter</p>
-          <p class="newsletter-text" data-i18n="newsletter_text">Entérate antes que nadie de todo.</p>
-          <form class="newsletter-form" id="newsletterForm">
-            <input type="hidden" name="access_key" value="6e0e35fc-6443-4455-adc7-3999eabf6abc">
-            <input type="hidden" name="subject" value="Nueva suscripción — Newsletter ROCE">
-            <input type="hidden" name="from_name" value="Newsletter ROCE">
-            <input type="email" name="email" class="newsletter-input" placeholder="tu@email.com" data-i18n-placeholder="newsletter_placeholder" required>
-            <button type="submit" class="newsletter-submit" data-i18n="newsletter_submit">Enviar</button>
-          </form>
+
+          <div class="newsletter-plate-content" id="newsletterPlateContent">
+            <p class="newsletter-title">Newsletter</p>
+            <p class="newsletter-text" data-i18n="newsletter_text">Entérate antes que nadie de todo.</p>
+            <form class="newsletter-form" id="newsletterForm">
+              <input type="hidden" name="access_key" value="6e0e35fc-6443-4455-adc7-3999eabf6abc">
+              <input type="hidden" name="subject" value="Nueva suscripción — Newsletter ROCE">
+              <input type="hidden" name="from_name" value="Newsletter ROCE">
+              <input type="email" name="email" class="newsletter-input" placeholder="tu@email.com" data-i18n-placeholder="newsletter_placeholder" required>
+              <button type="submit" class="newsletter-submit" data-i18n="newsletter_submit">Enviar</button>
+            </form>
+          </div>
+
+          <div class="newsletter-confirm-close" id="newsletterConfirmClose" hidden>
+            <p class="newsletter-confirm-text" data-i18n="newsletter_confirm_close">¿Seguro que quieres seguir siendo un desconocido para nosotros?</p>
+            <div class="newsletter-confirm-actions">
+              <button type="button" id="newsletterConfirmStay" data-i18n="newsletter_confirm_stay">No, quedarme</button>
+              <button type="button" id="newsletterConfirmYes" data-i18n="newsletter_confirm_yes">Sí, cerrar</button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -372,15 +400,46 @@
     const closeBtn = document.getElementById('newsletterClose');
     const form = document.getElementById('newsletterForm');
     const body = document.getElementById('newsletterBody');
+    const plateContent = document.getElementById('newsletterPlateContent');
+    const confirmClose = document.getElementById('newsletterConfirmClose');
+    const confirmStayBtn = document.getElementById('newsletterConfirmStay');
+    const confirmYesBtn = document.getElementById('newsletterConfirmYes');
     if (!widget || !toggleBtn || !closeBtn || !form || !body) return;
 
     toggleBtn.addEventListener('click', () => {
       widget.classList.remove('is-collapsed');
+      // Por si se dejó a medio cerrar la última vez, vuelve a arrancar
+      // mostrando el formulario, no la pregunta de confirmación.
+      if (plateContent && confirmClose) {
+        plateContent.hidden = false;
+        confirmClose.hidden = true;
+      }
     });
 
+    // En vez de cerrar directamente, la X pregunta primero — un
+    // pequeño empujón de humor de marca antes de dejar escapar al
+    // suscriptor.
     closeBtn.addEventListener('click', () => {
-      widget.classList.add('is-collapsed');
+      if (plateContent && confirmClose) {
+        plateContent.hidden = true;
+        confirmClose.hidden = false;
+      } else {
+        widget.classList.add('is-collapsed');
+      }
     });
+
+    if (confirmStayBtn && confirmClose && plateContent) {
+      confirmStayBtn.addEventListener('click', () => {
+        confirmClose.hidden = true;
+        plateContent.hidden = false;
+      });
+    }
+
+    if (confirmYesBtn) {
+      confirmYesBtn.addEventListener('click', () => {
+        widget.classList.add('is-collapsed');
+      });
+    }
 
     document.addEventListener('click', (e) => {
       if (!widget.contains(e.target)) widget.classList.add('is-collapsed');
@@ -400,13 +459,13 @@
         });
         const data = await res.json();
         if (!data.success) throw new Error(data.message || 'Error desconocido');
-        body.innerHTML = `<p class="newsletter-thanks">${window.ROCE_I18N.t('newsletter_thanks')}</p>`;
+        plateContent.innerHTML = `<p class="newsletter-thanks">${window.ROCE_I18N.t('newsletter_thanks')}</p>`;
       } catch (err) {
         submitBtn.disabled = false;
         submitBtn.textContent = window.ROCE_I18N.t('newsletter_submit');
-        const existing = body.querySelector('.newsletter-error');
+        const existing = plateContent.querySelector('.newsletter-error');
         if (existing) existing.remove();
-        body.querySelector('.newsletter-text').insertAdjacentHTML(
+        plateContent.querySelector('.newsletter-text').insertAdjacentHTML(
           'afterend',
           `<p class="newsletter-error">${window.ROCE_I18N.t('newsletter_error')}</p>`
         );
