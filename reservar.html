@@ -93,6 +93,8 @@
   .reserve-form select:focus,
   .reserve-form textarea:focus { outline: none; border-color: var(--white); }
 
+  .reserve-form input[name="fecha"]:invalid { border-color: #ffb4a8; }
+
   .reserve-form textarea { resize: vertical; min-height: 90px; }
 
   .reserve-submit {
@@ -238,7 +240,7 @@
 <body>
 
 <header class="topbar">
-  <a href="/" aria-label="ROCE — inicio"><img class="nav-logo" src="assets/logo/roce-tilted-white.png" alt="ROCE"></a>
+  <a href="/" aria-label="ROCE — inicio"><img class="nav-logo" src="assets/logo/roce-horizontal-white.png" alt="ROCE"></a>
 </header>
 
 <main class="reserve-form-page">
@@ -332,7 +334,7 @@
 </section>
 
 <footer class="site-footer">
-  <img class="footer-logo" src="assets/logo/roce-horizontal-white.png" alt="ROCE">
+  <img class="footer-logo" src="assets/logo/roce-tilted-white.png" alt="ROCE">
   <div class="footer-info">
     <p class="footer-headline">Restaurant &amp; Cocktails</p>
     <p class="footer-line">Marqués del Turia 16</p>
@@ -369,27 +371,42 @@
   const OPENING_DATE = '2026-11-01';
   const ALLOWED_WEEKDAYS = [5, 6]; // viernes y sábado
 
+  // El <input type="date"> nativo no permite restringir por día de la
+  // semana (solo por min/max), así que deja elegir cualquier fecha en
+  // el propio calendario. Para no descubrirlo hasta el envío, se valida
+  // también al cambiar el campo y se avisa al momento.
+  function validateFecha() {
+    const fecha = form.fecha.value;
+    if (!fecha) {
+      form.fecha.setCustomValidity('');
+      return true;
+    }
+    if (fecha < OPENING_DATE) {
+      form.fecha.setCustomValidity(window.ROCE_I18N.t('status_too_early'));
+      status.textContent = window.ROCE_I18N.t('status_too_early');
+      status.classList.add('is-error');
+      return false;
+    }
+    const weekday = new Date(fecha + 'T00:00:00').getDay();
+    if (!ALLOWED_WEEKDAYS.includes(weekday)) {
+      form.fecha.setCustomValidity(window.ROCE_I18N.t('status_wrong_day'));
+      status.textContent = window.ROCE_I18N.t('status_wrong_day');
+      status.classList.add('is-error');
+      return false;
+    }
+    form.fecha.setCustomValidity('');
+    status.textContent = '';
+    status.classList.remove('is-error');
+    return true;
+  }
+
+  form.fecha.addEventListener('change', validateFecha);
+
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    // El input min="2026-11-01" ya bloquea esto en el selector nativo,
-    // pero algunos navegadores permiten teclear la fecha a mano, así que
-    // lo revalidamos aquí antes de enviar nada.
+    if (!validateFecha()) return;
     const fecha = form.fecha.value;
-    if (fecha < OPENING_DATE) {
-      status.textContent = window.ROCE_I18N.t('status_too_early');
-      status.classList.add('is-error');
-      return;
-    }
-
-    // El selector nativo de fecha no permite restringir a días concretos
-    // de la semana, así que solo aceptamos viernes/sábado aquí.
-    const weekday = new Date(fecha + 'T00:00:00').getDay();
-    if (!ALLOWED_WEEKDAYS.includes(weekday)) {
-      status.textContent = window.ROCE_I18N.t('status_wrong_day');
-      status.classList.add('is-error');
-      return;
-    }
 
     // Formatea la fecha en el propio payload para que el email que llega
     // a reservas@roce.es sea legible ("12 de septiembre de 2026"), no la
