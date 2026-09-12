@@ -3,8 +3,7 @@
 Sitio web de ROCE, restaurante/brunch/coctelería en Gran Vía Marqués del
 Turia 16, Valencia.
 
-Sitio estático (HTML/CSS/JS sin dependencias de build). El logo del hero
-cae con gravedad y se puede arrastrar (física propia en `script.js`).
+Sitio estático (HTML/CSS/JS sin dependencias de build).
 
 ## Desarrollo local
 

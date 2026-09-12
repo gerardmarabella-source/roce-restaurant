@@ -55,8 +55,8 @@
     },
     reservar_private_link: { es: 'Reserva nuestro privado ↓', en: 'Book our private space ↓' },
     consent_text: {
-      es: 'He leído y acepto la <a href="privacidad.html" target="_blank">política de privacidad</a>. ROCE podrá contactarme por email o teléfono sobre mi reserva y añadirme a su base de datos de clientes para futuras comunicaciones.',
-      en: 'I have read and accept the <a href="privacidad.html" target="_blank">privacy policy</a>. ROCE may contact me by email or phone about my booking and add me to its customer database for future communications.',
+      es: 'He leído y acepto la <a href="/privacidad.html" target="_blank" rel="noopener">política de privacidad</a>. ROCE podrá contactarme por email o teléfono sobre mi reserva y añadirme a su base de datos de clientes para futuras comunicaciones.',
+      en: 'I have read and accept the <a href="/privacidad.html" target="_blank" rel="noopener">privacy policy</a>. ROCE may contact me by email or phone about my booking and add me to its customer database for future communications.',
     },
     label_name: { es: 'Nombre', en: 'Name' },
     placeholder_name: { es: 'Tu nombre', en: 'Your name' },
