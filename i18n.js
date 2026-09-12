@@ -40,13 +40,12 @@
       es: 'No se ha podido enviar, inténtalo de nuevo.',
       en: 'Something went wrong, please try again.',
     },
-    newsletter_confirm_title: { es: '¿Ya te vas?', en: 'Leaving already?' },
     newsletter_confirm_close: {
-      es: 'Un poco lamentable, la verdad.',
-      en: 'That’s a little embarrassing.',
+      es: '¿Seguro que quieres abandonar?',
+      en: 'Are you sure you want to leave?',
     },
-    newsletter_confirm_stay: { es: 'Aguanto un poco más', en: 'Stay a little longer' },
-    newsletter_confirm_yes: { es: 'Me voy como un charca', en: 'Leave like a coward' },
+    newsletter_confirm_stay: { es: 'No, quedarme', en: 'No, stay' },
+    newsletter_confirm_yes: { es: 'Sí, cerrar', en: 'Yes, close' },
 
     // reservar.html
     reservar_h1: { es: 'Reserva<br>tu mesa', en: 'Book<br>your table' },

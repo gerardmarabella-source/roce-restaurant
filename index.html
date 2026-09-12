@@ -264,12 +264,6 @@
     .newsletter-body .newsletter-close { right: 1.5rem; }
   }
 
-  .newsletter-confirm-title {
-    font-family: var(--display);
-    font-size: clamp(0.85rem, 2.1vw, 1.15rem);
-    letter-spacing: 0;
-    margin-bottom: 0.3rem;
-  }
   .newsletter-confirm-text {
     font-size: clamp(0.6rem, 1.4vw, 0.8rem);
     line-height: 1.35;
@@ -288,8 +282,8 @@
   }
   #newsletterConfirmStay { background: var(--black); color: var(--white); }
   #newsletterConfirmYes {
-    background: none;
-    color: rgba(10, 10, 10, 0.55);
+    background: rgba(10, 10, 10, 0.5);
+    color: var(--white);
     text-decoration: underline;
   }
 
@@ -378,11 +372,10 @@
           </div>
 
           <div class="newsletter-confirm-close" id="newsletterConfirmClose" hidden>
-            <p class="newsletter-confirm-title" data-i18n="newsletter_confirm_title">¿YA TE VAS?</p>
-            <p class="newsletter-confirm-text" data-i18n="newsletter_confirm_close">Un poco lamentable, la verdad.</p>
+            <p class="newsletter-confirm-text" data-i18n="newsletter_confirm_close">¿Seguro que quieres abandonar?</p>
             <div class="newsletter-confirm-actions">
-              <button type="button" id="newsletterConfirmStay" data-i18n="newsletter_confirm_stay">Aguanto un poco más</button>
-              <button type="button" id="newsletterConfirmYes" data-i18n="newsletter_confirm_yes">Me voy como un cobarde</button>
+              <button type="button" id="newsletterConfirmStay" data-i18n="newsletter_confirm_stay">No, quedarme</button>
+              <button type="button" id="newsletterConfirmYes" data-i18n="newsletter_confirm_yes">Sí, cerrar</button>
             </div>
           </div>
         </div>
@@ -407,7 +400,7 @@
   </div>
 </div>
 <script src="cookies.js?v=1"></script>
-<script src="i18n.js?v=4"></script>
+<script src="i18n.js?v=5"></script>
 
 <script>
   function initNewsletterWidget() {
