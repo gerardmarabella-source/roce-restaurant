@@ -442,6 +442,26 @@
   window.addEventListener('focus', fixTeaserHeight);
   document.addEventListener('touchstart', fixTeaserHeight, { once: true, passive: true });
 
+  // Confirmado: en iPhone, al abrir el link desde WhatsApp (que abre
+  // Chrome de verdad, no su navegador interno), Chrome se queda con una
+  // medida de alto equivocada para toda la sesión — ni tocar la
+  // pantalla ni esperar la corrige, solo un refresco manual. Como
+  // ningún evento avisa de que la medida está mal, la única forma
+  // fiable de arreglarlo es imitar ese refresco: si el hueco por debajo
+  // del contenido es mayor de lo que cualquier barra de navegador
+  // explicaría, recargamos una vez sola (con banderín en sessionStorage
+  // para no entrar en bucle).
+  setTimeout(() => {
+    const page = document.querySelector('.teaser-page');
+    if (!page) return;
+    const measured = (window.visualViewport && window.visualViewport.height) || window.innerHeight;
+    const gap = window.screen.height - measured;
+    if (gap > 260 && !sessionStorage.getItem('roce_height_reloaded')) {
+      sessionStorage.setItem('roce_height_reloaded', '1');
+      location.reload();
+    }
+  }, 1500);
+
   function initNewsletterWidget() {
     const widget = document.getElementById('newsletterWidget');
     const toggleBtn = document.getElementById('newsletterToggle');
