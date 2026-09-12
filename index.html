@@ -83,6 +83,29 @@
     display: block;
   }
 
+  .teaser-contact {
+    position: absolute;
+    top: 1.75rem;
+    right: 1.5rem;
+    z-index: 4;
+    display: flex;
+    gap: 0.6rem;
+    align-items: center;
+  }
+  .teaser-contact a {
+    color: var(--cream);
+    opacity: 0.85;
+    transition: opacity 0.15s ease;
+    line-height: 0;
+  }
+  .teaser-contact a:hover { opacity: 1; }
+  .teaser-contact svg { width: 20px; height: 20px; }
+
+  @media (max-width: 640px) {
+    .teaser-contact { top: 1.5rem; right: 1.25rem; gap: 0.5rem; }
+    .teaser-contact svg { width: 18px; height: 18px; }
+  }
+
   /* Franja inferior: pie compacto (idioma/legal) encima de las dos
      llamadas a la acción a toda anchura. */
   .teaser-bottom {
@@ -231,25 +254,25 @@
     .teaser-bg { transform: none; }
   }
 
-  /* Con el logo y el pie ahora arriba/abajo del centro, el aviso de
-     cookies queda mejor centrado en la franja vertical que deja libre
-     la foto, lejos de ambos. */
+  /* Centrado en toda la pantalla, como un aviso modal, en vez de
+     pegado a una esquina o lateral. */
   .cookie-banner {
     top: 50%;
-    left: 1.5rem;
+    left: 50%;
     right: auto;
     bottom: auto;
-    transform: translateY(-50%);
-    max-width: 260px;
+    transform: translate(-50%, -50%);
+    max-width: 320px;
     flex-direction: column;
     align-items: stretch;
     gap: 0.85rem;
+    z-index: 600;
   }
   .cookie-banner .cookie-text { flex: 0 1 auto; }
   .cookie-actions { justify-content: flex-end; }
 
   @media (max-width: 640px) {
-    .cookie-banner { left: 1rem; max-width: min(260px, calc(100vw - 2rem)); }
+    .cookie-banner { max-width: min(320px, calc(100vw - 2.5rem)); }
   }
 </style>
 </head>
@@ -265,9 +288,18 @@
     <img class="lockup" src="assets/logo/roce-lockup-cream.png" alt="ROCE — Restaurant &amp; Cocktails, Marqués del Turia 16, Valencia (Spain)">
   </div>
 
+  <div class="teaser-contact">
+    <a href="https://www.instagram.com/somosroce" target="_blank" rel="noopener" aria-label="Instagram">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.3" cy="6.7" r="1"/></svg>
+    </a>
+    <a href="mailto:reservas@roce.es" aria-label="Email">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2.5" y="4.5" width="19" height="15" rx="1.5"/><path d="M3 6l9 7 9-7"/></svg>
+    </a>
+  </div>
+
   <div class="teaser-bottom">
     <div class="teaser-cta-row">
-      <a class="teaser-cta teaser-cta-img" href="reservar.html" aria-label="Reservas">
+      <a class="teaser-cta teaser-cta-img" href="fuck-u" aria-label="Reservas">
         <img src="assets/logo/label-reservas.png" data-i18n-src="home_reservas_img" alt="Reservas">
       </a>
 
