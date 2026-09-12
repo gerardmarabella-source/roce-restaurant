@@ -93,7 +93,7 @@
   .reserve-form select:focus,
   .reserve-form textarea:focus { outline: none; border-color: var(--white); }
 
-  .reserve-form input[name="fecha"]:invalid { border-color: #ffb4a8; }
+  .reserve-form input[name="fecha"].is-invalid { border-color: #ffb4a8; }
 
   .reserve-form textarea { resize: vertical; min-height: 90px; }
 
@@ -122,6 +122,65 @@
   .reserve-submit:disabled { opacity: 0.6; cursor: default; }
   .reserve-submit:disabled:hover { transform: none; }
 
+  .reserve-success {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 2rem 1.5rem;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 2px;
+    animation: reserveSuccessIn 0.4s ease both;
+  }
+  @keyframes reserveSuccessIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .reserve-success-icon { width: 56px; height: 56px; margin-bottom: 1rem; }
+  .reserve-success-circle {
+    stroke: var(--white);
+    stroke-width: 2;
+    stroke-dasharray: 151;
+    stroke-dashoffset: 151;
+    animation: reserveCircleDraw 0.5s ease forwards;
+  }
+  .reserve-success-check {
+    stroke: var(--white);
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-dasharray: 36;
+    stroke-dashoffset: 36;
+    animation: reserveCheckDraw 0.3s ease 0.45s forwards;
+  }
+  @keyframes reserveCircleDraw { to { stroke-dashoffset: 0; } }
+  @keyframes reserveCheckDraw { to { stroke-dashoffset: 0; } }
+
+  .reserve-success-title {
+    font-family: var(--display);
+    font-size: 1.3rem;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+  }
+  .reserve-success-sub { font-size: 0.95rem; opacity: 0.75; }
+
+  .reserve-form label.reserve-consent {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.6rem;
+    font-size: 0.8rem;
+    line-height: 1.4;
+    opacity: 0.85;
+    text-transform: none;
+    letter-spacing: normal;
+    font-weight: 400;
+    cursor: pointer;
+  }
+  .reserve-consent input { width: auto; flex-shrink: 0; margin-top: 0.2rem; accent-color: var(--white); }
+  .reserve-consent a { color: inherit; text-decoration: underline; }
+
   .reserve-back {
     display: inline-block;
     margin-bottom: 2.5rem;
@@ -141,6 +200,10 @@
      (ya estamos en la página de reservas). */
   .topbar { background: var(--black); backdrop-filter: none; -webkit-backdrop-filter: none; }
   .nav-logo { height: 56px; }
+
+  /* Leyenda del footer como imagen (tipografía exacta pedida por el
+     usuario, extraída de su propia captura), no texto vivo. */
+  .footer-caption-img { width: clamp(260px, 34vw, 460px); height: auto; display: block; margin: 0 auto; }
 
   /* Eventos privados / grupos: sin describir el espacio, todo el detalle
      se resuelve por WhatsApp con un mensaje ya precompuesto. */
@@ -249,7 +312,7 @@
     <h1 data-i18n-html="reservar_h1">Reserva<br>tu mesa</h1>
     <p class="reserve-form-intro" data-i18n="reservar_intro">
       Rellena el formulario y te confirmamos la reserva por email en cuanto lo leamos.
-      Abrimos pronto — solo aceptamos reservas a partir del 1 de noviembre de 2026, viernes y sábados.
+      Abrimos pronto — solo aceptamos reservas viernes y sábados.
     </p>
 
     <a class="pe-teaser-link" href="#eventos-privados" data-i18n="reservar_private_link">Reserva nuestro privado ↓</a>
@@ -301,6 +364,11 @@
         <textarea name="comentarios" placeholder="Alergias, celebraciones, preferencias..." data-i18n-placeholder="placeholder_comments"></textarea>
       </label>
 
+      <label class="reserve-consent">
+        <input type="checkbox" name="acepta_privacidad" required>
+        <span data-i18n-html="consent_text">He leído y acepto la <a href="privacidad.html" target="_blank">política de privacidad</a>. ROCE podrá contactarme por email o teléfono sobre mi reserva y añadirme a su base de datos de clientes para futuras comunicaciones.</span>
+      </label>
+
       <button type="submit" class="reserve-submit" id="reserveSubmitBtn" data-i18n="submit_booking">Enviar reserva</button>
     </form>
     <p class="reserve-form-status" id="reserveFormStatus" role="status" aria-live="polite"></p>
@@ -336,9 +404,7 @@
 <footer class="site-footer">
   <img class="footer-logo" src="assets/logo/roce-tilted-white.png" alt="ROCE">
   <div class="footer-info">
-    <p class="footer-headline">Restaurant &amp; Cocktails</p>
-    <p class="footer-line">Marqués del Turia 16</p>
-    <p class="footer-line">Valencia, Spain</p>
+    <img class="footer-caption-img" src="assets/logo/footer-caption-cream.png" alt="Restaurant &amp; Cocktails, Marqués del Turia 16, Valencia (Spain)">
   </div>
   <a class="footer-instagram" href="https://www.instagram.com/somosroce" target="_blank" rel="noopener">@somosroce ↗</a>
   <div class="footer-bottom">
@@ -373,34 +439,40 @@
 
   // El <input type="date"> nativo no permite restringir por día de la
   // semana (solo por min/max), así que deja elegir cualquier fecha en
-  // el propio calendario. Para no descubrirlo hasta el envío, se valida
-  // también al cambiar el campo y se avisa al momento.
-  function validateFecha() {
+  // el propio calendario. Como no se puede bloquear dentro del propio
+  // selector, en cuanto se elige un día no válido se borra al momento
+  // y se avisa por qué — así nunca queda una fecha inválida puesta.
+  function validateFecha({ clearIfInvalid = false } = {}) {
     const fecha = form.fecha.value;
     if (!fecha) {
       form.fecha.setCustomValidity('');
+      form.fecha.classList.remove('is-invalid');
       return true;
     }
+    let errorKey = null;
     if (fecha < OPENING_DATE) {
-      form.fecha.setCustomValidity(window.ROCE_I18N.t('status_too_early'));
-      status.textContent = window.ROCE_I18N.t('status_too_early');
+      errorKey = 'status_too_early';
+    } else if (!ALLOWED_WEEKDAYS.includes(new Date(fecha + 'T00:00:00').getDay())) {
+      errorKey = 'status_wrong_day';
+    }
+
+    if (errorKey) {
+      form.fecha.setCustomValidity(window.ROCE_I18N.t(errorKey));
+      status.textContent = window.ROCE_I18N.t(errorKey);
       status.classList.add('is-error');
+      form.fecha.classList.add('is-invalid');
+      if (clearIfInvalid) form.fecha.value = '';
       return false;
     }
-    const weekday = new Date(fecha + 'T00:00:00').getDay();
-    if (!ALLOWED_WEEKDAYS.includes(weekday)) {
-      form.fecha.setCustomValidity(window.ROCE_I18N.t('status_wrong_day'));
-      status.textContent = window.ROCE_I18N.t('status_wrong_day');
-      status.classList.add('is-error');
-      return false;
-    }
+
     form.fecha.setCustomValidity('');
+    form.fecha.classList.remove('is-invalid');
     status.textContent = '';
     status.classList.remove('is-error');
     return true;
   }
 
-  form.fecha.addEventListener('change', validateFecha);
+  form.fecha.addEventListener('change', () => validateFecha({ clearIfInvalid: true }));
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -434,7 +506,17 @@
       if (data.success) {
         form.reset();
         form.style.display = 'none';
-        status.textContent = window.ROCE_I18N.t('status_success');
+        status.classList.remove('is-error');
+        status.innerHTML = `
+          <div class="reserve-success">
+            <svg class="reserve-success-icon" viewBox="0 0 52 52">
+              <circle class="reserve-success-circle" cx="26" cy="26" r="24" fill="none"/>
+              <path class="reserve-success-check" fill="none" d="M14 27l7 7 17-17"/>
+            </svg>
+            <p class="reserve-success-title">${window.ROCE_I18N.t('status_success')}</p>
+            <p class="reserve-success-sub">${window.ROCE_I18N.t('status_success_sub')}</p>
+          </div>
+        `;
       } else {
         throw new Error(data.message || 'Error desconocido');
       }
