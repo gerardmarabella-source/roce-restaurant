@@ -464,13 +464,13 @@
       document.body.appendChild(debug);
     });
 
-    // Recargado automático desactivado mientras diagnosticamos con el
-    // aviso de arriba — lo reactivamos en cuanto tengamos los números
-    // reales y sepamos qué umbral usar.
-    // if (gap > 260 && !sessionStorage.getItem('roce_height_reloaded')) {
-    //   sessionStorage.setItem('roce_height_reloaded', '1');
-    //   location.reload();
-    // }
+    // Calibrado con datos reales del móvil que falla: gap=190 cuando
+    // sale mal. 150 deja margen de sobra por encima de lo que ocupan
+    // las barras de Chrome en un caso normal, y por debajo del bug real.
+    if (gap > 150 && !sessionStorage.getItem('roce_height_reloaded')) {
+      sessionStorage.setItem('roce_height_reloaded', '1');
+      location.reload();
+    }
   }, 1500);
 
   function initNewsletterWidget() {
