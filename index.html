@@ -412,6 +412,22 @@
 <script src="i18n.js?v=9"></script>
 
 <script>
+  // Los navegadores integrados (WhatsApp, Instagram) a veces miden el
+  // alto de pantalla antes de que su propia barra termine de acomodarse,
+  // así que la primera carga sale con hueco de más — por eso al refrescar
+  // ya se ve bien. Fijamos el alto real por JS y lo recalculamos cuando
+  // el navegador nos avisa de que el viewport ha cambiado de verdad.
+  function fixTeaserHeight() {
+    const page = document.querySelector('.teaser-page');
+    if (page) page.style.height = window.innerHeight + 'px';
+  }
+  fixTeaserHeight();
+  window.addEventListener('resize', fixTeaserHeight);
+  window.addEventListener('orientationchange', fixTeaserHeight);
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', fixTeaserHeight);
+  }
+
   function initNewsletterWidget() {
     const widget = document.getElementById('newsletterWidget');
     const toggleBtn = document.getElementById('newsletterToggle');
