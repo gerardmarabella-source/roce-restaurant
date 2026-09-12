@@ -19,7 +19,7 @@
     footer_legal: { es: 'Aviso legal', en: 'Legal Disclaimer' },
     footer_terms: { es: 'Términos y condiciones', en: 'Terms & Conditions' },
     footer_privacy: { es: 'Política de privacidad', en: 'Privacy Policy' },
-    footer_cookies: { es: 'Política de cookies', en: 'Cookie Policy' },
+    footer_cookies: { es: 'Cookies', en: 'Cookies' },
     nav_reservar: { es: 'Reservar', en: 'Book' },
     back_to_home: { es: '← Volver a ROCE', en: '← Back to ROCE' },
 
