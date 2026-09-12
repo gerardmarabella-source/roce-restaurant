@@ -49,14 +49,8 @@
   html, body {
     height: 100dvh;
     overflow: hidden;
+    overscroll-behavior: none;
     background: var(--black);
-    /* En iOS Safari, overflow:hidden por sí solo no siempre evita el
-       scroll — cuando la barra de direcciones se recoge/expande, el
-       viewport cambia de alto y a veces deja hacer scroll un momento,
-       dejando ver hueco negro debajo de la pantalla. position:fixed
-       bloquea el scroll de verdad, pase lo que pase con la barra. */
-    position: fixed;
-    width: 100%;
   }
 
   .teaser-page {
@@ -459,16 +453,24 @@
 
     // DEBUG TEMPORAL — quitar en cuanto tengamos el dato real del
     // hueco desde el móvil que falla. No afecta al recargado automático
-    // de abajo, solo lo muestra en pantalla para poder calibrarlo.
-    const debug = document.createElement('div');
-    debug.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;background:#ff0;color:#000;font-size:11px;padding:6px;font-family:monospace;text-align:center;';
-    debug.textContent = 'DEBUG screen.height=' + window.screen.height + ' measured=' + measured + ' gap=' + gap;
-    document.body.appendChild(debug);
+    // de abajo, solo lo muestra en pantalla para poder calibrarlo. Se
+    // pone arriba Y abajo por si el contenido queda tapado por la
+    // barra de Chrome en alguno de los dos extremos.
+    const debugText = 'DEBUG screen.height=' + window.screen.height + ' measured=' + measured + ' gap=' + gap;
+    ['top:0', 'bottom:0'].forEach((pos) => {
+      const debug = document.createElement('div');
+      debug.style.cssText = 'position:fixed;' + pos + ';left:0;right:0;z-index:9999;background:#ff0;color:#000;font-size:11px;padding:6px;font-family:monospace;text-align:center;';
+      debug.textContent = debugText;
+      document.body.appendChild(debug);
+    });
 
-    if (gap > 260 && !sessionStorage.getItem('roce_height_reloaded')) {
-      sessionStorage.setItem('roce_height_reloaded', '1');
-      location.reload();
-    }
+    // Recargado automático desactivado mientras diagnosticamos con el
+    // aviso de arriba — lo reactivamos en cuanto tengamos los números
+    // reales y sepamos qué umbral usar.
+    // if (gap > 260 && !sessionStorage.getItem('roce_height_reloaded')) {
+    //   sessionStorage.setItem('roce_height_reloaded', '1');
+    //   location.reload();
+    // }
   }, 1500);
 
   function initNewsletterWidget() {
