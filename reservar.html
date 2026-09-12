@@ -247,13 +247,13 @@
     <h1 data-i18n-html="reservar_h1">Reserva<br>tu mesa</h1>
     <p class="reserve-form-intro" data-i18n="reservar_intro">
       Rellena el formulario y te confirmamos la reserva por email en cuanto lo leamos.
-      Abrimos el 12 de octubre de 2026 — solo aceptamos reservas a partir de esa fecha.
+      Abrimos pronto — solo aceptamos reservas a partir del 1 de noviembre de 2026, viernes y sábados.
     </p>
 
     <a class="pe-teaser-link" href="#eventos-privados" data-i18n="reservar_private_link">Reserva nuestro privado ↓</a>
 
     <form class="reserve-form" id="reservationForm">
-      <input type="hidden" name="access_key" value="b8af37ee-e300-4bd5-8c98-8223cad17cbe">
+      <input type="hidden" name="access_key" value="6e0e35fc-6443-4455-adc7-3999eabf6abc">
       <input type="hidden" name="subject" value="Nueva reserva — ROCE">
       <input type="hidden" name="from_name" value="Formulario de reservas ROCE">
       <input type="checkbox" name="botcheck" class="botcheck" style="display: none;">
@@ -282,7 +282,7 @@
       <div class="field-row">
         <label>
           <span data-i18n="label_date">Fecha</span>
-          <input type="date" name="fecha" min="2026-10-12" required>
+          <input type="date" name="fecha" min="2026-11-01" required>
         </label>
         <label>
           <span data-i18n="label_time">Hora</span>
@@ -335,7 +335,7 @@
   <img class="footer-logo" src="assets/logo/roce-horizontal-white.png" alt="ROCE">
   <div class="footer-info">
     <p class="footer-headline">Restaurant &amp; Cocktails</p>
-    <p class="footer-line">Marqués del Turía 16</p>
+    <p class="footer-line">Marqués del Turia 16</p>
     <p class="footer-line">Valencia, Spain</p>
   </div>
   <a class="footer-instagram" href="https://www.instagram.com/somosroce" target="_blank" rel="noopener">@somosroce ↗</a>
@@ -359,19 +359,20 @@
   </div>
 </div>
 <script src="cookies.js?v=1"></script>
-<script src="i18n.js?v=1"></script>
+<script src="i18n.js?v=2"></script>
 
 <script>
   const form = document.getElementById('reservationForm');
   const btn = document.getElementById('reserveSubmitBtn');
   const status = document.getElementById('reserveFormStatus');
 
-  const OPENING_DATE = '2026-10-12';
+  const OPENING_DATE = '2026-11-01';
+  const ALLOWED_WEEKDAYS = [5, 6]; // viernes y sábado
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    // El input min="2026-10-12" ya bloquea esto en el selector nativo,
+    // El input min="2026-11-01" ya bloquea esto en el selector nativo,
     // pero algunos navegadores permiten teclear la fecha a mano, así que
     // lo revalidamos aquí antes de enviar nada.
     const fecha = form.fecha.value;
@@ -381,8 +382,17 @@
       return;
     }
 
+    // El selector nativo de fecha no permite restringir a días concretos
+    // de la semana, así que solo aceptamos viernes/sábado aquí.
+    const weekday = new Date(fecha + 'T00:00:00').getDay();
+    if (!ALLOWED_WEEKDAYS.includes(weekday)) {
+      status.textContent = window.ROCE_I18N.t('status_wrong_day');
+      status.classList.add('is-error');
+      return;
+    }
+
     // Formatea la fecha en el propio payload para que el email que llega
-    // a booking@roce.es sea legible ("12 de septiembre de 2026"), no la
+    // a reservas@roce.es sea legible ("12 de septiembre de 2026"), no la
     // fecha en crudo del <input type="date">.
     const fechaFmt = fecha
       ? new Date(fecha + 'T00:00:00').toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' })

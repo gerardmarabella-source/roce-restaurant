@@ -44,8 +44,8 @@
     // reservar.html
     reservar_h1: { es: 'Reserva<br>tu mesa', en: 'Book<br>your table' },
     reservar_intro: {
-      es: 'Rellena el formulario y te confirmamos la reserva por email en cuanto lo leamos. Abrimos el 12 de octubre de 2026 — solo aceptamos reservas a partir de esa fecha.',
-      en: "Fill in the form and we'll confirm your booking by email as soon as we read it. We open on October 12, 2026 — we only accept bookings from that date.",
+      es: 'Rellena el formulario y te confirmamos la reserva por email en cuanto lo leamos. Abrimos pronto — solo aceptamos reservas a partir del 1 de noviembre de 2026, viernes y sábados.',
+      en: "Fill in the form and we'll confirm your booking by email as soon as we read it. We're opening soon — we only accept bookings from November 1, 2026, Fridays and Saturdays.",
     },
     reservar_private_link: { es: 'Reserva nuestro privado ↓', en: 'Book our private space ↓' },
     label_name: { es: 'Nombre', en: 'Name' },
@@ -65,16 +65,20 @@
     submit_booking: { es: 'Enviar reserva', en: 'Send booking' },
     submit_sending: { es: 'Enviando...', en: 'Sending...' },
     status_too_early: {
-      es: 'Solo aceptamos reservas a partir del 12 de octubre de 2026 (apertura).',
-      en: 'We only accept bookings from October 12, 2026 (opening day).',
+      es: 'Solo aceptamos reservas a partir del 1 de noviembre de 2026.',
+      en: 'We only accept bookings from November 1, 2026.',
+    },
+    status_wrong_day: {
+      es: 'Solo aceptamos reservas los viernes y sábados.',
+      en: 'We only accept bookings on Fridays and Saturdays.',
     },
     status_success: {
       es: '¡Reserva enviada! Te confirmamos por email en cuanto la leamos.',
       en: "Booking sent! We'll confirm by email as soon as we read it.",
     },
     status_error: {
-      es: 'No se ha podido enviar. Escríbenos directamente a booking@roce.es.',
-      en: 'Something went wrong. Email us directly at booking@roce.es.',
+      es: 'No se ha podido enviar. Escríbenos directamente a reservas@roce.es.',
+      en: 'Something went wrong. Email us directly at reservas@roce.es.',
     },
 
     // Eventos privados (reservar.html)
@@ -107,8 +111,8 @@
       en: 'We process the data you voluntarily provide through this website, specifically:',
     },
     privacy_li_contact: {
-      es: '<strong>Contacto y reservas:</strong> cuando nos escribes a booking@roce.es para pedir información o reservar mesa, tratamos tu nombre, email y el contenido del mensaje para gestionar tu solicitud.',
-      en: '<strong>Contact and bookings:</strong> when you write to booking@roce.es to ask for information or book a table, we process your name, email and the content of your message to handle your request.',
+      es: '<strong>Contacto y reservas:</strong> cuando nos escribes a reservas@roce.es para pedir información o reservar mesa, tratamos tu nombre, email y el contenido del mensaje para gestionar tu solicitud.',
+      en: '<strong>Contact and bookings:</strong> when you write to reservas@roce.es to ask for information or book a table, we process your name, email and the content of your message to handle your request.',
     },
     privacy_li_newsletter: {
       es: '<strong>Newsletter:</strong> si dejas tu email en el formulario de suscripción, lo usamos para enviarte comunicaciones comerciales sobre ROCE (aperturas, eventos, novedades).',
@@ -145,8 +149,8 @@
     privacy_li_limitation: { es: 'Limitación del tratamiento', en: 'Restrict processing' },
     privacy_li_portability: { es: 'Portabilidad de los datos', en: 'Data portability' },
     privacy_p6_outro: {
-      es: 'Para ello, escríbenos a <a href="mailto:booking@roce.es">booking@roce.es</a> indicando el derecho que quieres ejercer, adjuntando copia de tu DNI o documento equivalente. También tienes derecho a presentar una reclamación ante la Agencia Española de Protección de Datos (<a href="https://www.aepd.es" target="_blank" rel="noopener">www.aepd.es</a>) si consideras que no hemos tratado tus datos correctamente.',
-      en: 'To do so, write to us at <a href="mailto:booking@roce.es">booking@roce.es</a> indicating which right you want to exercise, attaching a copy of your ID or equivalent document. You also have the right to file a complaint with the Spanish Data Protection Agency (<a href="https://www.aepd.es" target="_blank" rel="noopener">www.aepd.es</a>) if you believe we haven’t handled your data correctly.',
+      es: 'Para ello, escríbenos a <a href="mailto:reservas@roce.es">reservas@roce.es</a> indicando el derecho que quieres ejercer, adjuntando copia de tu DNI o documento equivalente. También tienes derecho a presentar una reclamación ante la Agencia Española de Protección de Datos (<a href="https://www.aepd.es" target="_blank" rel="noopener">www.aepd.es</a>) si consideras que no hemos tratado tus datos correctamente.',
+      en: 'To do so, write to us at <a href="mailto:reservas@roce.es">reservas@roce.es</a> indicating which right you want to exercise, attaching a copy of your ID or equivalent document. You also have the right to file a complaint with the Spanish Data Protection Agency (<a href="https://www.aepd.es" target="_blank" rel="noopener">www.aepd.es</a>) if you believe we haven’t handled your data correctly.',
     },
     privacy_h7: { es: '7. Menores de edad', en: '7. Minors' },
     privacy_p7: {
