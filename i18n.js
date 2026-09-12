@@ -46,7 +46,7 @@
       en: 'That’s a little embarrassing.',
     },
     newsletter_confirm_stay: { es: 'Aguanto un poco más', en: 'Stay a little longer' },
-    newsletter_confirm_yes: { es: 'Me voy como un cobarde', en: 'Leave like a coward' },
+    newsletter_confirm_yes: { es: 'Me voy como un charca', en: 'Leave like a coward' },
 
     // reservar.html
     reservar_h1: { es: 'Reserva<br>tu mesa', en: 'Book<br>your table' },
