@@ -176,16 +176,17 @@
   .newsletter-widget.is-collapsed .newsletter-body { display: none; }
 
   @media (max-width: 640px) {
-    /* A este ancho, "Reservas" y "Newsletter" en Archivo Black no caben
-       lado a lado — se apilan en vertical, alineadas a la izquierda. */
+    /* A este ancho, "Reservas" y "Newsletter" no caben lado a lado —
+       se apilan en vertical, cada una ocupando casi todo el ancho. */
     .teaser-cta-row {
       flex-direction: column;
-      align-items: flex-start;
-      gap: 0.1rem;
+      align-items: stretch;
+      gap: 0.3rem;
       padding: 0 1rem 0.75rem;
     }
     .teaser-cta { font-size: clamp(2.1rem, 12.5vw, 3rem); }
-    .teaser-cta-img img { height: clamp(1.8rem, 9vw, 2.6rem); }
+    .newsletter-widget { width: 100%; }
+    .teaser-cta-img img { width: 100%; height: auto; }
     .newsletter-widget .newsletter-body { right: auto; left: 0; }
     /* Foto propia para móvil (1080x1920, ya compuesta para vertical) y
        sin el zoom de escritorio. */
