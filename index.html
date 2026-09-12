@@ -456,6 +456,15 @@
     if (!page) return;
     const measured = (window.visualViewport && window.visualViewport.height) || window.innerHeight;
     const gap = window.screen.height - measured;
+
+    // DEBUG TEMPORAL — quitar en cuanto tengamos el dato real del
+    // hueco desde el móvil que falla. No afecta al recargado automático
+    // de abajo, solo lo muestra en pantalla para poder calibrarlo.
+    const debug = document.createElement('div');
+    debug.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;background:#ff0;color:#000;font-size:11px;padding:6px;font-family:monospace;text-align:center;';
+    debug.textContent = 'DEBUG screen.height=' + window.screen.height + ' measured=' + measured + ' gap=' + gap;
+    document.body.appendChild(debug);
+
     if (gap > 260 && !sessionStorage.getItem('roce_height_reloaded')) {
       sessionStorage.setItem('roce_height_reloaded', '1');
       location.reload();
