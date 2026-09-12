@@ -262,6 +262,10 @@
 
   @media (max-width: 640px) {
     .newsletter-body .newsletter-close { right: 1.5rem; }
+    /* iOS hace zoom automático al enfocar un input con font-size menor
+       de 16px, y ese zoom se queda puesto tras enviar el formulario o
+       cerrar el teclado. Con 16px el navegador nunca activa el zoom. */
+    .newsletter-body .newsletter-input { font-size: 16px; }
   }
 
   .newsletter-confirm-text {
@@ -400,7 +404,7 @@
   </div>
 </div>
 <script src="cookies.js?v=1"></script>
-<script src="i18n.js?v=7"></script>
+<script src="i18n.js?v=8"></script>
 
 <script>
   function initNewsletterWidget() {
