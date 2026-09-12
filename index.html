@@ -161,19 +161,56 @@
   }
   .newsletter-widget:not(.is-collapsed) .newsletter-toggle { opacity: 0; pointer-events: none; }
 
+  /* Grande y centrado, casi a pantalla completa — no un desplegable
+     pequeño junto al botón. */
   .newsletter-widget .newsletter-body {
-    position: absolute;
-    bottom: 100%;
-    right: 0;
-    margin-bottom: 1.25rem;
-    width: min(300px, calc(100vw - 3rem));
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    margin: 0;
+    width: min(94vw, 780px);
+    max-height: 88vh;
+    overflow-y: auto;
     background: var(--black);
     color: var(--cream);
     border-radius: 2px;
-    padding: 1.1rem 1.25rem 1.25rem;
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.28);
+    padding: clamp(2rem, 6vw, 4rem);
+    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.55);
+    z-index: 500;
   }
   .newsletter-widget.is-collapsed .newsletter-body { display: none; }
+
+  .newsletter-body .newsletter-title {
+    font-family: var(--display);
+    font-size: clamp(2rem, 6vw, 3.4rem);
+    letter-spacing: 0;
+    margin-bottom: 1rem;
+  }
+  .newsletter-body .newsletter-text {
+    font-size: clamp(1rem, 2vw, 1.3rem);
+    color: var(--cream);
+    opacity: 0.75;
+    margin-bottom: 2rem;
+  }
+  .newsletter-body .newsletter-form { flex-direction: column; gap: 1rem; }
+  .newsletter-body .newsletter-input {
+    padding: 1.1rem 1.3rem;
+    font-size: clamp(1rem, 2vw, 1.2rem);
+    border-radius: 2px;
+  }
+  .newsletter-body .newsletter-submit {
+    padding: 1.1rem 1.3rem;
+    font-size: clamp(1rem, 2vw, 1.2rem);
+    font-family: var(--display);
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+  }
+  .newsletter-body .newsletter-close {
+    top: 1.25rem;
+    right: 1.5rem;
+    font-size: 2.2rem;
+  }
 
   @media (max-width: 640px) {
     /* A este ancho, "Reservas" y "Newsletter" no caben lado a lado —
@@ -189,7 +226,6 @@
     }
     .teaser-cta { font-size: clamp(2.1rem, 12.5vw, 3rem); }
     .teaser-cta-img img { height: clamp(2.4rem, 11.5vw, 3.2rem); width: auto; }
-    .newsletter-widget .newsletter-body { right: auto; left: 0; }
     /* Foto propia para móvil (1080x1920, ya compuesta para vertical) y
        sin el zoom de escritorio. */
     .teaser-bg { transform: none; }
