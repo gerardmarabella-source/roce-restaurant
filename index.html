@@ -22,7 +22,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=61">
+<link rel="stylesheet" href="styles.css?v=62">
 <style>
   html, body {
     height: 100%;
@@ -262,10 +262,6 @@
 
   @media (max-width: 640px) {
     .newsletter-body .newsletter-close { right: 1.5rem; }
-    /* iOS hace zoom automático al enfocar un input con font-size menor
-       de 16px, y ese zoom se queda puesto tras enviar el formulario o
-       cerrar el teclado. Con 16px el navegador nunca activa el zoom. */
-    .newsletter-body .newsletter-input { font-size: 16px; }
   }
 
   .newsletter-confirm-text {
@@ -417,7 +413,23 @@
     const confirmClose = document.getElementById('newsletterConfirmClose');
     const confirmStayBtn = document.getElementById('newsletterConfirmStay');
     const confirmYesBtn = document.getElementById('newsletterConfirmYes');
+    const emailInput = form ? form.querySelector('.newsletter-input') : null;
     if (!widget || !toggleBtn || !closeBtn || !form || !body) return;
+
+    // El input de email es pequeño a propósito (para que quepa en el
+    // plato) y eso hace que iOS haga zoom al enfocarlo — es lo que se
+    // quiere, para que se vea bien lo que escribes. El problema era que
+    // ese zoom se quedaba puesto después. Forzamos que se quite al
+    // cerrar el teclado (blur) o al enviar, subiendo un momento
+    // maximum-scale y devolviéndolo enseguida a su valor original.
+    function resetZoom() {
+      const viewport = document.querySelector('meta[name="viewport"]');
+      if (!viewport) return;
+      const original = viewport.getAttribute('content');
+      viewport.setAttribute('content', original + ', maximum-scale=1.0');
+      setTimeout(() => viewport.setAttribute('content', original), 300);
+    }
+    if (emailInput) emailInput.addEventListener('blur', resetZoom);
 
     toggleBtn.addEventListener('click', () => {
       widget.classList.remove('is-collapsed');
@@ -464,6 +476,8 @@
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
+      if (emailInput) emailInput.blur();
+      resetZoom();
       const submitBtn = form.querySelector('.newsletter-submit');
       submitBtn.disabled = true;
       submitBtn.textContent = '...';
