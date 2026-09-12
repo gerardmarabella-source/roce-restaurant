@@ -47,16 +47,26 @@
 <link rel="stylesheet" href="styles.css?v=65">
 <style>
   html, body {
-    height: 100dvh;
-    overflow: hidden;
+    min-height: 100dvh;
     overscroll-behavior: none;
     background: var(--black);
   }
 
+  /* Antes esto se bloqueaba del todo (overflow:hidden + altura exacta)
+     para que se viera como una sola pantalla fija, sin scroll. Pero en
+     algunos móviles (confirmado: iPhone, Chrome abierto desde
+     WhatsApp) el navegador informa mal de su propio alto disponible, a
+     veces durante toda la sesión, sin forma de detectarlo ni corregirlo
+     por JS — ni forzando la medida ni recargando la página se arregla
+     siempre. Usar 100lvh (el alto "grande", con la barra del navegador
+     recogida) en vez de 100dvh sobrestima un poco el alto en vez de
+     quedarse corto, así que en el peor caso hace falta un pequeño
+     scroll para llegar al pie — mucho mejor que un hueco negro roto e
+     inalcanzable. */
   .teaser-page {
     position: relative;
     width: 100vw;
-    height: 100dvh;
+    height: 100lvh;
     color: var(--cream);
     overflow: hidden;
     background: var(--black);
@@ -406,73 +416,6 @@
 <script src="i18n.js?v=9"></script>
 
 <script>
-  // Al abrir el link desde WhatsApp (Chrome se abre de cero, no es su
-  // navegador interno) la primera medida del alto de pantalla sale mal
-  // mientras la barra de Chrome termina de asentarse — por eso al
-  // refrescar ya se ve bien. Un solo cálculo al cargar no basta porque
-  // no sabemos en qué momento exacto se asienta, así que usamos la
-  // medida más fiable disponible (visualViewport) y la repetimos varias
-  // veces tras la carga, no solo una vez ni solo en "resize".
-  function fixTeaserHeight() {
-    const page = document.querySelector('.teaser-page');
-    if (!page) return;
-    const h = (window.visualViewport && window.visualViewport.height) || window.innerHeight;
-    page.style.height = h + 'px';
-  }
-  fixTeaserHeight();
-  window.addEventListener('load', fixTeaserHeight);
-  window.addEventListener('pageshow', fixTeaserHeight);
-  window.addEventListener('resize', fixTeaserHeight);
-  window.addEventListener('orientationchange', fixTeaserHeight);
-  if (window.visualViewport) {
-    window.visualViewport.addEventListener('resize', fixTeaserHeight);
-  }
-  [100, 300, 600, 1200].forEach((ms) => setTimeout(fixTeaserHeight, ms));
-  // Por si Chrome pre-renderiza la página en segundo plano antes de
-  // mostrarla (algo que apps como WhatsApp usan para que parezca más
-  // rápido) con un tamaño que no es el real, y no vuelve a medir hasta
-  // que el usuario toca la pantalla.
-  document.addEventListener('visibilitychange', fixTeaserHeight);
-  window.addEventListener('focus', fixTeaserHeight);
-  document.addEventListener('touchstart', fixTeaserHeight, { once: true, passive: true });
-
-  // Confirmado: en iPhone, al abrir el link desde WhatsApp (que abre
-  // Chrome de verdad, no su navegador interno), Chrome se queda con una
-  // medida de alto equivocada para toda la sesión — ni tocar la
-  // pantalla ni esperar la corrige, solo un refresco manual. Como
-  // ningún evento avisa de que la medida está mal, la única forma
-  // fiable de arreglarlo es imitar ese refresco: si el hueco por debajo
-  // del contenido es mayor de lo que cualquier barra de navegador
-  // explicaría, recargamos una vez sola (con banderín en sessionStorage
-  // para no entrar en bucle).
-  setTimeout(() => {
-    const page = document.querySelector('.teaser-page');
-    if (!page) return;
-    const measured = (window.visualViewport && window.visualViewport.height) || window.innerHeight;
-    const gap = window.screen.height - measured;
-
-    // DEBUG TEMPORAL — quitar en cuanto tengamos el dato real del
-    // hueco desde el móvil que falla. No afecta al recargado automático
-    // de abajo, solo lo muestra en pantalla para poder calibrarlo. Se
-    // pone arriba Y abajo por si el contenido queda tapado por la
-    // barra de Chrome en alguno de los dos extremos.
-    const debugText = 'DEBUG screen.height=' + window.screen.height + ' measured=' + measured + ' gap=' + gap;
-    ['top:0', 'bottom:0'].forEach((pos) => {
-      const debug = document.createElement('div');
-      debug.style.cssText = 'position:fixed;' + pos + ';left:0;right:0;z-index:9999;background:#ff0;color:#000;font-size:11px;padding:6px;font-family:monospace;text-align:center;';
-      debug.textContent = debugText;
-      document.body.appendChild(debug);
-    });
-
-    // Calibrado con datos reales del móvil que falla: gap=190 cuando
-    // sale mal. 150 deja margen de sobra por encima de lo que ocupan
-    // las barras de Chrome en un caso normal, y por debajo del bug real.
-    if (gap > 150 && !sessionStorage.getItem('roce_height_reloaded')) {
-      sessionStorage.setItem('roce_height_reloaded', '1');
-      location.reload();
-    }
-  }, 1500);
-
   function initNewsletterWidget() {
     const widget = document.getElementById('newsletterWidget');
     const toggleBtn = document.getElementById('newsletterToggle');
