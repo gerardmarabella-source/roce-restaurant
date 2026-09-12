@@ -23,6 +23,10 @@
 
     // Home (index.html)
     home_reservas_btn: { es: 'Reservas', en: 'Book' },
+    home_reservas_img: {
+      es: 'assets/logo/label-reservas.png',
+      en: 'assets/logo/label-bookings.png',
+    },
     home_restaurant_title: { es: 'Restaurante', en: 'Restaurant' },
     home_restaurant_sub: { es: 'Reserva tu mesa', en: 'Book your table' },
     home_private_title: { es: 'Privado', en: 'Private' },
@@ -44,10 +48,14 @@
     // reservar.html
     reservar_h1: { es: 'Reserva<br>tu mesa', en: 'Book<br>your table' },
     reservar_intro: {
-      es: 'Rellena el formulario y te confirmamos la reserva por email en cuanto lo leamos. Abrimos pronto — solo aceptamos reservas a partir del 1 de noviembre de 2026, viernes y sábados.',
-      en: "Fill in the form and we'll confirm your booking by email as soon as we read it. We're opening soon — we only accept bookings from November 1, 2026, Fridays and Saturdays.",
+      es: 'Rellena el formulario y te confirmamos la reserva por email en cuanto lo leamos. Abrimos pronto — solo aceptamos reservas viernes y sábados.',
+      en: "Fill in the form and we'll confirm your booking by email as soon as we read it. We're opening soon — we only accept bookings on Fridays and Saturdays.",
     },
     reservar_private_link: { es: 'Reserva nuestro privado ↓', en: 'Book our private space ↓' },
+    consent_text: {
+      es: 'He leído y acepto la <a href="privacidad.html" target="_blank">política de privacidad</a>. ROCE podrá contactarme por email o teléfono sobre mi reserva y añadirme a su base de datos de clientes para futuras comunicaciones.',
+      en: 'I have read and accept the <a href="privacidad.html" target="_blank">privacy policy</a>. ROCE may contact me by email or phone about my booking and add me to its customer database for future communications.',
+    },
     label_name: { es: 'Nombre', en: 'Name' },
     placeholder_name: { es: 'Tu nombre', en: 'Your name' },
     label_email: { es: 'Email', en: 'Email' },
@@ -72,9 +80,10 @@
       es: 'Solo aceptamos reservas los viernes y sábados.',
       en: 'We only accept bookings on Fridays and Saturdays.',
     },
-    status_success: {
-      es: '¡Reserva enviada! Te confirmamos por email en cuanto la leamos.',
-      en: "Booking sent! We'll confirm by email as soon as we read it.",
+    status_success: { es: '¡Reserva enviada!', en: 'Booking sent!' },
+    status_success_sub: {
+      es: 'Te contactaremos pronto para confirmar.',
+      en: "We'll contact you soon to confirm.",
     },
     status_error: {
       es: 'No se ha podido enviar. Escríbenos directamente a reservas@roce.es.',
@@ -111,8 +120,8 @@
       en: 'We process the data you voluntarily provide through this website, specifically:',
     },
     privacy_li_contact: {
-      es: '<strong>Contacto y reservas:</strong> cuando nos escribes a reservas@roce.es para pedir información o reservar mesa, tratamos tu nombre, email y el contenido del mensaje para gestionar tu solicitud.',
-      en: '<strong>Contact and bookings:</strong> when you write to reservas@roce.es to ask for information or book a table, we process your name, email and the content of your message to handle your request.',
+      es: '<strong>Contacto y reservas:</strong> cuando nos escribes a reservas@roce.es o rellenas el formulario de reservas, tratamos tu nombre, email, teléfono y el contenido del mensaje para gestionar tu solicitud. Si marcas la casilla de aceptación al reservar, también te añadimos a nuestra base de datos de clientes (CRM) para contactarte sobre tu reserva y enviarte comunicaciones sobre ROCE (eventos, novedades, ofertas).',
+      en: '<strong>Contact and bookings:</strong> when you write to reservas@roce.es or fill in the booking form, we process your name, email, phone number and the content of your message to handle your request. If you check the consent box when booking, we also add you to our customer database (CRM) to contact you about your booking and send you communications about ROCE (events, news, offers).',
     },
     privacy_li_newsletter: {
       es: '<strong>Newsletter:</strong> si dejas tu email en el formulario de suscripción, lo usamos para enviarte comunicaciones comerciales sobre ROCE (aperturas, eventos, novedades).',
@@ -124,8 +133,8 @@
     },
     privacy_h3: { es: '3. Legitimación', en: '3. Legal basis' },
     privacy_p3: {
-      es: 'La base legal para el tratamiento de tus datos es el consentimiento que nos das al enviarnos tu email o tu mensaje (art. 6.1.a del RGPD), y en el caso de las reservas, la ejecución de medidas precontractuales a petición tuya (art. 6.1.b del RGPD).',
-      en: 'The legal basis for processing your data is the consent you give us when sending your email or message (art. 6.1.a GDPR), and for bookings, the performance of pre-contractual measures at your request (art. 6.1.b GDPR).',
+      es: 'La base legal para el tratamiento de tus datos es el consentimiento que nos das al enviarnos tu email o tu mensaje (art. 6.1.a del RGPD), y en el caso de las reservas, la ejecución de medidas precontractuales a petición tuya (art. 6.1.b del RGPD). Para añadirte a nuestra base de datos de clientes y enviarte comunicaciones comerciales, la base legal es el consentimiento expreso que nos das al marcar la casilla correspondiente en el formulario de reservas.',
+      en: 'The legal basis for processing your data is the consent you give us when sending your email or message (art. 6.1.a GDPR), and for bookings, the performance of pre-contractual measures at your request (art. 6.1.b GDPR). To add you to our customer database and send you commercial communications, the legal basis is the explicit consent you give by checking the corresponding box on the booking form.',
     },
     privacy_h4: { es: '4. Destinatarios', en: '4. Recipients' },
     privacy_p4: {
@@ -240,6 +249,15 @@
       var key = el.getAttribute('data-i18n-placeholder');
       var val = t(key);
       if (val) el.setAttribute('placeholder', val);
+    });
+
+    // Etiquetas como "Reservas"/"Newsletter" son imágenes (tipografía
+    // exacta pedida por el usuario), no texto — hace falta cambiar el
+    // src entero por idioma, no solo el texto.
+    document.querySelectorAll('[data-i18n-src]').forEach(function (el) {
+      var key = el.getAttribute('data-i18n-src');
+      var val = t(key);
+      if (val) el.setAttribute('src', val);
     });
 
     document.querySelectorAll('.lang-switch [data-lang]').forEach(function (btn) {
