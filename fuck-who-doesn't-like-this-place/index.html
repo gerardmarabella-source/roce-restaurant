@@ -228,7 +228,11 @@
   /* Eventos privados / grupos: sin describir el espacio, todo el detalle
      se resuelve por WhatsApp con un mensaje ya precompuesto. */
   .private-events {
-    background: radial-gradient(120% 100% at 50% 0%, #171410 0%, var(--black) 55%);
+    /* Antes un radial-gradient calculado en % del ancho de la sección
+       — en pantallas de escritorio muy anchas la zona clara del centro
+       se hacía más grande y quedaba menos oscuro de lo que debía.
+       Negro sólido: siempre igual de oscuro, sea cual sea el ancho. */
+    background: var(--black);
     color: var(--white);
     padding: 6rem 1.5rem 6.5rem;
     border-top: 1px solid rgba(131, 47, 47, 0.35);
