@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="format-detection" content="telephone=no, address=no, email=no, date=no">
+<title>Eventos — ROCE</title>
+<meta name="description" content="Agenda de eventos en ROCE, Valencia: noches en directo, catas y sesiones especiales. Reserva tu plaza.">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" href="/assets/meta/favicon-32.png" sizes="32x32">
+<link rel="apple-touch-icon" href="/assets/meta/apple-touch-icon.png">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Eventos — ROCE">
+<meta property="og:description" content="Agenda de eventos en ROCE, Valencia: noches en directo, catas y sesiones especiales. Reserva tu plaza.">
+<meta property="og:image" content="https://roce.es/assets/meta/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:type" content="image/png">
+<meta property="og:url" content="https://roce.es/eventos.html">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://roce.es/assets/meta/og-image.png">
+<script type="application/ld+json">
+[
+  {
+    "@context": "https://schema.org",
+    "@type": "Event",
+    "name": "Noche de Jazz",
+    "startDate": "2026-11-20T21:00",
+    "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
+    "eventStatus": "https://schema.org/EventScheduled",
+    "location": {
+      "@type": "Place",
+      "name": "ROCE",
+      "address": { "@type": "PostalAddress", "streetAddress": "Gran Vía Marqués del Turia, 16", "addressLocality": "Valencia", "postalCode": "46005", "addressCountry": "ES" }
+    },
+    "organizer": { "@type": "Organization", "name": "ROCE", "url": "https://roce.es" }
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "Event",
+    "name": "Sunset Sessions: DJ Set",
+    "startDate": "2026-11-28T20:00",
+    "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
+    "eventStatus": "https://schema.org/EventScheduled",
+    "location": {
+      "@type": "Place",
+      "name": "ROCE",
+      "address": { "@type": "PostalAddress", "streetAddress": "Gran Vía Marqués del Turia, 16", "addressLocality": "Valencia", "postalCode": "46005", "addressCountry": "ES" }
+    },
+    "organizer": { "@type": "Organization", "name": "ROCE", "url": "https://roce.es" }
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "Event",
+    "name": "Cena Maridaje: Vinos de Autor",
+    "startDate": "2026-12-05T21:00",
+    "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
+    "eventStatus": "https://schema.org/EventScheduled",
+    "location": {
+      "@type": "Place",
+      "name": "ROCE",
+      "address": { "@type": "PostalAddress", "streetAddress": "Gran Vía Marqués del Turia, 16", "addressLocality": "Valencia", "postalCode": "46005", "addressCountry": "ES" }
+    },
+    "organizer": { "@type": "Organization", "name": "ROCE", "url": "https://roce.es" }
+  }
+]
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/styles.css?v=65">
+<style>
+  .topbar { background: var(--black); backdrop-filter: none; -webkit-backdrop-filter: none; }
+  .nav-logo { height: 56px; }
+
+  .events-page { min-height: 100vh; background: var(--black); color: var(--white); padding: 8rem 1.5rem 5rem; display: flex; justify-content: center; }
+  .events-wrap { width: 100%; max-width: 620px; }
+
+  .events-back {
+    display: inline-block;
+    margin-bottom: 2.5rem;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    text-decoration: none;
+    color: var(--white);
+    opacity: 0.85;
+  }
+
+  .events-eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--maroon);
+    margin-bottom: 1.25rem;
+  }
+  .events-eyebrow::after { content: ""; flex: 1; height: 1px; background: rgba(131, 47, 47, 0.4); }
+
+  .events-wrap h1 {
+    font-family: var(--display);
+    font-weight: 400;
+    font-size: clamp(2.6rem, 8.5vw, 4rem);
+    line-height: 0.95;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+  }
+  .events-intro { font-size: 0.95rem; opacity: 0.85; line-height: 1.55; margin-bottom: 0.75rem; }
+  .events-note { font-size: 0.78rem; opacity: 0.55; margin-bottom: 3rem; line-height: 1.4; }
+
+  /* Cada evento como una entrada de verdad: cuerpo + una línea
+     perforada que "corta" el resguardo con el precio y el botón,
+     con muescas circulares que atraviesan el borde de la tarjeta. */
+  .event-ticket {
+    position: relative;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 10px;
+    margin-bottom: 1.75rem;
+  }
+  .event-ticket-main { display: flex; gap: 1rem; padding: 1.4rem 1.4rem 1.1rem; }
+  .event-date {
+    flex-shrink: 0;
+    text-align: center;
+    background: var(--maroon);
+    color: var(--cream);
+    border-radius: 6px;
+    padding: 0.5rem 0.65rem;
+    min-width: 58px;
+    height: fit-content;
+  }
+  .event-date-day { display: block; font-family: var(--display); font-size: 1.5rem; line-height: 1; }
+  .event-date-month { display: block; font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 0.2rem; opacity: 0.9; }
+  .event-info { flex: 1; min-width: 0; }
+  .event-title { font-family: var(--display); font-weight: 400; text-transform: uppercase; font-size: clamp(1.15rem, 4.5vw, 1.5rem); line-height: 1.05; margin-bottom: 0.3rem; }
+  .event-meta { font-size: 0.75rem; opacity: 0.65; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 0.55rem; }
+  .event-desc { font-size: 0.87rem; opacity: 0.85; line-height: 1.45; }
+
+  .event-ticket-divider { position: relative; border-top: 2px dashed rgba(255, 255, 255, 0.22); }
+  .event-ticket-divider::before,
+  .event-ticket-divider::after {
+    content: "";
+    position: absolute;
+    top: -10px;
+    width: 20px;
+    height: 20px;
+    background: var(--black);
+    border-radius: 50%;
+  }
+  .event-ticket-divider::before { left: -10px; }
+  .event-ticket-divider::after { right: -10px; }
+
+  .event-ticket-stub {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    padding: 1rem 1.4rem 1.25rem;
+  }
+  .event-price { font-size: 0.8rem; opacity: 0.75; }
+  .event-cta {
+    background: var(--white);
+    color: var(--black);
+    border: none;
+    border-radius: 2px;
+    padding: 0.65rem 1.2rem;
+    font-family: var(--display);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    transition: transform 0.15s ease;
+  }
+  .event-cta:hover { transform: translateY(-2px); }
+
+  /* Modal de reserva de entrada — igual de estructura que el resto de
+     overlays del sitio (fixed, fondo negro, formulario centrado). */
+  .ticket-modal {
+    position: fixed;
+    inset: 0;
+    background: var(--black);
+    color: var(--white);
+    z-index: 600;
+    overflow-y: auto;
+    padding: 6rem 1.5rem 4rem;
+    animation: ticketFadeIn 0.25s ease both;
+  }
+  .ticket-modal[hidden] { display: none; }
+  @keyframes ticketFadeIn { from { opacity: 0; } to { opacity: 1; } }
+  .ticket-modal-inner { max-width: 460px; margin: 0 auto; }
+  .ticket-modal-close {
+    position: fixed;
+    top: 0.6rem;
+    left: 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    padding: 0.4rem;
+    color: var(--cream);
+    cursor: pointer;
+    z-index: 601;
+    opacity: 0.9;
+  }
+  .ticket-modal-close:hover { opacity: 1; }
+  .ticket-modal-close svg { width: 2.2rem; height: 2.2rem; }
+
+  .ticket-modal-eyebrow {
+    display: block;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--maroon);
+    margin-bottom: 0.75rem;
+  }
+  .ticket-modal-title { font-family: var(--display); font-weight: 400; text-transform: uppercase; font-size: clamp(1.8rem, 7vw, 2.6rem); line-height: 1; margin-bottom: 0.4rem; }
+  .ticket-modal-meta { font-size: 0.85rem; opacity: 0.7; margin-bottom: 2rem; }
+
+  .ticket-form { display: flex; flex-direction: column; gap: 1.1rem; }
+  .ticket-field-row { display: flex; gap: 1rem; }
+  .ticket-field-row > label { flex: 1; }
+  .ticket-form label { display: block; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 0.4rem; opacity: 0.85; }
+  .ticket-form input {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    border-radius: 8px;
+    padding: 0.75rem 0.9rem;
+    font-family: var(--body);
+    font-size: 0.95rem;
+    color: var(--white);
+  }
+  .ticket-form input::placeholder { color: rgba(255, 255, 255, 0.5); }
+  .ticket-form input:focus { outline: none; border-color: var(--white); }
+
+  .ticket-consent {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.6rem;
+    font-size: 0.8rem;
+    line-height: 1.4;
+    opacity: 0.85;
+    text-transform: none;
+    letter-spacing: normal;
+    font-weight: 400;
+    cursor: pointer;
+  }
+  .ticket-consent input { width: auto; flex-shrink: 0; margin-top: 0.2rem; accent-color: var(--white); }
+  .ticket-consent a { color: inherit; text-decoration: underline; }
+
+  .ticket-submit {
+    margin-top: 0.5rem;
+    background: var(--white);
+    color: var(--black);
+    border: none;
+    border-radius: 2px;
+    padding: 1rem 1.5rem;
+    font-family: var(--display);
+    font-size: 0.95rem;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    transition: transform 0.15s ease;
+  }
+  .ticket-submit:hover { transform: translateY(-2px); }
+  .ticket-submit:disabled { opacity: 0.6; cursor: default; }
+  .ticket-submit:disabled:hover { transform: none; }
+  .ticket-form-status { margin-top: 1.25rem; font-size: 0.9rem; line-height: 1.5; }
+  .ticket-form-status.is-error { color: #ffb4a8; }
+
+  /* Confirmación con pinta de entrada digital — el pequeño toque
+     "Ticketmaster" del asunto, aunque sea solo una solicitud. */
+  .ticket-confirm {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 10px;
+    overflow: hidden;
+    animation: ticketConfirmIn 0.4s ease both;
+  }
+  @keyframes ticketConfirmIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  .ticket-confirm-main { padding: 1.75rem 1.5rem 1.25rem; text-align: center; }
+  .ticket-confirm-check { width: 48px; height: 48px; margin: 0 auto 1rem; }
+  .ticket-confirm-circle { stroke: var(--white); stroke-width: 2; stroke-dasharray: 151; stroke-dashoffset: 151; animation: reserveCircleDraw 0.5s ease forwards; }
+  .ticket-confirm-tick { stroke: var(--white); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 36; stroke-dashoffset: 36; animation: reserveCheckDraw 0.3s ease 0.45s forwards; }
+  @keyframes reserveCircleDraw { to { stroke-dashoffset: 0; } }
+  @keyframes reserveCheckDraw { to { stroke-dashoffset: 0; } }
+  .ticket-confirm-title { font-family: var(--display); font-size: 1.3rem; text-transform: uppercase; margin-bottom: 0.4rem; }
+  .ticket-confirm-sub { font-size: 0.9rem; opacity: 0.75; margin-bottom: 0.25rem; }
+  .ticket-confirm-event { font-size: 0.85rem; opacity: 0.6; }
+  .ticket-confirm-divider {
+    position: relative;
+    border-top: 2px dashed rgba(255, 255, 255, 0.22);
+  }
+  .ticket-confirm-divider::before, .ticket-confirm-divider::after {
+    content: ""; position: absolute; top: -10px; width: 20px; height: 20px; background: var(--black); border-radius: 50%;
+  }
+  .ticket-confirm-divider::before { left: -10px; }
+  .ticket-confirm-divider::after { right: -10px; }
+  .ticket-confirm-ref {
+    padding: 1.1rem 1.5rem 1.4rem;
+    text-align: center;
+  }
+  .ticket-confirm-ref-label { display: block; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em; opacity: 0.55; margin-bottom: 0.35rem; }
+  .ticket-confirm-ref-code {
+    display: inline-block;
+    font-family: var(--display);
+    font-size: 1.15rem;
+    letter-spacing: 0.08em;
+  }
+  .ticket-confirm-barcode {
+    margin-top: 0.9rem;
+    height: 34px;
+    background: repeating-linear-gradient(90deg, var(--white) 0 2px, transparent 2px 5px, var(--white) 5px 6px, transparent 6px 11px, var(--white) 11px 14px, transparent 14px 17px);
+    opacity: 0.85;
+  }
+
+  @media (max-width: 480px) {
+    .ticket-field-row { flex-direction: column; gap: 1.1rem; }
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <a href="/" aria-label="ROCE — inicio"><img class="nav-logo" src="/assets/logo/roce-horizontal-white.png" alt="ROCE"></a>
+</header>
+
+<main class="events-page">
+  <div class="events-wrap">
+    <a class="events-back" href="/" data-i18n="back_to_home">&larr; Volver a ROCE</a>
+    <span class="events-eyebrow" data-i18n="events_eyebrow">Agenda</span>
+    <h1 data-i18n="events_title">Eventos</h1>
+    <p class="events-intro" data-i18n="events_intro">Noches en directo, catas y sesiones especiales en ROCE. Reserva tu plaza — hay sitio limitado.</p>
+    <p class="events-note" data-i18n="events_soldout_note">Solicitud, no compra — te confirmamos por email en cuanto la revisamos.</p>
+
+    <article class="event-ticket">
+      <div class="event-ticket-main">
+        <div class="event-date">
+          <span class="event-date-day">20</span>
+          <span class="event-date-month">Nov</span>
+        </div>
+        <div class="event-info">
+          <h2 class="event-title" data-i18n="event_1_title">Noche de Jazz</h2>
+          <p class="event-meta" data-i18n="event_1_meta">Sala principal</p>
+          <p class="event-desc" data-i18n="event_1_desc">Trío en directo entre plato y plato — jazz de toda la vida, sin manteles ni silencio.</p>
+        </div>
+      </div>
+      <div class="event-ticket-divider"></div>
+      <div class="event-ticket-stub">
+        <span class="event-price" data-i18n="event_1_price">Entrada libre con consumición</span>
+        <button type="button" class="event-cta" data-event-title-key="event_1_title" data-event-datetime-key="event_1_datetime" data-i18n="ticket_modal_eyebrow">Reserva tu plaza</button>
+      </div>
+    </article>
+
+    <article class="event-ticket">
+      <div class="event-ticket-main">
+        <div class="event-date">
+          <span class="event-date-day">28</span>
+          <span class="event-date-month">Nov</span>
+        </div>
+        <div class="event-info">
+          <h2 class="event-title" data-i18n="event_2_title">Sunset Sessions: DJ Set</h2>
+          <p class="event-meta" data-i18n="event_2_meta">Terraza</p>
+          <p class="event-desc" data-i18n="event_2_desc">La barra abierta hasta tarde y un DJ en la terraza. Aforo reducido.</p>
+        </div>
+      </div>
+      <div class="event-ticket-divider"></div>
+      <div class="event-ticket-stub">
+        <span class="event-price" data-i18n="event_2_price">10€ · incluye primera copa</span>
+        <button type="button" class="event-cta" data-event-title-key="event_2_title" data-event-datetime-key="event_2_datetime" data-i18n="ticket_modal_eyebrow">Reserva tu plaza</button>
+      </div>
+    </article>
+
+    <article class="event-ticket">
+      <div class="event-ticket-main">
+        <div class="event-date">
+          <span class="event-date-day">5</span>
+          <span class="event-date-month">Dic</span>
+        </div>
+        <div class="event-info">
+          <h2 class="event-title" data-i18n="event_3_title">Cena Maridaje: Vinos de Autor</h2>
+          <p class="event-meta" data-i18n="event_3_meta">Menú especial · 5 platos</p>
+          <p class="event-desc" data-i18n="event_3_desc">Menú degustación de cinco platos maridado con vinos de pequeños productores.</p>
+        </div>
+      </div>
+      <div class="event-ticket-divider"></div>
+      <div class="event-ticket-stub">
+        <span class="event-price" data-i18n="event_3_price">55€ por persona</span>
+        <button type="button" class="event-cta" data-event-title-key="event_3_title" data-event-datetime-key="event_3_datetime" data-i18n="ticket_modal_eyebrow">Reserva tu plaza</button>
+      </div>
+    </article>
+  </div>
+</main>
+
+<div class="ticket-modal" id="ticketModal" hidden>
+  <button class="ticket-modal-close" id="ticketModalClose" aria-label="Cerrar">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+  </button>
+  <div class="ticket-modal-inner">
+    <div id="ticketModalBody">
+      <span class="ticket-modal-eyebrow" data-i18n="ticket_modal_eyebrow">Reserva tu plaza</span>
+      <h2 class="ticket-modal-title" id="ticketModalTitle">Noche de Jazz</h2>
+      <p class="ticket-modal-meta" id="ticketModalMeta">Viernes 20 de noviembre · 21:00</p>
+
+      <form class="ticket-form" id="ticketForm">
+        <input type="hidden" name="access_key" value="6e0e35fc-6443-4455-adc7-3999eabf6abc">
+        <input type="hidden" name="subject" id="ticketSubjectField" value="">
+        <input type="hidden" name="from_name" value="Eventos ROCE">
+        <input type="hidden" name="evento" id="ticketEventField" value="">
+        <input type="checkbox" name="botcheck" class="botcheck" style="display: none;">
+
+        <label>
+          <span data-i18n="label_name">Nombre</span>
+          <input type="text" name="nombre" placeholder="Tu nombre" data-i18n-placeholder="placeholder_name" required>
+        </label>
+        <label>
+          <span data-i18n="label_email">Email</span>
+          <input type="email" name="email" placeholder="tu@email.com" data-i18n-placeholder="placeholder_email" required>
+        </label>
+        <div class="ticket-field-row">
+          <label>
+            <span data-i18n="label_phone">Teléfono</span>
+            <input type="tel" name="telefono" placeholder="600 000 000">
+          </label>
+          <label>
+            <span data-i18n="ticket_label_count">Nº de entradas</span>
+            <input type="number" name="entradas" min="1" max="10" value="1" required>
+          </label>
+        </div>
+        <label class="ticket-consent">
+          <input type="checkbox" name="acepta_privacidad" required>
+          <span data-i18n-html="consent_text">He leído y acepto la <a href="/privacidad.html" target="_blank" rel="noopener">política de privacidad</a>. ROCE podrá contactarme por email o teléfono sobre mi reserva y añadirme a su base de datos de clientes para futuras comunicaciones.</span>
+        </label>
+        <button type="submit" class="ticket-submit" id="ticketSubmitBtn" data-i18n="ticket_submit">Enviar solicitud</button>
+      </form>
+      <p class="ticket-form-status" id="ticketFormStatus" role="status" aria-live="polite"></p>
+    </div>
+  </div>
+</div>
+
+<footer class="site-footer">
+  <img class="footer-logo" src="/assets/logo/roce-tilted-white.png" alt="ROCE">
+  <div class="footer-info">
+    <p class="footer-headline">Restaurant &amp; Cocktails</p>
+    <p class="footer-line">Marqués del Turia 16</p>
+    <p class="footer-line">Valencia (Spain)</p>
+  </div>
+  <a class="footer-instagram" href="https://www.instagram.com/somosroce" target="_blank" rel="noopener">@somosroce ↗</a>
+  <div class="footer-bottom">
+    <span class="lang-switch">
+      <button type="button" data-lang="es">ES</button>
+      <button type="button" data-lang="en">EN</button>
+    </span>
+    <div class="footer-legal">
+      <a href="/aviso-legal.html" data-i18n="footer_legal">Aviso legal</a> · <a href="/terminos.html" data-i18n="footer_terms">Términos y condiciones</a> · <a href="/cookies.html" data-i18n="footer_cookies">Cookies</a> · <a href="/privacidad.html" data-i18n="footer_privacy">Política de privacidad</a>
+    </div>
+  </div>
+</footer>
+
+<div class="cookie-banner" id="cookieBanner">
+  <p class="cookie-text"><span data-i18n="cookie_text">Usamos una cookie técnica para recordar tu elección. Sin analítica ni publicidad.</span> <a href="/cookies.html" data-i18n="cookie_more_info">Más información</a>.</p>
+  <div class="cookie-actions">
+    <button class="cookie-reject" id="cookieReject" data-i18n="cookie_reject">Rechazar</button>
+    <button class="cookie-accept" id="cookieAccept" data-i18n="cookie_accept">Aceptar</button>
+  </div>
+</div>
+<script src="/cookies.js?v=1"></script>
+<script src="/i18n.js?v=14"></script>
+
+<script>
+  const ticketModal = document.getElementById('ticketModal');
+  const ticketModalClose = document.getElementById('ticketModalClose');
+  const ticketModalBody = document.getElementById('ticketModalBody');
+  const ticketModalTitle = document.getElementById('ticketModalTitle');
+  const ticketModalMeta = document.getElementById('ticketModalMeta');
+  const ticketEventField = document.getElementById('ticketEventField');
+  const ticketSubjectField = document.getElementById('ticketSubjectField');
+
+  // Guardamos el HTML original del formulario para poder restaurarlo
+  // si se reabre el modal tras haber visto la confirmación de un
+  // evento anterior. Se compara por la vista de confirmación (no por
+  // el HTML literal) porque el i18n traduce el marcado tras cargarlo.
+  const ticketModalOriginalHTML = ticketModalBody.innerHTML;
+
+  document.querySelectorAll('.event-cta').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      if (ticketModalBody.querySelector('.ticket-confirm')) {
+        ticketModalBody.innerHTML = ticketModalOriginalHTML;
+        window.ROCE_I18N.setLang(window.ROCE_I18N.getLang());
+        initTicketForm();
+      }
+      const title = window.ROCE_I18N.t(btn.dataset.eventTitleKey);
+      const meta = window.ROCE_I18N.t(btn.dataset.eventDatetimeKey);
+      document.getElementById('ticketModalTitle').textContent = title;
+      document.getElementById('ticketModalMeta').textContent = meta;
+      document.getElementById('ticketEventField').value = title + ' — ' + meta;
+      document.getElementById('ticketSubjectField').value = 'Solicitud de entrada — ' + title;
+      ticketModal.hidden = false;
+    });
+  });
+
+  ticketModalClose.addEventListener('click', () => { ticketModal.hidden = true; });
+
+  function generateTicketRef() {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let code = '';
+    for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)];
+    return 'ROCE-' + code;
+  }
+
+  function initTicketForm() {
+    const form = document.getElementById('ticketForm');
+    const btn = document.getElementById('ticketSubmitBtn');
+    const status = document.getElementById('ticketFormStatus');
+    if (!form) return;
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      btn.disabled = true;
+      btn.textContent = window.ROCE_I18N.t('ticket_submit_sending');
+      status.textContent = '';
+      status.classList.remove('is-error');
+
+      const eventTitle = document.getElementById('ticketModalTitle').textContent;
+      const eventMeta = document.getElementById('ticketModalMeta').textContent;
+
+      try {
+        const res = await fetch('https://api.web3forms.com/submit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+          body: JSON.stringify(Object.fromEntries(new FormData(form))),
+        });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.message || 'Error desconocido');
+
+        const ref = generateTicketRef();
+        ticketModalBody.innerHTML = `
+          <div class="ticket-confirm">
+            <div class="ticket-confirm-main">
+              <svg class="ticket-confirm-check" viewBox="0 0 52 52">
+                <circle class="ticket-confirm-circle" cx="26" cy="26" r="24" fill="none"/>
+                <path class="ticket-confirm-tick" fill="none" d="M14 27l7 7 17-17"/>
+              </svg>
+              <p class="ticket-confirm-title">${window.ROCE_I18N.t('ticket_success_title')}</p>
+              <p class="ticket-confirm-sub">${window.ROCE_I18N.t('ticket_success_sub')}</p>
+              <p class="ticket-confirm-event">${eventTitle} · ${eventMeta}</p>
+            </div>
+            <div class="ticket-confirm-divider"></div>
+            <div class="ticket-confirm-ref">
+              <span class="ticket-confirm-ref-label">${window.ROCE_I18N.t('ticket_ref_label')}</span>
+              <span class="ticket-confirm-ref-code">${ref}</span>
+              <div class="ticket-confirm-barcode"></div>
+            </div>
+          </div>
+        `;
+      } catch (err) {
+        status.textContent = window.ROCE_I18N.t('ticket_status_error');
+        status.classList.add('is-error');
+        btn.disabled = false;
+        btn.textContent = window.ROCE_I18N.t('ticket_submit');
+      }
+    });
+  }
+
+  initTicketForm();
+</script>
+
+</body>
+</html>

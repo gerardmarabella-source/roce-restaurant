@@ -35,7 +35,10 @@
     menu_privado_title: { es: 'Privado', en: 'Private' },
     menu_privado_sub: { es: 'Una experiencia más íntima', en: 'A more intimate experience' },
     menu_eventos_title: { es: 'Eventos', en: 'Events' },
-    menu_eventos_sub: { es: '*Próximamente', en: '*Coming soon' },
+    menu_eventos_sub: {
+      es: 'Noches en directo, catas y sesiones especiales',
+      en: 'Live nights, tastings and special sessions',
+    },
 
     // Newsletter (widget compartido, usado en home)
     newsletter_text: { es: 'Entérate antes que nadie de todo.', en: 'Be the first to know.' },
@@ -121,6 +124,60 @@
     },
     wa_guests: { es: 'Seríamos {n} personas.', en: "We'd be {n} people." },
     wa_outro: { es: '¿Nos contáis disponibilidad?', en: 'Could you tell us about availability?' },
+
+    // eventos.html
+    events_eyebrow: { es: 'Agenda', en: 'Line-up' },
+    events_title: { es: 'Eventos', en: 'Events' },
+    events_intro: {
+      es: 'Noches en directo, catas y sesiones especiales en ROCE. Reserva tu plaza — hay sitio limitado.',
+      en: 'Live nights, tastings and special sessions at ROCE. Reserve your spot — space is limited.',
+    },
+    events_soldout_note: {
+      es: 'Solicitud, no compra — te confirmamos por email en cuanto la revisamos.',
+      en: "This is a request, not a purchase — we'll confirm by email once we review it.",
+    },
+
+    event_1_title: { es: 'Noche de Jazz', en: 'Jazz Night' },
+    event_1_meta: { es: 'Sala principal', en: 'Main room' },
+    event_1_desc: {
+      es: 'Trío en directo entre plato y plato — jazz de toda la vida, sin manteles ni silencio.',
+      en: 'A live trio between courses — classic jazz, no white tablecloths or hushed silence required.',
+    },
+    event_1_price: { es: 'Entrada libre con consumición', en: 'Free entry with a drink minimum' },
+    event_1_datetime: { es: 'Viernes 20 de noviembre · 21:00', en: 'Friday, November 20 · 21:00' },
+
+    event_2_title: { es: 'Sunset Sessions: DJ Set', en: 'Sunset Sessions: DJ Set' },
+    event_2_meta: { es: 'Terraza', en: 'Terrace' },
+    event_2_desc: {
+      es: 'La barra abierta hasta tarde y un DJ en la terraza. Aforo reducido.',
+      en: 'The bar stays open late and a DJ takes over the terrace. Limited capacity.',
+    },
+    event_2_price: { es: '10€ · incluye primera copa', en: '€10 · includes your first drink' },
+    event_2_datetime: { es: 'Sábado 28 de noviembre · 20:00', en: 'Saturday, November 28 · 20:00' },
+
+    event_3_title: { es: 'Cena Maridaje: Vinos de Autor', en: 'Wine Pairing Dinner' },
+    event_3_meta: { es: 'Menú especial · 5 platos', en: 'Special menu · 5 courses' },
+    event_3_desc: {
+      es: 'Menú degustación de cinco platos maridado con vinos de pequeños productores.',
+      en: 'A five-course tasting menu paired with wines from small producers.',
+    },
+    event_3_price: { es: '55€ por persona', en: '€55 per person' },
+    event_3_datetime: { es: 'Sábado 5 de diciembre · 21:00', en: 'Saturday, December 5 · 21:00' },
+
+    ticket_modal_eyebrow: { es: 'Reserva tu plaza', en: 'Reserve your spot' },
+    ticket_label_count: { es: 'Nº de entradas', en: 'Number of tickets' },
+    ticket_submit: { es: 'Enviar solicitud', en: 'Send request' },
+    ticket_submit_sending: { es: 'Enviando...', en: 'Sending...' },
+    ticket_status_error: {
+      es: 'No se ha podido enviar, inténtalo de nuevo.',
+      en: 'Something went wrong, please try again.',
+    },
+    ticket_success_title: { es: '¡Solicitud enviada!', en: 'Request sent!' },
+    ticket_success_sub: {
+      es: 'Te confirmamos tu plaza por email en cuanto la revisemos.',
+      en: "We'll confirm your spot by email once we review it.",
+    },
+    ticket_ref_label: { es: 'Nº de referencia', en: 'Reference number' },
 
     // privacidad.html
     privacy_title: { es: 'Política de privacidad', en: 'Privacy Policy' },
