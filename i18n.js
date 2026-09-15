@@ -36,6 +36,8 @@
     menu_privado_sub: { es: 'Una experiencia más íntima', en: 'A more intimate experience' },
     menu_eventos_title: { es: 'Eventos', en: 'Events' },
     menu_eventos_sub: { es: '*Próximamente', en: '*Coming soon' },
+    menu_tienda_title: { es: 'Tienda', en: 'Shop' },
+    menu_tienda_sub: { es: '*Próximamente', en: '*Coming soon' },
 
     // Newsletter (widget compartido, usado en home)
     newsletter_text: { es: 'Entérate antes que nadie de todo.', en: 'Be the first to know.' },
