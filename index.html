@@ -44,6 +44,12 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!-- Prioridad baja: no son visibles hasta que se abre el newsletter,
+     así que no deben competir con la foto de fondo ni las fuentes,
+     pero conviene que empiecen a llegar pronto en vez de esperar a
+     que el usuario le dé al botón. -->
+<link rel="preload" as="image" href="assets/logo/newsletter-plate.webp" fetchpriority="low">
+<link rel="preload" as="image" href="assets/logo/newsletter-plate-broken.webp" fetchpriority="low">
 <link rel="stylesheet" href="styles.css?v=65">
 <style>
   html, body {
@@ -225,7 +231,7 @@
     margin: 0;
     width: min(92vw, 560px);
     aspect-ratio: 1 / 1;
-    background: url("assets/logo/newsletter-plate.png") center / contain no-repeat;
+    background: url("assets/logo/newsletter-plate.webp") center / contain no-repeat;
     padding: 0;
     box-shadow: none;
     border-radius: 0;
@@ -239,7 +245,7 @@
      — el pequeño chantaje visual de marca antes de dejar ir al
      suscriptor. */
   .newsletter-widget .newsletter-body.is-broken {
-    background-image: url("assets/logo/newsletter-plate-broken.png");
+    background-image: url("assets/logo/newsletter-plate-broken.webp");
   }
   .newsletter-body.is-broken .newsletter-close { display: none; }
 
