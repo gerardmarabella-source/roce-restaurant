@@ -25,10 +25,17 @@
 
     // Home (index.html)
     home_reservas_btn: { es: 'Reservas', en: 'Book' },
-    home_restaurant_title: { es: 'Restaurante', en: 'Restaurant' },
-    home_restaurant_sub: { es: 'Reserva tu mesa', en: 'Book your table' },
-    home_private_title: { es: 'Privado', en: 'Private' },
-    home_private_sub: { es: 'Experiencia íntima', en: 'An intimate experience' },
+
+    // Desplegable de Reservas (home)
+    menu_reservar_title: { es: 'Reservar mesa', en: 'Book a table' },
+    menu_reservar_sub: {
+      es: 'Solo primera planta — viernes, sábados y festivos',
+      en: 'First floor only — Fridays, Saturdays and holidays',
+    },
+    menu_privado_title: { es: 'Privado', en: 'Private' },
+    menu_privado_sub: { es: 'Una experiencia más íntima', en: 'A more intimate experience' },
+    menu_eventos_title: { es: 'Eventos', en: 'Events' },
+    menu_eventos_sub: { es: '*Próximamente', en: '*Coming soon' },
 
     // Newsletter (widget compartido, usado en home)
     newsletter_text: { es: 'Entérate antes que nadie de todo.', en: 'Be the first to know.' },

@@ -187,6 +187,75 @@
     color: var(--cream);
   }
 
+  /* Desplegable de Reservas: al pulsar, en vez de ir directo a la web
+     de reservas, se abre un pequeño menú hacia arriba con las 3
+     opciones (mesa, privado, eventos). */
+  .reservas-menu-wrap { position: relative; }
+  .reservas-menu-wrap.is-collapsed .reservas-menu { display: none; }
+  /* Casi una página intermedia, no un desplegable pequeño: ocupa toda
+     la pantalla igual que hace el newsletter con su plato. */
+  .reservas-menu {
+    position: fixed;
+    inset: 0;
+    margin: 0;
+    background: var(--black);
+    padding: 6rem 1.75rem 3rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 1.1rem;
+    z-index: 500;
+    width: auto;
+    max-width: none;
+    box-shadow: none;
+    border-radius: 0;
+  }
+  .reservas-menu-close {
+    position: fixed;
+    top: 0.75rem;
+    right: 1.5rem;
+    width: 1.9rem;
+    height: 1.9rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    border-radius: 50%;
+    color: var(--cream);
+    font-size: 1.2rem;
+    cursor: pointer;
+    z-index: 501;
+  }
+  .reservas-menu-close:hover { background: rgba(255, 255, 255, 0.18); }
+  .reservas-menu-item {
+    display: block;
+    padding: 1.5rem 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 4px;
+    text-decoration: none;
+    color: var(--cream);
+    transition: background 0.15s ease;
+  }
+  .reservas-menu-item:not(.is-disabled):hover { background: rgba(255, 255, 255, 0.06); }
+  .reservas-menu-item.is-disabled { opacity: 0.55; cursor: default; }
+  .reservas-menu-title {
+    display: block;
+    font-family: var(--display);
+    text-transform: uppercase;
+    font-size: clamp(1.8rem, 8vw, 3rem);
+    line-height: 1;
+    letter-spacing: 0.01em;
+  }
+  .reservas-menu-sub {
+    display: block;
+    font-size: clamp(0.8rem, 2.6vw, 0.95rem);
+    opacity: 0.75;
+    margin-top: 0.5rem;
+    line-height: 1.3;
+  }
+  .reservas-menu-sub.is-alert { color: var(--maroon); opacity: 1; }
+
   /* El botón de newsletter abre su formulario hacia arriba, justo
      encima de la propia palabra — sin mover el resto del layout. */
   .newsletter-widget {
@@ -371,10 +440,27 @@
 
   <div class="teaser-bottom">
     <div class="teaser-cta-row">
-      <a class="teaser-cta teaser-cta-img" href="fuck-who-doesn't-like-this-place" aria-label="Reservas">
-        <img class="lang-es-only" src="assets/logo/label-reservas.png" alt="Reservas">
-        <span class="teaser-cta-text lang-en-only">Bookings</span>
-      </a>
+      <div class="reservas-menu-wrap is-collapsed" id="reservasWidget">
+        <button class="teaser-cta teaser-cta-img reservas-toggle" id="reservasToggle" aria-label="Reservas" aria-expanded="false">
+          <img class="lang-es-only" src="assets/logo/label-reservas.png" alt="Reservas">
+          <span class="teaser-cta-text lang-en-only">Bookings</span>
+        </button>
+        <div class="reservas-menu" id="reservasMenu">
+          <button class="reservas-menu-close" id="reservasMenuClose" aria-label="Cerrar">&times;</button>
+          <a class="reservas-menu-item" href="fuck-who-doesn't-like-this-place">
+            <span class="reservas-menu-title" data-i18n="menu_reservar_title">Reservar mesa</span>
+            <span class="reservas-menu-sub" data-i18n="menu_reservar_sub">Solo primera planta — viernes, sábados y festivos</span>
+          </a>
+          <a class="reservas-menu-item" href="fuck-who-doesn't-like-this-place#eventos-privados">
+            <span class="reservas-menu-title" data-i18n="menu_privado_title">Privado</span>
+            <span class="reservas-menu-sub" data-i18n="menu_privado_sub">Una experiencia más íntima</span>
+          </a>
+          <div class="reservas-menu-item is-disabled" aria-disabled="true">
+            <span class="reservas-menu-title" data-i18n="menu_eventos_title">Eventos</span>
+            <span class="reservas-menu-sub is-alert" data-i18n="menu_eventos_sub">*Próximamente</span>
+          </div>
+        </div>
+      </div>
 
       <div class="newsletter-widget is-collapsed" id="newsletterWidget">
         <button class="teaser-cta teaser-cta-img newsletter-toggle" id="newsletterToggle" aria-label="Newsletter">
@@ -427,7 +513,7 @@
   </div>
 </div>
 <script src="cookies.js?v=1"></script>
-<script src="i18n.js?v=9"></script>
+<script src="i18n.js?v=10"></script>
 
 <script>
   function initNewsletterWidget() {
@@ -550,7 +636,35 @@
     });
   }
 
+  function initReservasMenu() {
+    const widget = document.getElementById('reservasWidget');
+    const toggleBtn = document.getElementById('reservasToggle');
+    const closeBtn = document.getElementById('reservasMenuClose');
+    if (!widget || !toggleBtn) return;
+
+    toggleBtn.addEventListener('click', () => {
+      const willOpen = widget.classList.contains('is-collapsed');
+      widget.classList.toggle('is-collapsed');
+      toggleBtn.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+    });
+
+    if (closeBtn) {
+      closeBtn.addEventListener('click', () => {
+        widget.classList.add('is-collapsed');
+        toggleBtn.setAttribute('aria-expanded', 'false');
+      });
+    }
+
+    document.addEventListener('click', (e) => {
+      if (!widget.contains(e.target)) {
+        widget.classList.add('is-collapsed');
+        toggleBtn.setAttribute('aria-expanded', 'false');
+      }
+    });
+  }
+
   initNewsletterWidget();
+  initReservasMenu();
 </script>
 
 </body>
