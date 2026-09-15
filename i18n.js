@@ -109,6 +109,7 @@
       en: 'Book our private space and enjoy the experience in a much more intimate way.',
     },
     pe_label_guests: { es: '¿Cuántos sois?', en: 'How many of you?' },
+    pe_guests_placeholder: { es: 'Nº de personas', en: 'Number of guests' },
     pe_whatsapp_btn: { es: 'Hablar por WhatsApp', en: 'Message us on WhatsApp' },
     pe_note: {
       es: 'Consumo mínimo por persona. Te contamos los detalles por WhatsApp.',
