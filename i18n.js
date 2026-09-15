@@ -25,10 +25,17 @@
 
     // Home (index.html)
     home_reservas_btn: { es: 'Reservas', en: 'Book' },
-    home_restaurant_title: { es: 'Restaurante', en: 'Restaurant' },
-    home_restaurant_sub: { es: 'Reserva tu mesa', en: 'Book your table' },
-    home_private_title: { es: 'Privado', en: 'Private' },
-    home_private_sub: { es: 'Experiencia íntima', en: 'An intimate experience' },
+
+    // Desplegable de Reservas (home)
+    menu_reservar_title: { es: 'Reservar', en: 'Book' },
+    menu_reservar_sub: {
+      es: 'Reserva tu mesa en la primera planta, solo viernes, sábados y festivos',
+      en: 'Book your table on the first floor, Fridays, Saturdays and holidays only',
+    },
+    menu_privado_title: { es: 'Privado', en: 'Private' },
+    menu_privado_sub: { es: 'Una experiencia más íntima', en: 'A more intimate experience' },
+    menu_eventos_title: { es: 'Eventos', en: 'Events' },
+    menu_eventos_sub: { es: '*Próximamente', en: '*Coming soon' },
 
     // Newsletter (widget compartido, usado en home)
     newsletter_text: { es: 'Entérate antes que nadie de todo.', en: 'Be the first to know.' },
@@ -102,6 +109,7 @@
       en: 'Book our private space and enjoy the experience in a much more intimate way.',
     },
     pe_label_guests: { es: '¿Cuántos sois?', en: 'How many of you?' },
+    pe_guests_placeholder: { es: 'Nº de personas', en: 'Number of guests' },
     pe_whatsapp_btn: { es: 'Hablar por WhatsApp', en: 'Message us on WhatsApp' },
     pe_note: {
       es: 'Consumo mínimo por persona. Te contamos los detalles por WhatsApp.',
