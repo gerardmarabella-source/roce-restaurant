@@ -27,10 +27,10 @@
     home_reservas_btn: { es: 'Reservas', en: 'Book' },
 
     // Desplegable de Reservas (home)
-    menu_reservar_title: { es: 'Reservar mesa', en: 'Book a table' },
+    menu_reservar_title: { es: 'Reservar', en: 'Book' },
     menu_reservar_sub: {
-      es: 'Solo primera planta — viernes, sábados y festivos',
-      en: 'First floor only — Fridays, Saturdays and holidays',
+      es: 'Reserva tu mesa en la primera planta, solo viernes, sábados y festivos',
+      en: 'Book your table on the first floor, Fridays, Saturdays and holidays only',
     },
     menu_privado_title: { es: 'Privado', en: 'Private' },
     menu_privado_sub: { es: 'Una experiencia más íntima', en: 'A more intimate experience' },
