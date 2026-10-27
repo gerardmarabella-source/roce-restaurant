@@ -62,8 +62,8 @@
       en: 'We only take dinner bookings on the first floor, Wednesday to Saturday.',
     },
     reservar_brunch: {
-      es: 'Nuestro espacio de brunch y cafetería es de acceso libre, sin reserva, todos los días de 9:00 a 20:00.',
-      en: 'Our brunch and café area is walk-in only, no reservation needed, every day from 9:00 to 20:00.',
+      es: 'Nuestro espacio de brunch y cafetería es de acceso libre, sin reserva, todos los días de 10:00 a 20:00.',
+      en: 'Our brunch and café area is walk-in only, no reservation needed, every day from 10:00 to 20:00.',
     },
     consent_text: {
       es: 'He leído y acepto la <a href="/privacidad.html" target="_blank" rel="noopener">política de privacidad</a>. ROCE podrá contactarme por email o teléfono sobre mi reserva y añadirme a su base de datos de clientes para futuras comunicaciones.',
