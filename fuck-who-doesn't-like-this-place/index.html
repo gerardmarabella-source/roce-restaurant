@@ -75,10 +75,11 @@
   }
 
 
+  /* El widget de CoverManager usa el tema "trans-white" (texto blanco sobre
+     fondo transparente), pensado para webs oscuras: no ponerle fondo claro
+     o el texto se vuelve ilegible. */
   .cm-widget {
-    background: var(--white);
-    border-radius: 8px;
-    overflow: hidden;
+    background: transparent;
     min-height: 550px;
   }
   .cm-widget iframe { display: block; width: 100%; border: 0; }
@@ -86,7 +87,7 @@
     display: flex;
     align-items: flex-start;
     gap: 0.9rem;
-    margin: 1rem 1rem 0;
+    margin: 0 0 1.25rem;
     padding: 1rem 1.1rem;
     background: #ececec;
     border-radius: 6px;
