@@ -32,8 +32,6 @@
       es: 'Reserva tu mesa en la primera planta, de miércoles a sábado y festivos',
       en: 'Book your table on the first floor, Wednesday to Saturday and holidays only',
     },
-    menu_grupos_title: { es: 'Grupos', en: 'Groups' },
-    menu_grupos_sub: { es: 'Reserva de mesa para grupos grandes', en: 'Table bookings for large groups' },
     menu_alquiler_link: { es: 'Alquila el espacio →', en: 'Rent the space →' },
     menu_eventos_title: { es: 'Eventos', en: 'Events' },
     menu_eventos_sub: {
@@ -66,7 +64,6 @@
       es: 'Elige día, hora y número de personas para reservar tu mesa. Abrimos pronto — solo aceptamos reservas de miércoles a sábado.',
       en: "Pick a date, time and party size to book your table. We're opening soon — we only accept bookings from Wednesday to Saturday.",
     },
-    reservar_groups_link: { es: 'Reservas de grupo ↓', en: 'Group bookings ↓' },
     consent_text: {
       es: 'He leído y acepto la <a href="/privacidad.html" target="_blank" rel="noopener">política de privacidad</a>. ROCE podrá contactarme por email o teléfono sobre mi reserva y añadirme a su base de datos de clientes para futuras comunicaciones.',
       en: 'I have read and accept the <a href="/privacidad.html" target="_blank" rel="noopener">privacy policy</a>. ROCE may contact me by email or phone about my booking and add me to its customer database for future communications.',
@@ -105,6 +102,16 @@
       en: 'Something went wrong. Email us directly at reservas@roce.es.',
     },
 
+    // Aviso de grupos grandes (reservar.html)
+    group_notice: {
+      es: 'Para reservas de más de 12 personas, <u>escríbenos por WhatsApp</u>.',
+      en: 'For bookings of more than 12 people, <u>message us on WhatsApp</u>.',
+    },
+    group_wa_msg: {
+      es: 'Hola! Nos gustaría reservar mesa para un grupo de más de 12 personas en ROCE.',
+      en: "Hi! We'd like to book a table for a group of more than 12 people at ROCE.",
+    },
+
     // Alquila el espacio (reservar.html)
     pe_eyebrow: { es: 'Alquila el espacio', en: 'Rent the space' },
     pe_intro: {
@@ -127,23 +134,6 @@
       en: 'I accept the <a href="/privacidad.html" target="_blank" rel="noopener">privacy policy</a>',
     },
     pe_send: { es: 'Enviar por WhatsApp', en: 'Send via WhatsApp' },
-    gr_eyebrow: { es: 'Reservas de grupo', en: 'Group bookings' },
-    gr_title: { es: 'Una mesa para<br>todo el grupo', en: 'A table for<br>the whole group' },
-    gr_intro: {
-      es: 'Dinos cuántos sois y qué día os viene bien, y os preparamos la mesa.',
-      en: "Tell us how many you are and which day suits you, and we'll set the table.",
-    },
-    gr_ph_guests: { es: 'Número de personas*', en: 'Number of guests*' },
-    gr_ph_date: { es: 'Fecha*', en: 'Date*' },
-    gr_ph_time: { es: 'Hora aproximada', en: 'Approximate time' },
-    gr_note: {
-      es: 'Te confirmamos disponibilidad y condiciones por WhatsApp.',
-      en: "We'll confirm availability and conditions over WhatsApp.",
-    },
-    gr_wa_intro: {
-      es: 'Hola! Nos gustaría hacer una reserva de grupo en ROCE.',
-      en: "Hi! We'd like to make a group booking at ROCE.",
-    },
     pe_note: {
       es: 'Te contamos condiciones y consumo mínimo por WhatsApp.',
       en: "We'll share the conditions and minimum spend over WhatsApp.",
