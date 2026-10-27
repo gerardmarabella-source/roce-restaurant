@@ -189,7 +189,7 @@
 
   /* Desplegable de Reservas: al pulsar, en vez de ir directo a la web
      de reservas, se abre un pequeño menú hacia arriba con las 3
-     opciones (mesa, alquiler del espacio, eventos). */
+     opciones (mesa, grupos, eventos y, más discreto, alquiler del espacio). */
   .reservas-menu-wrap { position: relative; }
   .reservas-menu-wrap.is-collapsed .reservas-menu { display: none; }
   /* Casi una página intermedia, no un desplegable pequeño: ocupa toda
@@ -241,6 +241,20 @@
   .reservas-menu-item:nth-child(2) { animation-delay: 0.05s; }
   .reservas-menu-item:nth-child(3) { animation-delay: 0.13s; }
   .reservas-menu-item:nth-child(4) { animation-delay: 0.21s; }
+  .reservas-menu-minor {
+    align-self: flex-start;
+    margin-top: 0.4rem;
+    font-size: 0.8rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--cream);
+    opacity: 0.6;
+    transition: opacity 0.15s ease;
+    animation: reservasItemIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.29s both;
+    --item-opacity: 0.6;
+  }
+  .reservas-menu-minor:hover { opacity: 1; }
   @keyframes reservasFadeIn {
     from { opacity: 0; }
     to { opacity: 1; }
@@ -253,7 +267,7 @@
     to { opacity: var(--item-opacity, 1); transform: translateY(0) scale(1); }
   }
   @media (prefers-reduced-motion: reduce) {
-    .reservas-menu, .reservas-menu-close, .reservas-menu-item { animation: none; }
+    .reservas-menu, .reservas-menu-close, .reservas-menu-item, .reservas-menu-minor { animation: none; }
   }
   .reservas-menu-item:not(.is-disabled):hover { opacity: 0.7; }
   .reservas-menu-item.is-disabled { --item-opacity: 0.55; cursor: default; }
@@ -471,14 +485,15 @@
             <span class="reservas-menu-title" data-i18n="menu_reservar_title">Reservar</span>
             <span class="reservas-menu-sub" data-i18n="menu_reservar_sub">Reserva tu mesa en la primera planta, de miércoles a sábado y festivos</span>
           </a>
-          <a class="reservas-menu-item" href="fuck-who-doesn't-like-this-place#alquila-el-espacio">
-            <span class="reservas-menu-title" data-i18n="menu_privado_title">Alquila el espacio</span>
-            <span class="reservas-menu-sub" data-i18n="menu_privado_sub">Cumpleaños, cenas de empresa y celebraciones a tu manera</span>
+          <a class="reservas-menu-item" href="fuck-who-doesn't-like-this-place#grupos">
+            <span class="reservas-menu-title" data-i18n="menu_grupos_title">Grupos</span>
+            <span class="reservas-menu-sub" data-i18n="menu_grupos_sub">Reserva de mesa para grupos grandes</span>
           </a>
           <a class="reservas-menu-item" href="eventos.html">
             <span class="reservas-menu-title" data-i18n="menu_eventos_title">Eventos</span>
             <span class="reservas-menu-sub" data-i18n="menu_eventos_sub">Noches en directo, catas y sesiones especiales</span>
           </a>
+          <a class="reservas-menu-minor" href="fuck-who-doesn't-like-this-place#alquila-el-espacio" data-i18n="menu_alquiler_link">Alquila el espacio →</a>
         </div>
       </div>
 
@@ -533,7 +548,7 @@
   </div>
 </div>
 <script src="cookies.js?v=1"></script>
-<script src="i18n.js?v=21"></script>
+<script src="i18n.js?v=23"></script>
 
 <script>
   function initNewsletterWidget() {

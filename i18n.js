@@ -32,11 +32,9 @@
       es: 'Reserva tu mesa en la primera planta, de miércoles a sábado y festivos',
       en: 'Book your table on the first floor, Wednesday to Saturday and holidays only',
     },
-    menu_privado_title: { es: 'Alquila el espacio', en: 'Rent the space' },
-    menu_privado_sub: {
-      es: 'Cumpleaños, cenas de empresa y celebraciones a tu manera',
-      en: 'Birthdays, company dinners and celebrations your way',
-    },
+    menu_grupos_title: { es: 'Grupos', en: 'Groups' },
+    menu_grupos_sub: { es: 'Reserva de mesa para grupos grandes', en: 'Table bookings for large groups' },
+    menu_alquiler_link: { es: 'Alquila el espacio →', en: 'Rent the space →' },
     menu_eventos_title: { es: 'Eventos', en: 'Events' },
     menu_eventos_sub: {
       es: 'Noches en directo, catas y sesiones especiales',
@@ -68,7 +66,7 @@
       es: 'Elige día, hora y número de personas para reservar tu mesa. Abrimos pronto — solo aceptamos reservas de miércoles a sábado.',
       en: "Pick a date, time and party size to book your table. We're opening soon — we only accept bookings from Wednesday to Saturday.",
     },
-    reservar_private_link: { es: 'Alquila el espacio ↓', en: 'Rent the space ↓' },
+    reservar_groups_link: { es: 'Reservas de grupo ↓', en: 'Group bookings ↓' },
     consent_text: {
       es: 'He leído y acepto la <a href="/privacidad.html" target="_blank" rel="noopener">política de privacidad</a>. ROCE podrá contactarme por email o teléfono sobre mi reserva y añadirme a su base de datos de clientes para futuras comunicaciones.',
       en: 'I have read and accept the <a href="/privacidad.html" target="_blank" rel="noopener">privacy policy</a>. ROCE may contact me by email or phone about my booking and add me to its customer database for future communications.',
@@ -109,7 +107,6 @@
 
     // Alquila el espacio (reservar.html)
     pe_eyebrow: { es: 'Alquila el espacio', en: 'Rent the space' },
-    pe_title: { es: 'Tu evento,<br>a tu manera', en: 'Your event,<br>your way' },
     pe_intro: {
       es: '¿Cumpleaños, cena de empresa, despedida o cualquier celebración? Cuéntanos qué tienes en mente y lo organizamos juntos.',
       en: 'A birthday, company dinner, farewell or any other celebration? Tell us what you have in mind and we’ll plan it together.',
@@ -130,6 +127,23 @@
       en: 'I accept the <a href="/privacidad.html" target="_blank" rel="noopener">privacy policy</a>',
     },
     pe_send: { es: 'Enviar por WhatsApp', en: 'Send via WhatsApp' },
+    gr_eyebrow: { es: 'Reservas de grupo', en: 'Group bookings' },
+    gr_title: { es: 'Una mesa para<br>todo el grupo', en: 'A table for<br>the whole group' },
+    gr_intro: {
+      es: 'Cuéntanos cuántos sois y cuándo queréis venir, y te confirmamos disponibilidad por WhatsApp.',
+      en: "Tell us how many you are and when you'd like to come, and we'll confirm availability over WhatsApp.",
+    },
+    gr_ph_guests: { es: 'Número de personas*', en: 'Number of guests*' },
+    gr_ph_date: { es: 'Fecha*', en: 'Date*' },
+    gr_ph_time: { es: 'Hora aproximada', en: 'Approximate time' },
+    gr_note: {
+      es: 'Te confirmamos disponibilidad y condiciones por WhatsApp.',
+      en: "We'll confirm availability and conditions over WhatsApp.",
+    },
+    gr_wa_intro: {
+      es: 'Hola! Nos gustaría hacer una reserva de grupo en ROCE.',
+      en: "Hi! We'd like to make a group booking at ROCE.",
+    },
     pe_note: {
       es: 'Te contamos condiciones y consumo mínimo por WhatsApp.',
       en: "We'll share the conditions and minimum spend over WhatsApp.",
