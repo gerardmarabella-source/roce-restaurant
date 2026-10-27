@@ -32,7 +32,7 @@
       es: 'Reserva de cena en la primera planta, de miércoles a sábado',
       en: 'Dinner bookings on the first floor, Wednesday to Saturday',
     },
-    menu_alquiler_link: { es: 'Alquila el espacio →', en: 'Rent the space →' },
+    menu_alquiler_link: { es: 'Alquila el espacio', en: 'Rent the space' },
     menu_eventos_title: { es: 'Eventos', en: 'Events' },
     menu_eventos_sub: { es: '*Próximamente', en: '*Coming soon' },
 
