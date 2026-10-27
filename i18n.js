@@ -62,8 +62,8 @@
     // reservar.html
     reservar_h1: { es: 'Reserva<br>tu mesa', en: 'Book<br>your table' },
     reservar_intro: {
-      es: 'Rellena el formulario y te confirmamos la reserva por email en cuanto lo leamos. Abrimos pronto — solo aceptamos reservas de miércoles a sábado.',
-      en: "Fill in the form and we'll confirm your booking by email as soon as we read it. We're opening soon — we only accept bookings from Wednesday to Saturday.",
+      es: 'Elige día, hora y número de personas para reservar tu mesa. Abrimos pronto — solo aceptamos reservas de miércoles a sábado.',
+      en: "Pick a date, time and party size to book your table. We're opening soon — we only accept bookings from Wednesday to Saturday.",
     },
     reservar_private_link: { es: 'Reserva nuestro privado ↓', en: 'Book our private space ↓' },
     consent_text: {
