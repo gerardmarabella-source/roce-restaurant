@@ -32,10 +32,10 @@
       es: 'Reserva tu mesa en la primera planta, de miércoles a sábado y festivos',
       en: 'Book your table on the first floor, Wednesday to Saturday and holidays only',
     },
-    menu_privado_title: { es: 'Privado', en: 'Private' },
+    menu_privado_title: { es: 'Alquila el espacio', en: 'Rent the space' },
     menu_privado_sub: {
-      es: 'Organiza tu cumpleaños, cena de empresa o celebración en privado',
-      en: 'Host your birthday, company dinner or celebration in private',
+      es: 'Cumpleaños, cenas de empresa y celebraciones a tu manera',
+      en: 'Birthdays, company dinners and celebrations your way',
     },
     menu_eventos_title: { es: 'Eventos', en: 'Events' },
     menu_eventos_sub: {
@@ -68,7 +68,7 @@
       es: 'Elige día, hora y número de personas para reservar tu mesa. Abrimos pronto — solo aceptamos reservas de miércoles a sábado.',
       en: "Pick a date, time and party size to book your table. We're opening soon — we only accept bookings from Wednesday to Saturday.",
     },
-    reservar_private_link: { es: 'Organiza tu evento privado ↓', en: 'Plan your private event ↓' },
+    reservar_private_link: { es: 'Alquila el espacio ↓', en: 'Rent the space ↓' },
     consent_text: {
       es: 'He leído y acepto la <a href="/privacidad.html" target="_blank" rel="noopener">política de privacidad</a>. ROCE podrá contactarme por email o teléfono sobre mi reserva y añadirme a su base de datos de clientes para futuras comunicaciones.',
       en: 'I have read and accept the <a href="/privacidad.html" target="_blank" rel="noopener">privacy policy</a>. ROCE may contact me by email or phone about my booking and add me to its customer database for future communications.',
@@ -107,8 +107,8 @@
       en: 'Something went wrong. Email us directly at reservas@roce.es.',
     },
 
-    // Eventos privados (reservar.html)
-    pe_eyebrow: { es: 'Eventos privados', en: 'Private events' },
+    // Alquila el espacio (reservar.html)
+    pe_eyebrow: { es: 'Alquila el espacio', en: 'Rent the space' },
     pe_title: { es: 'Tu evento,<br>a tu manera', en: 'Your event,<br>your way' },
     pe_intro: {
       es: '¿Cumpleaños, cena de empresa, despedida o cualquier celebración? Cuéntanos qué tienes en mente y lo organizamos juntos.',
@@ -135,8 +135,8 @@
       en: "We'll share the conditions and minimum spend over WhatsApp.",
     },
     wa_intro: {
-      es: 'Hola! Nos gustaría organizar un evento privado en ROCE.',
-      en: "Hi! We'd like to organize a private event at ROCE.",
+      es: 'Hola! Nos gustaría alquilar el espacio de ROCE para un evento.',
+      en: "Hi! We'd like to rent ROCE's space for an event.",
     },
 
     // eventos.html
