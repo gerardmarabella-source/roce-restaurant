@@ -63,6 +63,7 @@
     text-transform: uppercase;
     margin-bottom: 0.75rem;
   }
+  .reserve-form-intro { font-size: 0.95rem; opacity: 0.85; margin-bottom: 1.25rem; line-height: 1.5; }
   .reserve-info {
     background: var(--white);
     color: var(--black);
@@ -72,7 +73,6 @@
     font-size: 0.95rem;
     line-height: 1.5;
   }
-  .reserve-info p + p { margin-top: 0.8rem; padding-top: 0.8rem; border-top: 1px solid rgba(0, 0, 0, 0.12); }
 
 
   .cm-widget {
@@ -277,10 +277,11 @@
   <div class="reserve-form-wrap">
     <a class="reserve-back" href="/" data-i18n="back_to_home">&larr; Volver a ROCE</a>
     <h1 data-i18n-html="reservar_h1">Reserva<br>tu mesa</h1>
+    <p class="reserve-form-intro" data-i18n="reservar_intro">
+      Solo aceptamos reservas para cena en la primera planta, de miércoles a sábado.
+    </p>
+
     <div class="reserve-info">
-      <p data-i18n="reservar_intro">
-        Solo aceptamos reservas para cena en la primera planta, de miércoles a sábado.
-      </p>
       <p data-i18n="reservar_brunch">
         Nuestro espacio de brunch y cafetería es de acceso libre, sin reserva, todos los días de 9:00 a 20:00.
       </p>
