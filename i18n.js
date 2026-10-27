@@ -29,8 +29,8 @@
     // Desplegable de Reservas (home)
     menu_reservar_title: { es: 'Reservar', en: 'Book' },
     menu_reservar_sub: {
-      es: 'Reserva tu mesa en la primera planta, solo viernes, sábados y festivos',
-      en: 'Book your table on the first floor, Fridays, Saturdays and holidays only',
+      es: 'Reserva tu mesa en la primera planta, de miércoles a sábado y festivos',
+      en: 'Book your table on the first floor, Wednesday to Saturday and holidays only',
     },
     menu_privado_title: { es: 'Privado', en: 'Private' },
     menu_privado_sub: { es: 'Una experiencia más íntima', en: 'A more intimate experience' },
@@ -62,8 +62,8 @@
     // reservar.html
     reservar_h1: { es: 'Reserva<br>tu mesa', en: 'Book<br>your table' },
     reservar_intro: {
-      es: 'Rellena el formulario y te confirmamos la reserva por email en cuanto lo leamos. Abrimos pronto — solo aceptamos reservas viernes y sábados.',
-      en: "Fill in the form and we'll confirm your booking by email as soon as we read it. We're opening soon — we only accept bookings on Fridays and Saturdays.",
+      es: 'Rellena el formulario y te confirmamos la reserva por email en cuanto lo leamos. Abrimos pronto — solo aceptamos reservas de miércoles a sábado.',
+      en: "Fill in the form and we'll confirm your booking by email as soon as we read it. We're opening soon — we only accept bookings from Wednesday to Saturday.",
     },
     reservar_private_link: { es: 'Reserva nuestro privado ↓', en: 'Book our private space ↓' },
     consent_text: {
@@ -87,12 +87,12 @@
     submit_booking: { es: 'Enviar reserva', en: 'Send booking' },
     submit_sending: { es: 'Enviando...', en: 'Sending...' },
     status_too_early: {
-      es: 'Solo aceptamos reservas a partir del 1 de noviembre de 2026.',
-      en: 'We only accept bookings from November 1, 2026.',
+      es: 'Solo aceptamos reservas a partir de la segunda semana de diciembre de 2026.',
+      en: 'We only accept bookings from the second week of December 2026.',
     },
     status_wrong_day: {
-      es: 'Solo aceptamos reservas los viernes y sábados.',
-      en: 'We only accept bookings on Fridays and Saturdays.',
+      es: 'Solo aceptamos reservas de miércoles a sábado.',
+      en: 'We only accept bookings from Wednesday to Saturday.',
     },
     status_success: { es: '¡Reserva enviada!', en: 'Booking sent!' },
     status_success_sub: {
