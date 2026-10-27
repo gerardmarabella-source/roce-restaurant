@@ -372,7 +372,25 @@
 <script>
   const CM_BASE = 'https://www.covermanager.com/reserve/module_restaurant/restaurante-roce-valencia/';
   const cmFrame = document.getElementById('restaurante-roce-valencia');
-  iFrameResize({ checkOrigin: ['https://www.covermanager.com'] }, '#restaurante-roce-valencia');
+  // El widget cambia de paso por dentro, sin recargar: si la persona estaba
+  // abajo del todo, la página se quedaba ahí y parecía que había
+  // desaparecido el formulario. Al cambiar el tamaño del widget, si está
+  // más abajo del principio, volvemos al inicio del formulario.
+  let cmLastHeight = 0;
+  function onCmResized(msg) {
+    const h = parseInt(msg.height, 10) || 0;
+    const first = cmLastHeight === 0;
+    const delta = Math.abs(h - cmLastHeight);
+    cmLastHeight = h;
+    if (first) return;
+    const r = cmFrame.getBoundingClientRect();
+    const scrolledPast = r.top < -40;
+    const pageRanOut = r.bottom < window.innerHeight * 0.85;
+    if (scrolledPast && delta >= 80 && (pageRanOut || delta >= 250)) {
+      window.scrollTo({ top: window.scrollY + r.top - 90, behavior: 'smooth' });
+    }
+  }
+  iFrameResize({ checkOrigin: ['https://www.covermanager.com'], onResized: onCmResized }, '#restaurante-roce-valencia');
 
   function syncCoverManagerLang() {
     const url = CM_BASE + (window.ROCE_I18N.getLang() === 'en' ? 'english' : 'spanish');
