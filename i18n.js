@@ -65,10 +65,6 @@
       es: 'Reservas de noche solo para mayores de 18 años',
       en: 'Night bookings are for guests aged 18 and over',
     },
-    reservar_required: {
-      es: '* Para reservar, rellena todos los campos y marca las casillas obligatorias: alergias (Sí/No) y aceptación de la política de privacidad.',
-      en: '* To book, fill in every field and tick the required boxes: allergies (Yes/No) and acceptance of the privacy policy.',
-    },
     reservar_brunch: {
       es: 'Nuestro espacio de brunch y cafetería es de acceso libre, sin reserva, todos los días de 10:00 a 20:00.',
       en: 'Our brunch and café area is walk-in only, no reservation needed, every day from 10:00 to 20:00.',
