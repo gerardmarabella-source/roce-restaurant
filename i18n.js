@@ -108,8 +108,8 @@
     // Alquila el espacio (reservar.html)
     pe_eyebrow: { es: 'Alquila el espacio', en: 'Rent the space' },
     pe_intro: {
-      es: '¿Cumpleaños, cena de empresa, despedida o cualquier celebración? Cuéntanos qué tienes en mente y lo organizamos juntos.',
-      en: 'A birthday, company dinner, farewell or any other celebration? Tell us what you have in mind and we’ll plan it together.',
+      es: 'Cuéntanos tu idea y contactamos contigo.',
+      en: "Tell us your idea and we'll get in touch.",
     },
     pe_ph_name: { es: 'Nombre*', en: 'Name*' },
     pe_ph_company: { es: 'Empresa/proyecto', en: 'Company/project' },
