@@ -508,9 +508,7 @@
             <p class="newsletter-title">Newsletter</p>
             <p class="newsletter-text" data-i18n="newsletter_text">Entérate antes que nadie de todo.</p>
             <form class="newsletter-form" id="newsletterForm">
-              <input type="hidden" name="access_key" value="6e0e35fc-6443-4455-adc7-3999eabf6abc">
-              <input type="hidden" name="subject" value="Nueva suscripción — Newsletter ROCE">
-              <input type="hidden" name="from_name" value="Newsletter ROCE">
+              <input type="text" name="email_address_check" value="" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute; left:-9999px; width:1px; height:1px; opacity:0;">
               <input type="email" name="email" class="newsletter-input" placeholder="tu@email.com" data-i18n-placeholder="newsletter_placeholder" required>
               <button type="submit" class="newsletter-submit" data-i18n="newsletter_submit">Enviar</button>
             </form>
@@ -545,7 +543,7 @@
   </div>
 </div>
 <script src="cookies.js?v=2"></script>
-<script src="i18n.js?v=32"></script>
+<script src="i18n.js?v=33"></script>
 
 <script>
   function initNewsletterWidget() {
@@ -566,6 +564,7 @@
     // el "¿seguro que quieres abandonar?" para cerrarlo — se deja el
     // botón inhabilitado directamente.
     const SUBSCRIBED_KEY = 'roce_newsletter_subscribed';
+    const BREVO_FORM_URL = 'https://09b89631.sibforms.com/serve/MUIFAF9K8yBt3eUgE5AdCUzdOMG_xaAsrikiOKxkAj-on75IyPoom9DsrlDprrNnFJnAqKNB6FSKe_-Ls-02qvrRciK3dQq1AX78U0VaDUsC1SRJZyJM1OrL9dcp1fS_wtJLYFwVM1ZEo5RBVkoVIwKSVt890IDG72NYzcDDxLN3oAi_Tsl3nnNaX2XxPAkE91wK9fDb_itS_nW4EQ==';
     if (localStorage.getItem(SUBSCRIBED_KEY)) {
       toggleBtn.disabled = true;
       toggleBtn.classList.add('is-subscribed');
@@ -639,10 +638,17 @@
       submitBtn.textContent = '...';
 
       try {
-        const res = await fetch('https://api.web3forms.com/submit', {
+        // La lista de suscriptores vive en Brevo: se envía el email a su
+        // formulario (el campo email_address_check es la trampa para bots,
+        // debe ir siempre vacío).
+        const res = await fetch(BREVO_FORM_URL, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-          body: JSON.stringify(Object.fromEntries(new FormData(form))),
+          headers: { Accept: 'application/json' },
+          body: new URLSearchParams({
+            EMAIL: emailInput.value.trim(),
+            email_address_check: form.elements.email_address_check.value,
+            locale: window.ROCE_I18N.getLang() === 'en' ? 'en' : 'es',
+          }),
         });
         const data = await res.json();
         if (!data.success) throw new Error(data.message || 'Error desconocido');
