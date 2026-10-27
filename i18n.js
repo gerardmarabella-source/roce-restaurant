@@ -41,8 +41,8 @@
     newsletter_placeholder: { es: 'tu@email.com', en: 'your@email.com' },
     newsletter_submit: { es: 'Enviar', en: 'Subscribe' },
     newsletter_thanks: {
-      es: '¡Gracias! Te avisaremos antes de la apertura.',
-      en: "Thanks! We'll let you know before opening.",
+      es: '¡Gracias! ¡Todo empieza con un ROCE!',
+      en: "Thanks! It all starts with a ROCE!",
     },
     newsletter_error: {
       es: 'No se ha podido enviar, inténtalo de nuevo.',
