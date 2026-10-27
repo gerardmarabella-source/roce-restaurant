@@ -58,8 +58,8 @@
     // reservar.html
     reservar_h1: { es: 'Reserva<br>tu mesa', en: 'Book<br>your table' },
     reservar_intro: {
-      es: 'Solo aceptamos reservas para cena en la primera planta, de miércoles a sábado.',
-      en: 'We only take dinner bookings on the first floor, Wednesday to Saturday.',
+      es: 'Solo aceptamos reservas para cena en la primera planta, de miércoles a sábado. Reservas de noche solo para mayores de 18 años (+18).',
+      en: 'We only take dinner bookings on the first floor, Wednesday to Saturday. Night bookings are for guests aged 18 and over (+18).',
     },
     reservar_brunch: {
       es: 'Nuestro espacio de brunch y cafetería es de acceso libre, sin reserva, todos los días de 10:00 a 20:00.',
