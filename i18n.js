@@ -115,7 +115,7 @@
       en: 'A birthday, company dinner, farewell or any other celebration? Tell us what you have in mind and we’ll plan it together.',
     },
     pe_ph_name: { es: 'Nombre*', en: 'Name*' },
-    pe_ph_company: { es: 'Empresa/proyecto (web, Instagram, etc.)', en: 'Company/project (website, Instagram, etc.)' },
+    pe_ph_company: { es: 'Empresa/proyecto', en: 'Company/project' },
     pe_ph_email: { es: 'Email', en: 'Email' },
     pe_ph_type: { es: 'Tipo de evento*', en: 'Event type*' },
     pe_ph_guests: { es: 'Número de personas previsto (aprox)*', en: 'Expected number of guests (approx.)*' },
@@ -129,10 +129,10 @@
       es: 'Acepto la <a href="/privacidad.html" target="_blank" rel="noopener">política de privacidad</a>',
       en: 'I accept the <a href="/privacidad.html" target="_blank" rel="noopener">privacy policy</a>',
     },
-    pe_send: { es: 'Enviar', en: 'Send' },
+    pe_send: { es: 'Enviar por WhatsApp', en: 'Send via WhatsApp' },
     pe_note: {
-      es: 'Al enviar se abrirá WhatsApp con tu solicitud. Te contamos condiciones y consumo mínimo por ahí.',
-      en: "Sending opens WhatsApp with your request. We'll share the conditions and minimum spend there.",
+      es: 'Te contamos condiciones y consumo mínimo por WhatsApp.',
+      en: "We'll share the conditions and minimum spend over WhatsApp.",
     },
     wa_intro: {
       es: 'Hola! Nos gustaría organizar un evento privado en ROCE.',
