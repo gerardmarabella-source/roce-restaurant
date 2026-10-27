@@ -1,8 +1,21 @@
 (function () {
-  // v2: el aviso ahora cubre publicidad (Meta Pixel), así que se vuelve a pedir
-  // a quien aceptó o rechazó con el aviso anterior.
-  var KEY = 'roce_cookie_consent_v2';
-  var OLD_KEY = 'roce_cookie_consent';
+  // v3: el aviso ahora también cubre Google Tag Manager (además del Meta Pixel),
+  // así que se vuelve a pedir a quien aceptó o rechazó con el aviso anterior.
+  var KEY = 'roce_cookie_consent_v3';
+  var OLD_KEYS = ['roce_cookie_consent', 'roce_cookie_consent_v2'];
+  var GTM_ID = 'GTM-KGMC2VF4';
+
+  function loadGoogleTagManager() {
+    if (window.__roceGtmLoaded) return;
+    window.__roceGtmLoaded = true;
+    (function (w, d, s, l, i) {
+      w[l] = w[l] || [];
+      w[l].push({ 'gtm.start': new Date().getTime(), event: 'gtm.js' });
+      var f = d.getElementsByTagName(s)[0], j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : '';
+      j.async = true; j.src = 'https://www.googletagmanager.com/gtm.js?id=' + i + dl;
+      f.parentNode.insertBefore(j, f);
+    })(window, document, 'script', 'dataLayer', GTM_ID);
+  }
   var PIXEL_ID = '1122900673669175';
 
   function loadMetaPixel() {
@@ -26,12 +39,12 @@
   var banner = document.getElementById('cookieBanner');
   if (!banner) return;
 
-  try { localStorage.removeItem(OLD_KEY); } catch (e) {}
+  try { OLD_KEYS.forEach(function (k) { localStorage.removeItem(k); }); } catch (e) {}
 
   var saved = localStorage.getItem(KEY);
   if (saved) {
     banner.classList.add('is-hidden');
-    if (saved === 'accepted') loadMetaPixel();
+    if (saved === 'accepted') { loadMetaPixel(); loadGoogleTagManager(); }
     return;
   }
 
@@ -41,7 +54,7 @@
   function setConsent(value) {
     localStorage.setItem(KEY, value);
     banner.classList.add('is-hidden');
-    if (value === 'accepted') loadMetaPixel();
+    if (value === 'accepted') { loadMetaPixel(); loadGoogleTagManager(); }
   }
 
   acceptBtn.addEventListener('click', function () { setConsent('accepted'); });
