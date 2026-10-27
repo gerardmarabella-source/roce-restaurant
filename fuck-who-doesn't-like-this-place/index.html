@@ -5,13 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="format-detection" content="telephone=no, address=no, email=no, date=no">
 <title>Reserva tu mesa — ROCE</title>
-<meta name="description" content="Reserva tu mesa en ROCE, Valencia. Cuéntanos día, hora y personas y te confirmamos por email.">
+<meta name="description" content="Reserva tu mesa para cenar en ROCE, Valencia, de miércoles a sábado. Para grupos de más de 8 personas, escríbenos por WhatsApp.">
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link rel="icon" type="image/png" href="/assets/meta/favicon-32.png" sizes="32x32">
 <link rel="apple-touch-icon" href="/assets/meta/apple-touch-icon.png">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Reserva tu mesa — ROCE">
-<meta property="og:description" content="Reserva tu mesa en ROCE, Valencia. Cuéntanos día, hora y personas y te confirmamos por email.">
+<meta property="og:description" content="Reserva tu mesa para cenar en ROCE, Valencia, de miércoles a sábado. Para grupos de más de 8 personas, escríbenos por WhatsApp.">
 <meta property="og:image" content="https://roce.es/assets/meta/og-image.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -43,8 +43,8 @@
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/styles.css?v=65">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/styles.css?v=66">
 <style>
   .reserve-form-page {
     min-height: 100vh;
@@ -75,7 +75,6 @@
     font-size: 0.95rem;
     line-height: 1.5;
   }
-
 
   /* El widget de CoverManager usa el tema "trans-white" (texto blanco sobre
      fondo transparente), pensado para webs oscuras: no ponerle fondo claro
@@ -116,45 +115,16 @@
   .topbar { background: var(--black); backdrop-filter: none; -webkit-backdrop-filter: none; }
   .nav-logo { height: 56px; }
 
-  /* Alquiler del espacio / grupos: sin describir el espacio, todo el detalle
-     se resuelve por WhatsApp con un mensaje ya precompuesto. */
+  /* Alquiler del espacio: sección plegada al final de la página; todo el
+     detalle se resuelve por WhatsApp con un mensaje ya precompuesto. */
   .private-events {
-    /* Antes un radial-gradient calculado en % del ancho de la sección
-       — en pantallas de escritorio muy anchas la zona clara del centro
-       se hacía más grande y quedaba menos oscuro de lo que debía.
-       Negro sólido: siempre igual de oscuro, sea cual sea el ancho. */
     background: var(--black);
     color: var(--white);
-    padding: 6rem 1.5rem 6.5rem;
+    padding: 1rem 1.5rem 1.5rem;
     display: flex;
     justify-content: center;
   }
   .private-events-wrap { width: 100%; max-width: 520px; }
-  .pe-eyebrow {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    font-size: 0.72rem;
-    font-weight: 600;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    color: var(--maroon);
-    margin-bottom: 1.25rem;
-  }
-  .pe-eyebrow::after {
-    content: "";
-    flex: 1;
-    height: 1px;
-    background: rgba(131, 47, 47, 0.4);
-  }
-  .private-events-wrap h2 {
-    font-family: var(--display);
-    font-weight: 400;
-    font-size: clamp(2.6rem, 8.5vw, 4rem);
-    line-height: 0.95;
-    text-transform: uppercase;
-    margin-bottom: 1rem;
-  }
   .pe-intro { font-size: 0.95rem; opacity: 0.85; line-height: 1.55; margin-bottom: 2.25rem; }
 
   .pe-form { display: flex; flex-direction: column; }
@@ -237,9 +207,6 @@
   .pe-send:hover { transform: translateY(-2px); }
   .pe-send svg { width: 18px; height: 18px; flex-shrink: 0; }
 
-
-  /* Alquiler del espacio: secundario, plegado al final de la página. */
-  .private-events.pe-minor { padding: 1rem 1.5rem 1.5rem; }
   /* En esta página el pie queda pegado a la sección de alquiler. */
   .site-footer { padding-top: 2.5rem; }
   .pe-details > summary {
@@ -299,7 +266,7 @@
   </div>
 </main>
 
-<section class="private-events pe-minor" id="alquila-el-espacio">
+<section class="private-events" id="alquila-el-espacio">
   <div class="private-events-wrap">
     <details class="pe-details" id="alquilerDetails">
       <summary>
@@ -309,31 +276,31 @@
       <p class="pe-intro" data-i18n="pe_intro">
         Cuéntanos tu idea y contactamos contigo.
       </p>
-    <form class="pe-form" id="peForm" data-wa-intro="wa_intro">
-      <input type="text" name="nombre" autocomplete="name" placeholder="Nombre*" data-i18n-placeholder="pe_ph_name" required>
-      <input type="text" name="empresa" placeholder="Empresa/proyecto" data-i18n-placeholder="pe_ph_company">
-      <input type="email" name="email" autocomplete="email" placeholder="Email" data-i18n-placeholder="pe_ph_email">
-      <div class="pe-select-wrap">
-        <select name="tipo" data-label-key="pe_ph_type" required>
-          <option value="" disabled selected hidden data-i18n="pe_ph_type">Tipo de evento*</option>
-          <option value="Cumpleaños" data-i18n="pe_type_birthday">Cumpleaños</option>
-          <option value="Cena de empresa" data-i18n="pe_type_corporate">Cena de empresa</option>
-          <option value="Despedida" data-i18n="pe_type_farewell">Despedida</option>
-          <option value="Otro" data-i18n="pe_type_other">Otro</option>
-        </select>
-      </div>
-      <input type="number" name="personas" min="1" inputmode="numeric" placeholder="Número de personas previsto (aprox)*" data-i18n-placeholder="pe_ph_guests" required>
-      <input type="text" name="fecha" placeholder="Fecha aproximada*" data-i18n-placeholder="pe_ph_date" required>
-      <textarea name="mensaje" rows="1" placeholder="Mensaje" data-i18n-placeholder="pe_ph_message"></textarea>
+      <form class="pe-form" id="peForm" data-wa-intro="wa_intro">
+        <input type="text" name="nombre" autocomplete="name" placeholder="Nombre*" data-i18n-placeholder="pe_ph_name" required>
+        <input type="text" name="empresa" placeholder="Empresa/proyecto" data-i18n-placeholder="pe_ph_company">
+        <input type="email" name="email" autocomplete="email" placeholder="Email" data-i18n-placeholder="pe_ph_email">
+        <div class="pe-select-wrap">
+          <select name="tipo" data-label-key="pe_ph_type" required>
+            <option value="" disabled selected hidden data-i18n="pe_ph_type">Tipo de evento*</option>
+            <option value="Cumpleaños" data-i18n="pe_type_birthday">Cumpleaños</option>
+            <option value="Cena de empresa" data-i18n="pe_type_corporate">Cena de empresa</option>
+            <option value="Despedida" data-i18n="pe_type_farewell">Despedida</option>
+            <option value="Otro" data-i18n="pe_type_other">Otro</option>
+          </select>
+        </div>
+        <input type="number" name="personas" min="1" inputmode="numeric" placeholder="Número de personas previsto (aprox)*" data-i18n-placeholder="pe_ph_guests" required>
+        <input type="text" name="fecha" placeholder="Fecha aproximada*" data-i18n-placeholder="pe_ph_date" required>
+        <textarea name="mensaje" rows="1" placeholder="Mensaje" data-i18n-placeholder="pe_ph_message"></textarea>
 
-      <div class="pe-form-footer">
-        <label class="pe-consent">
-          <input type="checkbox" name="acepta_privacidad" required>
-          <span data-i18n-html="pe_consent">Acepto la <a href="/privacidad.html" target="_blank" rel="noopener">política de privacidad</a></span>
-        </label>
-        <button type="submit" class="pe-send"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.46 1.32 4.96L2 22l5.25-1.38a9.9 9.9 0 0 0 4.79 1.22h.01c5.46 0 9.91-4.45 9.91-9.92C21.96 6.45 17.5 2 12.04 2Zm0 18.15h-.01a8.2 8.2 0 0 1-4.18-1.14l-.3-.18-3.12.82.83-3.04-.2-.31a8.24 8.24 0 0 1-1.26-4.39c0-4.55 3.7-8.25 8.25-8.25 2.2 0 4.27.86 5.83 2.42a8.19 8.19 0 0 1 2.41 5.83c0 4.55-3.7 8.24-8.25 8.24Zm4.52-6.17c-.25-.12-1.47-.72-1.7-.81-.23-.08-.39-.12-.56.13-.17.25-.64.81-.78.97-.14.17-.29.18-.53.06-.25-.12-1.05-.39-2-1.23-.74-.66-1.24-1.48-1.39-1.73-.14-.25-.02-.38.11-.51.11-.11.25-.29.37-.43.12-.14.16-.25.25-.41.08-.17.04-.31-.02-.44-.06-.12-.56-1.34-.76-1.84-.2-.48-.41-.42-.56-.43h-.48c-.17 0-.44.06-.67.31-.23.25-.87.85-.87 2.08s.89 2.42 1.02 2.58c.12.17 1.75 2.67 4.24 3.75.59.26 1.05.41 1.41.52.59.19 1.13.16 1.55.1.47-.07 1.47-.6 1.68-1.18.21-.58.21-1.07.14-1.18-.06-.11-.23-.17-.48-.29Z"/></svg><span data-i18n="pe_send">Enviar por WhatsApp</span></button>
-      </div>
-    </form>
+        <div class="pe-form-footer">
+          <label class="pe-consent">
+            <input type="checkbox" name="acepta_privacidad" required>
+            <span data-i18n-html="pe_consent">Acepto la <a href="/privacidad.html" target="_blank" rel="noopener">política de privacidad</a></span>
+          </label>
+          <button type="submit" class="pe-send"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.46 1.32 4.96L2 22l5.25-1.38a9.9 9.9 0 0 0 4.79 1.22h.01c5.46 0 9.91-4.45 9.91-9.92C21.96 6.45 17.5 2 12.04 2Zm0 18.15h-.01a8.2 8.2 0 0 1-4.18-1.14l-.3-.18-3.12.82.83-3.04-.2-.31a8.24 8.24 0 0 1-1.26-4.39c0-4.55 3.7-8.25 8.25-8.25 2.2 0 4.27.86 5.83 2.42a8.19 8.19 0 0 1 2.41 5.83c0 4.55-3.7 8.24-8.25 8.24Zm4.52-6.17c-.25-.12-1.47-.72-1.7-.81-.23-.08-.39-.12-.56.13-.17.25-.64.81-.78.97-.14.17-.29.18-.53.06-.25-.12-1.05-.39-2-1.23-.74-.66-1.24-1.48-1.39-1.73-.14-.25-.02-.38.11-.51.11-.11.25-.29.37-.43.12-.14.16-.25.25-.41.08-.17.04-.31-.02-.44-.06-.12-.56-1.34-.76-1.84-.2-.48-.41-.42-.56-.43h-.48c-.17 0-.44.06-.67.31-.23.25-.87.85-.87 2.08s.89 2.42 1.02 2.58c.12.17 1.75 2.67 4.24 3.75.59.26 1.05.41 1.41.52.59.19 1.13.16 1.55.1.47-.07 1.47-.6 1.68-1.18.21-.58.21-1.07.14-1.18-.06-.11-.23-.17-.48-.29Z"/></svg><span data-i18n="pe_send">Enviar por WhatsApp</span></button>
+        </div>
+      </form>
       <p class="pe-note" data-i18n="pe_note">Te contamos condiciones y consumo mínimo por WhatsApp.</p>
     </details>
   </div>
@@ -367,9 +334,10 @@
 </div>
 <script src="/cookies.js?v=3"></script>
 <script src="https://www.covermanager.com/js/iframeResizer/iframeResizer.min.js"></script>
-<script src="/i18n.js?v=44"></script>
+<script src="/i18n.js?v=45"></script>
 
 <script>
+  const WHATSAPP_NUMBER = '34614073163';
   const CM_BASE = 'https://www.covermanager.com/reserve/module_restaurant/restaurante-roce-valencia/';
   const cmFrame = document.getElementById('restaurante-roce-valencia');
   iFrameResize({ checkOrigin: ['https://www.covermanager.com'] }, '#restaurante-roce-valencia');
@@ -415,7 +383,6 @@
   openAlquilerIfTargeted();
   window.addEventListener('hashchange', openAlquilerIfTargeted);
 
-  const WHATSAPP_NUMBER = '34614073163';
   const stripStar = (txt) => txt.replace(/\s*\([^)]*\)/, '').replace(/\*$/, '').trim();
 
   document.querySelectorAll('.pe-form[data-wa-intro]').forEach((form) => {

@@ -23,10 +23,8 @@
   --cream: #ece7dd;
   --white: #ffffff;
 
-  /* Tipografía de marca: Helvetica Neue real (la fuente que usa el
-     negocio), no Archivo Black — se mantiene solo como último
-     fallback por si el archivo no llega a cargar. */
-  --display: "Helvetica Neue Web", "Helvetica Neue", Arial, "Archivo Black", sans-serif;
+  /* Tipografía de marca: Helvetica Neue real (la fuente que usa el negocio). */
+  --display: "Helvetica Neue Web", "Helvetica Neue", Arial, sans-serif;
   --body: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
@@ -104,7 +102,7 @@ a { color: inherit; }
 }
 
 @media (max-width: 640px) {
-  /* Más pequeño para que "Gran Vía Marqués del Túria, 16" no salte de línea. */
+  /* Más pequeño para que "Marqués del Túria 16" no salte de línea. */
   .footer-info p { font-size: clamp(0.8rem, 5vw, 1.5rem); letter-spacing: 0; }
 }
 
@@ -162,109 +160,6 @@ a { color: inherit; }
   .topnav a:not(.nav-cta) { display: none; }
 }
 
-/* Newsletter widget (fixed, follows scroll, permanent) */
-.newsletter-widget {
-  position: fixed;
-  left: 50%;
-  bottom: 1.25rem;
-  transform: translateX(-50%);
-  z-index: 200;
-  width: min(320px, calc(100vw - 2.5rem));
-  background: var(--black);
-  color: var(--cream);
-  border-radius: 2px;
-  padding: 1.1rem 1.25rem 1.25rem;
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.28);
-}
-
-.newsletter-close {
-  position: absolute;
-  top: 0.4rem;
-  right: 0.6rem;
-  background: none;
-  border: none;
-  color: var(--cream);
-  font-size: 1.3rem;
-  line-height: 1;
-  cursor: pointer;
-  opacity: 0.6;
-  padding: 0.25rem;
-}
-
-.newsletter-close:hover { opacity: 1; }
-
-.newsletter-title {
-  font-family: var(--display);
-  font-size: 1rem;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  margin-bottom: 0.4rem;
-}
-
-.newsletter-text {
-  font-size: 0.85rem;
-  line-height: 1.4;
-  color: #9a9a9a;
-  margin-bottom: 0.9rem;
-}
-
-.newsletter-form {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.newsletter-input {
-  flex: 1;
-  min-width: 0;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 2px;
-  padding: 0.55rem 0.9rem;
-  font-size: 0.85rem;
-  color: var(--white);
-  font-family: var(--body);
-}
-
-.newsletter-input::placeholder { color: rgba(236, 231, 221, 0.5); }
-.newsletter-input:focus { outline: none; border-color: var(--camel); }
-
-.newsletter-submit {
-  background: var(--cream);
-  color: var(--black);
-  border: none;
-  border-radius: 2px;
-  padding: 0.55rem 1rem;
-  font-size: 0.8rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: transform 0.15s ease;
-}
-
-.newsletter-submit:hover { transform: translateY(-1px); }
-
-.newsletter-widget.is-hidden { display: none; }
-
-.newsletter-thanks {
-  font-size: 0.9rem;
-  line-height: 1.4;
-}
-
-.newsletter-error {
-  font-size: 0.75rem;
-  color: #ff8a7a;
-  margin-top: 0.4rem;
-}
-
-@media (max-width: 640px) {
-  .newsletter-widget {
-    bottom: 0.75rem;
-    width: calc(100vw - 1.5rem);
-  }
-
-  /* iOS hace zoom automático al enfocar un input con font-size < 16px */
-  .newsletter-input { font-size: 16px; }
-}
-
 /* Aviso de cookies — centrado en toda la pantalla, como un aviso
    modal, igual en todas las páginas del sitio. */
 .cookie-banner {
@@ -318,3 +213,16 @@ a { color: inherit; }
 .cookie-reject:hover,
 .cookie-accept:hover { transform: translateY(-1px); }
 
+/* Páginas legales (aviso legal, términos, cookies, privacidad) */
+.legal-wrapper { max-width: 760px; margin: 0 auto; padding: 8rem 1.5rem 5rem; }
+.legal-wrapper h1 { font-family: var(--display); font-size: clamp(1.8rem, 5vw, 2.6rem); margin-bottom: 0.5rem; }
+.legal-updated { font-size: 0.85rem; opacity: 0.6; margin-bottom: 3rem; }
+.legal-wrapper h2 { font-family: var(--display); font-size: 1.15rem; margin: 2.5rem 0 0.8rem; text-transform: uppercase; letter-spacing: 0.02em; }
+.legal-wrapper p, .legal-wrapper li { font-size: 0.95rem; line-height: 1.7; color: var(--black); }
+.legal-wrapper ul { margin: 0.5rem 0 1rem 1.2rem; }
+.legal-wrapper li { margin-bottom: 0.4rem; }
+.legal-wrapper a { text-decoration: underline; }
+.legal-back { display: inline-block; margin-bottom: 2rem; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; text-decoration: none; }
+.legal-wrapper table { width: 100%; border-collapse: collapse; margin: 0.75rem 0 1.5rem; font-size: 0.9rem; }
+.legal-wrapper th, .legal-wrapper td { text-align: left; padding: 0.6rem 0.75rem; border-bottom: 1px solid rgba(10, 10, 10, 0.12); vertical-align: top; }
+.legal-wrapper th { font-family: var(--display); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.03em; }

@@ -24,7 +24,6 @@
     back_to_home: { es: '← Volver a ROCE', en: '← Back to ROCE' },
 
     // Home (index.html)
-    home_reservas_btn: { es: 'Reservas', en: 'Book' },
 
     // Desplegable de Reservas (home)
     menu_reservar_title: { es: 'Reservar', en: 'Book' },
@@ -74,34 +73,6 @@
     label_email: { es: 'Email', en: 'Email' },
     placeholder_email: { es: 'tu@email.com', en: 'your@email.com' },
     label_phone: { es: 'Teléfono', en: 'Phone' },
-    label_guests_count: { es: 'Personas', en: 'Guests' },
-    label_date: { es: 'Fecha', en: 'Date' },
-    label_time: { es: 'Hora', en: 'Time' },
-    option_choose_time: { es: 'Elige un turno', en: 'Choose a time slot' },
-    label_comments: { es: 'Comentarios', en: 'Comments' },
-    placeholder_comments: {
-      es: 'Alergias, celebraciones, preferencias...',
-      en: 'Allergies, celebrations, preferences...',
-    },
-    submit_booking: { es: 'Enviar reserva', en: 'Send booking' },
-    submit_sending: { es: 'Enviando...', en: 'Sending...' },
-    status_too_early: {
-      es: 'Solo aceptamos reservas a partir de la segunda semana de diciembre de 2026.',
-      en: 'We only accept bookings from the second week of December 2026.',
-    },
-    status_wrong_day: {
-      es: 'Solo aceptamos reservas de miércoles a sábado.',
-      en: 'We only accept bookings from Wednesday to Saturday.',
-    },
-    status_success: { es: '¡Reserva enviada!', en: 'Booking sent!' },
-    status_success_sub: {
-      es: 'Te contactaremos pronto para confirmar.',
-      en: "We'll contact you soon to confirm.",
-    },
-    status_error: {
-      es: 'No se ha podido enviar. Escríbenos directamente a reservas@roce.es.',
-      en: 'Something went wrong. Email us directly at reservas@roce.es.',
-    },
 
     // Aviso de grupos grandes (reservar.html)
     group_notice: {
