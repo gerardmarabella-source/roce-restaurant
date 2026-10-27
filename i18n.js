@@ -8,8 +8,8 @@
   var STRINGS = {
     // Compartido: aviso de cookies
     cookie_text: {
-      es: 'Usamos una cookie técnica propia para recordar tu elección, sin analítica ni publicidad. El sistema de reservas es de un tercero (CoverManager) y puede usar las suyas.',
-      en: 'We use our own technical cookie to remember your choice, with no analytics or advertising. The booking system is provided by a third party (CoverManager) and may use its own cookies.',
+      es: 'Usamos una cookie técnica propia para recordar tu elección. Si aceptas, también activamos el Píxel de Meta (Facebook e Instagram) para medir y mejorar nuestra publicidad. El sistema de reservas es de un tercero (CoverManager) y puede usar las suyas.',
+      en: 'We use our own technical cookie to remember your choice. If you accept, we also enable the Meta Pixel (Facebook and Instagram) to measure and improve our advertising. The booking system is provided by a third party (CoverManager) and may use its own cookies.',
     },
     cookie_more_info: { es: 'Más información', en: 'More info' },
     cookie_reject: { es: 'Rechazar', en: 'Reject' },
@@ -216,8 +216,8 @@
       en: '<strong>Newsletter:</strong> if you leave your email in the subscription form, we use it to send you commercial communications about ROCE (openings, events, news).',
     },
     privacy_p2_cookies: {
-      es: 'No recopilamos datos de navegación ni analítica propia, y esta web no utiliza cookies de seguimiento. Solo usamos una cookie técnica propia para recordar si has aceptado o rechazado el aviso de cookies, que no requiere consentimiento por ser estrictamente necesaria para el funcionamiento del propio aviso. El sistema de reservas de mesa es un servicio de CoverManager que se carga dentro de nuestra página de reservas: al usarlo, CoverManager puede instalar sus propias cookies y trata los datos que introduces en la reserva según su propia política (ver nuestra política de cookies).',
-      en: "We don't collect browsing data or run our own analytics, and this website doesn't use tracking cookies. We only use our own technical cookie to remember whether you accepted or rejected the cookie notice, which doesn't require consent as it's strictly necessary for the notice itself to work. The table booking system is a CoverManager service loaded inside our booking page: when you use it, CoverManager may set its own cookies and processes the data you enter in the booking according to its own policy (see our cookie policy).",
+      es: 'No realizamos analítica propia. Solo usamos una cookie técnica propia para recordar si has aceptado o rechazado el aviso de cookies, que no requiere consentimiento por ser estrictamente necesaria para el funcionamiento del propio aviso. Si aceptas las cookies, también activamos el Píxel de Meta, que permite medir y mejorar nuestra publicidad en Facebook e Instagram: Meta Platforms Ireland Limited recibe datos de tu navegación en roce.es (por ejemplo, las páginas que visitas y datos del dispositivo) y los trata según su propia política de privacidad. Si rechazas, el Píxel no se carga. El sistema de reservas de mesa es un servicio de CoverManager que se carga dentro de nuestra página de reservas: al usarlo, CoverManager puede instalar sus propias cookies y trata los datos que introduces en la reserva según su propia política (ver nuestra política de cookies).',
+      en: "We don't run our own analytics. We only use our own technical cookie to remember whether you accepted or rejected the cookie notice, which doesn't require consent as it's strictly necessary for the notice itself to work. If you accept cookies, we also enable the Meta Pixel, which lets us measure and improve our advertising on Facebook and Instagram: Meta Platforms Ireland Limited receives data about your browsing on roce.es (for example, the pages you visit and device data) and processes it under its own privacy policy. If you reject, the Pixel is not loaded. The table booking system is a CoverManager service loaded inside our booking page: when you use it, CoverManager may set its own cookies and processes the data you enter in the booking according to its own policy (see our cookie policy).",
     },
     privacy_h3: { es: '3. Legitimación', en: '3. Legal basis' },
     privacy_p3: {
@@ -226,8 +226,8 @@
     },
     privacy_h4: { es: '4. Destinatarios', en: '4. Recipients' },
     privacy_p4: {
-      es: 'No cedemos tus datos a terceros, salvo obligación legal. Para gestionar las reservas de mesa utilizamos CoverManager, proveedor del sistema de reservas, que accede a los datos de la reserva para prestarnos ese servicio. Las solicitudes que envías por WhatsApp se tratan a través de dicha aplicación. Si en el futuro utilizamos un proveedor externo para el envío de la newsletter (por ejemplo, una plataforma de email marketing), este actuará como encargado del tratamiento bajo contrato, cumpliendo con el RGPD.',
-      en: "We don't share your data with third parties, except where legally required. To manage table bookings we use CoverManager, the booking system provider, which accesses the booking data to provide us with that service. Requests you send via WhatsApp are handled through that application. If in the future we use an external provider to send the newsletter (for example, an email marketing platform), it will act as a data processor under contract, complying with GDPR.",
+      es: 'No cedemos tus datos a terceros, salvo obligación legal. Si aceptas las cookies, Meta Platforms Ireland Limited recibe los datos de navegación recogidos por el Píxel de Meta (ver política de cookies). Para gestionar las reservas de mesa utilizamos CoverManager, proveedor del sistema de reservas, que accede a los datos de la reserva para prestarnos ese servicio. Las solicitudes que envías por WhatsApp se tratan a través de dicha aplicación. Si en el futuro utilizamos un proveedor externo para el envío de la newsletter (por ejemplo, una plataforma de email marketing), este actuará como encargado del tratamiento bajo contrato, cumpliendo con el RGPD.',
+      en: "We don't share your data with third parties, except where legally required. If you accept cookies, Meta Platforms Ireland Limited receives the browsing data collected by the Meta Pixel (see our cookie policy). To manage table bookings we use CoverManager, the booking system provider, which accesses the booking data to provide us with that service. Requests you send via WhatsApp are handled through that application. If in the future we use an external provider to send the newsletter (for example, an email marketing platform), it will act as a data processor under contract, complying with GDPR.",
     },
     privacy_h5: { es: '5. Conservación', en: '5. Data retention' },
     privacy_p5: {
@@ -269,8 +269,8 @@
     },
     cookies_h2: { es: '2. Qué cookies usa esta web', en: '2. What cookies this website uses' },
     cookies_p2: {
-      es: 'roce.es no utiliza cookies de analítica ni de publicidad. La única cookie que instalamos nosotros es una cookie propia, estrictamente técnica, cuando aceptas o rechazas el aviso de cookies que aparece en tu primera visita:',
-      en: "roce.es doesn't use analytics or advertising cookies. The only cookie we install ourselves is our own, strictly technical cookie, when you accept or reject the cookie notice that appears on your first visit:",
+      es: 'roce.es no utiliza cookies de analítica. Instalamos una cookie propia, estrictamente técnica, cuando aceptas o rechazas el aviso de cookies que aparece en tu primera visita; y, solo si aceptas, el Píxel de Meta instala una cookie de publicidad:',
+      en: "roce.es doesn't use analytics cookies. We install our own, strictly technical cookie when you accept or reject the cookie notice that appears on your first visit; and, only if you accept, the Meta Pixel installs an advertising cookie:",
     },
     cookies_th_name: { es: 'Nombre', en: 'Name' },
     cookies_th_purpose: { es: 'Finalidad', en: 'Purpose' },
@@ -285,14 +285,24 @@
       es: 'Persistente, hasta que borres los datos de navegación de tu dispositivo',
       en: 'Persistent, until you clear your device’s browsing data',
     },
+    cookies_td_purpose_fbp: {
+      es: 'Píxel de Meta: identifica tu navegador para medir y mejorar nuestra publicidad en Facebook e Instagram. Solo si aceptas.',
+      en: 'Meta Pixel: identifies your browser to measure and improve our advertising on Facebook and Instagram. Only if you accept.',
+    },
+    cookies_td_owner_fbp: { es: 'Tercero (Meta Platforms Ireland Limited)', en: 'Third-party (Meta Platforms Ireland Limited)' },
+    cookies_td_duration_fbp: { es: 'Hasta 90 días', en: 'Up to 90 days' },
     cookies_p2b: {
       es: 'Al ser estrictamente necesaria para el funcionamiento del propio aviso, esta cookie no requiere tu consentimiento previo, conforme al artículo 22.2 de la LSSI-CE.',
       en: 'As it is strictly necessary for the notice itself to work, this cookie does not require your prior consent, in accordance with article 22.2 of the Spanish LSSI-CE.',
     },
-    cookies_h_third: { es: '3. Cookies de terceros: sistema de reservas', en: '3. Third-party cookies: booking system' },
+    cookies_h_third: { es: '3. Cookies de terceros: reservas y publicidad', en: '3. Third-party cookies: bookings and advertising' },
     cookies_p_third: {
       es: 'Nuestro sistema de reservas de mesa es un servicio de CoverManager que se carga dentro de la página de reservas. Al usarlo, CoverManager puede instalar sus propias cookies o tecnologías similares para que el servicio funcione. Esas cookies no las instalamos ni las controlamos nosotros: las gestiona CoverManager según su propia política de cookies y privacidad, que puedes consultar en <a href="https://www.covermanager.com" target="_blank" rel="noopener">covermanager.com</a>.',
       en: 'Our table booking system is a CoverManager service loaded inside the booking page. When you use it, CoverManager may set its own cookies or similar technologies so that the service works. We do not install or control those cookies: they are managed by CoverManager under its own cookie and privacy policy, available at <a href="https://www.covermanager.com" target="_blank" rel="noopener">covermanager.com</a>.',
+    },
+    cookies_p_meta: {
+      es: 'Si aceptas las cookies, activamos el Píxel de Meta (Meta Platforms Ireland Limited): se carga un script desde connect.facebook.net y se envían a Meta datos de tu navegación en roce.es para que podamos medir y mejorar nuestra publicidad en Facebook e Instagram. Meta trata esos datos según su política, que puedes consultar en <a href="https://www.facebook.com/privacy/policy" target="_blank" rel="noopener">facebook.com/privacy/policy</a>. Si rechazas las cookies, el Píxel no se carga.',
+      en: 'If you accept cookies, we enable the Meta Pixel (Meta Platforms Ireland Limited): a script is loaded from connect.facebook.net and data about your browsing on roce.es is sent to Meta so we can measure and improve our advertising on Facebook and Instagram. Meta processes that data under its own policy, available at <a href="https://www.facebook.com/privacy/policy" target="_blank" rel="noopener">facebook.com/privacy/policy</a>. If you reject cookies, the Pixel is not loaded.',
     },
     cookies_h3: { es: '4. Cómo gestionar las cookies', en: '4. How to manage cookies' },
     cookies_p3: {

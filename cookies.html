@@ -50,10 +50,7 @@
   </p>
 
   <h2 data-i18n="cookies_h2">2. Qué cookies usa esta web</h2>
-  <p data-i18n="cookies_p2">
-    roce.es no utiliza cookies de analítica ni de publicidad. La única cookie que instalamos nosotros es una cookie propia,
-    estrictamente técnica, cuando aceptas o rechazas el aviso de cookies que aparece en tu primera visita:
-  </p>
+  <p data-i18n="cookies_p2">roce.es no utiliza cookies de analítica. Instalamos una cookie propia, estrictamente técnica, cuando aceptas o rechazas el aviso de cookies que aparece en tu primera visita; y, solo si aceptas, el Píxel de Meta instala una cookie de publicidad:</p>
   <table>
     <tr>
       <th data-i18n="cookies_th_name">Nombre</th>
@@ -62,10 +59,16 @@
       <th data-i18n="cookies_th_duration">Duración</th>
     </tr>
     <tr>
-      <td>roce_cookie_consent</td>
+      <td>roce_cookie_consent_v2</td>
       <td data-i18n="cookies_td_purpose">Recordar si has aceptado o rechazado el aviso de cookies, para no volver a mostrártelo.</td>
       <td data-i18n="cookies_td_owner">Propia (ROCE)</td>
       <td data-i18n="cookies_td_duration">Persistente, hasta que borres los datos de navegación de tu dispositivo</td>
+    </tr>
+    <tr>
+      <td>_fbp</td>
+      <td data-i18n="cookies_td_purpose_fbp">Píxel de Meta: identifica tu navegador para medir y mejorar nuestra publicidad en Facebook e Instagram. Solo si aceptas.</td>
+      <td data-i18n="cookies_td_owner_fbp">Tercero (Meta Platforms Ireland Limited)</td>
+      <td data-i18n="cookies_td_duration_fbp">Hasta 90 días</td>
     </tr>
   </table>
   <p data-i18n="cookies_p2b">
@@ -73,12 +76,16 @@
     consentimiento previo, conforme al artículo 22.2 de la LSSI-CE.
   </p>
 
-  <h2 data-i18n="cookies_h_third">3. Cookies de terceros: sistema de reservas</h2>
+  <h2 data-i18n="cookies_h_third">3. Cookies de terceros: reservas y publicidad</h2>
   <p data-i18n-html="cookies_p_third">
     Nuestro sistema de reservas de mesa es un servicio de CoverManager que se carga dentro de la página de reservas.
     Al usarlo, CoverManager puede instalar sus propias cookies o tecnologías similares para que el servicio funcione.
     Esas cookies no las instalamos ni las controlamos nosotros: las gestiona CoverManager según su propia política de
     cookies y privacidad, que puedes consultar en <a href="https://www.covermanager.com" target="_blank" rel="noopener">covermanager.com</a>.
+  </p>
+
+  <p data-i18n-html="cookies_p_meta">
+    Si aceptas las cookies, activamos el Píxel de Meta (Meta Platforms Ireland Limited): se carga un script desde connect.facebook.net y se envían a Meta datos de tu navegación en roce.es para que podamos medir y mejorar nuestra publicidad en Facebook e Instagram. Meta trata esos datos según su política, que puedes consultar en <a href="https://www.facebook.com/privacy/policy" target="_blank" rel="noopener">facebook.com/privacy/policy</a>. Si rechazas las cookies, el Píxel no se carga.
   </p>
 
   <h2 data-i18n="cookies_h3">4. Cómo gestionar las cookies</h2>
@@ -115,14 +122,14 @@
 </footer>
 
 <div class="cookie-banner" id="cookieBanner">
-  <p class="cookie-text"><span data-i18n="cookie_text">Usamos una cookie técnica propia para recordar tu elección, sin analítica ni publicidad. El sistema de reservas es de un tercero (CoverManager) y puede usar las suyas.</span> <a href="cookies.html" data-i18n="cookie_more_info">Más información</a>.</p>
+  <p class="cookie-text"><span data-i18n="cookie_text">Usamos una cookie técnica propia para recordar tu elección. Si aceptas, también activamos el Píxel de Meta (Facebook e Instagram) para medir y mejorar nuestra publicidad. El sistema de reservas es de un tercero (CoverManager) y puede usar las suyas.</span> <a href="cookies.html" data-i18n="cookie_more_info">Más información</a>.</p>
   <div class="cookie-actions">
     <button class="cookie-reject" id="cookieReject" data-i18n="cookie_reject">Rechazar</button>
     <button class="cookie-accept" id="cookieAccept" data-i18n="cookie_accept">Aceptar</button>
   </div>
 </div>
-<script src="cookies.js?v=1"></script>
-<script src="i18n.js?v=31"></script>
+<script src="cookies.js?v=2"></script>
+<script src="i18n.js?v=32"></script>
 
 </body>
 </html>
