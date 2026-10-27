@@ -50,7 +50,7 @@
     min-height: 100vh;
     background: var(--black);
     color: var(--white);
-    padding: 8rem 1.5rem 5rem;
+    padding: 8rem 1.5rem 1rem;
     display: flex;
     justify-content: center;
   }
@@ -64,7 +64,7 @@
     margin-bottom: 0.75rem;
   }
   .reserve-form-intro { font-size: 0.95rem; opacity: 0.85; margin-bottom: 1.25rem; line-height: 1.5; }
-  .reserve-night { margin-top: -0.5rem; color: #e5453a; font-weight: 600; opacity: 1; display: flex; align-items: center; gap: 0.6rem; }
+  .reserve-night { margin-top: 0; color: #e5453a; font-weight: 600; opacity: 1; display: flex; align-items: center; gap: 0.6rem; }
   .age-badge { flex-shrink: 0; width: 2.8rem; height: 2.8rem; }
   .reserve-info {
     background: var(--white);
@@ -239,7 +239,9 @@
 
 
   /* Alquiler del espacio: secundario, plegado al final de la página. */
-  .private-events.pe-minor { padding: 3rem 1.5rem 5rem; }
+  .private-events.pe-minor { padding: 1rem 1.5rem 1.5rem; }
+  /* En esta página el pie queda pegado a la sección de alquiler. */
+  .site-footer { padding-top: 2.5rem; }
   .pe-details > summary {
     display: flex;
     align-items: center;
@@ -278,16 +280,14 @@
   <div class="reserve-form-wrap">
     <a class="reserve-back" href="/" data-i18n="back_to_home">&larr; Volver a ROCE</a>
     <h1 data-i18n-html="reservar_h1">Reserva<br>tu mesa</h1>
-    <p class="reserve-form-intro" data-i18n="reservar_intro">
-      Solo aceptamos reservas para cena en la primera planta, de miércoles a sábado.
-    </p>
-    <p class="reserve-form-intro reserve-night"><svg class="age-badge" viewBox="0 0 100 100" role="img" aria-label="+18"><circle cx="50" cy="50" r="44" fill="#ffffff" stroke="#e5453a" stroke-width="9"/><text x="44" y="65" text-anchor="middle" font-family="'Helvetica Neue Web','Helvetica Neue',Arial,sans-serif" font-weight="700" font-size="46" letter-spacing="-3" fill="#0a0a0a">18</text><text x="77" y="52" text-anchor="middle" font-family="'Helvetica Neue Web','Helvetica Neue',Arial,sans-serif" font-weight="700" font-size="30" fill="#0a0a0a">+</text></svg> <span data-i18n="reservar_night">Reservas de noche solo para mayores de 18 años</span></p>
 
     <div class="reserve-info">
       <p data-i18n="reservar_brunch">
         Nuestro espacio de brunch y cafetería es de acceso libre, sin reserva, todos los días de 10:00 a 20:00.
       </p>
     </div>
+
+    <p class="reserve-form-intro reserve-night"><svg class="age-badge" viewBox="0 0 100 100" role="img" aria-label="+18"><circle cx="50" cy="50" r="44" fill="#ffffff" stroke="#e5453a" stroke-width="9"/><text x="44" y="65" text-anchor="middle" font-family="'Helvetica Neue Web','Helvetica Neue',Arial,sans-serif" font-weight="700" font-size="46" letter-spacing="-3" fill="#0a0a0a">18</text><text x="77" y="52" text-anchor="middle" font-family="'Helvetica Neue Web','Helvetica Neue',Arial,sans-serif" font-weight="700" font-size="30" fill="#0a0a0a">+</text></svg> <span data-i18n="reservar_night">Reservas de noche solo para mayores de 18 años</span></p>
 
     <div class="cm-widget">
       <div class="group-notice" id="groupNotice">
@@ -367,30 +367,29 @@
 </div>
 <script src="/cookies.js?v=3"></script>
 <script src="https://www.covermanager.com/js/iframeResizer/iframeResizer.min.js"></script>
-<script src="/i18n.js?v=42"></script>
+<script src="/i18n.js?v=44"></script>
 
 <script>
   const CM_BASE = 'https://www.covermanager.com/reserve/module_restaurant/restaurante-roce-valencia/';
   const cmFrame = document.getElementById('restaurante-roce-valencia');
-  // El widget cambia de paso por dentro, sin recargar: si la persona estaba
-  // abajo del todo, la página se quedaba ahí y parecía que había
-  // desaparecido el formulario. Al cambiar el tamaño del widget, si está
-  // más abajo del principio, volvemos al inicio del formulario.
+  iFrameResize({ checkOrigin: ['https://www.covermanager.com'] }, '#restaurante-roce-valencia');
+
+  // El widget cambia de paso por dentro, sin recargar la página: si la persona
+  // estaba muy abajo, la página se quedaba ahí y parecía que había desaparecido
+  // el formulario. Se vigila el tamaño del widget y, si cambia estando la
+  // persona bien metida en él, se vuelve al inicio del formulario.
   let cmLastHeight = 0;
-  function onCmResized(msg) {
-    const h = parseInt(msg.height, 10) || 0;
-    const first = cmLastHeight === 0;
-    const delta = Math.abs(h - cmLastHeight);
-    cmLastHeight = h;
-    if (first) return;
+  let cmReadyAt = Date.now() + 2500;
+  cmFrame.addEventListener('load', () => { cmReadyAt = Date.now() + 2500; });
+  new ResizeObserver(() => {
     const r = cmFrame.getBoundingClientRect();
-    const scrolledPast = r.top < -40;
-    const pageRanOut = r.bottom < window.innerHeight * 0.85;
-    if (scrolledPast && delta >= 80 && (pageRanOut || delta >= 250)) {
+    const was = cmLastHeight;
+    cmLastHeight = r.height;
+    if (!was || Date.now() < cmReadyAt || Math.abs(r.height - was) < 40) return;
+    if (r.top < -250) {
       window.scrollTo({ top: window.scrollY + r.top - 90, behavior: 'smooth' });
     }
-  }
-  iFrameResize({ checkOrigin: ['https://www.covermanager.com'], onResized: onCmResized }, '#restaurante-roce-valencia');
+  }).observe(cmFrame);
 
   function syncCoverManagerLang() {
     const url = CM_BASE + (window.ROCE_I18N.getLang() === 'en' ? 'english' : 'spanish');

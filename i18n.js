@@ -57,10 +57,6 @@
 
     // reservar.html
     reservar_h1: { es: 'Reserva<br>tu mesa', en: 'Book<br>your table' },
-    reservar_intro: {
-      es: 'Solo aceptamos reservas para cena en la primera planta, de miércoles a sábado.',
-      en: 'We only take dinner bookings on the first floor, Wednesday to Saturday.',
-    },
     reservar_night: {
       es: 'Reservas de noche solo para mayores de 18 años',
       en: 'Night bookings are for guests aged 18 and over',
