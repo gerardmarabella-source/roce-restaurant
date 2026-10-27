@@ -8,8 +8,8 @@
   var STRINGS = {
     // Compartido: aviso de cookies
     cookie_text: {
-      es: 'Usamos una cookie técnica para recordar tu elección. Sin analítica ni publicidad.',
-      en: 'We use a technical cookie to remember your choice. No analytics, no advertising.',
+      es: 'Usamos una cookie técnica propia para recordar tu elección, sin analítica ni publicidad. El sistema de reservas es de un tercero (CoverManager) y puede usar las suyas.',
+      en: 'We use our own technical cookie to remember your choice, with no analytics or advertising. The booking system is provided by a third party (CoverManager) and may use its own cookies.',
     },
     cookie_more_info: { es: 'Más información', en: 'More info' },
     cookie_reject: { es: 'Rechazar', en: 'Reject' },
@@ -200,7 +200,7 @@
 
     // privacidad.html
     privacy_title: { es: 'Política de privacidad', en: 'Privacy Policy' },
-    privacy_updated: { es: 'Última actualización: agosto de 2026', en: 'Last updated: August 2026' },
+    privacy_updated: { es: 'Última actualización: octubre de 2026', en: 'Last updated: October 2026' },
     privacy_h1: { es: '1. Responsable del tratamiento', en: '1. Data controller' },
     privacy_h2: { es: '2. Datos que tratamos y finalidad', en: '2. Data we process and purpose' },
     privacy_p2_intro: {
@@ -208,26 +208,26 @@
       en: 'We process the data you voluntarily provide through this website, specifically:',
     },
     privacy_li_contact: {
-      es: '<strong>Contacto y reservas:</strong> cuando nos escribes a reservas@roce.es o rellenas el formulario de reservas, tratamos tu nombre, email, teléfono y el contenido del mensaje para gestionar tu solicitud. Si marcas la casilla de aceptación al reservar, también te añadimos a nuestra base de datos de clientes (CRM) para contactarte sobre tu reserva y enviarte comunicaciones sobre ROCE (eventos, novedades, ofertas).',
-      en: '<strong>Contact and bookings:</strong> when you write to reservas@roce.es or fill in the booking form, we process your name, email, phone number and the content of your message to handle your request. If you check the consent box when booking, we also add you to our customer database (CRM) to contact you about your booking and send you communications about ROCE (events, news, offers).',
+      es: '<strong>Contacto y reservas:</strong> cuando nos escribes a reservas@roce.es, usas el sistema de reservas de mesa o nos contactas por WhatsApp desde la web (reservas de grupo, alquiler del espacio), tratamos tu nombre, email, teléfono y el contenido del mensaje para gestionar tu solicitud. Si aceptas expresamente recibir comunicaciones al reservar, también te añadimos a nuestra base de datos de clientes (CRM) para contactarte sobre tu reserva y enviarte comunicaciones sobre ROCE (eventos, novedades, ofertas).',
+      en: '<strong>Contact and bookings:</strong> when you write to reservas@roce.es, use the table booking system or contact us on WhatsApp from the website (group bookings, space rental), we process your name, email, phone number and the content of your message to handle your request. If you expressly agree to receive communications when booking, we also add you to our customer database (CRM) to contact you about your booking and send you communications about ROCE (events, news, offers).',
     },
     privacy_li_newsletter: {
       es: '<strong>Newsletter:</strong> si dejas tu email en el formulario de suscripción, lo usamos para enviarte comunicaciones comerciales sobre ROCE (aperturas, eventos, novedades).',
       en: '<strong>Newsletter:</strong> if you leave your email in the subscription form, we use it to send you commercial communications about ROCE (openings, events, news).',
     },
     privacy_p2_cookies: {
-      es: 'No recopilamos datos de navegación, analítica ni cookies de terceros: esta web no utiliza cookies de seguimiento. Solo usamos una cookie técnica propia para recordar si has aceptado o rechazado el aviso de cookies, que no requiere consentimiento por ser estrictamente necesaria para el funcionamiento del propio aviso.',
-      en: "We don't collect browsing data, analytics, or third-party cookies: this website doesn't use tracking cookies. We only use our own technical cookie to remember whether you accepted or rejected the cookie notice, which doesn't require consent as it's strictly necessary for the notice itself to work.",
+      es: 'No recopilamos datos de navegación ni analítica propia, y esta web no utiliza cookies de seguimiento. Solo usamos una cookie técnica propia para recordar si has aceptado o rechazado el aviso de cookies, que no requiere consentimiento por ser estrictamente necesaria para el funcionamiento del propio aviso. El sistema de reservas de mesa es un servicio de CoverManager que se carga dentro de nuestra página de reservas: al usarlo, CoverManager puede instalar sus propias cookies y trata los datos que introduces en la reserva según su propia política (ver nuestra política de cookies).',
+      en: "We don't collect browsing data or run our own analytics, and this website doesn't use tracking cookies. We only use our own technical cookie to remember whether you accepted or rejected the cookie notice, which doesn't require consent as it's strictly necessary for the notice itself to work. The table booking system is a CoverManager service loaded inside our booking page: when you use it, CoverManager may set its own cookies and processes the data you enter in the booking according to its own policy (see our cookie policy).",
     },
     privacy_h3: { es: '3. Legitimación', en: '3. Legal basis' },
     privacy_p3: {
-      es: 'La base legal para el tratamiento de tus datos es el consentimiento que nos das al enviarnos tu email o tu mensaje (art. 6.1.a del RGPD), y en el caso de las reservas, la ejecución de medidas precontractuales a petición tuya (art. 6.1.b del RGPD). Para añadirte a nuestra base de datos de clientes y enviarte comunicaciones comerciales, la base legal es el consentimiento expreso que nos das al marcar la casilla correspondiente en el formulario de reservas.',
-      en: 'The legal basis for processing your data is the consent you give us when sending your email or message (art. 6.1.a GDPR), and for bookings, the performance of pre-contractual measures at your request (art. 6.1.b GDPR). To add you to our customer database and send you commercial communications, the legal basis is the explicit consent you give by checking the corresponding box on the booking form.',
+      es: 'La base legal para el tratamiento de tus datos es el consentimiento que nos das al enviarnos tu email o tu mensaje (art. 6.1.a del RGPD), y en el caso de las reservas, la ejecución de medidas precontractuales a petición tuya (art. 6.1.b del RGPD). Para añadirte a nuestra base de datos de clientes y enviarte comunicaciones comerciales, la base legal es el consentimiento expreso que nos das al aceptarlo durante la reserva.',
+      en: 'The legal basis for processing your data is the consent you give us when sending your email or message (art. 6.1.a GDPR), and for bookings, the performance of pre-contractual measures at your request (art. 6.1.b GDPR). To add you to our customer database and send you commercial communications, the legal basis is the explicit consent you give by accepting it during the booking.',
     },
     privacy_h4: { es: '4. Destinatarios', en: '4. Recipients' },
     privacy_p4: {
-      es: 'No cedemos tus datos a terceros, salvo obligación legal. Si en el futuro utilizamos un proveedor externo para el envío de la newsletter (por ejemplo, una plataforma de email marketing), este actuará como encargado del tratamiento bajo contrato, cumpliendo con el RGPD.',
-      en: "We don't share your data with third parties, except where legally required. If in the future we use an external provider to send the newsletter (for example, an email marketing platform), it will act as a data processor under contract, complying with GDPR.",
+      es: 'No cedemos tus datos a terceros, salvo obligación legal. Para gestionar las reservas de mesa utilizamos CoverManager, proveedor del sistema de reservas, que accede a los datos de la reserva para prestarnos ese servicio. Las solicitudes que envías por WhatsApp se tratan a través de dicha aplicación. Si en el futuro utilizamos un proveedor externo para el envío de la newsletter (por ejemplo, una plataforma de email marketing), este actuará como encargado del tratamiento bajo contrato, cumpliendo con el RGPD.',
+      en: "We don't share your data with third parties, except where legally required. To manage table bookings we use CoverManager, the booking system provider, which accesses the booking data to provide us with that service. Requests you send via WhatsApp are handled through that application. If in the future we use an external provider to send the newsletter (for example, an email marketing platform), it will act as a data processor under contract, complying with GDPR.",
     },
     privacy_h5: { es: '5. Conservación', en: '5. Data retention' },
     privacy_p5: {
@@ -269,8 +269,8 @@
     },
     cookies_h2: { es: '2. Qué cookies usa esta web', en: '2. What cookies this website uses' },
     cookies_p2: {
-      es: 'roce.es no utiliza cookies de analítica, publicidad ni de terceros. Solo instalamos una cookie propia, estrictamente técnica, cuando aceptas o rechazas el aviso de cookies que aparece en tu primera visita:',
-      en: "roce.es doesn't use analytics, advertising, or third-party cookies. We only install our own, strictly technical cookie when you accept or reject the cookie notice that appears on your first visit:",
+      es: 'roce.es no utiliza cookies de analítica ni de publicidad. La única cookie que instalamos nosotros es una cookie propia, estrictamente técnica, cuando aceptas o rechazas el aviso de cookies que aparece en tu primera visita:',
+      en: "roce.es doesn't use analytics or advertising cookies. The only cookie we install ourselves is our own, strictly technical cookie, when you accept or reject the cookie notice that appears on your first visit:",
     },
     cookies_th_name: { es: 'Nombre', en: 'Name' },
     cookies_th_purpose: { es: 'Finalidad', en: 'Purpose' },
@@ -289,12 +289,17 @@
       es: 'Al ser estrictamente necesaria para el funcionamiento del propio aviso, esta cookie no requiere tu consentimiento previo, conforme al artículo 22.2 de la LSSI-CE.',
       en: 'As it is strictly necessary for the notice itself to work, this cookie does not require your prior consent, in accordance with article 22.2 of the Spanish LSSI-CE.',
     },
-    cookies_h3: { es: '3. Cómo gestionar las cookies', en: '3. How to manage cookies' },
-    cookies_p3: {
-      es: 'Puedes eliminar esta cookie en cualquier momento borrando los datos de navegación de tu navegador. Volveremos a mostrarte el aviso en tu siguiente visita. La mayoría de navegadores también te permiten bloquear cookies desde su configuración de privacidad.',
-      en: "You can delete this cookie at any time by clearing your browser's browsing data. We'll show you the notice again on your next visit. Most browsers also let you block cookies from their privacy settings.",
+    cookies_h_third: { es: '3. Cookies de terceros: sistema de reservas', en: '3. Third-party cookies: booking system' },
+    cookies_p_third: {
+      es: 'Nuestro sistema de reservas de mesa es un servicio de CoverManager que se carga dentro de la página de reservas. Al usarlo, CoverManager puede instalar sus propias cookies o tecnologías similares para que el servicio funcione. Esas cookies no las instalamos ni las controlamos nosotros: las gestiona CoverManager según su propia política de cookies y privacidad, que puedes consultar en <a href="https://www.covermanager.com" target="_blank" rel="noopener">covermanager.com</a>.',
+      en: 'Our table booking system is a CoverManager service loaded inside the booking page. When you use it, CoverManager may set its own cookies or similar technologies so that the service works. We do not install or control those cookies: they are managed by CoverManager under its own cookie and privacy policy, available at <a href="https://www.covermanager.com" target="_blank" rel="noopener">covermanager.com</a>.',
     },
-    cookies_h4: { es: '4. Más información', en: '4. More information' },
+    cookies_h3: { es: '4. Cómo gestionar las cookies', en: '4. How to manage cookies' },
+    cookies_p3: {
+      es: 'Puedes eliminar la cookie propia y las de terceros en cualquier momento borrando los datos de navegación de tu navegador. Volveremos a mostrarte el aviso en tu siguiente visita. La mayoría de navegadores también te permiten bloquear cookies desde su configuración de privacidad.',
+      en: "You can delete our cookie and any third-party cookies at any time by clearing your browser's browsing data. We'll show you the notice again on your next visit. Most browsers also let you block cookies from their privacy settings.",
+    },
+    cookies_h4: { es: '5. Más información', en: '5. More information' },
     cookies_p4: {
       es: 'Para saber cómo tratamos tus datos personales, consulta nuestra <a href="privacidad.html">política de privacidad</a>.',
       en: 'To find out how we handle your personal data, see our <a href="privacidad.html">privacy policy</a>.',
