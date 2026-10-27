@@ -62,8 +62,8 @@
       en: 'We only take dinner bookings on the first floor, Wednesday to Saturday.',
     },
     reservar_night: {
-      es: 'Reservas de noche solo para mayores de 18 años (+18)',
-      en: 'Night bookings are for guests aged 18 and over (+18)',
+      es: 'Reservas de noche solo para mayores de 18 años',
+      en: 'Night bookings are for guests aged 18 and over',
     },
     reservar_brunch: {
       es: 'Nuestro espacio de brunch y cafetería es de acceso libre, sin reserva, todos los días de 10:00 a 20:00.',
