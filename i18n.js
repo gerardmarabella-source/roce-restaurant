@@ -34,10 +34,7 @@
     },
     menu_alquiler_link: { es: 'Alquila el espacio →', en: 'Rent the space →' },
     menu_eventos_title: { es: 'Eventos', en: 'Events' },
-    menu_eventos_sub: {
-      es: 'Noches en directo, catas y sesiones especiales',
-      en: 'Live nights, tastings and special sessions',
-    },
+    menu_eventos_sub: { es: '*Próximamente', en: '*Coming soon' },
 
     // Newsletter (widget compartido, usado en home)
     newsletter_text: { es: 'Entérate antes que nadie de todo.', en: 'Be the first to know.' },
