@@ -63,7 +63,9 @@
     text-transform: uppercase;
     margin-bottom: 0.75rem;
   }
-  .reserve-form-intro { font-size: 0.95rem; opacity: 0.85; margin-bottom: 1.5rem; line-height: 1.5; }
+  .reserve-form-intro { font-size: 0.95rem; opacity: 0.85; margin-bottom: 0.75rem; line-height: 1.5; }
+  .reserve-form-intro + .reserve-form-intro { margin-bottom: 1.75rem; }
+  .reserve-form-intro:has(+ .cm-widget) { margin-bottom: 1.75rem; }
 
 
   .cm-widget {
@@ -269,14 +271,16 @@
     <a class="reserve-back" href="/" data-i18n="back_to_home">&larr; Volver a ROCE</a>
     <h1 data-i18n-html="reservar_h1">Reserva<br>tu mesa</h1>
     <p class="reserve-form-intro" data-i18n="reservar_intro">
-      Elige día, hora y número de personas para reservar tu mesa.
-      Abrimos pronto — solo aceptamos reservas de miércoles a sábado.
+      Solo aceptamos reservas para cena en la primera planta, de miércoles a sábado.
+    </p>
+    <p class="reserve-form-intro" data-i18n="reservar_brunch">
+      Nuestro espacio de brunch y cafetería es de acceso libre, sin reserva, todos los días de 9:00 a 20:00.
     </p>
 
     <div class="cm-widget">
       <a class="group-notice" id="groupNotice" href="#" target="_blank" rel="noopener">
         <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="currentColor"/><rect x="10.8" y="10.5" width="2.4" height="7" fill="#ececec"/><circle cx="12" cy="7.3" r="1.5" fill="#ececec"/></svg>
-        <span data-i18n-html="group_notice">Para reservas de más de 12 personas, <u>escríbenos por WhatsApp</u>.</span>
+        <span data-i18n-html="group_notice">Para reservas de más de 8 personas, <u>escríbenos por WhatsApp</u>.</span>
       </a>
       <iframe id="restaurante-roce-valencia" title="Reservas" allow="payment" frameborder="0" height="550" width="100%"></iframe>
     </div>
@@ -351,7 +355,7 @@
 </div>
 <script src="/cookies.js?v=1"></script>
 <script src="https://www.covermanager.com/js/iframeResizer/iframeResizer.min.js"></script>
-<script src="/i18n.js?v=26"></script>
+<script src="/i18n.js?v=28"></script>
 
 <script>
   const CM_BASE = 'https://www.covermanager.com/reservation/module_restaurant/restaurante-roce-valencia/';

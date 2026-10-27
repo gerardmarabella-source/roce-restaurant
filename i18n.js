@@ -29,8 +29,8 @@
     // Desplegable de Reservas (home)
     menu_reservar_title: { es: 'Reservar', en: 'Book' },
     menu_reservar_sub: {
-      es: 'Reserva tu mesa en la primera planta, de miércoles a sábado y festivos',
-      en: 'Book your table on the first floor, Wednesday to Saturday and holidays only',
+      es: 'Reserva de cena en la primera planta, de miércoles a sábado',
+      en: 'Dinner bookings on the first floor, Wednesday to Saturday',
     },
     menu_alquiler_link: { es: 'Alquila el espacio →', en: 'Rent the space →' },
     menu_eventos_title: { es: 'Eventos', en: 'Events' },
@@ -61,8 +61,12 @@
     // reservar.html
     reservar_h1: { es: 'Reserva<br>tu mesa', en: 'Book<br>your table' },
     reservar_intro: {
-      es: 'Elige día, hora y número de personas para reservar tu mesa. Abrimos pronto — solo aceptamos reservas de miércoles a sábado.',
-      en: "Pick a date, time and party size to book your table. We're opening soon — we only accept bookings from Wednesday to Saturday.",
+      es: 'Solo aceptamos reservas para cena en la primera planta, de miércoles a sábado.',
+      en: 'We only take dinner bookings on the first floor, Wednesday to Saturday.',
+    },
+    reservar_brunch: {
+      es: 'Nuestro espacio de brunch y cafetería es de acceso libre, sin reserva, todos los días de 9:00 a 20:00.',
+      en: 'Our brunch and café area is walk-in only, no reservation needed, every day from 9:00 to 20:00.',
     },
     consent_text: {
       es: 'He leído y acepto la <a href="/privacidad.html" target="_blank" rel="noopener">política de privacidad</a>. ROCE podrá contactarme por email o teléfono sobre mi reserva y añadirme a su base de datos de clientes para futuras comunicaciones.',
@@ -104,12 +108,12 @@
 
     // Aviso de grupos grandes (reservar.html)
     group_notice: {
-      es: 'Para reservas de más de 12 personas, <u>escríbenos por WhatsApp</u>.',
-      en: 'For bookings of more than 12 people, <u>message us on WhatsApp</u>.',
+      es: 'Para reservas de más de 8 personas, <u>escríbenos por WhatsApp</u>.',
+      en: 'For bookings of more than 8 people, <u>message us on WhatsApp</u>.',
     },
     group_wa_msg: {
-      es: 'Hola! Nos gustaría reservar mesa para un grupo de más de 12 personas en ROCE.',
-      en: "Hi! We'd like to book a table for a group of more than 12 people at ROCE.",
+      es: 'Hola! Nos gustaría reservar mesa para un grupo de más de 8 personas en ROCE.',
+      en: "Hi! We'd like to book a table for a group of more than 8 people at ROCE.",
     },
 
     // Alquila el espacio (reservar.html)
