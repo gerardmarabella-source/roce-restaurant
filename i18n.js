@@ -105,8 +105,8 @@
 
     // Aviso de grupos grandes (reservar.html)
     group_notice: {
-      es: 'Para reservas de más de 8 personas, <u>escríbenos por WhatsApp</u>.',
-      en: 'For bookings of more than 8 people, <u>message us on WhatsApp</u>.',
+      es: 'Para grupos de más de 8 personas, <a data-wa href="#" target="_blank" rel="noopener">escríbenos por WhatsApp</a> o envíanos un correo a <a href="mailto:reservas@roce.es">reservas@roce.es</a>.',
+      en: 'For groups of more than 8 people, <a data-wa href="#" target="_blank" rel="noopener">message us on WhatsApp</a> or email us at <a href="mailto:reservas@roce.es">reservas@roce.es</a>.',
     },
     group_wa_msg: {
       es: 'Hola! Nos gustaría reservar mesa para un grupo de más de 8 personas en ROCE.',
