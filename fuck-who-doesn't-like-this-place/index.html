@@ -146,50 +146,82 @@
   }
   .pe-intro { font-size: 0.95rem; opacity: 0.85; line-height: 1.55; margin-bottom: 2.25rem; }
 
-  .pe-field { margin-bottom: 1.75rem; }
-  .pe-label {
-    display: block;
-    font-size: 0.7rem;
-    font-weight: 600;
-    letter-spacing: 0.08em;
+  .pe-form { display: flex; flex-direction: column; }
+  .pe-form input[type="text"],
+  .pe-form input[type="email"],
+  .pe-form input[type="number"],
+  .pe-form select,
+  .pe-form textarea {
+    width: 100%;
+    background: transparent;
+    border: 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.75);
+    border-radius: 0;
+    padding: 0.85rem 0 0.6rem;
+    font-family: var(--display);
+    font-size: 1.15rem;
     text-transform: uppercase;
-    opacity: 0.85;
-    margin-bottom: 0.65rem;
-  }
-  .pe-guests-input {
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.28);
     color: var(--white);
-    border-radius: 2px;
-    padding: 0.65rem 1rem;
-    font-family: var(--body);
-    font-size: 0.95rem;
-    width: 160px;
-    max-width: 100%;
+    appearance: none;
+    -webkit-appearance: none;
   }
-  .pe-guests-input:focus { outline: none; border-color: var(--maroon); }
-  .pe-guests-input::placeholder { color: rgba(255, 255, 255, 0.45); }
+  .pe-form input::placeholder,
+  .pe-form textarea::placeholder { color: rgba(255, 255, 255, 0.6); }
+  .pe-form input:focus,
+  .pe-form select:focus,
+  .pe-form textarea:focus { outline: none; border-bottom-color: var(--maroon); }
+  .pe-form select:invalid { color: rgba(255, 255, 255, 0.6); }
+  .pe-form select option { color: var(--black); text-transform: none; }
+  .pe-form textarea { resize: none; min-height: 3.4rem; }
+  .pe-form input[type="number"] { -moz-appearance: textfield; }
+  .pe-form input[type="number"]::-webkit-outer-spin-button,
+  .pe-form input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 
-  .pe-submit {
-    display: inline-flex;
+  .pe-select-wrap { position: relative; }
+  .pe-select-wrap::after {
+    content: "+";
+    position: absolute;
+    right: 0.1rem;
+    top: 50%;
+    transform: translateY(-40%);
+    font-family: var(--display);
+    font-size: 1.4rem;
+    pointer-events: none;
+  }
+
+  .pe-form-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem 1.5rem;
+    flex-wrap: wrap;
+    margin-top: 1.5rem;
+  }
+  .pe-consent {
+    display: flex;
     align-items: center;
     gap: 0.6rem;
-    margin-top: 0.5rem;
-    background: var(--cream);
-    color: var(--black);
-    border: none;
-    border-radius: 2px;
-    padding: 1rem 1.5rem;
-    font-family: var(--display);
-    font-size: 0.95rem;
+    font-size: 0.85rem;
     text-transform: uppercase;
-    letter-spacing: 0.02em;
-    text-decoration: none;
+    letter-spacing: 0.01em;
     cursor: pointer;
-    transition: transform 0.15s ease;
   }
-  .pe-submit:hover { transform: translateY(-2px); }
-  .pe-submit svg { width: 18px; height: 18px; flex-shrink: 0; }
+  .pe-consent input { width: 1.1rem; height: 1.1rem; flex-shrink: 0; accent-color: var(--white); }
+  .pe-consent a { color: inherit; text-decoration: underline; }
+  .pe-send {
+    background: none;
+    border: none;
+    padding: 0;
+    color: var(--white);
+    font-family: var(--display);
+    font-size: 1.5rem;
+    text-transform: uppercase;
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+    cursor: pointer;
+    transition: opacity 0.15s ease;
+  }
+  .pe-send:hover { opacity: 0.7; }
 
   .pe-note {
     margin-top: 1rem;
@@ -231,16 +263,32 @@
       Cuéntanos qué tienes en mente y lo organizamos juntos.
     </p>
 
-    <div class="pe-field">
-      <label class="pe-label" for="peGuests" data-i18n="pe_label_guests">¿Cuántos sois?</label>
-      <input type="number" id="peGuests" class="pe-guests-input" min="1" inputmode="numeric" placeholder="Nº de personas" data-i18n-placeholder="pe_guests_placeholder">
-    </div>
+    <form class="pe-form" id="peForm">
+      <input type="text" name="nombre" autocomplete="name" placeholder="Nombre*" data-i18n-placeholder="pe_ph_name" required>
+      <input type="text" name="empresa" placeholder="Empresa/proyecto (web, Instagram, etc.)" data-i18n-placeholder="pe_ph_company">
+      <input type="email" name="email" autocomplete="email" placeholder="Email" data-i18n-placeholder="pe_ph_email">
+      <div class="pe-select-wrap">
+        <select name="tipo" required>
+          <option value="" disabled selected hidden data-i18n="pe_ph_type">Tipo de evento*</option>
+          <option value="Cumpleaños" data-i18n="pe_type_birthday">Cumpleaños</option>
+          <option value="Cena de empresa" data-i18n="pe_type_corporate">Cena de empresa</option>
+          <option value="Despedida" data-i18n="pe_type_farewell">Despedida</option>
+          <option value="Otro" data-i18n="pe_type_other">Otro</option>
+        </select>
+      </div>
+      <input type="number" name="personas" min="1" inputmode="numeric" placeholder="Número de personas previsto (aprox)*" data-i18n-placeholder="pe_ph_guests" required>
+      <input type="text" name="fecha" placeholder="Fecha aproximada*" data-i18n-placeholder="pe_ph_date" required>
+      <textarea name="mensaje" rows="1" placeholder="Mensaje" data-i18n-placeholder="pe_ph_message"></textarea>
 
-    <a class="pe-submit" id="peWhatsappBtn" href="#" target="_blank" rel="noopener">
-      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.46 1.32 4.96L2 22l5.25-1.38a9.9 9.9 0 0 0 4.79 1.22h.01c5.46 0 9.91-4.45 9.91-9.92C21.96 6.45 17.5 2 12.04 2Zm0 18.15h-.01a8.2 8.2 0 0 1-4.18-1.14l-.3-.18-3.12.82.83-3.04-.2-.31a8.24 8.24 0 0 1-1.26-4.39c0-4.55 3.7-8.25 8.25-8.25 2.2 0 4.27.86 5.83 2.42a8.19 8.19 0 0 1 2.41 5.83c0 4.55-3.7 8.24-8.25 8.24Zm4.52-6.17c-.25-.12-1.47-.72-1.7-.81-.23-.08-.39-.12-.56.13-.17.25-.64.81-.78.97-.14.17-.29.18-.53.06-.25-.12-1.05-.39-2-1.23-.74-.66-1.24-1.48-1.39-1.73-.14-.25-.02-.38.11-.51.11-.11.25-.29.37-.43.12-.14.16-.25.25-.41.08-.17.04-.31-.02-.44-.06-.12-.56-1.34-.76-1.84-.2-.48-.41-.42-.56-.43h-.48c-.17 0-.44.06-.67.31-.23.25-.87.85-.87 2.08s.89 2.42 1.02 2.58c.12.17 1.75 2.67 4.24 3.75.59.26 1.05.41 1.41.52.59.19 1.13.16 1.55.1.47-.07 1.47-.6 1.68-1.18.21-.58.21-1.07.14-1.18-.06-.11-.23-.17-.48-.29Z"/></svg>
-      <span data-i18n="pe_whatsapp_btn">Cuéntanos tu evento</span>
-    </a>
-    <p class="pe-note" data-i18n="pe_note">Adaptamos el evento a lo que necesites. Te contamos condiciones y consumo mínimo por WhatsApp.</p>
+      <div class="pe-form-footer">
+        <label class="pe-consent">
+          <input type="checkbox" name="acepta_privacidad" required>
+          <span data-i18n-html="pe_consent">Acepto la <a href="/privacidad.html" target="_blank" rel="noopener">política de privacidad</a></span>
+        </label>
+        <button type="submit" class="pe-send" data-i18n="pe_send">Enviar</button>
+      </div>
+    </form>
+    <p class="pe-note" data-i18n="pe_note">Al enviar se abrirá WhatsApp con tu solicitud. Te contamos condiciones y consumo mínimo por ahí.</p>
   </div>
 </section>
 
@@ -272,7 +320,7 @@
 </div>
 <script src="/cookies.js?v=1"></script>
 <script src="https://www.covermanager.com/js/iframeResizer/iframeResizer.min.js"></script>
-<script src="/i18n.js?v=18"></script>
+<script src="/i18n.js?v=19"></script>
 
 <script>
   const CM_BASE = 'https://www.covermanager.com/reservation/module_restaurant/restaurante-roce-valencia/';
@@ -287,21 +335,31 @@
   new MutationObserver(syncCoverManagerLang).observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
 
   const WHATSAPP_NUMBER = '34614073163';
-  const peGuestsInput = document.getElementById('peGuests');
+  const peForm = document.getElementById('peForm');
+  const stripStar = (txt) => txt.replace(/\s*\([^)]*\)/, '').replace(/\*$/, '').trim();
 
-  function updatePeLink() {
-    let msg = window.ROCE_I18N.t('wa_intro');
-    const guests = peGuestsInput.value.trim();
-    if (guests) msg += ' ' + window.ROCE_I18N.t('wa_guests').replace('{n}', guests);
-    msg += ' ' + window.ROCE_I18N.t('wa_outro');
+  peForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const t = window.ROCE_I18N.t;
+    const f = peForm.elements;
+    const typeText = f.tipo.options[f.tipo.selectedIndex].text;
 
-    document.getElementById('peWhatsappBtn').href =
-      `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
-  }
+    const lines = [t('wa_intro'), ''];
+    const add = (labelKey, value) => {
+      value = value.trim();
+      if (value) lines.push(stripStar(t(labelKey)) + ': ' + value);
+    };
+    add('pe_ph_name', f.nombre.value);
+    add('pe_ph_company', f.empresa.value);
+    add('pe_ph_email', f.email.value);
+    add('pe_ph_type', typeText);
+    add('pe_ph_guests', f.personas.value);
+    add('pe_ph_date', f.fecha.value);
+    add('pe_ph_message', f.mensaje.value);
 
-  peGuestsInput.addEventListener('input', updatePeLink);
-  updatePeLink();
-  new MutationObserver(updatePeLink).observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
+    const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(lines.join('\n'))}`;
+    if (!window.open(url, '_blank', 'noopener')) window.location.href = url;
+  });
 </script>
 
 </body>
