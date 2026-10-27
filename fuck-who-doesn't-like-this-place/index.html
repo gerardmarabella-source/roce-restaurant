@@ -359,20 +359,38 @@
 </footer>
 
 <div class="cookie-banner" id="cookieBanner">
-  <p class="cookie-text"><span data-i18n="cookie_text">Usamos una cookie técnica propia para recordar tu elección. Si aceptas, también activamos el Píxel de Meta (Facebook e Instagram) para medir y mejorar nuestra publicidad. El sistema de reservas es de un tercero (CoverManager) y puede usar las suyas.</span> <a href="/cookies.html" data-i18n="cookie_more_info">Más información</a>.</p>
+  <p class="cookie-text"><span data-i18n="cookie_text">Usamos una cookie técnica propia para recordar tu elección. Si aceptas, también activamos el Píxel de Meta (Facebook e Instagram) y Google Tag Manager para medir y mejorar nuestra publicidad y nuestra web. El sistema de reservas es de un tercero (CoverManager) y puede usar las suyas.</span> <a href="/cookies.html" data-i18n="cookie_more_info">Más información</a>.</p>
   <div class="cookie-actions">
     <button class="cookie-reject" id="cookieReject" data-i18n="cookie_reject">Rechazar</button>
     <button class="cookie-accept" id="cookieAccept" data-i18n="cookie_accept">Aceptar</button>
   </div>
 </div>
-<script src="/cookies.js?v=2"></script>
+<script src="/cookies.js?v=3"></script>
 <script src="https://www.covermanager.com/js/iframeResizer/iframeResizer.min.js"></script>
-<script src="/i18n.js?v=40"></script>
+<script src="/i18n.js?v=42"></script>
 
 <script>
   const CM_BASE = 'https://www.covermanager.com/reserve/module_restaurant/restaurante-roce-valencia/';
   const cmFrame = document.getElementById('restaurante-roce-valencia');
-  iFrameResize({ checkOrigin: ['https://www.covermanager.com'] }, '#restaurante-roce-valencia');
+  // El widget cambia de paso por dentro, sin recargar: si la persona estaba
+  // abajo del todo, la página se quedaba ahí y parecía que había
+  // desaparecido el formulario. Al cambiar el tamaño del widget, si está
+  // más abajo del principio, volvemos al inicio del formulario.
+  let cmLastHeight = 0;
+  function onCmResized(msg) {
+    const h = parseInt(msg.height, 10) || 0;
+    const first = cmLastHeight === 0;
+    const delta = Math.abs(h - cmLastHeight);
+    cmLastHeight = h;
+    if (first) return;
+    const r = cmFrame.getBoundingClientRect();
+    const scrolledPast = r.top < -40;
+    const pageRanOut = r.bottom < window.innerHeight * 0.85;
+    if (scrolledPast && delta >= 80 && (pageRanOut || delta >= 250)) {
+      window.scrollTo({ top: window.scrollY + r.top - 90, behavior: 'smooth' });
+    }
+  }
+  iFrameResize({ checkOrigin: ['https://www.covermanager.com'], onResized: onCmResized }, '#restaurante-roce-valencia');
 
   function syncCoverManagerLang() {
     const url = CM_BASE + (window.ROCE_I18N.getLang() === 'en' ? 'english' : 'spanish');
