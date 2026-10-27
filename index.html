@@ -543,7 +543,7 @@
   </div>
 </div>
 <script src="cookies.js?v=2"></script>
-<script src="i18n.js?v=33"></script>
+<script src="i18n.js?v=34"></script>
 
 <script>
   function initNewsletterWidget() {
@@ -641,14 +641,14 @@
         // La lista de suscriptores vive en Brevo: se envía el email a su
         // formulario (el campo email_address_check es la trampa para bots,
         // debe ir siempre vacío).
-        const res = await fetch(BREVO_FORM_URL, {
+        const payload = new FormData();
+        payload.append('EMAIL', emailInput.value.trim());
+        payload.append('email_address_check', form.elements.email_address_check.value);
+        payload.append('locale', window.ROCE_I18N.getLang() === 'en' ? 'en' : 'es');
+        const res = await fetch(BREVO_FORM_URL + '?isAjax=1', {
           method: 'POST',
           headers: { Accept: 'application/json' },
-          body: new URLSearchParams({
-            EMAIL: emailInput.value.trim(),
-            email_address_check: form.elements.email_address_check.value,
-            locale: window.ROCE_I18N.getLang() === 'en' ? 'en' : 'es',
-          }),
+          body: payload,
         });
         const data = await res.json();
         if (!data.success) throw new Error(data.message || 'Error desconocido');
