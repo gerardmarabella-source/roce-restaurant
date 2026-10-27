@@ -130,8 +130,8 @@
     gr_eyebrow: { es: 'Reservas de grupo', en: 'Group bookings' },
     gr_title: { es: 'Una mesa para<br>todo el grupo', en: 'A table for<br>the whole group' },
     gr_intro: {
-      es: 'Cuéntanos cuántos sois y cuándo queréis venir, y te confirmamos disponibilidad por WhatsApp.',
-      en: "Tell us how many you are and when you'd like to come, and we'll confirm availability over WhatsApp.",
+      es: 'Dinos cuántos sois y qué día os viene bien, y os preparamos la mesa.',
+      en: "Tell us how many you are and which day suits you, and we'll set the table.",
     },
     gr_ph_guests: { es: 'Número de personas*', en: 'Number of guests*' },
     gr_ph_date: { es: 'Fecha*', en: 'Date*' },
