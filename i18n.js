@@ -29,11 +29,10 @@
     // Desplegable de Reservas (home)
     menu_reservar_title: { es: 'Reservar', en: 'Book' },
     menu_reservar_sub: {
-      es: 'Reserva tu mesa en la primera planta, de miércoles a sábado y festivos',
-      en: 'Book your table on the first floor, Wednesday to Saturday and holidays only',
+      es: 'Reserva de cena en la primera planta, de miércoles a sábado',
+      en: 'Dinner bookings on the first floor, Wednesday to Saturday',
     },
-    menu_privado_title: { es: 'Privado', en: 'Private' },
-    menu_privado_sub: { es: 'Una experiencia más íntima', en: 'A more intimate experience' },
+    menu_alquiler_link: { es: 'Alquila el espacio →', en: 'Rent the space →' },
     menu_eventos_title: { es: 'Eventos', en: 'Events' },
     menu_eventos_sub: { es: '*Próximamente', en: '*Coming soon' },
 
@@ -59,10 +58,13 @@
     // reservar.html
     reservar_h1: { es: 'Reserva<br>tu mesa', en: 'Book<br>your table' },
     reservar_intro: {
-      es: 'Rellena el formulario y te confirmamos la reserva por email en cuanto lo leamos. Abrimos pronto — solo aceptamos reservas de miércoles a sábado.',
-      en: "Fill in the form and we'll confirm your booking by email as soon as we read it. We're opening soon — we only accept bookings from Wednesday to Saturday.",
+      es: 'Solo aceptamos reservas para cena en la primera planta, de miércoles a sábado.',
+      en: 'We only take dinner bookings on the first floor, Wednesday to Saturday.',
     },
-    reservar_private_link: { es: 'Reserva nuestro privado ↓', en: 'Book our private space ↓' },
+    reservar_brunch: {
+      es: 'Nuestro espacio de brunch y cafetería es de acceso libre, sin reserva, todos los días de 9:00 a 20:00.',
+      en: 'Our brunch and café area is walk-in only, no reservation needed, every day from 9:00 to 20:00.',
+    },
     consent_text: {
       es: 'He leído y acepto la <a href="/privacidad.html" target="_blank" rel="noopener">política de privacidad</a>. ROCE podrá contactarme por email o teléfono sobre mi reserva y añadirme a su base de datos de clientes para futuras comunicaciones.',
       en: 'I have read and accept the <a href="/privacidad.html" target="_blank" rel="noopener">privacy policy</a>. ROCE may contact me by email or phone about my booking and add me to its customer database for future communications.',
@@ -101,26 +103,100 @@
       en: 'Something went wrong. Email us directly at reservas@roce.es.',
     },
 
-    // Eventos privados (reservar.html)
-    pe_eyebrow: { es: 'Eventos privados', en: 'Private events' },
-    pe_title: { es: 'Algo más<br>exclusivo', en: 'Something more<br>exclusive' },
-    pe_intro: {
-      es: 'Reserva nuestro privado y disfruta de la experiencia de una forma mucho más íntima.',
-      en: 'Book our private space and enjoy the experience in a much more intimate way.',
+    // Aviso de grupos grandes (reservar.html)
+    group_notice: {
+      es: 'Para reservas de más de 8 personas, <u>escríbenos por WhatsApp</u>.',
+      en: 'For bookings of more than 8 people, <u>message us on WhatsApp</u>.',
     },
-    pe_label_guests: { es: '¿Cuántos sois?', en: 'How many of you?' },
-    pe_guests_placeholder: { es: 'Nº de personas', en: 'Number of guests' },
-    pe_whatsapp_btn: { es: 'Hablar por WhatsApp', en: 'Message us on WhatsApp' },
+    group_wa_msg: {
+      es: 'Hola! Nos gustaría reservar mesa para un grupo de más de 8 personas en ROCE.',
+      en: "Hi! We'd like to book a table for a group of more than 8 people at ROCE.",
+    },
+
+    // Alquila el espacio (reservar.html)
+    pe_eyebrow: { es: 'Alquila el espacio', en: 'Rent the space' },
+    pe_intro: {
+      es: 'Cuéntanos tu idea y contactamos contigo.',
+      en: "Tell us your idea and we'll get in touch.",
+    },
+    pe_ph_name: { es: 'Nombre*', en: 'Name*' },
+    pe_ph_company: { es: 'Empresa/proyecto', en: 'Company/project' },
+    pe_ph_email: { es: 'Email', en: 'Email' },
+    pe_ph_type: { es: 'Tipo de evento*', en: 'Event type*' },
+    pe_ph_guests: { es: 'Número de personas previsto (aprox)*', en: 'Expected number of guests (approx.)*' },
+    pe_ph_date: { es: 'Fecha aproximada*', en: 'Approximate date*' },
+    pe_ph_message: { es: 'Mensaje', en: 'Message' },
+    pe_type_birthday: { es: 'Cumpleaños', en: 'Birthday' },
+    pe_type_corporate: { es: 'Cena de empresa', en: 'Company dinner' },
+    pe_type_farewell: { es: 'Despedida', en: 'Farewell' },
+    pe_type_other: { es: 'Otro', en: 'Other' },
+    pe_consent: {
+      es: 'Acepto la <a href="/privacidad.html" target="_blank" rel="noopener">política de privacidad</a>',
+      en: 'I accept the <a href="/privacidad.html" target="_blank" rel="noopener">privacy policy</a>',
+    },
+    pe_send: { es: 'Enviar por WhatsApp', en: 'Send via WhatsApp' },
     pe_note: {
-      es: 'Consumo mínimo por persona. Te contamos los detalles por WhatsApp.',
-      en: "Minimum spend per person. We'll share the details over WhatsApp.",
+      es: 'Te contamos condiciones y consumo mínimo por WhatsApp.',
+      en: "We'll share the conditions and minimum spend over WhatsApp.",
     },
     wa_intro: {
-      es: 'Hola! Nos gustaría organizar un evento privado en ROCE.',
-      en: "Hi! We'd like to organize a private event at ROCE.",
+      es: 'Hola! Nos gustaría alquilar el espacio de ROCE para un evento.',
+      en: "Hi! We'd like to rent ROCE's space for an event.",
     },
-    wa_guests: { es: 'Seríamos {n} personas.', en: "We'd be {n} people." },
-    wa_outro: { es: '¿Nos contáis disponibilidad?', en: 'Could you tell us about availability?' },
+
+    // eventos.html
+    events_eyebrow: { es: 'Agenda', en: 'Line-up' },
+    events_title: { es: 'Eventos', en: 'Events' },
+    events_intro: {
+      es: 'Noches en directo, catas y sesiones especiales en ROCE. Reserva tu plaza — hay sitio limitado.',
+      en: 'Live nights, tastings and special sessions at ROCE. Reserve your spot — space is limited.',
+    },
+    events_soldout_note: {
+      es: 'Solicitud, no compra — te confirmamos por email en cuanto la revisamos.',
+      en: "This is a request, not a purchase — we'll confirm by email once we review it.",
+    },
+
+    event_1_title: { es: 'Noche de Jazz', en: 'Jazz Night' },
+    event_1_meta: { es: 'Sala principal', en: 'Main room' },
+    event_1_desc: {
+      es: 'Trío en directo entre plato y plato — jazz de toda la vida, sin manteles ni silencio.',
+      en: 'A live trio between courses — classic jazz, no white tablecloths or hushed silence required.',
+    },
+    event_1_price: { es: 'Entrada libre con consumición', en: 'Free entry with a drink minimum' },
+    event_1_datetime: { es: 'Viernes 20 de noviembre · 21:00', en: 'Friday, November 20 · 21:00' },
+
+    event_2_title: { es: 'Sunset Sessions: DJ Set', en: 'Sunset Sessions: DJ Set' },
+    event_2_meta: { es: 'Terraza', en: 'Terrace' },
+    event_2_desc: {
+      es: 'La barra abierta hasta tarde y un DJ en la terraza. Aforo reducido.',
+      en: 'The bar stays open late and a DJ takes over the terrace. Limited capacity.',
+    },
+    event_2_price: { es: '10€ · incluye primera copa', en: '€10 · includes your first drink' },
+    event_2_datetime: { es: 'Sábado 28 de noviembre · 20:00', en: 'Saturday, November 28 · 20:00' },
+
+    event_3_title: { es: 'Cena Maridaje: Vinos de Autor', en: 'Wine Pairing Dinner' },
+    event_3_meta: { es: 'Menú especial · 5 platos', en: 'Special menu · 5 courses' },
+    event_3_desc: {
+      es: 'Menú degustación de cinco platos maridado con vinos de pequeños productores.',
+      en: 'A five-course tasting menu paired with wines from small producers.',
+    },
+    event_3_price: { es: '55€ por persona', en: '€55 per person' },
+    event_3_datetime: { es: 'Sábado 5 de diciembre · 21:00', en: 'Saturday, December 5 · 21:00' },
+
+    ticket_modal_eyebrow: { es: 'Reserva tu plaza', en: 'Reserve your spot' },
+    ticket_label_count: { es: 'Nº de entradas', en: 'Number of tickets' },
+    ticket_submit: { es: 'Enviar solicitud', en: 'Send request' },
+    ticket_submit_sending: { es: 'Enviando...', en: 'Sending...' },
+    ticket_status_error: {
+      es: 'No se ha podido enviar, inténtalo de nuevo.',
+      en: 'Something went wrong, please try again.',
+    },
+    ticket_success_title: { es: '¡Solicitud enviada!', en: 'Request sent!' },
+    ticket_success_sub: {
+      es: 'Te confirmamos tu plaza por email en cuanto la revisemos.',
+      en: "We'll confirm your spot by email once we review it.",
+    },
+    ticket_ref_label: { es: 'Nº de referencia', en: 'Reference number' },
 
     // privacidad.html
     privacy_title: { es: 'Política de privacidad', en: 'Privacy Policy' },

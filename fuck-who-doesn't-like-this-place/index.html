@@ -30,7 +30,7 @@
   "email": "reservas@roce.es",
   "address": {
     "@type": "PostalAddress",
-    "streetAddress": "Gran Vía Marqués del Turia, 16, Bajo, Dcha",
+    "streetAddress": "Gran Vía Marqués del Túria, 16, Bajo, Dcha",
     "addressLocality": "Valencia",
     "postalCode": "46005",
     "addressCountry": "ES"
@@ -45,7 +45,6 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/styles.css?v=65">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.css">
 <style>
   .reserve-form-page {
     min-height: 100vh;
@@ -64,146 +63,41 @@
     text-transform: uppercase;
     margin-bottom: 0.75rem;
   }
-  .reserve-form-intro { font-size: 0.95rem; opacity: 0.85; margin-bottom: 1.5rem; line-height: 1.5; }
-
-  .pe-teaser-link {
-    display: inline-block;
-    margin-bottom: 2.5rem;
-    font-size: 0.8rem;
-    font-weight: 600;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    color: var(--maroon);
-    text-decoration: none;
-    border-bottom: 1px solid rgba(131, 47, 47, 0.5);
-    padding-bottom: 0.2rem;
-    transition: opacity 0.15s ease;
-  }
-  .pe-teaser-link:hover { opacity: 0.75; }
-
-  .reserve-form { display: flex; flex-direction: column; gap: 1.1rem; }
-  .field-row { display: flex; gap: 1rem; }
-  .field-row > label { flex: 1; }
-
-  .reserve-form label {
-    display: block;
-    font-size: 0.7rem;
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    margin-bottom: 0.4rem;
-    opacity: 0.85;
-  }
-
-  .reserve-form input,
-  .reserve-form select,
-  .reserve-form textarea {
-    width: 100%;
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.28);
-    border-radius: 8px;
-    padding: 0.75rem 0.9rem;
-    font-family: var(--body);
-    font-size: 0.95rem;
-    color: var(--white);
-  }
-
-  .reserve-form select { appearance: none; }
-  .reserve-form select option { color: var(--black); }
-
-  .reserve-form input::placeholder,
-  .reserve-form textarea::placeholder { color: rgba(255, 255, 255, 0.5); }
-  .reserve-form input:focus,
-  .reserve-form select:focus,
-  .reserve-form textarea:focus { outline: none; border-color: var(--white); }
-
-  .reserve-form input[name="fecha"].is-invalid { border-color: #ffb4a8; }
-
-  .reserve-form textarea { resize: vertical; min-height: 90px; }
-
-  .reserve-submit {
-    margin-top: 0.5rem;
+  .reserve-form-intro { font-size: 0.95rem; opacity: 0.85; margin-bottom: 1.25rem; line-height: 1.5; }
+  .reserve-info {
     background: var(--white);
     color: var(--black);
-    border: none;
-    border-radius: 2px;
-    padding: 1rem 1.5rem;
-    font-family: var(--display);
+    border-radius: 8px;
+    padding: 1.25rem 1.4rem;
+    margin-bottom: 1.75rem;
     font-size: 0.95rem;
-    text-transform: uppercase;
-    letter-spacing: 0.02em;
-    cursor: pointer;
-    transition: transform 0.15s ease;
-  }
-  .reserve-submit:hover { transform: translateY(-2px); }
-
-  .reserve-form-status {
-    margin-top: 1.25rem;
-    font-size: 0.9rem;
     line-height: 1.5;
   }
-  .reserve-form-status.is-error { color: #ffb4a8; }
-  .reserve-submit:disabled { opacity: 0.6; cursor: default; }
-  .reserve-submit:disabled:hover { transform: none; }
 
-  .reserve-success {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    padding: 2rem 1.5rem;
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    border-radius: 2px;
-    animation: reserveSuccessIn 0.4s ease both;
-  }
-  @keyframes reserveSuccessIn {
-    from { opacity: 0; transform: translateY(8px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
 
-  .reserve-success-icon { width: 56px; height: 56px; margin-bottom: 1rem; }
-  .reserve-success-circle {
-    stroke: var(--white);
-    stroke-width: 2;
-    stroke-dasharray: 151;
-    stroke-dashoffset: 151;
-    animation: reserveCircleDraw 0.5s ease forwards;
+  .cm-widget {
+    background: var(--white);
+    border-radius: 8px;
+    overflow: hidden;
+    min-height: 550px;
   }
-  .reserve-success-check {
-    stroke: var(--white);
-    stroke-width: 3;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-    stroke-dasharray: 36;
-    stroke-dashoffset: 36;
-    animation: reserveCheckDraw 0.3s ease 0.45s forwards;
-  }
-  @keyframes reserveCircleDraw { to { stroke-dashoffset: 0; } }
-  @keyframes reserveCheckDraw { to { stroke-dashoffset: 0; } }
-
-  .reserve-success-title {
-    font-family: var(--display);
-    font-size: 1.3rem;
-    text-transform: uppercase;
-    margin-bottom: 0.5rem;
-  }
-  .reserve-success-sub { font-size: 0.95rem; opacity: 0.75; }
-
-  .reserve-form label.reserve-consent {
+  .cm-widget iframe { display: block; width: 100%; border: 0; }
+  .group-notice {
     display: flex;
     align-items: flex-start;
-    gap: 0.6rem;
-    font-size: 0.8rem;
-    line-height: 1.4;
-    opacity: 0.85;
-    text-transform: none;
-    letter-spacing: normal;
-    font-weight: 400;
-    cursor: pointer;
+    gap: 0.9rem;
+    margin: 1rem 1rem 0;
+    padding: 1rem 1.1rem;
+    background: #ececec;
+    border-radius: 6px;
+    color: var(--black);
+    font-size: 0.95rem;
+    line-height: 1.45;
+    text-decoration: none;
+    transition: background 0.15s ease;
   }
-  .reserve-consent input { width: auto; flex-shrink: 0; margin-top: 0.2rem; accent-color: var(--white); }
-  .reserve-consent a { color: inherit; text-decoration: underline; }
+  .group-notice:hover { background: #e2e2e2; }
+  .group-notice svg { width: 1.3rem; height: 1.3rem; flex-shrink: 0; margin-top: 0.1rem; color: var(--black); }
 
   .reserve-back {
     display: inline-block;
@@ -216,16 +110,12 @@
     opacity: 0.85;
   }
 
-  @media (max-width: 480px) {
-    .field-row { flex-direction: column; gap: 1.1rem; }
-  }
-
   /* Header negro y logo en blanco en esta página; sin botón de reservar
      (ya estamos en la página de reservas). */
   .topbar { background: var(--black); backdrop-filter: none; -webkit-backdrop-filter: none; }
   .nav-logo { height: 56px; }
 
-  /* Eventos privados / grupos: sin describir el espacio, todo el detalle
+  /* Alquiler del espacio / grupos: sin describir el espacio, todo el detalle
      se resuelve por WhatsApp con un mensaje ya precompuesto. */
   .private-events {
     /* Antes un radial-gradient calculado en % del ancho de la sección
@@ -267,35 +157,71 @@
   }
   .pe-intro { font-size: 0.95rem; opacity: 0.85; line-height: 1.55; margin-bottom: 2.25rem; }
 
-  .pe-field { margin-bottom: 1.75rem; }
-  .pe-label {
-    display: block;
-    font-size: 0.7rem;
-    font-weight: 600;
-    letter-spacing: 0.08em;
+  .pe-form { display: flex; flex-direction: column; }
+  .pe-form input[type="text"],
+  .pe-form input[type="email"],
+  .pe-form input[type="number"],
+  .pe-form select,
+  .pe-form textarea {
+    width: 100%;
+    background: transparent;
+    border: 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.75);
+    border-radius: 0;
+    padding: 0.85rem 0 0.6rem;
+    font-family: var(--display);
+    font-size: 1.15rem;
     text-transform: uppercase;
-    opacity: 0.85;
-    margin-bottom: 0.65rem;
-  }
-  .pe-guests-input {
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.28);
     color: var(--white);
-    border-radius: 2px;
-    padding: 0.65rem 1rem;
-    font-family: var(--body);
-    font-size: 0.95rem;
-    width: 160px;
-    max-width: 100%;
+    appearance: none;
+    -webkit-appearance: none;
   }
-  .pe-guests-input:focus { outline: none; border-color: var(--maroon); }
-  .pe-guests-input::placeholder { color: rgba(255, 255, 255, 0.45); }
+  .pe-form input::placeholder,
+  .pe-form textarea::placeholder { color: rgba(255, 255, 255, 0.6); }
+  .pe-form input:focus,
+  .pe-form select:focus,
+  .pe-form textarea:focus { outline: none; border-bottom-color: var(--maroon); }
+  .pe-form select:invalid { color: rgba(255, 255, 255, 0.6); }
+  .pe-form select option { color: var(--black); text-transform: none; }
+  .pe-form textarea { resize: none; min-height: 3.4rem; }
+  .pe-form input[type="number"] { -moz-appearance: textfield; }
+  .pe-form input[type="number"]::-webkit-outer-spin-button,
+  .pe-form input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 
-  .pe-submit {
+  .pe-select-wrap { position: relative; }
+  .pe-select-wrap::after {
+    content: "+";
+    position: absolute;
+    right: 0.1rem;
+    top: 50%;
+    transform: translateY(-40%);
+    font-family: var(--display);
+    font-size: 1.4rem;
+    pointer-events: none;
+  }
+
+  .pe-form-footer {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+  }
+  .pe-consent {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.01em;
+    cursor: pointer;
+  }
+  .pe-consent input { width: 1.1rem; height: 1.1rem; flex-shrink: 0; accent-color: var(--white); }
+  .pe-consent a { color: inherit; text-decoration: underline; }
+  .pe-send {
     display: inline-flex;
     align-items: center;
     gap: 0.6rem;
-    margin-top: 0.5rem;
     background: var(--cream);
     color: var(--black);
     border: none;
@@ -305,12 +231,34 @@
     font-size: 0.95rem;
     text-transform: uppercase;
     letter-spacing: 0.02em;
-    text-decoration: none;
     cursor: pointer;
     transition: transform 0.15s ease;
   }
-  .pe-submit:hover { transform: translateY(-2px); }
-  .pe-submit svg { width: 18px; height: 18px; flex-shrink: 0; }
+  .pe-send:hover { transform: translateY(-2px); }
+  .pe-send svg { width: 18px; height: 18px; flex-shrink: 0; }
+
+
+  /* Alquiler del espacio: secundario, plegado al final de la página. */
+  .private-events.pe-minor { padding: 3rem 1.5rem 5rem; }
+  .pe-details > summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.1rem 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.25);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.25);
+    font-family: var(--display);
+    font-size: 1.35rem;
+    font-weight: 400;
+    letter-spacing: 0.01em;
+    text-transform: uppercase;
+    cursor: pointer;
+    list-style: none;
+  }
+  .pe-details > summary::-webkit-details-marker { display: none; }
+  .pe-details .pe-plus { font-family: var(--display); font-size: 1.6rem; letter-spacing: 0; transition: transform 0.2s ease; }
+  .pe-details[open] .pe-plus { transform: rotate(45deg); }
+  .pe-details > .pe-intro { margin-top: 1.75rem; }
 
   .pe-note {
     margin-top: 1rem;
@@ -331,89 +279,62 @@
     <a class="reserve-back" href="/" data-i18n="back_to_home">&larr; Volver a ROCE</a>
     <h1 data-i18n-html="reservar_h1">Reserva<br>tu mesa</h1>
     <p class="reserve-form-intro" data-i18n="reservar_intro">
-      Rellena el formulario y te confirmamos la reserva por email en cuanto lo leamos.
-      Abrimos pronto — solo aceptamos reservas de miércoles a sábado.
+      Solo aceptamos reservas para cena en la primera planta, de miércoles a sábado.
     </p>
 
-    <a class="pe-teaser-link" href="#eventos-privados" data-i18n="reservar_private_link">Reserva nuestro privado ↓</a>
+    <div class="reserve-info">
+      <p data-i18n="reservar_brunch">
+        Nuestro espacio de brunch y cafetería es de acceso libre, sin reserva, todos los días de 9:00 a 20:00.
+      </p>
+    </div>
 
-    <form class="reserve-form" id="reservationForm">
-      <input type="hidden" name="access_key" value="6e0e35fc-6443-4455-adc7-3999eabf6abc">
-      <input type="hidden" name="subject" value="Nueva reserva — ROCE">
-      <input type="hidden" name="from_name" value="Formulario de reservas ROCE">
-      <input type="checkbox" name="botcheck" class="botcheck" style="display: none;">
-
-      <label>
-        <span data-i18n="label_name">Nombre</span>
-        <input type="text" name="nombre" placeholder="Tu nombre" data-i18n-placeholder="placeholder_name" required>
-      </label>
-
-      <label>
-        <span data-i18n="label_email">Email</span>
-        <input type="email" name="email" placeholder="tu@email.com" data-i18n-placeholder="placeholder_email" required>
-      </label>
-
-      <div class="field-row">
-        <label>
-          <span data-i18n="label_phone">Teléfono</span>
-          <input type="tel" name="telefono" placeholder="600 000 000">
-        </label>
-        <label>
-          <span data-i18n="label_guests_count">Personas</span>
-          <input type="number" name="personas" min="1" max="30" placeholder="2" required>
-        </label>
-      </div>
-
-      <div class="field-row">
-        <label>
-          <span data-i18n="label_date">Fecha</span>
-          <input type="text" name="fecha" id="fechaInput" placeholder="dd/mm/aaaa" autocomplete="off" required>
-        </label>
-        <label>
-          <span data-i18n="label_time">Hora</span>
-          <select name="hora" required>
-            <option value="" disabled selected data-i18n="option_choose_time">Elige un turno</option>
-            <option value="20:00">20:00</option>
-            <option value="21:30">21:30</option>
-          </select>
-        </label>
-      </div>
-
-      <label>
-        <span data-i18n="label_comments">Comentarios</span>
-        <textarea name="comentarios" placeholder="Alergias, celebraciones, preferencias..." data-i18n-placeholder="placeholder_comments"></textarea>
-      </label>
-
-      <label class="reserve-consent">
-        <input type="checkbox" name="acepta_privacidad" required>
-        <span data-i18n-html="consent_text">He leído y acepto la <a href="/privacidad.html" target="_blank" rel="noopener">política de privacidad</a>. ROCE podrá contactarme por email o teléfono sobre mi reserva y añadirme a su base de datos de clientes para futuras comunicaciones.</span>
-      </label>
-
-      <button type="submit" class="reserve-submit" id="reserveSubmitBtn" data-i18n="submit_booking">Enviar reserva</button>
-    </form>
-    <p class="reserve-form-status" id="reserveFormStatus" role="status" aria-live="polite"></p>
+    <div class="cm-widget">
+      <a class="group-notice" id="groupNotice" href="#" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="currentColor"/><rect x="10.8" y="10.5" width="2.4" height="7" fill="#ececec"/><circle cx="12" cy="7.3" r="1.5" fill="#ececec"/></svg>
+        <span data-i18n-html="group_notice">Para reservas de más de 8 personas, <u>escríbenos por WhatsApp</u>.</span>
+      </a>
+      <iframe id="restaurante-roce-valencia" title="Reservas" allow="payment" frameborder="0" height="550" width="100%"></iframe>
+    </div>
   </div>
 </main>
 
-<section class="private-events" id="eventos-privados">
+<section class="private-events pe-minor" id="alquila-el-espacio">
   <div class="private-events-wrap">
-    <span class="pe-eyebrow" data-i18n="pe_eyebrow">Eventos privados</span>
-    <h2 data-i18n-html="pe_title">Algo más<br>exclusivo</h2>
-    <p class="pe-intro" data-i18n="pe_intro">
-      Reserva nuestro privado y disfruta de la experiencia de una forma
-      mucho más íntima.
-    </p>
+    <details class="pe-details" id="alquilerDetails">
+      <summary>
+        <span data-i18n="pe_eyebrow">Alquila el espacio</span>
+        <span class="pe-plus" aria-hidden="true">+</span>
+      </summary>
+      <p class="pe-intro" data-i18n="pe_intro">
+        Cuéntanos tu idea y contactamos contigo.
+      </p>
+    <form class="pe-form" id="peForm" data-wa-intro="wa_intro">
+      <input type="text" name="nombre" autocomplete="name" placeholder="Nombre*" data-i18n-placeholder="pe_ph_name" required>
+      <input type="text" name="empresa" placeholder="Empresa/proyecto" data-i18n-placeholder="pe_ph_company">
+      <input type="email" name="email" autocomplete="email" placeholder="Email" data-i18n-placeholder="pe_ph_email">
+      <div class="pe-select-wrap">
+        <select name="tipo" data-label-key="pe_ph_type" required>
+          <option value="" disabled selected hidden data-i18n="pe_ph_type">Tipo de evento*</option>
+          <option value="Cumpleaños" data-i18n="pe_type_birthday">Cumpleaños</option>
+          <option value="Cena de empresa" data-i18n="pe_type_corporate">Cena de empresa</option>
+          <option value="Despedida" data-i18n="pe_type_farewell">Despedida</option>
+          <option value="Otro" data-i18n="pe_type_other">Otro</option>
+        </select>
+      </div>
+      <input type="number" name="personas" min="1" inputmode="numeric" placeholder="Número de personas previsto (aprox)*" data-i18n-placeholder="pe_ph_guests" required>
+      <input type="text" name="fecha" placeholder="Fecha aproximada*" data-i18n-placeholder="pe_ph_date" required>
+      <textarea name="mensaje" rows="1" placeholder="Mensaje" data-i18n-placeholder="pe_ph_message"></textarea>
 
-    <div class="pe-field">
-      <label class="pe-label" for="peGuests" data-i18n="pe_label_guests">¿Cuántos sois?</label>
-      <input type="number" id="peGuests" class="pe-guests-input" min="1" inputmode="numeric" placeholder="Nº de personas" data-i18n-placeholder="pe_guests_placeholder">
-    </div>
-
-    <a class="pe-submit" id="peWhatsappBtn" href="#" target="_blank" rel="noopener">
-      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.46 1.32 4.96L2 22l5.25-1.38a9.9 9.9 0 0 0 4.79 1.22h.01c5.46 0 9.91-4.45 9.91-9.92C21.96 6.45 17.5 2 12.04 2Zm0 18.15h-.01a8.2 8.2 0 0 1-4.18-1.14l-.3-.18-3.12.82.83-3.04-.2-.31a8.24 8.24 0 0 1-1.26-4.39c0-4.55 3.7-8.25 8.25-8.25 2.2 0 4.27.86 5.83 2.42a8.19 8.19 0 0 1 2.41 5.83c0 4.55-3.7 8.24-8.25 8.24Zm4.52-6.17c-.25-.12-1.47-.72-1.7-.81-.23-.08-.39-.12-.56.13-.17.25-.64.81-.78.97-.14.17-.29.18-.53.06-.25-.12-1.05-.39-2-1.23-.74-.66-1.24-1.48-1.39-1.73-.14-.25-.02-.38.11-.51.11-.11.25-.29.37-.43.12-.14.16-.25.25-.41.08-.17.04-.31-.02-.44-.06-.12-.56-1.34-.76-1.84-.2-.48-.41-.42-.56-.43h-.48c-.17 0-.44.06-.67.31-.23.25-.87.85-.87 2.08s.89 2.42 1.02 2.58c.12.17 1.75 2.67 4.24 3.75.59.26 1.05.41 1.41.52.59.19 1.13.16 1.55.1.47-.07 1.47-.6 1.68-1.18.21-.58.21-1.07.14-1.18-.06-.11-.23-.17-.48-.29Z"/></svg>
-      <span data-i18n="pe_whatsapp_btn">Hablar por WhatsApp</span>
-    </a>
-    <p class="pe-note" data-i18n="pe_note">Consumo mínimo por persona. Te contamos los detalles por WhatsApp.</p>
+      <div class="pe-form-footer">
+        <label class="pe-consent">
+          <input type="checkbox" name="acepta_privacidad" required>
+          <span data-i18n-html="pe_consent">Acepto la <a href="/privacidad.html" target="_blank" rel="noopener">política de privacidad</a></span>
+        </label>
+        <button type="submit" class="pe-send"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.46 1.32 4.96L2 22l5.25-1.38a9.9 9.9 0 0 0 4.79 1.22h.01c5.46 0 9.91-4.45 9.91-9.92C21.96 6.45 17.5 2 12.04 2Zm0 18.15h-.01a8.2 8.2 0 0 1-4.18-1.14l-.3-.18-3.12.82.83-3.04-.2-.31a8.24 8.24 0 0 1-1.26-4.39c0-4.55 3.7-8.25 8.25-8.25 2.2 0 4.27.86 5.83 2.42a8.19 8.19 0 0 1 2.41 5.83c0 4.55-3.7 8.24-8.25 8.24Zm4.52-6.17c-.25-.12-1.47-.72-1.7-.81-.23-.08-.39-.12-.56.13-.17.25-.64.81-.78.97-.14.17-.29.18-.53.06-.25-.12-1.05-.39-2-1.23-.74-.66-1.24-1.48-1.39-1.73-.14-.25-.02-.38.11-.51.11-.11.25-.29.37-.43.12-.14.16-.25.25-.41.08-.17.04-.31-.02-.44-.06-.12-.56-1.34-.76-1.84-.2-.48-.41-.42-.56-.43h-.48c-.17 0-.44.06-.67.31-.23.25-.87.85-.87 2.08s.89 2.42 1.02 2.58c.12.17 1.75 2.67 4.24 3.75.59.26 1.05.41 1.41.52.59.19 1.13.16 1.55.1.47-.07 1.47-.6 1.68-1.18.21-.58.21-1.07.14-1.18-.06-.11-.23-.17-.48-.29Z"/></svg><span data-i18n="pe_send">Enviar por WhatsApp</span></button>
+      </div>
+    </form>
+      <p class="pe-note" data-i18n="pe_note">Te contamos condiciones y consumo mínimo por WhatsApp.</p>
+    </details>
   </div>
 </section>
 
@@ -421,7 +342,7 @@
   <img class="footer-logo" src="/assets/logo/roce-tilted-white.png" alt="ROCE">
   <div class="footer-info">
     <p class="footer-headline">Restaurant &amp; Cocktails</p>
-    <p class="footer-line">Marqués del Turia 16</p>
+    <p class="footer-line">Marqués del Túria 16</p>
     <p class="footer-line">Valencia (Spain)</p>
   </div>
   <a class="footer-instagram" href="https://www.instagram.com/somosroce" target="_blank" rel="noopener">@somosroce ↗</a>
@@ -444,140 +365,58 @@
   </div>
 </div>
 <script src="/cookies.js?v=1"></script>
-<script src="/i18n.js?v=15"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/l10n/es.js"></script>
+<script src="https://www.covermanager.com/js/iframeResizer/iframeResizer.min.js"></script>
+<script src="/i18n.js?v=29"></script>
 
 <script>
-  const form = document.getElementById('reservationForm');
-  const btn = document.getElementById('reserveSubmitBtn');
-  const status = document.getElementById('reserveFormStatus');
+  const CM_BASE = 'https://www.covermanager.com/reservation/module_restaurant/restaurante-roce-valencia/';
+  const cmFrame = document.getElementById('restaurante-roce-valencia');
+  iFrameResize({ checkOrigin: ['https://www.covermanager.com'] }, '#restaurante-roce-valencia');
 
-  const OPENING_DATE = '2026-12-07'; // segunda semana de diciembre de 2026
-  const ALLOWED_WEEKDAYS = [3, 4, 5, 6]; // miércoles a sábado
-
-  // El <input type="date"> nativo no permite restringir por día de la
-  // semana ni pintar días como no disponibles en su propio calendario,
-  // así que se sustituye por flatpickr: los días que no sean de miércoles
-  // a sábado a partir del 7 de diciembre aparecen deshabilitados y en
-  // gris directamente en el calendario, no solo tras elegirlos.
-  if (window.flatpickr) {
-    flatpickr('#fechaInput', {
-      locale: 'es',
-      dateFormat: 'Y-m-d',
-      altInput: true,
-      altFormat: 'd/m/Y',
-      minDate: OPENING_DATE,
-      disable: [(date) => !ALLOWED_WEEKDAYS.includes(date.getDay())],
-      onChange: () => validateFecha(),
-    });
+  function syncCoverManagerLang() {
+    const url = CM_BASE + (window.ROCE_I18N.getLang() === 'en' ? 'english' : 'spanish');
+    if (cmFrame.getAttribute('src') !== url) cmFrame.setAttribute('src', url);
   }
+  document.addEventListener('DOMContentLoaded', syncCoverManagerLang);
+  new MutationObserver(syncCoverManagerLang).observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
 
-  // Red de seguridad por si flatpickr no llega a cargar, o por si se
-  // fuerza un valor por otra vía: se revalida también al enviar.
-  function validateFecha({ clearIfInvalid = false } = {}) {
-    const fecha = form.fecha.value;
-    if (!fecha) {
-      form.fecha.setCustomValidity('');
-      form.fecha.classList.remove('is-invalid');
-      return true;
-    }
-    let errorKey = null;
-    if (fecha < OPENING_DATE) {
-      errorKey = 'status_too_early';
-    } else if (!ALLOWED_WEEKDAYS.includes(new Date(fecha + 'T00:00:00').getDay())) {
-      errorKey = 'status_wrong_day';
-    }
-
-    if (errorKey) {
-      form.fecha.setCustomValidity(window.ROCE_I18N.t(errorKey));
-      status.textContent = window.ROCE_I18N.t(errorKey);
-      status.classList.add('is-error');
-      form.fecha.classList.add('is-invalid');
-      if (clearIfInvalid) form.fecha.value = '';
-      return false;
-    }
-
-    form.fecha.setCustomValidity('');
-    form.fecha.classList.remove('is-invalid');
-    status.textContent = '';
-    status.classList.remove('is-error');
-    return true;
+  function updateGroupLink() {
+    document.getElementById('groupNotice').href =
+      `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(window.ROCE_I18N.t('group_wa_msg'))}`;
   }
+  document.addEventListener('DOMContentLoaded', updateGroupLink);
+  new MutationObserver(updateGroupLink).observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
 
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-
-    if (!validateFecha()) return;
-    const fecha = form.fecha.value;
-
-    // Formatea la fecha en el propio payload para que el email que llega
-    // a reservas@roce.es sea legible ("12 de septiembre de 2026"), no la
-    // fecha en crudo del <input type="date">.
-    const fechaFmt = fecha
-      ? new Date(fecha + 'T00:00:00').toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' })
-      : '';
-
-    const payload = Object.fromEntries(new FormData(form));
-    payload.fecha = fechaFmt;
-
-    btn.disabled = true;
-    btn.textContent = window.ROCE_I18N.t('submit_sending');
-    status.textContent = '';
-    status.classList.remove('is-error');
-
-    try {
-      const res = await fetch('https://api.web3forms.com/submit', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-        body: JSON.stringify(payload),
-      });
-      const data = await res.json();
-
-      if (data.success) {
-        form.reset();
-        form.style.display = 'none';
-        status.classList.remove('is-error');
-        status.innerHTML = `
-          <div class="reserve-success">
-            <svg class="reserve-success-icon" viewBox="0 0 52 52">
-              <circle class="reserve-success-circle" cx="26" cy="26" r="24" fill="none"/>
-              <path class="reserve-success-check" fill="none" d="M14 27l7 7 17-17"/>
-            </svg>
-            <p class="reserve-success-title">${window.ROCE_I18N.t('status_success')}</p>
-            <p class="reserve-success-sub">${window.ROCE_I18N.t('status_success_sub')}</p>
-          </div>
-        `;
-        // Al ocultar el formulario, la página se queda más corta y el
-        // navegador puede acabar mostrando otra sección más abajo —
-        // forzamos que el aviso de éxito quede centrado en pantalla.
-        status.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      } else {
-        throw new Error(data.message || 'Error desconocido');
-      }
-    } catch (err) {
-      status.textContent = window.ROCE_I18N.t('status_error');
-      status.classList.add('is-error');
-      btn.disabled = false;
-      btn.textContent = window.ROCE_I18N.t('submit_booking');
+  const alquilerDetails = document.getElementById('alquilerDetails');
+  function openAlquilerIfTargeted() {
+    if (location.hash === '#alquila-el-espacio') {
+      alquilerDetails.open = true;
+      alquilerDetails.scrollIntoView();
     }
-  });
+  }
+  openAlquilerIfTargeted();
+  window.addEventListener('hashchange', openAlquilerIfTargeted);
 
   const WHATSAPP_NUMBER = '34614073163';
-  const peGuestsInput = document.getElementById('peGuests');
+  const stripStar = (txt) => txt.replace(/\s*\([^)]*\)/, '').replace(/\*$/, '').trim();
 
-  function updatePeLink() {
-    let msg = window.ROCE_I18N.t('wa_intro');
-    const guests = peGuestsInput.value.trim();
-    if (guests) msg += ' ' + window.ROCE_I18N.t('wa_guests').replace('{n}', guests);
-    msg += ' ' + window.ROCE_I18N.t('wa_outro');
+  document.querySelectorAll('.pe-form[data-wa-intro]').forEach((form) => {
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const t = window.ROCE_I18N.t;
+      const lines = [t(form.dataset.waIntro), ''];
 
-    document.getElementById('peWhatsappBtn').href =
-      `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
-  }
+      [...form.elements].forEach((el) => {
+        if (!el.name || el.type === 'checkbox') return;
+        const labelKey = el.getAttribute('data-i18n-placeholder') || el.dataset.labelKey;
+        const value = (el.tagName === 'SELECT' ? el.options[el.selectedIndex].text : el.value).trim();
+        if (labelKey && value) lines.push(stripStar(t(labelKey)) + ': ' + value);
+      });
 
-  peGuestsInput.addEventListener('input', updatePeLink);
-  updatePeLink();
+      const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(lines.join('\n'))}`;
+      if (!window.open(url, '_blank', 'noopener')) window.location.href = url;
+    });
+  });
 </script>
 
 </body>

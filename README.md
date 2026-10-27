@@ -1,7 +1,7 @@
 # ROCE — Restaurant & Cocktails
 
 Sitio web de ROCE, restaurante/brunch/coctelería en Gran Vía Marqués del
-Turia 16, Valencia.
+Túria 16, Valencia.
 
 Sitio estático (HTML/CSS/JS sin dependencias de build).
 

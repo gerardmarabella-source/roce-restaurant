@@ -104,7 +104,7 @@ a { color: inherit; }
 }
 
 @media (max-width: 640px) {
-  /* Más pequeño para que "Gran Vía Marqués del Turia, 16" no salte de línea. */
+  /* Más pequeño para que "Gran Vía Marqués del Túria, 16" no salte de línea. */
   .footer-info p { font-size: clamp(0.8rem, 5vw, 1.5rem); letter-spacing: 0; }
 }
 
