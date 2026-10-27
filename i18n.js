@@ -29,10 +29,10 @@
     // Desplegable de Reservas (home)
     menu_reservar_title: { es: 'Reservar', en: 'Book' },
     menu_reservar_sub: {
-      es: 'Reserva de cena en la primera planta, de miércoles a sábado',
-      en: 'Dinner bookings on the first floor, Wednesday to Saturday',
+      es: 'Reserva de cenas en primera planta',
+      en: 'Dinner bookings on the first floor',
     },
-    menu_alquiler_link: { es: 'Alquila el espacio →', en: 'Rent the space →' },
+    menu_alquiler_link: { es: 'Alquila el espacio', en: 'Rent the space' },
     menu_eventos_title: { es: 'Eventos', en: 'Events' },
     menu_eventos_sub: { es: '*Próximamente', en: '*Coming soon' },
 

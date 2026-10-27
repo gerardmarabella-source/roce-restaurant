@@ -204,7 +204,7 @@
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
-    gap: 1.6rem;
+    gap: 0;
     z-index: 500;
     width: auto;
     max-width: none;
@@ -232,8 +232,10 @@
   .reservas-menu-close svg { width: 2.4rem; height: 2.4rem; }
   .reservas-menu-close:hover { opacity: 1; }
   .reservas-menu-item {
+    position: relative;
     display: block;
-    padding: 0;
+    padding: 1.25rem 3.2rem 1.25rem 0;
+    border-top: 1px solid rgba(236, 231, 221, 0.28);
     text-decoration: none;
     color: var(--cream);
     transition: opacity 0.15s ease;
@@ -242,9 +244,23 @@
   .reservas-menu-item:nth-child(2) { animation-delay: 0.05s; }
   .reservas-menu-item:nth-child(3) { animation-delay: 0.13s; }
   .reservas-menu-item:nth-child(4) { animation-delay: 0.21s; }
+  /* Flecha a la derecha: señal de que la opción se puede pulsar. */
+  .reservas-menu-item:not(.is-disabled)::after {
+    content: "\2192";
+    position: absolute;
+    right: 0.2rem;
+    top: 1.25rem;
+    font-family: var(--display);
+    font-size: clamp(2.2rem, 10vw, 3.8rem);
+    line-height: 1;
+    transition: transform 0.2s ease;
+  }
+  .reservas-menu-item:not(.is-disabled):hover::after { transform: translateX(6px); }
   .reservas-menu-minor {
-    align-self: flex-start;
-    margin-top: 0.4rem;
+    margin-top: 0;
+    padding: 1.25rem 0 0;
+    border-top: 1px solid rgba(236, 231, 221, 0.28);
+    align-self: stretch;
     font-family: var(--display);
     font-size: 0.9rem;
     letter-spacing: 0.04em;
@@ -255,6 +271,9 @@
     animation: reservasItemIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.29s both;
   }
   .reservas-menu-minor:hover { opacity: 0.7; }
+  .reservas-menu-minor-arrow { display: inline-block; transition: transform 0.2s ease; }
+  .reservas-menu-minor:hover .reservas-menu-minor-arrow,
+  .reservas-menu-minor:focus-visible .reservas-menu-minor-arrow { transform: translateX(6px); }
   @keyframes reservasFadeIn {
     from { opacity: 0; }
     to { opacity: 1; }
@@ -484,13 +503,13 @@
           </button>
           <a class="reservas-menu-item" href="fuck-who-doesn't-like-this-place">
             <span class="reservas-menu-title" data-i18n="menu_reservar_title">Reservar</span>
-            <span class="reservas-menu-sub" data-i18n="menu_reservar_sub">Reserva de cena en la primera planta, de miércoles a sábado</span>
+            <span class="reservas-menu-sub" data-i18n="menu_reservar_sub">Reserva de cenas en primera planta</span>
           </a>
           <div class="reservas-menu-item is-disabled" aria-disabled="true">
             <span class="reservas-menu-title" data-i18n="menu_eventos_title">Eventos</span>
             <span class="reservas-menu-sub is-alert" data-i18n="menu_eventos_sub">*Próximamente</span>
           </div>
-          <a class="reservas-menu-minor" href="fuck-who-doesn't-like-this-place#alquila-el-espacio" data-i18n="menu_alquiler_link">Alquila el espacio →</a>
+          <a class="reservas-menu-minor" href="fuck-who-doesn't-like-this-place#alquila-el-espacio"><span data-i18n="menu_alquiler_link">Alquila el espacio</span> <span class="reservas-menu-minor-arrow" aria-hidden="true">→</span></a>
         </div>
       </div>
 
@@ -543,7 +562,7 @@
   </div>
 </div>
 <script src="cookies.js?v=2"></script>
-<script src="i18n.js?v=35"></script>
+<script src="i18n.js?v=37"></script>
 
 <script>
   function initNewsletterWidget() {
