@@ -33,7 +33,10 @@
       en: 'Book your table on the first floor, Wednesday to Saturday and holidays only',
     },
     menu_privado_title: { es: 'Privado', en: 'Private' },
-    menu_privado_sub: { es: 'Una experiencia más íntima', en: 'A more intimate experience' },
+    menu_privado_sub: {
+      es: 'Organiza tu cumpleaños, cena de empresa o celebración en privado',
+      en: 'Host your birthday, company dinner or celebration in private',
+    },
     menu_eventos_title: { es: 'Eventos', en: 'Events' },
     menu_eventos_sub: {
       es: 'Noches en directo, catas y sesiones especiales',
@@ -65,7 +68,7 @@
       es: 'Elige día, hora y número de personas para reservar tu mesa. Abrimos pronto — solo aceptamos reservas de miércoles a sábado.',
       en: "Pick a date, time and party size to book your table. We're opening soon — we only accept bookings from Wednesday to Saturday.",
     },
-    reservar_private_link: { es: 'Reserva nuestro privado ↓', en: 'Book our private space ↓' },
+    reservar_private_link: { es: 'Organiza tu evento privado ↓', en: 'Plan your private event ↓' },
     consent_text: {
       es: 'He leído y acepto la <a href="/privacidad.html" target="_blank" rel="noopener">política de privacidad</a>. ROCE podrá contactarme por email o teléfono sobre mi reserva y añadirme a su base de datos de clientes para futuras comunicaciones.',
       en: 'I have read and accept the <a href="/privacidad.html" target="_blank" rel="noopener">privacy policy</a>. ROCE may contact me by email or phone about my booking and add me to its customer database for future communications.',
@@ -106,24 +109,24 @@
 
     // Eventos privados (reservar.html)
     pe_eyebrow: { es: 'Eventos privados', en: 'Private events' },
-    pe_title: { es: 'Algo más<br>exclusivo', en: 'Something more<br>exclusive' },
+    pe_title: { es: 'Tu evento,<br>a tu manera', en: 'Your event,<br>your way' },
     pe_intro: {
-      es: 'Reserva nuestro privado y disfruta de la experiencia de una forma mucho más íntima.',
-      en: 'Book our private space and enjoy the experience in a much more intimate way.',
+      es: '¿Cumpleaños, cena de empresa, despedida o cualquier celebración? Cuéntanos qué tienes en mente y lo organizamos juntos.',
+      en: 'A birthday, company dinner, farewell or any other celebration? Tell us what you have in mind and we’ll plan it together.',
     },
     pe_label_guests: { es: '¿Cuántos sois?', en: 'How many of you?' },
     pe_guests_placeholder: { es: 'Nº de personas', en: 'Number of guests' },
-    pe_whatsapp_btn: { es: 'Hablar por WhatsApp', en: 'Message us on WhatsApp' },
+    pe_whatsapp_btn: { es: 'Cuéntanos tu evento', en: 'Tell us about your event' },
     pe_note: {
-      es: 'Consumo mínimo por persona. Te contamos los detalles por WhatsApp.',
-      en: "Minimum spend per person. We'll share the details over WhatsApp.",
+      es: 'Adaptamos el evento a lo que necesites. Te contamos condiciones y consumo mínimo por WhatsApp.',
+      en: "We tailor the event to what you need. We'll share the conditions and minimum spend over WhatsApp.",
     },
     wa_intro: {
       es: 'Hola! Nos gustaría organizar un evento privado en ROCE.',
       en: "Hi! We'd like to organize a private event at ROCE.",
     },
     wa_guests: { es: 'Seríamos {n} personas.', en: "We'd be {n} people." },
-    wa_outro: { es: '¿Nos contáis disponibilidad?', en: 'Could you tell us about availability?' },
+    wa_outro: { es: '¿Podemos hablar de fechas y opciones?', en: 'Could we talk about dates and options?' },
 
     // eventos.html
     events_eyebrow: { es: 'Agenda', en: 'Line-up' },
