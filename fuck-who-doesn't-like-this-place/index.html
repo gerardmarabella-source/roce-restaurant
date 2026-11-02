@@ -89,6 +89,24 @@
   body.zone-day .reserve-form-page { background: var(--white); color: var(--black); }
   body.zone-day .reserve-back { color: var(--black); }
   body.zone-day .reserve-day-soon { border-color: rgba(10, 10, 10, 0.3); }
+  /* ...y lo mismo con "Alquila el espacio" y el pie. */
+  .private-events, .site-footer { transition: background 0.3s ease, color 0.3s ease; }
+  body.zone-day .private-events,
+  body.zone-day .site-footer { background: var(--white); color: var(--black); }
+  body.zone-day .pe-details > summary { border-color: rgba(10, 10, 10, 0.25); }
+  body.zone-day .pe-form input[type="text"],
+  body.zone-day .pe-form input[type="email"],
+  body.zone-day .pe-form input[type="number"],
+  body.zone-day .pe-form select,
+  body.zone-day .pe-form textarea { border-bottom-color: rgba(10, 10, 10, 0.75); color: var(--black); }
+  body.zone-day .pe-form input::placeholder,
+  body.zone-day .pe-form textarea::placeholder { color: rgba(10, 10, 10, 0.55); }
+  body.zone-day .pe-form select:invalid { color: rgba(10, 10, 10, 0.55); }
+  body.zone-day .pe-consent input { accent-color: var(--black); }
+  body.zone-day .pe-send { background: var(--black); color: var(--white); }
+  body.zone-day .pe-note { color: rgba(10, 10, 10, 0.55); }
+  body.zone-day .footer-info p { color: var(--black); }
+  body.zone-day .footer-instagram { background: var(--black); color: var(--white); }
   .reserve-day-soon { padding: 1.25rem 1.4rem; border: 1px solid rgba(236, 231, 221, 0.3); font-size: 0.98rem; line-height: 1.5; }
   .reserve-day-soon a { color: inherit; }
   .reserve-form-intro { font-size: 0.95rem; opacity: 0.85; margin-bottom: 1.25rem; line-height: 1.5; }
@@ -333,7 +351,7 @@
 </section>
 
 <footer class="site-footer">
-  <img class="footer-logo" src="/assets/logo/roce-tilted-white.png" alt="ROCE">
+  <img class="footer-logo" id="footerLogo" src="/assets/logo/roce-tilted-white.png" alt="ROCE">
   <div class="footer-info">
     <p class="footer-headline">Restaurant &amp; Cocktails</p>
     <p class="footer-line">Marqués del Túria 16</p>
@@ -409,6 +427,7 @@
     Object.keys(panels).forEach((k) => { panels[k].hidden = k !== zone; });
     backLink.setAttribute('href', '/' + zone + '/');
     document.body.classList.toggle('zone-day', zone === 'day');
+    document.getElementById('footerLogo').setAttribute('src', '/assets/logo/roce-tilted-' + (zone === 'day' ? 'black' : 'white') + '.png');
     document.getElementById('navLogo').setAttribute('src', '/assets/logo/roce-horizontal-' + (zone === 'day' ? 'black' : 'white') + '.png');
     if (zone === 'night' && cmFrame.iFrameResizer) cmFrame.iFrameResizer.resize();
   }
