@@ -63,6 +63,28 @@
     text-transform: uppercase;
     margin-bottom: 0.75rem;
   }
+  /* Título a la izquierda y, al lado, el selector Day / Night. */
+  .reserve-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 1rem; margin-bottom: 0.75rem; }
+  .reserve-head h1 { margin-bottom: 0; }
+  .reserve-zones { display: flex; flex-direction: column; align-items: flex-end; gap: 0.35rem; padding-bottom: 0.2rem; }
+  .reserve-zone {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font-family: var(--display);
+    font-size: clamp(1.5rem, 6vw, 2.1rem);
+    line-height: 1;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    cursor: pointer;
+    opacity: 0.28;
+    transition: opacity 0.2s ease;
+  }
+  .reserve-zone:hover { opacity: 0.6; }
+  .reserve-zone[aria-pressed="true"] { opacity: 1; }
+  .reserve-day-soon { padding: 1.25rem 1.4rem; border: 1px solid rgba(236, 231, 221, 0.3); font-size: 0.98rem; line-height: 1.5; }
+  .reserve-day-soon a { color: inherit; }
   .reserve-form-intro { font-size: 0.95rem; opacity: 0.85; margin-bottom: 1.25rem; line-height: 1.5; }
   .reserve-night { margin-top: 0; color: #e5453a; font-weight: 600; opacity: 1; display: flex; align-items: center; gap: 0.6rem; }
   .age-badge { flex-shrink: 0; width: 2.8rem; height: 2.8rem; }
@@ -237,8 +259,15 @@
 <main class="reserve-form-page">
   <div class="reserve-form-wrap">
     <a class="reserve-back" href="/night/" data-i18n="back_to_home">&larr; Volver a ROCE</a>
-    <h1 data-i18n-html="reservar_h1">Reserva<br>tu mesa</h1>
+    <div class="reserve-head">
+      <h1 data-i18n-html="reservar_h1">Reserva<br>tu mesa</h1>
+      <div class="reserve-zones" role="group" aria-label="Day / Night">
+        <button type="button" class="reserve-zone" data-zone="day" aria-pressed="false">Day</button>
+        <button type="button" class="reserve-zone" data-zone="night" aria-pressed="true">Night</button>
+      </div>
+    </div>
 
+    <section id="panelNight">
     <p class="reserve-form-intro reserve-night"><svg class="age-badge" viewBox="0 0 100 100" role="img" aria-label="+18"><circle cx="50" cy="50" r="44" fill="#ffffff" stroke="#e5453a" stroke-width="9"/><text x="44" y="65" text-anchor="middle" font-family="'Helvetica Neue Web','Helvetica Neue',Arial,sans-serif" font-weight="700" font-size="46" letter-spacing="-3" fill="#0a0a0a">18</text><text x="77" y="52" text-anchor="middle" font-family="'Helvetica Neue Web','Helvetica Neue',Arial,sans-serif" font-weight="700" font-size="30" fill="#0a0a0a">+</text></svg> <span data-i18n="reservar_night">Reservas de noche solo para mayores de 18 años</span></p>
 
     <div class="cm-widget">
@@ -248,6 +277,12 @@
       </div>
       <iframe id="restaurante-roce-valencia" title="Reservas" allow="payment" frameborder="0" height="550" width="100%"></iframe>
     </div>
+    </section>
+
+    <!-- Day: aquí irá el segundo motor de reservas. -->
+    <section id="panelDay" hidden>
+      <p class="reserve-day-soon" data-i18n-html="reservar_day_soon">La reserva online de Day estará disponible muy pronto. Mientras tanto, escríbenos a <a href="mailto:reservas@roce.es">reservas@roce.es</a>.</p>
+    </section>
   </div>
 </main>
 
@@ -319,7 +354,7 @@
 </div>
 <script src="/cookies.js?v=3"></script>
 <script src="https://www.covermanager.com/js/iframeResizer/iframeResizer.min.js"></script>
-<script src="/i18n.js?v=53"></script>
+<script src="/i18n.js?v=54"></script>
 
 <script>
   const WHATSAPP_NUMBER = '34614073163';
@@ -357,6 +392,20 @@
   }
   document.addEventListener('DOMContentLoaded', updateGroupLink);
   new MutationObserver(updateGroupLink).observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
+
+  // Selector Day / Night: Night es el motor de CoverManager de arriba; Day
+  // queda pendiente del segundo motor. #day en la URL abre Day directamente.
+  const zoneTabs = document.querySelectorAll('.reserve-zone');
+  const panels = { night: document.getElementById('panelNight'), day: document.getElementById('panelDay') };
+  const backLink = document.querySelector('.reserve-back');
+  function setZone(zone) {
+    zoneTabs.forEach((b) => b.setAttribute('aria-pressed', b.dataset.zone === zone ? 'true' : 'false'));
+    Object.keys(panels).forEach((k) => { panels[k].hidden = k !== zone; });
+    backLink.setAttribute('href', '/' + zone + '/');
+    if (zone === 'night' && cmFrame.iFrameResizer) cmFrame.iFrameResizer.resize();
+  }
+  zoneTabs.forEach((b) => b.addEventListener('click', () => setZone(b.dataset.zone)));
+  if (location.hash === '#day') setZone('day');
 
   const alquilerDetails = document.getElementById('alquilerDetails');
   function openAlquilerIfTargeted() {

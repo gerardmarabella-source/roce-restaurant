@@ -51,6 +51,10 @@
 
     // reservar.html
     reservar_h1: { es: 'Reserva<br>tu mesa', en: 'Book<br>your table' },
+    reservar_day_soon: {
+      es: 'La reserva online de Day estará disponible muy pronto. Mientras tanto, escríbenos a <a href="mailto:reservas@roce.es">reservas@roce.es</a>.',
+      en: 'Online booking for Day will be available very soon. In the meantime, write to us at <a href="mailto:reservas@roce.es">reservas@roce.es</a>.',
+    },
     reservar_night: {
       es: 'Reservas de noche solo para mayores de 18 años',
       en: 'Night bookings are for guests aged 18 and over',
