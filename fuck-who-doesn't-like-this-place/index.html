@@ -83,6 +83,12 @@
   }
   .reserve-zone:hover { opacity: 0.6; }
   .reserve-zone[aria-pressed="true"] { opacity: 1; }
+  /* Day: cabecera y zona de reservas en blanco con letras negras. */
+  .topbar, .reserve-form-page { transition: background 0.3s ease, color 0.3s ease; }
+  body.zone-day .topbar { background: var(--white); }
+  body.zone-day .reserve-form-page { background: var(--white); color: var(--black); }
+  body.zone-day .reserve-back { color: var(--black); }
+  body.zone-day .reserve-day-soon { border-color: rgba(10, 10, 10, 0.3); }
   .reserve-day-soon { padding: 1.25rem 1.4rem; border: 1px solid rgba(236, 231, 221, 0.3); font-size: 0.98rem; line-height: 1.5; }
   .reserve-day-soon a { color: inherit; }
   .reserve-form-intro { font-size: 0.95rem; opacity: 0.85; margin-bottom: 1.25rem; line-height: 1.5; }
@@ -253,7 +259,7 @@
 <body>
 
 <header class="topbar">
-  <a href="/" aria-label="ROCE — inicio"><img class="nav-logo" src="/assets/logo/roce-horizontal-white.png" alt="ROCE"></a>
+  <a href="/" aria-label="ROCE — inicio"><img class="nav-logo" id="navLogo" src="/assets/logo/roce-horizontal-white.png" alt="ROCE"></a>
 </header>
 
 <main class="reserve-form-page">
@@ -402,6 +408,8 @@
     zoneTabs.forEach((b) => b.setAttribute('aria-pressed', b.dataset.zone === zone ? 'true' : 'false'));
     Object.keys(panels).forEach((k) => { panels[k].hidden = k !== zone; });
     backLink.setAttribute('href', '/' + zone + '/');
+    document.body.classList.toggle('zone-day', zone === 'day');
+    document.getElementById('navLogo').setAttribute('src', '/assets/logo/roce-horizontal-' + (zone === 'day' ? 'black' : 'white') + '.png');
     if (zone === 'night' && cmFrame.iFrameResizer) cmFrame.iFrameResizer.resize();
   }
   zoneTabs.forEach((b) => b.addEventListener('click', () => setZone(b.dataset.zone)));
