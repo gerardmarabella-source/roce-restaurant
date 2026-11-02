@@ -172,29 +172,7 @@
     home_w4: { es: 'un', en: 'a' },
     home_w5: { es: 'roce', en: 'roce' },
     switch_to_day: { es: 'Ir a ROCE Day', en: 'Go to ROCE Day' },
-
-    // day/index.html
-    day_hours_daily: { es: 'Todos los días · 10:00 – 20:00', en: 'Every day · 10:00 – 20:00' },
-    day_h_concept: { es: 'El concepto', en: 'The concept' },
-    day_concept_1: {
-      es: 'ROCE Day es el espacio de día de ROCE: brunch y cafetería para venir cuando quieras, a cualquier hora entre las 10:00 y las 20:00.',
-      en: "ROCE Day is ROCE's daytime space: brunch and café, come whenever you like between 10:00 and 20:00.",
-    },
-    day_concept_2: {
-      es: 'Sin reserva y sin complicaciones: entras, te sientas y disfrutas.',
-      en: 'No booking, no fuss: walk in, sit down and enjoy.',
-    },
-    day_h_hours: { es: 'Horarios', en: 'Opening hours' },
-    day_hours_line: {
-      es: 'Todos los días de 10:00 a 20:00. Acceso libre, sin reserva.',
-      en: 'Every day from 10:00 to 20:00. Walk-in only, no booking needed.',
-    },
-    day_h_events: { es: 'Eventos de día', en: 'Daytime events' },
-    day_events_soon: {
-      es: 'Muy pronto publicaremos aquí la agenda de eventos de día.',
-      en: 'We will soon publish the daytime events schedule here.',
-    },
-    day_to_night_h: { es: '¿Buscas la noche?', en: 'Looking for the night?' },
+    switch_to_night: { es: 'Ir a ROCE Night', en: 'Go to ROCE Night' },
 
     // privacidad.html
     privacy_title: { es: 'Política de privacidad', en: 'Privacy Policy' },
