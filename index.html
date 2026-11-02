@@ -6,13 +6,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="format-detection" content="telephone=no, address=no, email=no, date=no">
 <title>ROCE — Restaurant &amp; Cocktails, Valencia</title>
-<meta name="description" content="ROCE en Valencia (Marqués del Túria 16): ROCE Club, brunch y cafetería de 10:00 a 20:00 sin reserva, y ROCE Dining, cenas y noche de 20:00 a 02:00.">
+<meta name="description" content="ROCE en Valencia (Marqués del Túria 16): ROCE Day, brunch y cafetería de 10:00 a 20:00 sin reserva, y ROCE Night, cenas y noche de 20:00 a 02:00.">
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link rel="icon" type="image/png" href="/assets/meta/favicon-32.png" sizes="32x32">
 <link rel="apple-touch-icon" href="/assets/meta/apple-touch-icon.png">
 <meta property="og:type" content="website">
 <meta property="og:title" content="ROCE — Restaurant &amp; Cocktails, Valencia">
-<meta property="og:description" content="ROCE en Valencia (Marqués del Túria 16): ROCE Club, brunch y cafetería de 10:00 a 20:00 sin reserva, y ROCE Dining, cenas y noche de 20:00 a 02:00.">
+<meta property="og:description" content="ROCE en Valencia (Marqués del Túria 16): ROCE Day, brunch y cafetería de 10:00 a 20:00 sin reserva, y ROCE Night, cenas y noche de 20:00 a 02:00.">
 <meta property="og:image" content="https://roce.es/assets/meta/og-image.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -48,8 +48,8 @@
 <link rel="stylesheet" href="/styles.css?v=66">
 <style>
   /* Portada minimal: todo cabe SIEMPRE en una pantalla (sin scroll): cabecera,
-     frase enorme en zigzag y dos cuadrados para elegir ROCE Club (día) o
-     ROCE Dining (noche). Los tamaños se calculan con el alto y el ancho
+     frase enorme en zigzag y dos cuadrados para elegir ROCE Day (día) o
+     ROCE Night (noche). Los tamaños se calculan con el alto y el ancho
      disponibles para que se adapte a cualquier dispositivo. */
   html, body { height: 100%; overflow: hidden; background: var(--white); }
 
@@ -108,8 +108,8 @@
   .home-statement .l2, .home-statement .l4 { text-align: right; }
 
   .home-squares { display: flex; flex-direction: column; gap: var(--gap); }
-  .home-square-club { align-self: flex-start; }
-  .home-square-dining { align-self: flex-end; }
+  .home-square-day { align-self: flex-start; }
+  .home-square-night { align-self: flex-end; }
   .home-square {
     container-type: inline-size;
     width: var(--s);
@@ -123,8 +123,8 @@
     transition: transform 0.25s ease;
   }
   .home-square:hover { transform: translateY(-4px); }
-  .home-square-club { background: var(--white); color: var(--black); border: 2px solid var(--black); }
-  .home-square-dining { background: var(--black); color: var(--white); border: 2px solid var(--black); }
+  .home-square-day { background: var(--white); color: var(--black); border: 2px solid var(--black); }
+  .home-square-night { background: var(--black); color: var(--white); border: 2px solid var(--black); }
 
   .home-square-top { min-height: 1rem; }
   .home-square-bottom { display: flex; align-items: flex-end; justify-content: space-between; gap: 0.5rem; }
@@ -209,7 +209,7 @@
       min-width: 0;
       font-size: min(10.5rem, calc(var(--avail) / 3.5), calc((100vw - 2 * var(--pad) - var(--s) - 2rem) / 4.4));
     }
-    .home-square-club, .home-square-dining { align-self: flex-end; }
+    .home-square-day, .home-square-night { align-self: flex-end; }
   }
 
   /* Menú a pantalla completa */
@@ -267,21 +267,21 @@
     </h1>
 
     <div class="home-squares">
-      <a class="home-square home-square-club" id="chooseClub" href="/club/">
+      <a class="home-square home-square-day" id="chooseDay" href="/day/">
         <div class="home-square-top"><span class="home-now" data-i18n="choose_now">Ahora</span></div>
         <div class="home-square-bottom">
           <div>
-            <strong>ROCE Club</strong>
+            <strong>ROCE Day</strong>
             <small>10:00 – 20:00</small>
           </div>
           <span class="home-square-arrow" aria-hidden="true">→</span>
         </div>
       </a>
-      <a class="home-square home-square-dining" id="chooseDining" href="/dining/">
+      <a class="home-square home-square-night" id="chooseNight" href="/night/">
         <div class="home-square-top"><span class="home-now" data-i18n="choose_now">Ahora</span></div>
         <div class="home-square-bottom">
           <div>
-            <strong>ROCE Dining</strong>
+            <strong>ROCE Night</strong>
             <small>20:00 – 02:00</small>
           </div>
           <span class="home-square-arrow" aria-hidden="true">→</span>
@@ -309,8 +309,8 @@
     </button>
   </div>
   <nav class="menu-links">
-    <a href="/club/">ROCE Club <small>10:00 – 20:00</small></a>
-    <a href="/dining/">ROCE Dining <small>20:00 – 02:00</small></a>
+    <a href="/day/">ROCE Day <small>10:00 – 20:00</small></a>
+    <a href="/night/">ROCE Night <small>20:00 – 02:00</small></a>
     <a href="/fuck-who-doesn't-like-this-place/"><span data-i18n="menu_reservar_title">Reservar</span></a>
     <a class="menu-minor" href="/fuck-who-doesn't-like-this-place/#alquila-el-espacio"><span data-i18n="menu_alquiler_link">Alquila el espacio</span> →</a>
     <a class="menu-minor" href="https://www.instagram.com/somosroce" target="_blank" rel="noopener">@somosroce ↗</a>
@@ -325,15 +325,15 @@
   </div>
 </div>
 <script src="/cookies.js?v=3"></script>
-<script src="/i18n.js?v=47"></script>
+<script src="/i18n.js?v=48"></script>
 
 <script>
-  // Se destaca la opción que toca según la hora de Valencia: Club de 10:00 a
-  // 20:00 y Dining el resto. No se recuerda nada: siempre se pregunta.
+  // Se destaca la opción que toca según la hora de Valencia: Day de 10:00 a
+  // 20:00 y Night el resto. No se recuerda nada: siempre se pregunta.
   (function () {
     var hour = Number(new Intl.DateTimeFormat('en-GB', { hour: '2-digit', hourCycle: 'h23', timeZone: 'Europe/Madrid' }).format(new Date()));
     var isDay = hour >= 10 && hour < 20;
-    document.getElementById(isDay ? 'chooseClub' : 'chooseDining').classList.add('is-now');
+    document.getElementById(isDay ? 'chooseDay' : 'chooseNight').classList.add('is-now');
   })();
 
   (function () {

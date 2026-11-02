@@ -169,37 +169,37 @@
     },
     ticket_ref_label: { es: 'Nº de referencia', en: 'Reference number' },
 
-    // Elegir entre ROCE Club (día) y ROCE Dining (noche)
+    // Elegir entre ROCE Day (día) y ROCE Night (noche)
     choose_now: { es: 'Ahora', en: 'Now' },
     home_w1: { es: 'Todo', en: 'It all' },
     home_w2: { es: 'empieza', en: 'starts' },
     home_w3: { es: 'con', en: 'with' },
     home_w4: { es: 'un', en: 'a' },
     home_w5: { es: 'roce', en: 'roce' },
-    switch_to_club: { es: 'Ir a ROCE Club', en: 'Go to ROCE Club' },
+    switch_to_day: { es: 'Ir a ROCE Day', en: 'Go to ROCE Day' },
 
-    // club/index.html
-    club_hours_daily: { es: 'Todos los días · 10:00 – 20:00', en: 'Every day · 10:00 – 20:00' },
-    club_h_concept: { es: 'El concepto', en: 'The concept' },
-    club_concept_1: {
-      es: 'ROCE Club es el espacio de día de ROCE: brunch y cafetería para venir cuando quieras, a cualquier hora entre las 10:00 y las 20:00.',
-      en: "ROCE Club is ROCE's daytime space: brunch and café, come whenever you like between 10:00 and 20:00.",
+    // day/index.html
+    day_hours_daily: { es: 'Todos los días · 10:00 – 20:00', en: 'Every day · 10:00 – 20:00' },
+    day_h_concept: { es: 'El concepto', en: 'The concept' },
+    day_concept_1: {
+      es: 'ROCE Day es el espacio de día de ROCE: brunch y cafetería para venir cuando quieras, a cualquier hora entre las 10:00 y las 20:00.',
+      en: "ROCE Day is ROCE's daytime space: brunch and café, come whenever you like between 10:00 and 20:00.",
     },
-    club_concept_2: {
+    day_concept_2: {
       es: 'Sin reserva y sin complicaciones: entras, te sientas y disfrutas.',
       en: 'No booking, no fuss: walk in, sit down and enjoy.',
     },
-    club_h_hours: { es: 'Horarios', en: 'Opening hours' },
-    club_hours_line: {
+    day_h_hours: { es: 'Horarios', en: 'Opening hours' },
+    day_hours_line: {
       es: 'Todos los días de 10:00 a 20:00. Acceso libre, sin reserva.',
       en: 'Every day from 10:00 to 20:00. Walk-in only, no booking needed.',
     },
-    club_h_events: { es: 'Eventos de día', en: 'Daytime events' },
-    club_events_soon: {
+    day_h_events: { es: 'Eventos de día', en: 'Daytime events' },
+    day_events_soon: {
       es: 'Muy pronto publicaremos aquí la agenda de eventos de día.',
       en: 'We will soon publish the daytime events schedule here.',
     },
-    club_to_dining_h: { es: '¿Buscas la noche?', en: 'Looking for the night?' },
+    day_to_night_h: { es: '¿Buscas la noche?', en: 'Looking for the night?' },
 
     // privacidad.html
     privacy_title: { es: 'Política de privacidad', en: 'Privacy Policy' },

@@ -4,19 +4,19 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="format-detection" content="telephone=no, address=no, email=no, date=no">
-<title>ROCE Club — Brunch y cafetería en Valencia</title>
-<meta name="description" content="ROCE Club: brunch y cafetería en Marqués del Túria 16, Valencia. Abierto todos los días de 10:00 a 20:00, sin reserva.">
+<title>ROCE Day — Brunch y cafetería en Valencia</title>
+<meta name="description" content="ROCE Day: brunch y cafetería en Marqués del Túria 16, Valencia. Abierto todos los días de 10:00 a 20:00, sin reserva.">
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link rel="icon" type="image/png" href="/assets/meta/favicon-32.png" sizes="32x32">
 <link rel="apple-touch-icon" href="/assets/meta/apple-touch-icon.png">
 <meta property="og:type" content="website">
-<meta property="og:title" content="ROCE Club — Brunch y cafetería en Valencia">
+<meta property="og:title" content="ROCE Day — Brunch y cafetería en Valencia">
 <meta property="og:description" content="Brunch y cafetería en Marqués del Túria 16, Valencia. Todos los días de 10:00 a 20:00, sin reserva.">
 <meta property="og:image" content="https://roce.es/assets/meta/og-image.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:type" content="image/png">
-<meta property="og:url" content="https://roce.es/club/">
+<meta property="og:url" content="https://roce.es/day/">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://roce.es/assets/meta/og-image.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -24,15 +24,15 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/styles.css?v=66">
 <style>
-  /* ROCE Club: la cara clara de ROCE (día). Logo grande en negro sobre crema. */
-  .club-hero {
+  /* ROCE Day: la cara clara de ROCE (día). Logo grande en negro sobre crema. */
+  .day-hero {
     padding: 8.5rem 1.5rem 3.5rem;
     background: var(--cream);
     color: var(--black);
     text-align: center;
   }
-  .club-mark { display: block; width: min(70vw, 400px); height: auto; margin: 0 auto; }
-  .club-name {
+  .day-mark { display: block; width: min(70vw, 400px); height: auto; margin: 0 auto; }
+  .day-name {
     margin-top: 1rem;
     font-family: var(--display);
     font-weight: 400;
@@ -41,7 +41,7 @@
     letter-spacing: 0.02em;
     text-transform: uppercase;
   }
-  .club-hours {
+  .day-hours {
     display: inline-block;
     margin-top: 1.1rem;
     padding: 0.7rem 1.6rem;
@@ -54,9 +54,9 @@
     text-transform: uppercase;
   }
 
-  .club-wrap { max-width: 760px; margin: 0 auto; padding: 1.5rem 1.5rem 1rem; }
-  .club-section { margin-bottom: 3.25rem; }
-  .club-section h2 {
+  .day-wrap { max-width: 760px; margin: 0 auto; padding: 1.5rem 1.5rem 1rem; }
+  .day-section { margin-bottom: 3.25rem; }
+  .day-section h2 {
     font-family: var(--display);
     font-weight: 400;
     font-size: clamp(1.6rem, 5vw, 2.4rem);
@@ -64,9 +64,9 @@
     text-transform: uppercase;
     margin-bottom: 1rem;
   }
-  .club-section p { font-size: 1.05rem; line-height: 1.65; margin-bottom: 0.9rem; }
+  .day-section p { font-size: 1.05rem; line-height: 1.65; margin-bottom: 0.9rem; }
 
-  .club-box {
+  .day-box {
     padding: 1.4rem 1.5rem;
     border: 1px solid rgba(10, 10, 10, 0.25);
     border-radius: 2px;
@@ -75,7 +75,7 @@
   }
 
   /* Cierre oscuro: enlace a la cara de noche (el logo lo pone el pie). */
-  .club-dining {
+  .day-night {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -85,8 +85,8 @@
     color: var(--cream);
     text-decoration: none;
   }
-  .club-dining p { font-size: 0.8rem; opacity: 0.7; text-transform: uppercase; letter-spacing: 0.06em; }
-  .club-dining strong {
+  .day-night p { font-size: 0.8rem; opacity: 0.7; text-transform: uppercase; letter-spacing: 0.06em; }
+  .day-night strong {
     display: block;
     margin-top: 0.4rem;
     font-family: var(--display);
@@ -96,8 +96,8 @@
     letter-spacing: 0.02em;
     text-transform: uppercase;
   }
-  .club-dining-arrow { font-family: var(--display); font-size: clamp(2.2rem, 8vw, 3.4rem); line-height: 1; flex-shrink: 0; transition: transform 0.2s ease; }
-  .club-dining:hover .club-dining-arrow { transform: translateX(8px); }
+  .day-night-arrow { font-family: var(--display); font-size: clamp(2.2rem, 8vw, 3.4rem); line-height: 1; flex-shrink: 0; transition: transform 0.2s ease; }
+  .day-night:hover .day-night-arrow { transform: translateX(8px); }
 </style>
 </head>
 <body>
@@ -105,41 +105,41 @@
 <header class="topbar">
   <a href="/" aria-label="ROCE — inicio"><img class="nav-logo" src="/assets/logo/roce-horizontal-black.png" alt="ROCE"></a>
   <nav class="topnav">
-    <a href="/dining/" class="nav-cta">ROCE Dining</a>
+    <a href="/night/" class="nav-cta">ROCE Night</a>
   </nav>
 </header>
 
 <main>
-  <section class="club-hero">
-    <img class="club-mark" src="/assets/logo/roce-tilted-black.png" alt="ROCE">
-    <h1 class="club-name">Club</h1>
-    <p class="club-hours" data-i18n="club_hours_daily">Todos los días · 10:00 – 20:00</p>
+  <section class="day-hero">
+    <img class="day-mark" src="/assets/logo/roce-tilted-black.png" alt="ROCE">
+    <h1 class="day-name">Day</h1>
+    <p class="day-hours" data-i18n="day_hours_daily">Todos los días · 10:00 – 20:00</p>
   </section>
 
-  <div class="club-wrap">
-    <section class="club-section">
-      <h2 data-i18n="club_h_concept">El concepto</h2>
-      <p data-i18n="club_concept_1">ROCE Club es el espacio de día de ROCE: brunch y cafetería para venir cuando quieras, a cualquier hora entre las 10:00 y las 20:00.</p>
-      <p data-i18n="club_concept_2">Sin reserva y sin complicaciones: entras, te sientas y disfrutas.</p>
+  <div class="day-wrap">
+    <section class="day-section">
+      <h2 data-i18n="day_h_concept">El concepto</h2>
+      <p data-i18n="day_concept_1">ROCE Day es el espacio de día de ROCE: brunch y cafetería para venir cuando quieras, a cualquier hora entre las 10:00 y las 20:00.</p>
+      <p data-i18n="day_concept_2">Sin reserva y sin complicaciones: entras, te sientas y disfrutas.</p>
     </section>
 
-    <section class="club-section">
-      <h2 data-i18n="club_h_hours">Horarios</h2>
-      <p class="club-box" data-i18n="club_hours_line">Todos los días de 10:00 a 20:00. Acceso libre, sin reserva.</p>
+    <section class="day-section">
+      <h2 data-i18n="day_h_hours">Horarios</h2>
+      <p class="day-box" data-i18n="day_hours_line">Todos los días de 10:00 a 20:00. Acceso libre, sin reserva.</p>
     </section>
 
-    <section class="club-section">
-      <h2 data-i18n="club_h_events">Eventos de día</h2>
-      <p class="club-box" data-i18n="club_events_soon">Muy pronto publicaremos aquí la agenda de eventos de día.</p>
+    <section class="day-section">
+      <h2 data-i18n="day_h_events">Eventos de día</h2>
+      <p class="day-box" data-i18n="day_events_soon">Muy pronto publicaremos aquí la agenda de eventos de día.</p>
     </section>
   </div>
 
-  <a class="club-dining" href="/dining/">
+  <a class="day-night" href="/night/">
     <div>
-      <p data-i18n="club_to_dining_h">¿Buscas la noche?</p>
-      <strong>ROCE Dining</strong>
+      <p data-i18n="day_to_night_h">¿Buscas la noche?</p>
+      <strong>ROCE Night</strong>
     </div>
-    <span class="club-dining-arrow" aria-hidden="true">→</span>
+    <span class="day-night-arrow" aria-hidden="true">→</span>
   </a>
 </main>
 
@@ -170,7 +170,7 @@
   </div>
 </div>
 <script src="/cookies.js?v=3"></script>
-<script src="/i18n.js?v=47"></script>
+<script src="/i18n.js?v=48"></script>
 
 </body>
 </html>
