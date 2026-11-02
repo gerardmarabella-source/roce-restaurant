@@ -113,7 +113,8 @@
   .home-square-day { background: var(--white); color: var(--black); border: 2px solid var(--black); }
   .home-square-night { background: var(--black); color: var(--white); border: 2px solid var(--black); }
 
-  .home-square-top { min-height: 1rem; }
+  .home-square-top { min-height: 1rem; display: flex; align-items: flex-start; justify-content: space-between; gap: 0.5rem; }
+  .age-badge { flex-shrink: 0; margin-left: auto; width: clamp(1.6rem, 21cqw, 3.4rem); height: clamp(1.6rem, 21cqw, 3.4rem); }
   .home-square-bottom { display: flex; align-items: flex-end; justify-content: space-between; gap: 0.5rem; }
   .home-square strong {
     display: block;
@@ -161,6 +162,12 @@
   }
   @media (prefers-reduced-motion: reduce) { .home-now::before { animation: none; } }
   .home-square.is-now .home-now { display: flex; }
+
+  /* Cuadrado pequeño: "Ahora" queda solo como punto rojo para que quepa el +18. */
+  @container (max-width: 112px) {
+    .home-now { font-size: 0; gap: 0; padding: 0.2rem; }
+    .age-badge { width: 1.5rem; height: 1.5rem; }
+  }
 
   .home-foot {
     flex-shrink: 0;
@@ -264,7 +271,7 @@
         </div>
       </a>
       <a class="home-square home-square-night" id="chooseNight" href="/night/">
-        <div class="home-square-top"><span class="home-now" data-i18n="choose_now">Ahora</span></div>
+        <div class="home-square-top"><span class="home-now" data-i18n="choose_now">Ahora</span><svg class="age-badge" viewBox="0 0 100 100" role="img" aria-label="+18"><circle cx="50" cy="50" r="44" fill="#ffffff" stroke="#e5453a" stroke-width="9"/><text x="44" y="65" text-anchor="middle" font-family="'Helvetica Neue Web','Helvetica Neue',Arial,sans-serif" font-weight="700" font-size="46" letter-spacing="-3" fill="#0a0a0a">18</text><text x="77" y="52" text-anchor="middle" font-family="'Helvetica Neue Web','Helvetica Neue',Arial,sans-serif" font-weight="700" font-size="30" fill="#0a0a0a">+</text></svg></div>
         <div class="home-square-bottom">
           <div>
             <strong>ROCE Night</strong>
