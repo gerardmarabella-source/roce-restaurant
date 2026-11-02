@@ -110,59 +110,24 @@
       en: "Hi! We'd like to rent ROCE's space for an event.",
     },
 
-    // eventos.html
+    // events/index.html (los eventos en sí están en la propia página)
     events_eyebrow: { es: 'Agenda', en: 'Line-up' },
     events_title: { es: 'Eventos', en: 'Events' },
     events_intro: {
-      es: 'Noches en directo, catas y sesiones especiales en ROCE. Reserva tu plaza — hay sitio limitado.',
-      en: 'Live nights, tastings and special sessions at ROCE. Reserve your spot — space is limited.',
+      es: 'Brunch, música y noches especiales. Día y noche, cada uno a su manera.',
+      en: 'Brunch, music and special nights. Day and night, each in its own way.',
     },
-    events_soldout_note: {
-      es: 'Solicitud, no compra — te confirmamos por email en cuanto la revisamos.',
-      en: "This is a request, not a purchase — we'll confirm by email once we review it.",
+    ev_back: { es: '← ROCE', en: '← ROCE' },
+    ev_all: { es: 'Todos', en: 'All' },
+    ev_cta: { es: 'Reservar plaza', en: 'Get tickets' },
+    ev_empty: { es: 'Muy pronto publicaremos aquí los próximos eventos.', en: 'We will soon publish the upcoming events here.' },
+    ev_demo: { es: 'Eventos de ejemplo: la agenda real llegará pronto.', en: 'Sample events: the real line-up is coming soon.' },
+    ev_dialog_title: { es: 'Pago online muy pronto', en: 'Online payment coming soon' },
+    ev_dialog_text: {
+      es: 'Estamos preparando la compra de entradas con tarjeta. Mientras tanto, escríbenos a reservas@roce.es.',
+      en: "We're setting up card payments for tickets. In the meantime, write to us at reservas@roce.es.",
     },
-
-    event_1_title: { es: 'Noche de Jazz', en: 'Jazz Night' },
-    event_1_meta: { es: 'Sala principal', en: 'Main room' },
-    event_1_desc: {
-      es: 'Trío en directo entre plato y plato — jazz de toda la vida, sin manteles ni silencio.',
-      en: 'A live trio between courses — classic jazz, no white tablecloths or hushed silence required.',
-    },
-    event_1_price: { es: 'Entrada libre con consumición', en: 'Free entry with a drink minimum' },
-    event_1_datetime: { es: 'Viernes 20 de noviembre · 21:00', en: 'Friday, November 20 · 21:00' },
-
-    event_2_title: { es: 'Sunset Sessions: DJ Set', en: 'Sunset Sessions: DJ Set' },
-    event_2_meta: { es: 'Terraza', en: 'Terrace' },
-    event_2_desc: {
-      es: 'La barra abierta hasta tarde y un DJ en la terraza. Aforo reducido.',
-      en: 'The bar stays open late and a DJ takes over the terrace. Limited capacity.',
-    },
-    event_2_price: { es: '10€ · incluye primera copa', en: '€10 · includes your first drink' },
-    event_2_datetime: { es: 'Sábado 28 de noviembre · 20:00', en: 'Saturday, November 28 · 20:00' },
-
-    event_3_title: { es: 'Cena Maridaje: Vinos de Autor', en: 'Wine Pairing Dinner' },
-    event_3_meta: { es: 'Menú especial · 5 platos', en: 'Special menu · 5 courses' },
-    event_3_desc: {
-      es: 'Menú degustación de cinco platos maridado con vinos de pequeños productores.',
-      en: 'A five-course tasting menu paired with wines from small producers.',
-    },
-    event_3_price: { es: '55€ por persona', en: '€55 per person' },
-    event_3_datetime: { es: 'Sábado 5 de diciembre · 21:00', en: 'Saturday, December 5 · 21:00' },
-
-    ticket_modal_eyebrow: { es: 'Reserva tu plaza', en: 'Reserve your spot' },
-    ticket_label_count: { es: 'Nº de entradas', en: 'Number of tickets' },
-    ticket_submit: { es: 'Enviar solicitud', en: 'Send request' },
-    ticket_submit_sending: { es: 'Enviando...', en: 'Sending...' },
-    ticket_status_error: {
-      es: 'No se ha podido enviar, inténtalo de nuevo.',
-      en: 'Something went wrong, please try again.',
-    },
-    ticket_success_title: { es: '¡Solicitud enviada!', en: 'Request sent!' },
-    ticket_success_sub: {
-      es: 'Te confirmamos tu plaza por email en cuanto la revisemos.',
-      en: "We'll confirm your spot by email once we review it.",
-    },
-    ticket_ref_label: { es: 'Nº de referencia', en: 'Reference number' },
+    ev_close: { es: 'Cerrar', en: 'Close' },
 
     // Elegir entre ROCE Day (día) y ROCE Night (noche)
     choose_now: { es: 'Ahora', en: 'Now' },
@@ -416,6 +381,9 @@
       btn.classList.toggle('is-active', isActive);
       btn.setAttribute('aria-current', isActive ? 'true' : 'false');
     });
+
+    // Las páginas que pintan contenido con JS (p. ej. eventos) se repintan.
+    document.dispatchEvent(new Event('roce:lang'));
   }
 
   function setLang(lang) {
