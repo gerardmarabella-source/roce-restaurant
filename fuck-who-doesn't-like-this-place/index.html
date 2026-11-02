@@ -427,6 +427,7 @@
     Object.keys(panels).forEach((k) => { panels[k].hidden = k !== zone; });
     backLink.setAttribute('href', '/' + zone + '/');
     document.body.classList.toggle('zone-day', zone === 'day');
+    document.querySelector('.footer-headline').textContent = zone === 'day' ? 'Coffee, Bakery & Kitchen' : 'Restaurant & Cocktails';
     document.getElementById('footerLogo').setAttribute('src', '/assets/logo/roce-tilted-' + (zone === 'day' ? 'black' : 'white') + '.png');
     document.getElementById('navLogo').setAttribute('src', '/assets/logo/roce-horizontal-' + (zone === 'day' ? 'black' : 'white') + '.png');
     if (zone === 'night' && cmFrame.iFrameResizer) cmFrame.iFrameResizer.resize();
