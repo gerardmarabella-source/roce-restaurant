@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Panel · ROCE</title>
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="stylesheet" href="/styles.css?v=66">
+<style>
+  /* Panel interno de ROCE: eventos y reservas. Solo castellano, pensado para móvil. */
+  :root { --bg: var(--white); --fg: var(--black); --line: rgba(10, 10, 10, 0.18); --red: #e5453a; --ok: #1f8f4e; }
+  html, body { background: var(--bg); color: var(--fg); }
+  body { font-family: var(--body); min-height: 100vh; }
+  [hidden] { display: none !important; }
+  button, input, select, textarea { font: inherit; color: inherit; }
+
+  .ad-top { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 0.9rem 1.25rem; border-bottom: 1px solid var(--line); position: sticky; top: 0; background: var(--bg); z-index: 20; }
+  .ad-brand { font-family: var(--display); font-size: 1.3rem; text-transform: uppercase; letter-spacing: 0.02em; }
+  .ad-brand small { font-size: 0.75rem; opacity: 0.55; margin-left: 0.4rem; }
+  .ad-user { font-size: 0.8rem; opacity: 0.7; text-align: right; }
+  .ad-link { background: none; border: 0; padding: 0; text-decoration: underline; cursor: pointer; font-size: 0.8rem; }
+
+  .ad-wrap { max-width: 980px; margin: 0 auto; padding: 1.25rem; }
+  .ad-tabs { display: flex; gap: 1.75rem; margin: 0.5rem 0 1.25rem; }
+  .ad-tab { background: none; border: 0; padding: 0; cursor: pointer; font-family: var(--display); font-size: 1.6rem; text-transform: uppercase; opacity: 0.28; transition: opacity 0.2s; }
+  .ad-tab[aria-pressed="true"] { opacity: 1; }
+
+  .ad-btn { padding: 0.7rem 1.1rem; border: 2px solid var(--fg); background: var(--fg); color: var(--bg); font-family: var(--display); font-size: 0.9rem; letter-spacing: 0.04em; text-transform: uppercase; cursor: pointer; }
+  .ad-btn.is-ghost { background: none; color: var(--fg); }
+  .ad-btn.is-danger { background: none; color: var(--red); border-color: var(--red); }
+  .ad-btn.is-small { padding: 0.45rem 0.7rem; font-size: 0.78rem; }
+  .ad-btn:disabled { opacity: 0.35; cursor: default; }
+  .ad-bar { display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+  .ad-bar select, .ad-bar input { padding: 0.55rem 0.7rem; border: 1px solid var(--fg); background: transparent; }
+
+  .ad-msg { padding: 0.8rem 1rem; margin: 0 0 1rem; border: 1px solid var(--line); font-size: 0.92rem; }
+  .ad-msg.is-error { border-color: var(--red); color: var(--red); }
+  .ad-msg.is-ok { border-color: var(--ok); color: var(--ok); }
+  .ad-empty { padding: 2rem 0; opacity: 0.6; }
+
+  /* Login */
+  .ad-login { max-width: 380px; margin: 12vh auto 0; padding: 0 1.25rem; }
+  .ad-login h1 { font-family: var(--display); font-weight: 400; font-size: 2.6rem; text-transform: uppercase; line-height: 0.95; margin-bottom: 1.5rem; }
+  .ad-field { display: block; margin-bottom: 1rem; }
+  .ad-field > span { display: block; margin-bottom: 0.3rem; font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; opacity: 0.65; }
+  .ad-field input, .ad-field select, .ad-field textarea { width: 100%; padding: 0.6rem 0.7rem; border: 1px solid var(--fg); border-radius: 0; background: transparent; }
+  .ad-field textarea { min-height: 4.5rem; resize: vertical; }
+  .ad-field input:focus, .ad-field select:focus, .ad-field textarea:focus { outline: 2px solid var(--fg); outline-offset: 1px; }
+
+  /* Tarjetas de evento */
+  .ad-list { display: grid; gap: 0.75rem; list-style: none; }
+  .ad-card { display: grid; grid-template-columns: auto 1fr; gap: 0.5rem 1rem; padding: 1rem; border: 1px solid var(--fg); align-items: center; }
+  .ad-card.is-draft { border-style: dashed; opacity: 0.75; }
+  .ad-card.is-past { opacity: 0.5; }
+  .ad-date { text-align: center; font-family: var(--display); text-transform: uppercase; line-height: 1; min-width: 3.4rem; }
+  .ad-date b { display: block; font-size: 2.2rem; font-weight: 400; }
+  .ad-date span { font-size: 0.8rem; letter-spacing: 0.05em; }
+  .ad-name { font-family: var(--display); font-size: 1.35rem; text-transform: uppercase; line-height: 1.05; }
+  .ad-meta { margin-top: 0.3rem; font-size: 0.85rem; opacity: 0.7; }
+  .ad-tag { display: inline-block; padding: 0.1rem 0.5rem; margin-right: 0.35rem; border: 1px solid currentColor; border-radius: 999px; font-size: 0.7rem; letter-spacing: 0.05em; text-transform: uppercase; }
+  .ad-tag.day { background: #fff; } .ad-tag.night { background: var(--black); color: var(--white); border-color: var(--black); }
+  .ad-tag.is-red { color: var(--red); } .ad-tag.is-green { color: var(--ok); }
+  .ad-actions { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .ad-bar-cap { height: 6px; background: var(--line); margin-top: 0.5rem; }
+  .ad-bar-cap i { display: block; height: 100%; background: var(--fg); }
+
+  /* Reservas */
+  .ad-table-wrap { overflow-x: auto; }
+  table.ad-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+  .ad-table th { text-align: left; padding: 0.55rem 0.6rem; border-bottom: 2px solid var(--fg); font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; white-space: nowrap; }
+  .ad-table td { padding: 0.65rem 0.6rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+  .ad-table tr.is-cancelled td { opacity: 0.45; text-decoration: line-through; }
+  .ad-table td.nowrap { white-space: nowrap; }
+
+  /* Formulario */
+  .ad-modal { position: fixed; inset: 0; z-index: 100; background: rgba(10, 10, 10, 0.55); display: flex; justify-content: center; align-items: flex-start; overflow-y: auto; padding: 1rem; }
+  .ad-sheet { width: 100%; max-width: 640px; background: var(--bg); padding: 1.25rem; border: 2px solid var(--fg); margin: auto; }
+  .ad-sheet h2 { font-family: var(--display); font-weight: 400; font-size: 1.8rem; text-transform: uppercase; margin-bottom: 1rem; }
+  .ad-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 1rem; }
+  .ad-grid .full { grid-column: 1 / -1; }
+  .ad-check { display: flex; align-items: center; gap: 0.6rem; margin: 0.4rem 0 1rem; }
+  .ad-check input { width: 1.1rem; height: 1.1rem; accent-color: var(--fg); }
+  .ad-hint { font-size: 0.78rem; opacity: 0.6; margin-top: 0.25rem; }
+  @media (max-width: 560px) { .ad-grid { grid-template-columns: 1fr; } .ad-table { font-size: 0.8rem; } }
+</style>
+</head>
+<body>
+
+<!-- Entrar -->
+<div id="loginView" hidden>
+  <form class="ad-login" id="loginForm">
+    <h1>Panel<br>ROCE</h1>
+    <p class="ad-msg is-error" id="loginMsg" hidden></p>
+    <label class="ad-field"><span>Email</span><input type="email" id="lEmail" autocomplete="username" required></label>
+    <label class="ad-field"><span>Contraseña</span><input type="password" id="lPass" autocomplete="current-password" required></label>
+    <button class="ad-btn" type="submit" style="width:100%">Entrar</button>
+  </form>
+</div>
+
+<!-- Panel -->
+<div id="appView" hidden>
+  <header class="ad-top">
+    <span class="ad-brand">ROCE<small>panel</small></span>
+    <span class="ad-user"><span id="whoami"></span><br><button class="ad-link" id="logout" type="button">Salir</button></span>
+  </header>
+  <main class="ad-wrap">
+    <div class="ad-tabs">
+      <button class="ad-tab" data-tab="events" aria-pressed="true" type="button">Eventos</button>
+      <button class="ad-tab" data-tab="bookings" aria-pressed="false" type="button">Reservas</button>
+    </div>
+    <p class="ad-msg" id="appMsg" hidden></p>
+
+    <section id="tabEvents">
+      <div class="ad-bar">
+        <label><input type="checkbox" id="showPast"> Ver pasados</label>
+        <button class="ad-btn" id="newEvent" type="button">+ Nuevo evento</button>
+      </div>
+      <ul class="ad-list" id="eventList"></ul>
+    </section>
+
+    <section id="tabBookings" hidden>
+      <div class="ad-bar">
+        <select id="bkEvent"><option value="">Todos los eventos</option></select>
+        <input type="search" id="bkSearch" placeholder="Buscar nombre, email o ref.">
+        <button class="ad-btn is-ghost" id="bkCsv" type="button">Descargar CSV</button>
+      </div>
+      <p id="bkSummary" class="ad-meta" style="margin-bottom:0.75rem"></p>
+      <div class="ad-table-wrap"><table class="ad-table"><thead><tr>
+        <th>Ref.</th><th>Evento</th><th>Nombre</th><th>Contacto</th><th>Entradas</th><th>Estado</th><th>Pago</th><th></th>
+      </tr></thead><tbody id="bkBody"></tbody></table></div>
+      <p class="ad-empty" id="bkEmpty" hidden>No hay reservas.</p>
+    </section>
+  </main>
+</div>
+
+<!-- Formulario de evento -->
+<div class="ad-modal" id="evModal" hidden>
+  <form class="ad-sheet" id="evForm">
+    <h2 id="evFormTitle">Nuevo evento</h2>
+    <p class="ad-msg is-error" id="evFormMsg" hidden></p>
+    <div class="ad-grid">
+      <label class="ad-field"><span>Ambiente</span>
+        <select id="fEnv"><option value="day">Day</option><option value="night">Night (+18)</option></select></label>
+      <label class="ad-field"><span>Fecha y hora (Valencia)</span><input type="datetime-local" id="fStart" required></label>
+      <label class="ad-field full"><span>Título (español)</span><input type="text" id="fTitleEs" required maxlength="80"></label>
+      <label class="ad-field full"><span>Título (inglés)</span><input type="text" id="fTitleEn" maxlength="80"><p class="ad-hint">Si lo dejas vacío se usa el español.</p></label>
+      <label class="ad-field full"><span>Descripción (español)</span><textarea id="fDescEs" maxlength="400"></textarea></label>
+      <label class="ad-field full"><span>Descripción (inglés)</span><textarea id="fDescEn" maxlength="400"></textarea></label>
+      <label class="ad-field"><span>Lugar (español)</span><input type="text" id="fPlaceEs" placeholder="Primera planta"></label>
+      <label class="ad-field"><span>Lugar (inglés)</span><input type="text" id="fPlaceEn" placeholder="First floor"></label>
+      <label class="ad-field"><span>Precio por entrada (€)</span><input type="number" id="fPrice" min="0" step="0.5" value="0" required><p class="ad-hint">0 = gratis.</p></label>
+      <label class="ad-field"><span>Duración (horas)</span><input type="number" id="fDur" min="0.5" step="0.5" value="2" required></label>
+      <label class="ad-field"><span>Plazas totales</span><input type="number" id="fCap" min="0" step="1" value="30" required></label>
+      <label class="ad-field"><span>Máx. entradas por reserva</span><input type="number" id="fMax" min="1" max="20" step="1" value="6" required></label>
+      <label class="ad-field full"><span>Texto del precio (opcional)</span><input type="text" id="fLabelEs" placeholder="p. ej. 10 € · incluye primera copa"><p class="ad-hint">Si lo dejas vacío sale “Entrada libre” o “X € por persona”.</p></label>
+      <label class="ad-field full"><span>Identificador en la dirección</span><input type="text" id="fId" pattern="[a-z0-9-]{3,60}" required><p class="ad-hint">Solo minúsculas, números y guiones. No se puede cambiar después.</p></label>
+    </div>
+    <label class="ad-check"><input type="checkbox" id="fPub"> Publicado (visible en la web)</label>
+    <div style="display:flex;gap:0.6rem;justify-content:flex-end;flex-wrap:wrap">
+      <button class="ad-btn is-ghost" type="button" id="evCancel">Cancelar</button>
+      <button class="ad-btn" type="submit" id="evSave">Guardar</button>
+    </div>
+  </form>
+</div>
+
+<script src="/eventos/config.js"></script>
+<script>
+(function () {
+  var cfg = window.ROCE_BACKEND || {};
+  var TZ = 'Europe/Madrid';
+  var SESSION_KEY = 'roce_admin_session';
+  function $(id) { return document.getElementById(id); }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+
+  if (!cfg.url || !cfg.anonKey) {
+    document.body.innerHTML = '<div class="ad-login"><h1>Panel<br>ROCE</h1><p class="ad-msg is-error">Falta conectar la base de datos: rellena url y anonKey en eventos/config.js (guía en supabase/LEEME.md).</p></div>';
+    return;
+  }
+
+  // ─── Sesión y API ───────────────────────────────────────────────────
+  var session = null;
+  try { session = JSON.parse(localStorage.getItem(SESSION_KEY) || 'null'); } catch (e) {}
+  function saveSession(s) { session = s; try { s ? localStorage.setItem(SESSION_KEY, JSON.stringify(s)) : localStorage.removeItem(SESSION_KEY); } catch (e) {} }
+
+  function auth(path, body) {
+    return fetch(cfg.url + '/auth/v1/' + path, { method: 'POST', headers: { apikey: cfg.anonKey, 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+      .then(function (r) { return r.json().then(function (d) { if (!r.ok) throw new Error(d.error_description || d.msg || d.message || 'auth'); return d; }); });
+  }
+  function toSession(d) { return { access_token: d.access_token, refresh_token: d.refresh_token, expires_at: Date.now() + (d.expires_in - 60) * 1000, email: (d.user && d.user.email) || (session && session.email) || '' }; }
+  function refresh() {
+    if (!session || !session.refresh_token) return Promise.reject(new Error('sin sesión'));
+    return auth('token?grant_type=refresh_token', { refresh_token: session.refresh_token }).then(function (d) { saveSession(toSession(d)); });
+  }
+  function api(path, opt) {
+    opt = opt || {};
+    function go() {
+      var h = { apikey: cfg.anonKey, Authorization: 'Bearer ' + session.access_token };
+      if (opt.body !== undefined) h['Content-Type'] = 'application/json';
+      if (opt.prefer) h.Prefer = opt.prefer;
+      return fetch(cfg.url + '/rest/v1/' + path, { method: opt.method || 'GET', headers: h, body: opt.body !== undefined ? JSON.stringify(opt.body) : undefined });
+    }
+    var pre = session && session.expires_at < Date.now() ? refresh() : Promise.resolve();
+    return pre.then(go).then(function (r) {
+      if (r.status === 401) return refresh().then(go);
+      return r;
+    }).then(function (r) {
+      if (r.status === 204) return null;
+      return r.text().then(function (txt) {
+        var d = txt ? JSON.parse(txt) : null;
+        if (!r.ok) { var e = new Error((d && (d.message || d.hint)) || ('Error ' + r.status)); e.code = d && d.code; throw e; }
+        return d;
+      });
+    });
+  }
+
+  // ─── Fechas (Valencia) ──────────────────────────────────────────────
+  function madridParts(date) {
+    var p = {};
+    new Intl.DateTimeFormat('en-GB', { timeZone: TZ, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).formatToParts(date).forEach(function (x) { p[x.type] = x.value; });
+    return p;
+  }
+  function toInputValue(iso) { var p = madridParts(new Date(iso)); return p.year + '-' + p.month + '-' + p.day + 'T' + p.hour + ':' + p.minute; }
+  // "2026-12-17T21:30" (hora de Valencia) → ISO con el desfase correcto (invierno/verano).
+  function madridToISO(v) {
+    var tries = ['+01:00', '+02:00'];
+    for (var i = 0; i < tries.length; i++) {
+      var d = new Date(v + ':00' + tries[i]);
+      if (toInputValue(d.toISOString()) === v) return d.toISOString();
+    }
+    return new Date(v + ':00+01:00').toISOString();
+  }
+  function fmtDate(iso, opts) { return new Intl.DateTimeFormat('es-ES', Object.assign({ timeZone: TZ }, opts)).format(new Date(iso)); }
+  function money(c) { return c === 0 ? 'Gratis' : (c / 100).toLocaleString('es-ES', { style: 'currency', currency: 'EUR' }); }
+
+  // ─── Mensajes ───────────────────────────────────────────────────────
+  var msgTimer;
+  function flash(text, kind) { var m = $('appMsg'); m.textContent = text; m.className = 'ad-msg' + (kind ? ' is-' + kind : ''); m.hidden = false; clearTimeout(msgTimer); if (kind !== 'error') msgTimer = setTimeout(function () { m.hidden = true; }, 3500); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+
+  // ─── Entrar / salir ─────────────────────────────────────────────────
+  function showLogin(msg) {
+    $('appView').hidden = true; $('loginView').hidden = false;
+    var m = $('loginMsg'); m.hidden = !msg; m.textContent = msg || '';
+  }
+  $('loginForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    auth('token?grant_type=password', { email: $('lEmail').value.trim(), password: $('lPass').value })
+      .then(function (d) { saveSession(toSession(d)); return start(); })
+      .catch(function () { showLogin('Email o contraseña incorrectos.'); });
+  });
+  $('logout').addEventListener('click', function () { saveSession(null); showLogin(''); });
+
+  function start() {
+    return api('admins?select=email').then(function (rows) {
+      if (!rows || !rows.length) { saveSession(null); showLogin('Esta cuenta no tiene permiso para usar el panel.'); return; }
+      $('whoami').textContent = session.email;
+      $('loginView').hidden = true; $('appView').hidden = false;
+      return loadAll();
+    }).catch(function () { saveSession(null); showLogin('La sesión ha caducado. Entra de nuevo.'); });
+  }
+
+  // ─── Datos ──────────────────────────────────────────────────────────
+  var events = [], bookings = [];
+  function loadAll() {
+    return Promise.all([
+      api('events?select=*&order=starts_at.desc'),
+      api('bookings?select=*&order=created_at.desc')
+    ]).then(function (r) { events = r[0] || []; bookings = r[1] || []; renderEvents(); renderBookingFilter(); renderBookings(); })
+      .catch(function (e) { flash('No se han podido cargar los datos: ' + e.message, 'error'); });
+  }
+  function taken(id) { return bookings.filter(function (b) { return b.event_id === id && b.status !== 'cancelled'; }).reduce(function (n, b) { return n + b.qty; }, 0); }
+  function eventById(id) { return events.filter(function (e) { return e.id === id; })[0]; }
+
+  // ─── Pestañas ───────────────────────────────────────────────────────
+  document.querySelectorAll('.ad-tab').forEach(function (t) {
+    t.addEventListener('click', function () {
+      document.querySelectorAll('.ad-tab').forEach(function (x) { x.setAttribute('aria-pressed', x === t ? 'true' : 'false'); });
+      $('tabEvents').hidden = t.dataset.tab !== 'events'; $('tabBookings').hidden = t.dataset.tab !== 'bookings';
+    });
+  });
+
+  // ─── Eventos: lista ─────────────────────────────────────────────────
+  $('showPast').addEventListener('change', renderEvents);
+  function renderEvents() {
+    var now = Date.now(), showPast = $('showPast').checked;
+    var list = events.filter(function (e) { return showPast || new Date(e.starts_at).getTime() + e.duration_h * 3600000 > now; })
+      .sort(function (a, b) { return new Date(a.starts_at) - new Date(b.starts_at); });
+    if (showPast) list.reverse();
+    $('eventList').innerHTML = list.length ? list.map(function (e) {
+      var t = taken(e.id), past = new Date(e.starts_at).getTime() + e.duration_h * 3600000 <= now;
+      var pct = e.capacity ? Math.min(100, Math.round(t * 100 / e.capacity)) : 0;
+      return '<li class="ad-card' + (e.published ? '' : ' is-draft') + (past ? ' is-past' : '') + '">' +
+        '<div class="ad-date"><b>' + esc(fmtDate(e.starts_at, { day: 'numeric' })) + '</b><span>' + esc(fmtDate(e.starts_at, { month: 'short' }).replace('.', '')) + '</span></div>' +
+        '<div><div class="ad-name">' + esc(e.title_es) + '</div>' +
+        '<div class="ad-meta"><span class="ad-tag ' + e.env + '">' + (e.env === 'night' ? 'Night +18' : 'Day') + '</span>' +
+          '<span class="ad-tag ' + (e.published ? 'is-green' : 'is-red') + '">' + (e.published ? 'Publicado' : 'Borrador') + '</span>' +
+          esc(fmtDate(e.starts_at, { weekday: 'short', hour: '2-digit', minute: '2-digit' })) + ' · ' + esc(money(e.price_cents)) + '</div>' +
+        '<div class="ad-meta">' + t + ' de ' + e.capacity + ' plazas reservadas</div><div class="ad-bar-cap"><i style="width:' + pct + '%"></i></div></div>' +
+        '<div class="ad-actions">' +
+          '<button class="ad-btn is-small" data-act="edit" data-id="' + esc(e.id) + '" type="button">Editar</button>' +
+          '<button class="ad-btn is-small is-ghost" data-act="dup" data-id="' + esc(e.id) + '" type="button">Duplicar</button>' +
+          '<button class="ad-btn is-small is-ghost" data-act="pub" data-id="' + esc(e.id) + '" type="button">' + (e.published ? 'Despublicar' : 'Publicar') + '</button>' +
+          '<button class="ad-btn is-small is-ghost" data-act="book" data-id="' + esc(e.id) + '" type="button">Ver reservas</button>' +
+          '<button class="ad-btn is-small is-danger" data-act="del" data-id="' + esc(e.id) + '" type="button">Borrar</button>' +
+        '</div></li>';
+    }).join('') : '<li class="ad-empty">No hay eventos. Crea el primero con “+ Nuevo evento”.</li>';
+  }
+  $('eventList').addEventListener('click', function (ev) {
+    var b = ev.target.closest('button[data-act]'); if (!b) return;
+    var e = eventById(b.dataset.id); if (!e) return;
+    var act = b.dataset.act;
+    if (act === 'edit') openForm(e, false);
+    else if (act === 'dup') openForm(e, true);
+    else if (act === 'pub') api('events?id=eq.' + encodeURIComponent(e.id), { method: 'PATCH', body: { published: !e.published } }).then(function () { e.published = !e.published; renderEvents(); flash(e.published ? 'Evento publicado.' : 'Evento despublicado.', 'ok'); }).catch(function (x) { flash(x.message, 'error'); });
+    else if (act === 'book') { document.querySelector('[data-tab="bookings"]').click(); $('bkEvent').value = e.id; renderBookings(); }
+    else if (act === 'del') {
+      if (taken(e.id) > 0 || bookings.some(function (x) { return x.event_id === e.id; })) { flash('Este evento tiene reservas, no se puede borrar. Despublícalo para quitarlo de la web.', 'error'); return; }
+      if (!confirm('¿Borrar “' + e.title_es + '”? No se puede deshacer.')) return;
+      api('events?id=eq.' + encodeURIComponent(e.id), { method: 'DELETE' }).then(function () { events = events.filter(function (x) { return x.id !== e.id; }); renderEvents(); flash('Evento borrado.', 'ok'); }).catch(function (x) { flash(x.message, 'error'); });
+    }
+  });
+
+  // ─── Eventos: formulario ────────────────────────────────────────────
+  var editing = null; // evento que se edita (null = nuevo)
+  function slug(s) { return String(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 50); }
+  function openForm(e, asCopy) {
+    editing = e && !asCopy ? e : null;
+    $('evFormTitle').textContent = editing ? 'Editar evento' : (asCopy ? 'Duplicar evento' : 'Nuevo evento');
+    $('evFormMsg').hidden = true;
+    var v = e || { env: 'day', starts_at: '', title_es: '', title_en: '', desc_es: '', desc_en: '', place_es: '', place_en: '', price_cents: 0, price_label_es: '', duration_h: 2, capacity: 30, max_per_order: 6, published: false, id: '' };
+    $('fEnv').value = v.env; $('fStart').value = asCopy || !v.starts_at ? '' : toInputValue(v.starts_at);
+    $('fTitleEs').value = v.title_es; $('fTitleEn').value = v.title_en; $('fDescEs').value = v.desc_es; $('fDescEn').value = v.desc_en;
+    $('fPlaceEs').value = v.place_es; $('fPlaceEn').value = v.place_en;
+    $('fPrice').value = v.price_cents / 100; $('fDur').value = v.duration_h; $('fCap').value = v.capacity; $('fMax').value = v.max_per_order;
+    $('fLabelEs').value = v.price_label_es; $('fPub').checked = editing ? v.published : false;
+    $('fId').value = editing ? v.id : (asCopy ? '' : ''); $('fId').readOnly = !!editing;
+    $('evModal').hidden = false; document.body.style.overflow = 'hidden';
+  }
+  function closeForm() { $('evModal').hidden = true; document.body.style.overflow = ''; }
+  $('newEvent').addEventListener('click', function () { openForm(null, false); });
+  $('evCancel').addEventListener('click', closeForm);
+  $('fTitleEs').addEventListener('input', function () { if (!editing && !$('fId').dataset.touched) $('fId').value = slug($('fTitleEs').value + (($('fStart').value || '').slice(0, 10) ? '-' + $('fStart').value.slice(5, 10).replace('-', '') : '')); });
+  $('fStart').addEventListener('change', function () { $('fTitleEs').dispatchEvent(new Event('input')); });
+  $('fId').addEventListener('input', function () { $('fId').dataset.touched = '1'; });
+  $('evForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var msg = $('evFormMsg'); msg.hidden = true;
+    var row = {
+      env: $('fEnv').value, starts_at: madridToISO($('fStart').value),
+      duration_h: Number($('fDur').value), title_es: $('fTitleEs').value.trim(), title_en: $('fTitleEn').value.trim(),
+      desc_es: $('fDescEs').value.trim(), desc_en: $('fDescEn').value.trim(), place_es: $('fPlaceEs').value.trim(), place_en: $('fPlaceEn').value.trim(),
+      price_cents: Math.round(Number($('fPrice').value) * 100), price_label_es: $('fLabelEs').value.trim(), price_label_en: '',
+      capacity: Math.round(Number($('fCap').value)), max_per_order: Math.round(Number($('fMax').value)), published: $('fPub').checked
+    };
+    if (!row.title_es) return fail('Falta el título.');
+    if (!$('fStart').value) return fail('Falta la fecha y hora.');
+    if (editing && row.capacity < taken(editing.id)) return fail('Ya hay ' + taken(editing.id) + ' plazas reservadas: no puedes bajar el aforo por debajo.');
+    var id = $('fId').value.trim();
+    if (!/^[a-z0-9-]{3,60}$/.test(id)) return fail('El identificador debe tener 3-60 caracteres: minúsculas, números y guiones.');
+    $('evSave').disabled = true;
+    var req = editing
+      ? api('events?id=eq.' + encodeURIComponent(editing.id), { method: 'PATCH', body: row, prefer: 'return=representation' })
+      : api('events', { method: 'POST', body: Object.assign({ id: id }, row), prefer: 'return=representation' });
+    req.then(function (rows) {
+      var saved = rows && rows[0];
+      if (saved) { events = events.filter(function (x) { return x.id !== saved.id; }).concat(saved); }
+      closeForm(); renderEvents(); renderBookingFilter(); flash(editing ? 'Evento guardado.' : 'Evento creado.' + (saved && !saved.published ? ' Está como borrador: publícalo para que salga en la web.' : ''), 'ok');
+    }).catch(function (x) { fail(x.code === '23505' ? 'Ya existe un evento con ese identificador.' : x.message); })
+      .then(function () { $('evSave').disabled = false; });
+    function fail(t) { msg.textContent = t; msg.hidden = false; msg.scrollIntoView({ block: 'nearest' }); }
+  });
+
+  // ─── Reservas ───────────────────────────────────────────────────────
+  function renderBookingFilter() {
+    var cur = $('bkEvent').value;
+    $('bkEvent').innerHTML = '<option value="">Todos los eventos</option>' + events.slice().sort(function (a, b) { return new Date(b.starts_at) - new Date(a.starts_at); })
+      .map(function (e) { return '<option value="' + esc(e.id) + '">' + esc(fmtDate(e.starts_at, { day: 'numeric', month: 'short' })) + ' · ' + esc(e.title_es) + '</option>'; }).join('');
+    $('bkEvent').value = cur;
+  }
+  $('bkEvent').addEventListener('change', renderBookings); $('bkSearch').addEventListener('input', renderBookings);
+  function filteredBookings() {
+    var id = $('bkEvent').value, q = $('bkSearch').value.trim().toLowerCase();
+    return bookings.filter(function (b) { return (!id || b.event_id === id) && (!q || (b.name + ' ' + b.email + ' ' + b.ref + ' ' + b.phone).toLowerCase().indexOf(q) !== -1); });
+  }
+  var STATUS = { confirmed: 'Confirmada', pending: 'Pendiente', cancelled: 'Cancelada' };
+  var PAY = { free: 'Gratis', pending: 'Por cobrar', paid: 'Cobrado', refunded: 'Devuelto', failed: 'Fallido' };
+  function renderBookings() {
+    var list = filteredBookings();
+    var active = list.filter(function (b) { return b.status !== 'cancelled'; });
+    $('bkSummary').textContent = active.length + ' reservas activas · ' + active.reduce(function (n, b) { return n + b.qty; }, 0) + ' entradas';
+    $('bkEmpty').hidden = list.length > 0;
+    $('bkBody').innerHTML = list.map(function (b) {
+      var e = eventById(b.event_id);
+      return '<tr class="' + (b.status === 'cancelled' ? 'is-cancelled' : '') + '">' +
+        '<td class="nowrap"><b>' + esc(b.ref) + '</b><br><span class="ad-meta">' + esc(fmtDate(b.created_at, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })) + '</span></td>' +
+        '<td>' + esc(e ? e.title_es : b.event_id) + '</td>' +
+        '<td>' + esc(b.name) + (b.notes ? '<br><span class="ad-meta">' + esc(b.notes) + '</span>' : '') + '</td>' +
+        '<td>' + esc(b.email) + '<br>' + esc(b.phone) + (b.marketing_optin ? '<br><span class="ad-tag is-green">Quiere novedades</span>' : '') + '</td>' +
+        '<td>' + b.qty + '<br><span class="ad-meta">' + esc(money(b.total_cents)) + '</span></td>' +
+        '<td>' + esc(STATUS[b.status]) + '</td><td>' + esc(PAY[b.payment_status]) + '</td>' +
+        '<td class="nowrap">' + (b.status !== 'cancelled' ? '<button class="ad-btn is-small is-danger" data-id="' + b.id + '" data-act="cancel" type="button">Cancelar</button>' : '') +
+          (b.payment_status === 'pending' && b.status !== 'cancelled' ? ' <button class="ad-btn is-small is-ghost" data-id="' + b.id + '" data-act="paid" type="button">Marcar cobrado</button>' : '') + '</td></tr>';
+    }).join('');
+  }
+  $('bkBody').addEventListener('click', function (ev) {
+    var btn = ev.target.closest('button[data-act]'); if (!btn) return;
+    var b = bookings.filter(function (x) { return x.id === btn.dataset.id; })[0]; if (!b) return;
+    var patch;
+    if (btn.dataset.act === 'cancel') { if (!confirm('¿Cancelar la reserva ' + b.ref + ' de ' + b.name + '? Se liberan sus plazas.')) return; patch = { status: 'cancelled' }; }
+    else patch = { payment_status: 'paid' };
+    api('bookings?id=eq.' + b.id, { method: 'PATCH', body: patch }).then(function () { Object.assign(b, patch); renderBookings(); renderEvents(); flash('Reserva actualizada.', 'ok'); }).catch(function (x) { flash(x.message, 'error'); });
+  });
+  $('bkCsv').addEventListener('click', function () {
+    var rows = [['Ref', 'Evento', 'Fecha evento', 'Nombre', 'Email', 'Teléfono', 'Entradas', 'Total €', 'Estado', 'Pago', 'Novedades', 'Comentarios', 'Reservado']].concat(filteredBookings().map(function (b) {
+      var e = eventById(b.event_id);
+      return [b.ref, e ? e.title_es : b.event_id, e ? fmtDate(e.starts_at, { dateStyle: 'short', timeStyle: 'short' }) : '', b.name, b.email, b.phone, b.qty, (b.total_cents / 100).toFixed(2).replace('.', ','), STATUS[b.status], PAY[b.payment_status], b.marketing_optin ? 'sí' : 'no', b.notes, fmtDate(b.created_at, { dateStyle: 'short', timeStyle: 'short' })];
+    }));
+    var csv = '﻿' + rows.map(function (r) { return r.map(function (c) { return '"' + String(c == null ? '' : c).replace(/"/g, '""') + '"'; }).join(';'); }).join('\r\n');
+    var a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' })); a.download = 'reservas-roce.csv';
+    document.body.appendChild(a); a.click(); a.remove();
+  });
+
+  // ─── Arranque ───────────────────────────────────────────────────────
+  if (session && session.access_token) start(); else showLogin('');
+})();
+</script>
+</body>
+</html>

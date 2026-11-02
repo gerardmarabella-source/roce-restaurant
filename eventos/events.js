@@ -1,19 +1,21 @@
 // Agenda de eventos de ROCE: una sola fuente para la lista (/eventos/) y para
 // la compra de entradas (/eventos/entradas/).
 //
-// Campos de cada evento:
-//   id            identificador en la URL (?e=id)
-//   env           'day' | 'night' (Night es solo para mayores de 18)
-//   date, time    AAAA-MM-DD y HH:MM, hora de Valencia
-//   duration_h    duración en horas (para el calendario)
-//   price_cents   precio por entrada en céntimos (0 = gratis)
-//   left          plazas que quedan (0 = agotado). Con la pasarela/backend
-//                 esto saldrá del servidor; de momento es un dato fijo.
-//   max_per_order máximo de entradas por reserva
+// Con el panel conectado (eventos/config.js) los eventos salen de la base de
+// datos; si no, se usan los de ejemplo de abajo. Las páginas esperan a
+// ROCE_EVENTS_READY (una promesa con la lista) antes de pintar.
 //
-// Datos de ejemplo — sustituir por la agenda real.
+// Forma de cada evento:
+//   id, env ('day'|'night'), date (AAAA-MM-DD) y time (HH:MM) en hora de Valencia,
+//   duration_h, price_cents (0 = gratis), left (plazas libres), max_per_order,
+//   place/title/desc/price → { es, en }
 (function () {
-  var EVENTS = [
+  var TZ = 'Europe/Madrid';
+  var cfg = window.ROCE_BACKEND || {};
+  var backend = !!(cfg.url && cfg.anonKey);
+
+  // Datos de ejemplo — solo se usan si el panel no está conectado.
+  var SAMPLE = [
     {
       id: 'brunch-vinilos', env: 'day', date: '2026-12-12', time: '11:00', duration_h: 4, price_cents: 0, left: 40, max_per_order: 6,
       place: { es: 'Planta baja', en: 'Ground floor' },
@@ -51,14 +53,74 @@
     }
   ];
 
-  var TZ = 'Europe/Madrid';
-  window.ROCE_EVENT_DATA = EVENTS;
+  function money(cents, lang) {
+    return (cents / 100).toLocaleString(lang === 'en' ? 'en-GB' : 'es-ES', { style: 'currency', currency: 'EUR', minimumFractionDigits: cents % 100 ? 2 : 0 });
+  }
+
+  // Fila de la vista events_public → evento de la web.
+  function fromRow(r) {
+    var d = new Date(r.starts_at);
+    var parts = {};
+    new Intl.DateTimeFormat('en-GB', { timeZone: TZ, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' })
+      .formatToParts(d).forEach(function (p) { parts[p.type] = p.value; });
+    function label(es, en) {
+      if (es || en) return { es: es || en, en: en || es };
+      if (r.price_cents === 0) return { es: 'Entrada libre', en: 'Free entry' };
+      return { es: money(r.price_cents, 'es') + ' por persona', en: money(r.price_cents, 'en') + ' per person' };
+    }
+    return {
+      id: r.id, env: r.env,
+      date: parts.year + '-' + parts.month + '-' + parts.day, time: parts.hour + ':' + parts.minute,
+      duration_h: Number(r.duration_h), price_cents: r.price_cents, left: r.spots_left, max_per_order: r.max_per_order,
+      place: { es: r.place_es, en: r.place_en || r.place_es },
+      title: { es: r.title_es, en: r.title_en || r.title_es },
+      desc: { es: r.desc_es, en: r.desc_en || r.desc_es },
+      price: label(r.price_label_es, r.price_label_en)
+    };
+  }
+
+  var list = [];
+  var ready;
+  if (backend) {
+    ready = fetch(cfg.url + '/rest/v1/events_public?select=*&order=starts_at.asc', {
+      headers: { apikey: cfg.anonKey, Authorization: 'Bearer ' + cfg.anonKey }
+    }).then(function (r) { if (!r.ok) throw new Error('events ' + r.status); return r.json(); })
+      .then(function (rows) { list = rows.map(fromRow); return list; })
+      .catch(function () { list = []; window.ROCE_EVENTS_ERROR = true; return list; });
+  } else {
+    list = SAMPLE;
+    ready = Promise.resolve(list);
+  }
+
+  window.ROCE_EVENTS_READY = ready;
   window.ROCE_EVENT_UTIL = {
-    find: function (id) { return EVENTS.filter(function (e) { return e.id === id; })[0] || null; },
+    backend: backend,
+    find: function (id) { return list.filter(function (e) { return e.id === id; })[0] || null; },
     today: function () { return new Intl.DateTimeFormat('en-CA', { timeZone: TZ }).format(new Date()); },
-    // Fecha del evento como Date (mediodía de Valencia, solo para formatear el día).
+    // Mediodía de Valencia de la fecha del evento (solo para formatear el día).
     day: function (e) { return new Date(e.date + 'T12:00:00+01:00'); },
     fmt: function (e, lang, opts) { return new Intl.DateTimeFormat(lang, Object.assign({ timeZone: TZ }, opts)).format(this.day(e)); },
-    money: function (cents, lang) { return (cents / 100).toLocaleString(lang === 'en' ? 'en-GB' : 'es-ES', { style: 'currency', currency: 'EUR', minimumFractionDigits: cents % 100 ? 2 : 0 }); }
+    money: money,
+
+    // Reserva real en la base de datos (función book_event). Devuelve la
+    // referencia, las plazas que quedan y el total, o rechaza con un código:
+    // sold_out, event_past, event_not_found, bad_qty, bad_data o network.
+    book: function (ev, o) {
+      return fetch(cfg.url + '/rest/v1/rpc/book_event', {
+        method: 'POST',
+        headers: { apikey: cfg.anonKey, Authorization: 'Bearer ' + cfg.anonKey, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ p_event: ev.id, p_qty: o.qty, p_name: o.name, p_email: o.email, p_phone: o.phone, p_notes: o.notes || '', p_lang: o.lang, p_marketing: !!o.marketing })
+      }).then(function (r) {
+        return r.json().then(function (body) {
+          if (!r.ok) {
+            var m = (body && (body.message || body.hint || '')) + '';
+            var code = ['sold_out', 'event_past', 'event_not_found', 'bad_qty', 'bad_data'].filter(function (c) { return m.indexOf(c) !== -1; })[0];
+            throw new Error(code || 'network');
+          }
+          var row = Array.isArray(body) ? body[0] : body;
+          return { ref: row.o_ref, left: row.o_spots_left, total_cents: row.o_total_cents };
+        });
+      }, function () { throw new Error('network'); });
+    }
   };
 })();
