@@ -47,133 +47,188 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/styles.css?v=66">
 <style>
-  html, body { height: 100%; overflow: hidden; background: var(--black); }
+  /* Portada minimal: cabecera con logo y menú, frase enorme y la elección
+     entre ROCE Club (día) y ROCE Dining (noche). */
+  html, body { height: 100%; overflow: hidden; background: var(--cream); }
 
-  /* Pantalla de elección: dos mitades (ROCE Club de día, ROCE Dining de noche),
-     cada una con el logo inclinado de la marca. */
-  .choose { height: 100dvh; display: flex; flex-direction: column; }
-  .choose-halves { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+  .home { height: 100dvh; display: flex; flex-direction: column; background: var(--cream); color: var(--black); }
 
-  .choose-half {
-    position: relative;
+  .home-head {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.25rem 1.5rem;
+  }
+  .home-logo { height: 34px; width: auto; display: block; }
+  .menu-btn { background: none; border: none; padding: 0.4rem; color: inherit; cursor: pointer; line-height: 0; }
+  .menu-btn svg { width: 2rem; height: 2rem; }
+
+  .home-main {
     flex: 1;
     min-height: 0;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 1.25rem 1.5rem;
+    padding: 0 1.5rem;
     text-align: center;
-    text-decoration: none;
-    overflow: hidden;
   }
-  .choose-club { background: var(--cream); color: var(--black); }
-  .choose-dining { background: var(--black); color: var(--cream); }
-
-  .choose-mark { display: block; width: min(62vw, 300px); height: auto; margin: 0 auto; transition: transform 0.35s ease; }
-  .choose-half:hover .choose-mark { transform: rotate(-3deg) scale(1.04); }
-
-  .choose-name {
-    margin-top: 0.7rem;
+  .home-statement {
+    max-width: 14ch;
     font-family: var(--display);
-    font-weight: 400;
-    font-size: clamp(1.7rem, 7vw, 2.6rem);
-    line-height: 1;
-    letter-spacing: 0.02em;
-    text-transform: uppercase;
+    font-weight: 700;
+    font-size: clamp(2.6rem, 11vw, 6.4rem);
+    line-height: 1.02;
+    letter-spacing: -0.01em;
   }
-  .choose-hours { margin-top: 0.4rem; font-family: var(--display); font-size: clamp(1rem, 4vw, 1.3rem); }
-  .choose-sub { margin-top: 0.3rem; font-size: 0.85rem; opacity: 0.7; }
+  .home-intro {
+    max-width: 32rem;
+    margin-top: 1.6rem;
+    font-size: clamp(0.95rem, 2.6vw, 1.1rem);
+    line-height: 1.55;
+    color: rgba(10, 10, 10, 0.62);
+  }
 
-  .choose-pill {
-    display: inline-block;
-    margin-top: 1.1rem;
-    padding: 0.7rem 1.6rem;
+  .home-choices { display: flex; flex-direction: column; gap: 0.8rem; width: min(100%, 26rem); margin-top: 2.2rem; }
+  .home-choice {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 1.4rem;
+    border: 1.5px solid var(--black);
     border-radius: 999px;
-    font-size: 0.8rem;
-    font-weight: 600;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    transition: transform 0.2s ease;
+    color: var(--black);
+    text-decoration: none;
+    text-align: left;
+    transition: background 0.2s ease, color 0.2s ease;
   }
-  .choose-club .choose-pill { background: var(--black); color: var(--white); }
-  .choose-dining .choose-pill { background: var(--white); color: var(--black); }
-  .choose-half:hover .choose-pill { transform: translateY(-2px); }
+  .home-choice-dining { background: var(--black); color: var(--cream); }
+  .home-choice:hover { background: var(--black); color: var(--cream); }
+  .home-choice-dining:hover { background: transparent; color: var(--black); }
+  .home-choice strong { display: block; font-family: var(--display); font-weight: 400; font-size: 1.15rem; letter-spacing: 0.04em; text-transform: uppercase; }
+  .home-choice small { display: block; margin-top: 0.15rem; font-size: 0.8rem; opacity: 0.7; }
+  .home-choice-arrow { font-family: var(--display); font-size: 1.6rem; line-height: 1; flex-shrink: 0; }
 
-  .choose-now {
-    position: absolute;
-    top: 1rem;
-    left: 1.25rem;
+  .home-now {
     display: none;
     align-items: center;
-    gap: 0.4rem;
-    padding: 0.25rem 0.7rem;
-    border: 1px solid currentColor;
-    border-radius: 999px;
-    font-size: 0.7rem;
+    gap: 0.35rem;
+    margin-bottom: 0.25rem;
+    font-size: 0.65rem;
     font-weight: 600;
     letter-spacing: 0.08em;
     text-transform: uppercase;
   }
-  .choose-now::before { content: ""; width: 0.45rem; height: 0.45rem; border-radius: 50%; background: currentColor; }
-  .choose-half.is-now .choose-now { display: inline-flex; }
+  .home-now::before { content: ""; width: 0.4rem; height: 0.4rem; border-radius: 50%; background: currentColor; }
+  .home-choice.is-now .home-now { display: flex; }
 
-  .choose-foot {
-    flex-shrink: 0;
-    padding: 0.75rem 1rem 1rem;
+  .home-foot { flex-shrink: 0; padding: 0.9rem 1rem 1.1rem; text-align: center; font-size: 0.72rem; letter-spacing: 0.03em; color: rgba(10, 10, 10, 0.55); }
+  .home-foot a { color: inherit; text-decoration: none; }
+  .home-foot a:hover { text-decoration: underline; }
+  .home-foot .lang-switch { display: flex; justify-content: center; margin-bottom: 0.4rem; }
+
+  /* Menú a pantalla completa */
+  .menu-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 300;
+    display: none;
+    flex-direction: column;
     background: var(--black);
-    color: rgba(236, 231, 221, 0.6);
-    text-align: center;
-    font-size: 0.72rem;
-    letter-spacing: 0.03em;
+    color: var(--cream);
+    padding: 1.25rem 1.5rem 2.5rem;
   }
-  .choose-foot a { color: inherit; text-decoration: none; }
-  .choose-foot a:hover { text-decoration: underline; }
-  .choose-foot .lang-switch { display: flex; justify-content: center; margin-bottom: 0.4rem; }
+  .menu-overlay.is-open { display: flex; animation: menuIn 0.25s ease both; }
+  @keyframes menuIn { from { opacity: 0; } to { opacity: 1; } }
+  .menu-overlay-head { display: flex; align-items: center; justify-content: space-between; }
+  .menu-overlay-head img { height: 34px; width: auto; display: block; }
+  .menu-links { margin-top: auto; display: flex; flex-direction: column; }
+  .menu-links a {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 0;
+    border-top: 1px solid rgba(236, 231, 221, 0.25);
+    color: var(--cream);
+    text-decoration: none;
+    font-family: var(--display);
+    font-size: clamp(2rem, 9vw, 3.4rem);
+    line-height: 1;
+    text-transform: uppercase;
+  }
+  .menu-links a small { font-family: var(--body); font-size: 0.8rem; opacity: 0.6; text-transform: none; }
+  .menu-links a:hover { opacity: 0.7; }
+  .menu-links a.menu-minor { font-size: 1rem; letter-spacing: 0.04em; padding: 1.1rem 0 0; }
 
   @media (min-width: 720px) {
-    .choose-halves { flex-direction: row; }
-    .choose-half { padding: 2rem; }
-    .choose-mark { width: min(32vw, 440px); }
-    .choose-name { font-size: clamp(2rem, 3.6vw, 3rem); }
-    .choose-hours { font-size: clamp(1.1rem, 1.8vw, 1.5rem); }
+    .home-head { padding: 1.5rem 2.5rem; }
+    .home-choices { flex-direction: row; width: min(100%, 40rem); }
+    .home-choice { flex: 1; }
   }
 </style>
 </head>
 <body>
 
-<main class="choose">
-  <div class="choose-halves">
-    <a class="choose-half choose-club" id="chooseClub" href="/club/">
-      <span class="choose-now" data-i18n="choose_now">Ahora</span>
-      <div>
-        <img class="choose-mark" src="/assets/logo/roce-tilted-black.png" alt="ROCE">
-        <h2 class="choose-name">Club</h2>
-        <p class="choose-hours">10:00 – 20:00</p>
-        <p class="choose-sub" data-i18n="choose_club_sub">Brunch y cafetería · sin reserva</p>
-        <span class="choose-pill"><span data-i18n="choose_enter">Entrar</span> →</span>
-      </div>
-    </a>
+<div class="home">
+  <header class="home-head">
+    <a href="/" aria-label="ROCE — inicio"><img class="home-logo" src="/assets/logo/roce-horizontal-black.png" alt="ROCE"></a>
+    <button class="menu-btn" id="menuOpen" type="button" aria-label="Menú" aria-expanded="false" aria-controls="menuOverlay">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+    </button>
+  </header>
 
-    <a class="choose-half choose-dining" id="chooseDining" href="/dining/">
-      <span class="choose-now" data-i18n="choose_now">Ahora</span>
-      <div>
-        <img class="choose-mark" src="/assets/logo/roce-tilted-white.png" alt="ROCE">
-        <h2 class="choose-name">Dining</h2>
-        <p class="choose-hours">20:00 – 02:00</p>
-        <p class="choose-sub" data-i18n="choose_dining_sub">Cenas y noche</p>
-        <span class="choose-pill"><span data-i18n="choose_enter">Entrar</span> →</span>
-      </div>
-    </a>
-  </div>
+  <main class="home-main">
+    <h1 class="home-statement" data-i18n="home_statement">Todo empieza con un roce.</h1>
+    <p class="home-intro" data-i18n="home_intro">De día, ROCE Club: brunch y cafetería sin reserva, de 10:00 a 20:00. De noche, ROCE Dining: cenas, de 20:00 a 02:00.</p>
 
-  <div class="choose-foot">
+    <div class="home-choices">
+      <a class="home-choice home-choice-club" id="chooseClub" href="/club/">
+        <div>
+          <span class="home-now" data-i18n="choose_now">Ahora</span>
+          <strong>ROCE Club</strong>
+          <small>10:00 – 20:00</small>
+        </div>
+        <span class="home-choice-arrow" aria-hidden="true">→</span>
+      </a>
+      <a class="home-choice home-choice-dining" id="chooseDining" href="/dining/">
+        <div>
+          <span class="home-now" data-i18n="choose_now">Ahora</span>
+          <strong>ROCE Dining</strong>
+          <small>20:00 – 02:00</small>
+        </div>
+        <span class="home-choice-arrow" aria-hidden="true">→</span>
+      </a>
+    </div>
+  </main>
+
+  <div class="home-foot">
     <div class="lang-switch">
       <button type="button" data-lang="es">ES</button>
       <button type="button" data-lang="en">EN</button>
     </div>
     <a href="/aviso-legal.html" data-i18n="footer_legal">Aviso legal</a> · <a href="/terminos.html" data-i18n="footer_terms">Términos y condiciones</a> · <a href="/cookies.html" data-i18n="footer_cookies">Cookies</a> · <a href="/privacidad.html" data-i18n="footer_privacy">Política de privacidad</a>
   </div>
-</main>
+</div>
+
+<div class="menu-overlay" id="menuOverlay" role="dialog" aria-modal="true" aria-label="Menú">
+  <div class="menu-overlay-head">
+    <img src="/assets/logo/roce-horizontal-white.png" alt="ROCE">
+    <button class="menu-btn" id="menuClose" type="button" aria-label="Cerrar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg>
+    </button>
+  </div>
+  <nav class="menu-links">
+    <a href="/club/">ROCE Club <small>10:00 – 20:00</small></a>
+    <a href="/dining/">ROCE Dining <small>20:00 – 02:00</small></a>
+    <a href="/fuck-who-doesn't-like-this-place/"><span data-i18n="menu_reservar_title">Reservar</span></a>
+    <a class="menu-minor" href="/fuck-who-doesn't-like-this-place/#alquila-el-espacio"><span data-i18n="menu_alquiler_link">Alquila el espacio</span> →</a>
+    <a class="menu-minor" href="https://www.instagram.com/somosroce" target="_blank" rel="noopener">@somosroce ↗</a>
+  </nav>
+</div>
 
 <div class="cookie-banner" id="cookieBanner">
   <p class="cookie-text"><span data-i18n="cookie_text">Usamos una cookie técnica propia para recordar tu elección. Si aceptas, también activamos el Píxel de Meta (Facebook e Instagram) y Google Tag Manager para medir y mejorar nuestra publicidad y nuestra web. El sistema de reservas es de un tercero (CoverManager) y puede usar las suyas.</span> <a href="/cookies.html" data-i18n="cookie_more_info">Más información</a>.</p>
@@ -186,12 +241,24 @@
 <script src="/i18n.js?v=46"></script>
 
 <script>
-  // Se destaca la mitad que toca según la hora de Valencia: Club de 10:00 a
+  // Se destaca la opción que toca según la hora de Valencia: Club de 10:00 a
   // 20:00 y Dining el resto. No se recuerda nada: siempre se pregunta.
   (function () {
     var hour = Number(new Intl.DateTimeFormat('en-GB', { hour: '2-digit', hourCycle: 'h23', timeZone: 'Europe/Madrid' }).format(new Date()));
     var isDay = hour >= 10 && hour < 20;
     document.getElementById(isDay ? 'chooseClub' : 'chooseDining').classList.add('is-now');
+  })();
+
+  (function () {
+    var overlay = document.getElementById('menuOverlay');
+    var openBtn = document.getElementById('menuOpen');
+    function setMenu(open) {
+      overlay.classList.toggle('is-open', open);
+      openBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    }
+    openBtn.addEventListener('click', function () { setMenu(true); });
+    document.getElementById('menuClose').addEventListener('click', function () { setMenu(false); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') setMenu(false); });
   })();
 </script>
 

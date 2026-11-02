@@ -171,9 +171,11 @@
 
     // Elegir entre ROCE Club (día) y ROCE Dining (noche)
     choose_now: { es: 'Ahora', en: 'Now' },
-    choose_enter: { es: 'Entrar', en: 'Enter' },
-    choose_club_sub: { es: 'Brunch y cafetería · sin reserva', en: 'Brunch & café · no booking needed' },
-    choose_dining_sub: { es: 'Cenas y noche', en: 'Dinner & nights' },
+    home_statement: { es: 'Todo empieza con un roce.', en: 'It all starts with a roce.' },
+    home_intro: {
+      es: 'De día, ROCE Club: brunch y cafetería sin reserva, de 10:00 a 20:00. De noche, ROCE Dining: cenas, de 20:00 a 02:00.',
+      en: 'By day, ROCE Club: brunch and café, no booking needed, from 10:00 to 20:00. By night, ROCE Dining: dinner, from 20:00 to 02:00.',
+    },
     switch_to_club: { es: 'Ir a ROCE Club', en: 'Go to ROCE Club' },
 
     // club/index.html
