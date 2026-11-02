@@ -98,6 +98,7 @@
   .ev-buy { display: flex; flex-direction: column; align-items: flex-end; gap: 0.75rem; text-align: right; }
   .ev-price { font-family: var(--display); font-size: 1.15rem; letter-spacing: 0.02em; text-transform: uppercase; line-height: 1.1; }
   .ev-cta {
+    display: inline-block;
     padding: 0.75rem 1.25rem;
     border: 2px solid currentColor;
     border-radius: 0;
@@ -108,8 +109,12 @@
     letter-spacing: 0.04em;
     text-transform: uppercase;
     cursor: pointer;
+    text-decoration: none;
+    text-align: center;
     transition: background 0.15s ease, color 0.15s ease;
   }
+  .ev-cta.is-soldout { opacity: 0.4; pointer-events: none; }
+  .ev-left { font-family: var(--display); font-size: 0.8rem; letter-spacing: 0.06em; text-transform: uppercase; color: #e5453a; }
   .ev-card[data-env="day"] .ev-cta:hover { background: var(--black); color: var(--white); }
   .ev-card[data-env="night"] .ev-cta:hover { background: var(--white); color: var(--black); }
 
@@ -120,10 +125,6 @@
   .ev-foot a:hover { text-decoration: underline; }
   .ev-foot .lang-switch { display: flex; justify-content: center; margin-bottom: 0.4rem; }
 
-  .ev-dialog { margin: auto; max-width: min(92vw, 26rem); padding: 1.75rem; border: 2px solid var(--fg); background: var(--bg); color: var(--fg); }
-  .ev-dialog::backdrop { background: rgba(10, 10, 10, 0.6); }
-  .ev-dialog h2 { font-family: var(--display); font-weight: 400; font-size: 1.8rem; line-height: 1; text-transform: uppercase; }
-  .ev-dialog p { margin: 0.9rem 0 1.4rem; font-size: 0.98rem; line-height: 1.5; }
 
   @media (max-width: 640px) {
     .ev-card { grid-template-columns: auto 1fr; padding: 1.1rem; }
@@ -162,12 +163,6 @@
   </div>
 </footer>
 
-<dialog class="ev-dialog" id="evDialog">
-  <h2 data-i18n="ev_dialog_title">Pago online muy pronto</h2>
-  <p data-i18n="ev_dialog_text">Estamos preparando la compra de entradas con tarjeta. Mientras tanto, escríbenos a reservas@roce.es.</p>
-  <button type="button" class="ev-cta" id="evDialogClose" data-i18n="ev_close">Cerrar</button>
-</dialog>
-
 <div class="cookie-banner" id="cookieBanner">
   <p class="cookie-text"><span data-i18n="cookie_text">Usamos una cookie técnica propia para recordar tu elección. Si aceptas, también activamos el Píxel de Meta (Facebook e Instagram) y Google Tag Manager para medir y mejorar nuestra publicidad y nuestra web. El sistema de reservas es de un tercero (CoverManager) y puede usar las suyas.</span> <a href="/cookies.html" data-i18n="cookie_more_info">Más información</a>.</p>
   <div class="cookie-actions">
@@ -176,96 +171,50 @@
   </div>
 </div>
 <script src="/cookies.js?v=3"></script>
-<script src="/i18n.js?v=54"></script>
+<script src="/i18n.js?v=56"></script>
+<script src="/eventos/events.js"></script>
 <script>
-  // Agenda: aquí se editan los eventos. Cada uno tiene su ambiente (day|night),
-  // fecha (AAAA-MM-DD, hora de Valencia) y precio en céntimos (0 = gratis).
-  // Cuando esté el TPV virtual, ROCE_EVENTS.onBuy(evento) es el único punto
-  // donde enganchar el pago (id y price_cents ya van en cada evento).
-  // Datos de ejemplo — sustituir por la agenda real.
-  var EVENTS = [
-    {
-      id: 'brunch-vinilos', env: 'day', date: '2026-12-12', time: '11:00', price_cents: 0,
-      place: { es: 'Planta baja', en: 'Ground floor' },
-      title: { es: 'Brunch con vinilos', en: 'Brunch with vinyl' },
-      desc: { es: 'Sábado de brunch con una selección de vinilos de la casa y café de especialidad.', en: 'Saturday brunch with a selection of house vinyl and specialty coffee.' },
-      price: { es: 'Entrada libre', en: 'Free entry' }
-    },
-    {
-      id: 'taller-cafe', env: 'day', date: '2026-12-13', time: '12:00', price_cents: 2500,
-      place: { es: 'Planta baja · aforo 12', en: 'Ground floor · 12 seats' },
-      title: { es: 'Taller de café de especialidad', en: 'Specialty coffee workshop' },
-      desc: { es: 'Cata guiada y práctica de métodos de filtrado con nuestro equipo de barra.', en: 'Guided tasting and hands-on brewing methods with our bar team.' },
-      price: { es: '25 € por persona', en: '€25 per person' }
-    },
-    {
-      id: 'noche-jazz', env: 'night', date: '2026-12-17', time: '21:30', price_cents: 0,
-      place: { es: 'Primera planta', en: 'First floor' },
-      title: { es: 'Noche de jazz', en: 'Jazz night' },
-      desc: { es: 'Trío en directo entre plato y plato: jazz de toda la vida, sin manteles ni silencio.', en: 'A live trio between courses: classic jazz, no tablecloths, no hushed silence.' },
-      price: { es: 'Libre con consumición', en: 'Free with a drink' }
-    },
-    {
-      id: 'dj-primera-planta', env: 'night', date: '2026-12-18', time: '22:30', price_cents: 1000,
-      place: { es: 'Primera planta', en: 'First floor' },
-      title: { es: 'DJ set en la primera planta', en: 'DJ set upstairs' },
-      desc: { es: 'La barra abierta hasta tarde y un DJ invitado. Aforo reducido.', en: 'The bar stays open late with a guest DJ. Limited capacity.' },
-      price: { es: '10 € · incluye primera copa', en: '€10 · includes first drink' }
-    },
-    {
-      id: 'cena-maridaje', env: 'night', date: '2026-12-19', time: '21:00', price_cents: 5500,
-      place: { es: 'Primera planta', en: 'First floor' },
-      title: { es: 'Cena maridaje: vinos de autor', en: 'Pairing dinner: author wines' },
-      desc: { es: 'Menú degustación de cinco platos maridado con vinos de pequeños productores.', en: 'Five-course tasting menu paired with wines from small producers.' },
-      price: { es: '55 € por persona', en: '€55 per person' }
-    }
-  ];
-
+  // Los eventos están en /eventos/events.js (misma fuente que la compra de entradas).
   (function () {
+    var EVENTS = window.ROCE_EVENT_DATA;
+    var U = window.ROCE_EVENT_UTIL;
     var list = document.getElementById('evList');
     var empty = document.getElementById('evEmpty');
-    var dialog = document.getElementById('evDialog');
     var filter = 'all';
-    var TZ = 'Europe/Madrid';
 
     function lang() { return window.ROCE_I18N ? window.ROCE_I18N.getLang() : 'es'; }
     function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
-    function today() { return new Intl.DateTimeFormat('en-CA', { timeZone: TZ }).format(new Date()); }
+    function t(k, fallback) { return (window.ROCE_I18N && window.ROCE_I18N.t(k)) || fallback; }
 
     var AGE = '<svg class="age-badge" viewBox="0 0 100 100" role="img" aria-label="+18"><circle cx="50" cy="50" r="44" fill="#ffffff" stroke="#e5453a" stroke-width="9"/><text x="44" y="65" text-anchor="middle" font-family="\'Helvetica Neue Web\',\'Helvetica Neue\',Arial,sans-serif" font-weight="700" font-size="46" letter-spacing="-3" fill="#0a0a0a">18</text><text x="77" y="52" text-anchor="middle" font-family="\'Helvetica Neue Web\',\'Helvetica Neue\',Arial,sans-serif" font-weight="700" font-size="30" fill="#0a0a0a">+</text></svg>';
 
     function render() {
       var l = lang();
-      var t = window.ROCE_I18N ? window.ROCE_I18N.t : function () { return ''; };
       var upcoming = EVENTS.filter(function (e) {
-        return e.date >= today() && (filter === 'all' || e.env === filter);
+        return e.date >= U.today() && (filter === 'all' || e.env === filter);
       }).sort(function (a, b) { return (a.date + a.time).localeCompare(b.date + b.time); });
 
       list.innerHTML = upcoming.map(function (e) {
-        var d = new Date(e.date + 'T12:00:00+01:00');
-        var wd = new Intl.DateTimeFormat(l, { weekday: 'short', timeZone: TZ }).format(d).replace('.', '');
-        var mon = new Intl.DateTimeFormat(l, { month: 'short', timeZone: TZ }).format(d).replace('.', '');
-        var day = new Intl.DateTimeFormat(l, { day: 'numeric', timeZone: TZ }).format(d);
+        var wd = U.fmt(e, l, { weekday: 'short' }).replace('.', '');
+        var mon = U.fmt(e, l, { month: 'short' }).replace('.', '');
+        var day = U.fmt(e, l, { day: 'numeric' });
         var env = e.env === 'night' ? 'Night ' + AGE : 'Day';
+        var sold = e.left <= 0;
+        var low = !sold && e.left <= 5 ? '<span class="ev-left">' + esc(t('tk_last', 'Últimas {n} plazas').replace('{n}', e.left)) + '</span>' : '';
+        var cta = sold
+          ? '<span class="ev-cta is-soldout">' + esc(t('tk_soldout', 'Agotado')) + '</span>'
+          : '<a class="ev-cta" href="/eventos/entradas/?e=' + encodeURIComponent(e.id) + '">' + esc(t('ev_cta', 'Reservar plaza')) + '</a>';
         return '<li class="ev-card" data-env="' + e.env + '">' +
           '<div class="ev-date"><span class="ev-date-wd">' + esc(wd) + '</span><span class="ev-date-day">' + esc(day) + '</span><span class="ev-date-mon">' + esc(mon) + '</span></div>' +
           '<div class="ev-info"><span class="ev-env">' + env + '</span>' +
             '<h2 class="ev-name">' + esc(e.title[l]) + '</h2>' +
             '<p class="ev-meta">' + esc(e.time) + ' · ' + esc(e.place[l]) + '</p>' +
             '<p class="ev-desc">' + esc(e.desc[l]) + '</p></div>' +
-          '<div class="ev-buy"><span class="ev-price">' + esc(e.price[l]) + '</span>' +
-            '<button type="button" class="ev-cta" data-id="' + esc(e.id) + '">' + esc(t('ev_cta') || 'Reservar plaza') + '</button></div>' +
+          '<div class="ev-buy"><span class="ev-price">' + esc(e.price[l]) + '</span>' + low + cta + '</div>' +
           '</li>';
       }).join('');
       empty.hidden = upcoming.length > 0;
     }
-
-    list.addEventListener('click', function (ev) {
-      var btn = ev.target.closest('.ev-cta');
-      if (!btn) return;
-      var found = EVENTS.filter(function (e) { return e.id === btn.getAttribute('data-id'); })[0];
-      if (found) window.ROCE_EVENTS.onBuy(found);
-    });
 
     document.querySelectorAll('.ev-chip').forEach(function (chip) {
       chip.addEventListener('click', function () {
@@ -275,12 +224,7 @@
       });
     });
 
-    document.getElementById('evDialogClose').addEventListener('click', function () { dialog.close(); });
     document.addEventListener('roce:lang', render);
-
-    // Punto de enganche del TPV virtual: de momento solo avisa de que llega pronto.
-    window.ROCE_EVENTS = { list: EVENTS, onBuy: function () { if (dialog.showModal) dialog.showModal(); } };
-
     render();
   })();
 </script>

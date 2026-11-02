@@ -238,6 +238,13 @@
     overflow-y: auto;
   }
   .menu-overlay.is-open { display: flex; animation: reservasFadeIn 0.25s ease both; }
+  /* De día el menú también es blanco con letras negras (de noche, negro). */
+  html[data-mode="day"] .menu-overlay { background: var(--white); color: var(--black); }
+  html[data-mode="day"] .reservas-menu-close,
+  html[data-mode="day"] .reservas-menu-item,
+  html[data-mode="day"] .reservas-menu-minor { color: var(--black); }
+  html[data-mode="day"] .reservas-menu-item,
+  html[data-mode="day"] .reservas-menu-minor { border-top-color: rgba(10, 10, 10, 0.28); }
   .reservas-menu-close {
     position: fixed;
     top: 0.6rem;
@@ -407,7 +414,7 @@
   </div>
 </div>
 <script src="/cookies.js?v=3"></script>
-<script src="/i18n.js?v=54"></script>
+<script src="/i18n.js?v=56"></script>
 
 <script>
   // Se marca "Ahora" en lo que está abierto según la hora de Valencia (Day de
