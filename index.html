@@ -47,47 +47,77 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/styles.css?v=66">
 <style>
-  /* Portada minimal: cabecera con logo y menú, frase enorme en zigzag y dos
-     cuadrados grandes para elegir entre ROCE Club (día) y ROCE Dining (noche). */
-  html, body { background: var(--white); }
+  /* Portada minimal: todo cabe SIEMPRE en una pantalla (sin scroll): cabecera,
+     frase enorme en zigzag y dos cuadrados para elegir ROCE Club (día) o
+     ROCE Dining (noche). Los tamaños se calculan con el alto y el ancho
+     disponibles para que se adapte a cualquier dispositivo. */
+  html, body { height: 100%; overflow: hidden; background: var(--white); }
 
-  .home { min-height: 100dvh; display: flex; flex-direction: column; background: var(--white); color: var(--black); }
-
-  .home-head {
+  .home {
+    --head: 64px;
+    --foot: 72px;
+    --pad: 1.25rem;
+    --gap: 0.75rem;
+    --avail: calc(100dvh - var(--head) - var(--foot) - 1.5rem);
+    height: 100dvh;
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 1.25rem 1.25rem;
+    flex-direction: column;
+    background: var(--white);
+    color: var(--black);
   }
-  .home-logo { height: 34px; width: auto; display: block; }
+
+  .home-head { flex-shrink: 0; height: var(--head); display: flex; align-items: center; justify-content: flex-end; padding: 0 var(--pad); }
+  /* El ratón es el logo (solo con puntero fino; en táctil no se muestra). */
+  .cursor-logo { display: none; }
+  @media (hover: hover) and (pointer: fine) {
+    .home, .home a, .home button { cursor: none; }
+    .cursor-logo {
+      display: block; position: fixed; left: 0; top: 0; z-index: 9999;
+      width: 76px; height: auto; pointer-events: none;
+      mix-blend-mode: difference; opacity: 0; transition: opacity .2s ease, scale .2s ease;
+      will-change: transform;
+    }
+    .cursor-logo.on { opacity: 1; }
+    .cursor-logo.big { scale: 1.35; }
+  }
   .menu-btn { background: none; border: none; padding: 0.4rem; color: inherit; cursor: pointer; line-height: 0; }
   .menu-btn svg { width: 2rem; height: 2rem; }
 
-  .home-main { flex: 1; padding: 1.5rem 1.25rem 2.5rem; max-width: 1500px; width: 100%; margin: 0 auto; }
+  /* Vertical (móvil, tablet): frase arriba y los dos cuadrados en fila debajo. */
+  .home-main {
+    --s: min(calc(100vw - 2 * var(--pad)), calc((var(--avail) * 0.55 - var(--gap)) / 2));
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 1.25rem;
+    padding: 0 var(--pad);
+  }
 
-  /* Frase enorme, pegada, en zigzag: izquierda / derecha / izquierda / centro / derecha */
   .home-statement {
     font-family: var(--display);
     font-weight: 400;
-    font-size: clamp(3.2rem, 19vw, 10.5rem);
+    font-size: min(19vw, 10.5rem, calc((var(--avail) - 2 * var(--s) - var(--gap) - 1.25rem) / 3.5));
     line-height: 0.84;
     letter-spacing: -0.02em;
     text-transform: uppercase;
   }
-  .home-statement span { display: block; }
-  .home-statement .w1, .home-statement .w3 { text-align: left; }
-  .home-statement .w2, .home-statement .w5 { text-align: right; }
-  .home-statement .w4 { text-align: center; }
+  .home-statement .line { display: block; }
+  .home-statement .l1, .home-statement .l3 { text-align: left; }
+  .home-statement .l2, .home-statement .l4 { text-align: right; }
 
-  /* Dos cuadrados grandes */
-  .home-squares { display: grid; grid-template-columns: 1fr; gap: 1rem; margin-top: 3rem; }
+  .home-squares { display: flex; flex-direction: column; gap: var(--gap); }
+  .home-square-club { align-self: flex-start; }
+  .home-square-dining { align-self: flex-end; }
   .home-square {
-    position: relative;
-    aspect-ratio: 1 / 1;
+    container-type: inline-size;
+    width: var(--s);
+    height: var(--s);
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    padding: 1.4rem;
+    padding: calc(var(--s) * 0.09);
     text-decoration: none;
     overflow: hidden;
     transition: transform 0.25s ease;
@@ -96,40 +126,91 @@
   .home-square-club { background: var(--white); color: var(--black); border: 2px solid var(--black); }
   .home-square-dining { background: var(--black); color: var(--white); border: 2px solid var(--black); }
 
-  .home-square-top { min-height: 1.6rem; }
-  .home-square-bottom { display: flex; align-items: flex-end; justify-content: space-between; gap: 1rem; }
+  .home-square-top { min-height: 1rem; }
+  .home-square-bottom { display: flex; align-items: flex-end; justify-content: space-between; gap: 0.5rem; }
   .home-square strong {
     display: block;
     font-family: var(--display);
     font-weight: 400;
-    font-size: clamp(2.4rem, 11vw, 5rem);
+    font-size: clamp(0.8rem, 15cqw, 4.5rem);
     line-height: 0.95;
     letter-spacing: 0.01em;
     text-transform: uppercase;
   }
-  .home-square small { display: block; margin-top: 0.4rem; font-family: var(--display); font-size: clamp(0.95rem, 3.4vw, 1.3rem); opacity: 0.75; }
-  .home-square-arrow { font-family: var(--display); font-size: clamp(2.2rem, 8vw, 3.6rem); line-height: 1; flex-shrink: 0; }
+  .home-square small { display: block; margin-top: 0.35rem; font-family: var(--display); font-size: clamp(0.6rem, 6.2cqw, 1.25rem); opacity: 0.75; }
+  .home-square-arrow { font-family: var(--display); font-size: clamp(1rem, 13cqw, 3.4rem); line-height: 1; flex-shrink: 0; }
+
+  /* Pantallas diminutas (móvil muy pequeño tumbado): solo el nombre. */
+  @container (max-width: 96px) {
+    .home-square small, .home-square-arrow { display: none; }
+  }
 
   .home-now {
     display: none;
     align-items: center;
-    gap: 0.4rem;
+    gap: 0.35rem;
     width: fit-content;
-    padding: 0.25rem 0.7rem;
+    padding: 0.15rem 0.5rem;
     border: 1px solid currentColor;
     border-radius: 999px;
     font-family: var(--display);
-    font-size: 0.75rem;
+    font-size: clamp(0.5rem, 5.4cqw, 0.8rem);
     letter-spacing: 0.08em;
     text-transform: uppercase;
+    white-space: nowrap;
   }
-  .home-now::before { content: ""; width: 0.45rem; height: 0.45rem; border-radius: 50%; background: currentColor; }
+  .home-now::before {
+    content: "";
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background: #ff1f1f;
+    box-shadow: 0 0 0 0 rgba(255, 31, 31, 0.7);
+    animation: liveDot 1.3s ease-in-out infinite;
+  }
+  @keyframes liveDot {
+    0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(255, 31, 31, 0.6); }
+    50% { opacity: 0.25; box-shadow: 0 0 0 5px rgba(255, 31, 31, 0); }
+  }
+  @media (prefers-reduced-motion: reduce) { .home-now::before { animation: none; } }
   .home-square.is-now .home-now { display: flex; }
 
-  .home-foot { padding: 0.9rem 1rem 1.1rem; text-align: center; font-size: 0.72rem; letter-spacing: 0.03em; color: rgba(10, 10, 10, 0.55); }
+  .home-foot {
+    flex-shrink: 0;
+    height: var(--foot);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 0 1rem;
+    text-align: center;
+    font-size: 0.68rem;
+    line-height: 1.35;
+    letter-spacing: 0.03em;
+    color: rgba(10, 10, 10, 0.55);
+  }
   .home-foot a { color: inherit; text-decoration: none; }
   .home-foot a:hover { text-decoration: underline; }
-  .home-foot .lang-switch { display: flex; justify-content: center; margin-bottom: 0.4rem; }
+  .home-foot .lang-switch { display: flex; justify-content: center; margin-bottom: 0.25rem; }
+
+  /* Horizontal (escritorio, móvil tumbado): frase a la izquierda y los dos
+     cuadrados apilados a la derecha. */
+  @media (min-aspect-ratio: 5/4) {
+    .home { --pad: 2.5rem; }
+    .home-main {
+      --s: min(calc((var(--avail) - var(--gap)) / 2), 30vw);
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      gap: 2rem;
+    }
+    .home-statement {
+      flex: 1;
+      min-width: 0;
+      font-size: min(10.5rem, calc(var(--avail) / 3.5), calc((100vw - 2 * var(--pad) - var(--s) - 2rem) / 4.4));
+    }
+    .home-square-club, .home-square-dining { align-self: flex-end; }
+  }
 
   /* Menú a pantalla completa */
   .menu-overlay {
@@ -165,19 +246,13 @@
   .menu-links a:hover { opacity: 0.7; }
   .menu-links a.menu-minor { font-size: 1rem; letter-spacing: 0.04em; padding: 1.1rem 0 0; }
 
-  @media (min-width: 720px) {
-    .home-head { padding: 1.5rem 2.5rem; }
-    .home-main { padding: 2rem 2.5rem 3rem; }
-    .home-squares { grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 4rem; }
-    .home-square { padding: 2rem; }
-  }
 </style>
 </head>
 <body>
 
 <div class="home">
+  <img class="cursor-logo" id="cursorLogo" src="/assets/logo/roce-horizontal-white.png" alt="" aria-hidden="true">
   <header class="home-head">
-    <a href="/" aria-label="ROCE — inicio"><img class="home-logo" src="/assets/logo/roce-horizontal-black.png" alt="ROCE"></a>
     <button class="menu-btn" id="menuOpen" type="button" aria-label="Menú" aria-expanded="false" aria-controls="menuOverlay">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
     </button>
@@ -185,11 +260,10 @@
 
   <main class="home-main">
     <h1 class="home-statement">
-      <span class="w1" data-i18n="home_w1">Todo</span>
-      <span class="w2" data-i18n="home_w2">empieza</span>
-      <span class="w3" data-i18n="home_w3">con</span>
-      <span class="w4" data-i18n="home_w4">un</span>
-      <span class="w5" data-i18n="home_w5">roce</span>
+      <span class="line l1"><span data-i18n="home_w1">Todo</span></span>
+      <span class="line l2"><span data-i18n="home_w2">empieza</span></span>
+      <span class="line l3"><span data-i18n="home_w3">con</span> <span data-i18n="home_w4">un</span></span>
+      <span class="line l4"><span data-i18n="home_w5">roce</span></span>
     </h1>
 
     <div class="home-squares">
@@ -221,7 +295,9 @@
       <button type="button" data-lang="es">ES</button>
       <button type="button" data-lang="en">EN</button>
     </div>
-    <a href="/aviso-legal.html" data-i18n="footer_legal">Aviso legal</a> · <a href="/terminos.html" data-i18n="footer_terms">Términos y condiciones</a> · <a href="/cookies.html" data-i18n="footer_cookies">Cookies</a> · <a href="/privacidad.html" data-i18n="footer_privacy">Política de privacidad</a>
+    <div class="home-legal">
+      <a href="/aviso-legal.html" data-i18n="footer_legal">Aviso legal</a> · <a href="/terminos.html" data-i18n="footer_terms">Términos y condiciones</a> · <a href="/cookies.html" data-i18n="footer_cookies">Cookies</a> · <a href="/privacidad.html" data-i18n="footer_privacy">Política de privacidad</a>
+    </div>
   </div>
 </div>
 
@@ -270,6 +346,17 @@
     openBtn.addEventListener('click', function () { setMenu(true); });
     document.getElementById('menuClose').addEventListener('click', function () { setMenu(false); });
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape') setMenu(false); });
+  })();
+
+  (function () {
+    var c = document.getElementById('cursorLogo');
+    if (!c || !window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+    document.addEventListener('mousemove', function (e) {
+      c.style.transform = 'translate(' + (e.clientX - c.offsetWidth / 2) + 'px,' + (e.clientY - c.offsetHeight / 2) + 'px)';
+      c.classList.add('on');
+      c.classList.toggle('big', !!e.target.closest('a, button'));
+    });
+    document.documentElement.addEventListener('mouseleave', function () { c.classList.remove('on'); });
   })();
 </script>
 
