@@ -49,7 +49,8 @@
 <style>
   html, body { height: 100%; overflow: hidden; background: var(--black); }
 
-  /* Pantalla de elección: dos mitades (Club de día, Dining de noche). */
+  /* Pantalla de elección: dos mitades (ROCE Club de día, ROCE Dining de noche),
+     cada una con el logo inclinado de la marca. */
   .choose { height: 100dvh; display: flex; flex-direction: column; }
   .choose-halves { flex: 1; min-height: 0; display: flex; flex-direction: column; }
 
@@ -58,41 +59,54 @@
     flex: 1;
     min-height: 0;
     display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    padding: 1.25rem 1.5rem 1.5rem;
+    align-items: center;
+    justify-content: center;
+    padding: 1.25rem 1.5rem;
+    text-align: center;
     text-decoration: none;
     overflow: hidden;
   }
   .choose-club { background: var(--cream); color: var(--black); }
-  .choose-dining {
-    background: var(--black);
-    color: var(--cream);
-    border-top: 1px solid rgba(236, 231, 221, 0.25);
-  }
+  .choose-dining { background: var(--black); color: var(--cream); }
 
-  .choose-logo { height: 34px; width: auto; display: block; align-self: flex-start; }
+  .choose-mark { display: block; width: min(62vw, 300px); height: auto; margin: 0 auto; transition: transform 0.35s ease; }
+  .choose-half:hover .choose-mark { transform: rotate(-3deg) scale(1.04); }
 
-  .choose-bottom { display: flex; align-items: flex-end; justify-content: space-between; gap: 1rem; }
-
-  .choose-title {
+  .choose-name {
+    margin-top: 0.7rem;
     font-family: var(--display);
     font-weight: 400;
-    font-size: clamp(3rem, 13vw, 7.5rem);
-    line-height: 0.9;
+    font-size: clamp(1.7rem, 7vw, 2.6rem);
+    line-height: 1;
+    letter-spacing: 0.02em;
     text-transform: uppercase;
   }
-  .choose-title span { display: block; }
+  .choose-hours { margin-top: 0.4rem; font-family: var(--display); font-size: clamp(1rem, 4vw, 1.3rem); }
+  .choose-sub { margin-top: 0.3rem; font-size: 0.85rem; opacity: 0.7; }
 
-  .choose-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 0.9rem; margin-top: 0.9rem; }
-  .choose-hours { font-family: var(--display); font-size: clamp(1.1rem, 3.2vw, 1.6rem); }
-  .choose-sub { font-size: 0.9rem; opacity: 0.75; margin-top: 0.35rem; }
+  .choose-pill {
+    display: inline-block;
+    margin-top: 1.1rem;
+    padding: 0.7rem 1.6rem;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    transition: transform 0.2s ease;
+  }
+  .choose-club .choose-pill { background: var(--black); color: var(--white); }
+  .choose-dining .choose-pill { background: var(--white); color: var(--black); }
+  .choose-half:hover .choose-pill { transform: translateY(-2px); }
 
   .choose-now {
+    position: absolute;
+    top: 1rem;
+    left: 1.25rem;
     display: none;
     align-items: center;
     gap: 0.4rem;
-    padding: 0.2rem 0.65rem;
+    padding: 0.25rem 0.7rem;
     border: 1px solid currentColor;
     border-radius: 999px;
     font-size: 0.7rem;
@@ -102,15 +116,6 @@
   }
   .choose-now::before { content: ""; width: 0.45rem; height: 0.45rem; border-radius: 50%; background: currentColor; }
   .choose-half.is-now .choose-now { display: inline-flex; }
-
-  .choose-arrow {
-    font-family: var(--display);
-    font-size: clamp(2.2rem, 9vw, 4rem);
-    line-height: 1;
-    flex-shrink: 0;
-    transition: transform 0.2s ease;
-  }
-  .choose-half:hover .choose-arrow { transform: translateX(8px); }
 
   .choose-foot {
     flex-shrink: 0;
@@ -127,9 +132,10 @@
 
   @media (min-width: 720px) {
     .choose-halves { flex-direction: row; }
-    .choose-half { padding: 1.75rem 2rem 2rem; }
-    .choose-title { font-size: clamp(3rem, 7.2vw, 7rem); }
-    .choose-dining { border-top: 0; border-left: 1px solid rgba(236, 231, 221, 0.25); }
+    .choose-half { padding: 2rem; }
+    .choose-mark { width: min(32vw, 440px); }
+    .choose-name { font-size: clamp(2rem, 3.6vw, 3rem); }
+    .choose-hours { font-size: clamp(1.1rem, 1.8vw, 1.5rem); }
   }
 </style>
 </head>
@@ -138,32 +144,24 @@
 <main class="choose">
   <div class="choose-halves">
     <a class="choose-half choose-club" id="chooseClub" href="/club/">
-      <img class="choose-logo" src="/assets/logo/roce-horizontal-black.png" alt="ROCE">
-      <div class="choose-bottom">
-        <div>
-          <h2 class="choose-title"><span>ROCE</span><span>Club</span></h2>
-          <div class="choose-meta">
-            <span class="choose-hours">10:00 – 20:00</span>
-            <span class="choose-now" data-i18n="choose_now">Ahora</span>
-          </div>
-          <p class="choose-sub" data-i18n="choose_club_sub">Brunch y cafetería · sin reserva</p>
-        </div>
-        <span class="choose-arrow" aria-hidden="true">→</span>
+      <span class="choose-now" data-i18n="choose_now">Ahora</span>
+      <div>
+        <img class="choose-mark" src="/assets/logo/roce-tilted-black.png" alt="ROCE">
+        <h2 class="choose-name">Club</h2>
+        <p class="choose-hours">10:00 – 20:00</p>
+        <p class="choose-sub" data-i18n="choose_club_sub">Brunch y cafetería · sin reserva</p>
+        <span class="choose-pill"><span data-i18n="choose_enter">Entrar</span> →</span>
       </div>
     </a>
 
     <a class="choose-half choose-dining" id="chooseDining" href="/dining/">
-      <img class="choose-logo" src="/assets/logo/roce-horizontal-white.png" alt="ROCE">
-      <div class="choose-bottom">
-        <div>
-          <h2 class="choose-title"><span>ROCE</span><span>Dining</span></h2>
-          <div class="choose-meta">
-            <span class="choose-hours">20:00 – 02:00</span>
-            <span class="choose-now" data-i18n="choose_now">Ahora</span>
-          </div>
-          <p class="choose-sub" data-i18n="choose_dining_sub">Cenas y noche</p>
-        </div>
-        <span class="choose-arrow" aria-hidden="true">→</span>
+      <span class="choose-now" data-i18n="choose_now">Ahora</span>
+      <div>
+        <img class="choose-mark" src="/assets/logo/roce-tilted-white.png" alt="ROCE">
+        <h2 class="choose-name">Dining</h2>
+        <p class="choose-hours">20:00 – 02:00</p>
+        <p class="choose-sub" data-i18n="choose_dining_sub">Cenas y noche</p>
+        <span class="choose-pill"><span data-i18n="choose_enter">Entrar</span> →</span>
       </div>
     </a>
   </div>

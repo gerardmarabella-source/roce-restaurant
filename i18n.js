@@ -171,6 +171,7 @@
 
     // Elegir entre ROCE Club (día) y ROCE Dining (noche)
     choose_now: { es: 'Ahora', en: 'Now' },
+    choose_enter: { es: 'Entrar', en: 'Enter' },
     choose_club_sub: { es: 'Brunch y cafetería · sin reserva', en: 'Brunch & café · no booking needed' },
     choose_dining_sub: { es: 'Cenas y noche', en: 'Dinner & nights' },
     switch_to_club: { es: 'Ir a ROCE Club', en: 'Go to ROCE Club' },
