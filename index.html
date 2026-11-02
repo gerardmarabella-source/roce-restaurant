@@ -70,9 +70,11 @@
   .menu-btn { background: none; border: none; padding: 0.4rem; color: inherit; cursor: pointer; line-height: 0; }
   .menu-btn svg { width: 2rem; height: 2rem; }
 
-  /* Vertical (móvil, tablet): frase arriba y los dos cuadrados en fila debajo. */
+  /* Vertical (móvil, tablet): frase arriba y los dos bloques debajo, uno encima
+     del otro, a todo el ancho. El alto se reparte para que todo quepa sin scroll. */
   .home-main {
-    --s: min(calc(100vw - 2 * var(--pad)), calc((var(--avail) * 0.55 - var(--gap)) / 2));
+    --sw: calc(100vw - 2 * var(--pad));
+    --sh: min(calc(var(--sw) * 0.62), calc(var(--avail) * 0.215));
     flex: 1;
     min-height: 0;
     display: flex;
@@ -85,7 +87,7 @@
   .home-statement {
     font-family: var(--display);
     font-weight: 400;
-    font-size: min(19vw, 10.5rem, calc((var(--avail) - 2 * var(--s) - var(--gap) - 1.25rem) / 3.5));
+    font-size: min(19vw, 10.5rem, calc((var(--avail) - 2 * var(--sh) - var(--gap) - 1.25rem) / 3.9));
     line-height: 0.84;
     letter-spacing: -0.02em;
     text-transform: uppercase;
@@ -94,17 +96,15 @@
   .home-statement .l1, .home-statement .l3 { text-align: left; }
   .home-statement .l2, .home-statement .l4 { text-align: right; }
 
-  .home-squares { display: flex; flex-direction: column; gap: var(--gap); }
-  .home-square-day { align-self: flex-start; }
-  .home-square-night { align-self: flex-end; }
+  .home-squares { display: grid; grid-template-columns: var(--sw); justify-content: center; gap: var(--gap); }
   .home-square {
     container-type: inline-size;
-    width: var(--s);
-    height: var(--s);
+    width: var(--sw);
+    height: var(--sh);
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    padding: calc(var(--s) * 0.09);
+    padding: calc(min(var(--sw), var(--sh)) * 0.09);
     text-decoration: none;
     overflow: hidden;
     transition: transform 0.25s ease;
@@ -114,19 +114,19 @@
   .home-square-night { background: var(--black); color: var(--white); border: 2px solid var(--black); }
 
   .home-square-top { min-height: 1rem; display: flex; align-items: flex-start; justify-content: space-between; gap: 0.5rem; }
-  .age-badge { flex-shrink: 0; margin-left: auto; width: clamp(1.6rem, 21cqw, 3.4rem); height: clamp(1.6rem, 21cqw, 3.4rem); }
+  .age-badge { flex-shrink: 0; margin-left: auto; width: clamp(1.6rem, min(21cqw, calc(var(--sh) * 0.3)), 3.4rem); height: clamp(1.6rem, min(21cqw, calc(var(--sh) * 0.3)), 3.4rem); }
   .home-square-bottom { display: flex; align-items: flex-end; justify-content: space-between; gap: 0.5rem; }
   .home-square strong {
     display: block;
     font-family: var(--display);
     font-weight: 400;
-    font-size: clamp(0.8rem, 15cqw, 4.5rem);
+    font-size: clamp(0.8rem, min(15cqw, calc(var(--sh) * 0.2)), 4.5rem);
     line-height: 0.95;
     letter-spacing: 0.01em;
     text-transform: uppercase;
   }
-  .home-square small { display: block; margin-top: 0.35rem; font-family: var(--display); font-size: clamp(0.6rem, 6.2cqw, 1.25rem); opacity: 0.75; }
-  .home-square-arrow { font-family: var(--display); font-size: clamp(1rem, 13cqw, 3.4rem); line-height: 1; flex-shrink: 0; }
+  .home-square small { display: block; margin-top: 0.35rem; font-family: var(--display); font-size: clamp(0.6rem, min(6.2cqw, calc(var(--sh) * 0.085)), 1.25rem); opacity: 0.75; }
+  .home-square-arrow { font-family: var(--display); font-size: clamp(1rem, min(13cqw, calc(var(--sh) * 0.17)), 3.4rem); line-height: 1; flex-shrink: 0; }
 
   /* Pantallas diminutas (móvil muy pequeño tumbado): solo el nombre. */
   @container (max-width: 96px) {
@@ -193,6 +193,8 @@
     .home { --pad: 2.5rem; }
     .home-main {
       --s: min(calc((var(--avail) - var(--gap)) / 2), 30vw);
+      --sw: var(--s);
+      --sh: var(--s);
       flex-direction: row;
       align-items: center;
       justify-content: space-between;
@@ -203,6 +205,7 @@
       min-width: 0;
       font-size: min(10.5rem, calc(var(--avail) / 3.5), calc((100vw - 2 * var(--pad) - var(--s) - 2rem) / 4.4));
     }
+    .home-squares { display: flex; flex-direction: column; justify-content: flex-start; }
     .home-square-day, .home-square-night { align-self: flex-end; }
   }
 
