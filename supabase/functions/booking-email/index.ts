@@ -4,7 +4,8 @@
 //   BREVO_API_KEY    clave de la API de Brevo
 //   WEBHOOK_SECRET   texto largo cualquiera; el mismo que se pone en la cabecera
 //                    x-webhook-secret del webhook
-//   MAIL_FROM        (opcional) remitente verificado en Brevo, por defecto reservas@roce.es
+//   MAIL_FROM        (opcional) remitente verificado en Brevo, por defecto no-reply@roce.es
+//   MAIL_REPLY_TO    (opcional) a dónde llegan las respuestas, por defecto reservas@roce.es
 //   BREVO_LIST_ATTENDEES   ID de la lista de Brevo "Asistentes a eventos" (todos los que reservan)
 //   BREVO_LIST_NEWSLETTER  ID de la lista de la newsletter (solo quien marcó la casilla de novedades)
 //   BREVO_ATTR_FIRSTNAME / BREVO_ATTR_LASTNAME  (opcional) nombre de los atributos de nombre y apellidos en Brevo
@@ -12,7 +13,8 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 
 const BREVO_API_KEY = Deno.env.get("BREVO_API_KEY") ?? "";
 const WEBHOOK_SECRET = Deno.env.get("WEBHOOK_SECRET") ?? "";
-const FROM = Deno.env.get("MAIL_FROM") ?? "reservas@roce.es";
+const FROM = Deno.env.get("MAIL_FROM") ?? "no-reply@roce.es"; // debe ser un remitente verificado en Brevo
+const REPLY_TO = Deno.env.get("MAIL_REPLY_TO") ?? "reservas@roce.es";
 const LIST_ATTENDEES = Number(Deno.env.get("BREVO_LIST_ATTENDEES") ?? "0");
 const LIST_NEWSLETTER = Number(Deno.env.get("BREVO_LIST_NEWSLETTER") ?? "0");
 
@@ -87,6 +89,7 @@ Deno.serve(async (req) => {
     headers: { "api-key": BREVO_API_KEY, "content-type": "application/json", accept: "application/json" },
     body: JSON.stringify({
       sender: { name: "ROCE", email: FROM },
+      replyTo: { email: REPLY_TO, name: "ROCE" },
       to: [{ email: b.email, name: b.name }],
       subject: t.subject(title),
       htmlContent: html,

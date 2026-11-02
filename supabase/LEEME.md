@@ -39,7 +39,7 @@ A partir de ahí `roce.es/eventos/` lee los eventos de la base de datos y
    y pega `supabase/functions/booking-email/index.ts`. Desmarca “Verify JWT”.
 3. **Edge Functions → Secrets**: `BREVO_API_KEY`, `WEBHOOK_SECRET` (un texto largo
    inventado), `BREVO_LIST_ATTENDEES`, `BREVO_LIST_NEWSLETTER`. Opcional: `MAIL_FROM`
-   (remitente verificado en Brevo) y, si quieres guardar el nombre en Brevo,
+   (remitente verificado en Brevo; por defecto `no-reply@roce.es`) y, si quieres guardar el nombre en Brevo,
    `BREVO_ATTR_FIRSTNAME` y `BREVO_ATTR_LASTNAME` con el nombre exacto de esos atributos.
 4. **Database → Webhooks → Create**: tabla `bookings`, evento **Insert**,
    tipo *Supabase Edge Functions* → `booking-email`, y una cabecera
