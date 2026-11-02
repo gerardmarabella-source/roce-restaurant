@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="format-detection" content="telephone=no, address=no, email=no, date=no">
+<title>ROCE Club — Brunch y cafetería en Valencia</title>
+<meta name="description" content="ROCE Club: brunch y cafetería en Marqués del Túria 16, Valencia. Abierto todos los días de 10:00 a 20:00, sin reserva.">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" href="/assets/meta/favicon-32.png" sizes="32x32">
+<link rel="apple-touch-icon" href="/assets/meta/apple-touch-icon.png">
+<meta property="og:type" content="website">
+<meta property="og:title" content="ROCE Club — Brunch y cafetería en Valencia">
+<meta property="og:description" content="Brunch y cafetería en Marqués del Túria 16, Valencia. Todos los días de 10:00 a 20:00, sin reserva.">
+<meta property="og:image" content="https://roce.es/assets/meta/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:type" content="image/png">
+<meta property="og:url" content="https://roce.es/club/">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://roce.es/assets/meta/og-image.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/styles.css?v=66">
+<style>
+  .club-hero {
+    position: relative;
+    min-height: 78vh;
+    display: flex;
+    align-items: flex-end;
+    padding: 8rem 1.5rem 3rem;
+    color: var(--cream);
+    background:
+      linear-gradient(180deg, rgba(0, 0, 0, 0.55) 0%, rgba(0, 0, 0, 0.15) 40%, rgba(0, 0, 0, 0.7) 100%),
+      url("/assets/teaser/bg-desktop.jpg") center / cover no-repeat;
+  }
+  @media (max-width: 640px) {
+    .club-hero { background-image: linear-gradient(180deg, rgba(0, 0, 0, 0.55) 0%, rgba(0, 0, 0, 0.15) 40%, rgba(0, 0, 0, 0.7) 100%), url("/assets/teaser/bg-mobile.jpg"); }
+  }
+  .club-hero-inner { width: 100%; max-width: 760px; margin: 0 auto; }
+  .club-hero h1 {
+    font-family: var(--display);
+    font-weight: 400;
+    font-size: clamp(3.4rem, 15vw, 8rem);
+    line-height: 0.9;
+    text-transform: uppercase;
+  }
+  .club-hero h1 span { display: block; }
+  .club-hours {
+    margin-top: 1.1rem;
+    font-family: var(--display);
+    font-size: clamp(1.1rem, 3.4vw, 1.6rem);
+    text-transform: uppercase;
+  }
+
+  .club-wrap { max-width: 760px; margin: 0 auto; padding: 4rem 1.5rem 1rem; }
+  .club-section { margin-bottom: 3.5rem; }
+  .club-section h2 {
+    font-family: var(--display);
+    font-weight: 400;
+    font-size: clamp(1.6rem, 5vw, 2.4rem);
+    line-height: 1;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+  }
+  .club-section p { font-size: 1.05rem; line-height: 1.65; margin-bottom: 0.9rem; }
+
+  .club-box {
+    padding: 1.4rem 1.5rem;
+    border: 1px solid rgba(10, 10, 10, 0.25);
+    border-radius: 2px;
+    font-size: 1rem;
+    line-height: 1.6;
+  }
+
+  .club-dining {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    padding: 2rem 1.5rem;
+    background: var(--black);
+    color: var(--cream);
+    text-decoration: none;
+  }
+  .club-dining p { font-size: 0.85rem; opacity: 0.7; text-transform: uppercase; letter-spacing: 0.06em; }
+  .club-dining strong {
+    display: block;
+    margin-top: 0.3rem;
+    font-family: var(--display);
+    font-weight: 400;
+    font-size: clamp(1.6rem, 6vw, 2.6rem);
+    line-height: 1;
+    text-transform: uppercase;
+  }
+  .club-dining-arrow { font-family: var(--display); font-size: 2.6rem; flex-shrink: 0; transition: transform 0.2s ease; }
+  .club-dining:hover .club-dining-arrow { transform: translateX(8px); }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <a href="/" aria-label="ROCE — inicio"><img class="nav-logo" src="/assets/logo/roce-horizontal-black.png" alt="ROCE"></a>
+  <nav class="topnav">
+    <a href="/dining/" class="nav-cta">ROCE Dining</a>
+  </nav>
+</header>
+
+<main>
+  <section class="club-hero">
+    <div class="club-hero-inner">
+      <h1><span>ROCE</span><span>Club</span></h1>
+      <p class="club-hours" data-i18n="club_hours_daily">Todos los días · 10:00 – 20:00</p>
+    </div>
+  </section>
+
+  <div class="club-wrap">
+    <section class="club-section">
+      <h2 data-i18n="club_h_concept">El concepto</h2>
+      <p data-i18n="club_concept_1">ROCE Club es el espacio de día de ROCE: brunch y cafetería para venir cuando quieras, a cualquier hora entre las 10:00 y las 20:00.</p>
+      <p data-i18n="club_concept_2">Sin reserva y sin complicaciones: entras, te sientas y disfrutas.</p>
+    </section>
+
+    <section class="club-section">
+      <h2 data-i18n="club_h_hours">Horarios</h2>
+      <p class="club-box" data-i18n="club_hours_line">Todos los días de 10:00 a 20:00. Acceso libre, sin reserva.</p>
+    </section>
+
+    <section class="club-section">
+      <h2 data-i18n="club_h_events">Eventos de día</h2>
+      <p class="club-box" data-i18n="club_events_soon">Muy pronto publicaremos aquí la agenda de eventos de día.</p>
+    </section>
+  </div>
+
+  <a class="club-dining" href="/dining/">
+    <div>
+      <p data-i18n="club_to_dining_h">¿Buscas la noche?</p>
+      <strong>ROCE Dining</strong>
+    </div>
+    <span class="club-dining-arrow" aria-hidden="true">→</span>
+  </a>
+</main>
+
+<footer class="site-footer">
+  <img class="footer-logo" src="/assets/logo/roce-tilted-white.png" alt="ROCE">
+  <div class="footer-info">
+    <p class="footer-headline">Restaurant &amp; Cocktails</p>
+    <p class="footer-line">Marqués del Túria 16</p>
+    <p class="footer-line">Valencia (Spain)</p>
+  </div>
+  <a class="footer-instagram" href="https://www.instagram.com/somosroce" target="_blank" rel="noopener">@somosroce ↗</a>
+  <div class="footer-bottom">
+    <span class="lang-switch">
+      <button type="button" data-lang="es">ES</button>
+      <button type="button" data-lang="en">EN</button>
+    </span>
+    <div class="footer-legal">
+      <a href="/aviso-legal.html" data-i18n="footer_legal">Aviso legal</a> · <a href="/terminos.html" data-i18n="footer_terms">Términos y condiciones</a> · <a href="/cookies.html" data-i18n="footer_cookies">Cookies</a> · <a href="/privacidad.html" data-i18n="footer_privacy">Política de privacidad</a>
+    </div>
+  </div>
+</footer>
+
+<div class="cookie-banner" id="cookieBanner">
+  <p class="cookie-text"><span data-i18n="cookie_text">Usamos una cookie técnica propia para recordar tu elección. Si aceptas, también activamos el Píxel de Meta (Facebook e Instagram) y Google Tag Manager para medir y mejorar nuestra publicidad y nuestra web. El sistema de reservas es de un tercero (CoverManager) y puede usar las suyas.</span> <a href="/cookies.html" data-i18n="cookie_more_info">Más información</a>.</p>
+  <div class="cookie-actions">
+    <button class="cookie-reject" id="cookieReject" data-i18n="cookie_reject">Rechazar</button>
+    <button class="cookie-accept" id="cookieAccept" data-i18n="cookie_accept">Aceptar</button>
+  </div>
+</div>
+<script src="/cookies.js?v=3"></script>
+<script src="/i18n.js?v=46"></script>
+
+</body>
+</html>
