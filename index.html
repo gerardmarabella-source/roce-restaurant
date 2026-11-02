@@ -209,48 +209,108 @@
     .home-square-day, .home-square-night { align-self: flex-end; }
   }
 
-  /* Menú a pantalla completa */
+  /* Menú a pantalla completa: el mismo que el de Reservas de ROCE Night
+     (opciones grandes pegadas abajo, flecha a la derecha, entrada escalonada). */
   .menu-overlay {
     position: fixed;
     inset: 0;
-    z-index: 300;
+    z-index: 500;
     display: none;
     flex-direction: column;
+    justify-content: flex-end;
     background: var(--black);
     color: var(--cream);
-    padding: 1.25rem 1.5rem 2rem;
+    padding: 6rem 1rem 3rem;
     overflow-y: auto;
   }
-  .menu-overlay.is-open { display: flex; animation: menuIn 0.25s ease both; }
-  @keyframes menuIn { from { opacity: 0; } to { opacity: 1; } }
-  .menu-overlay-head { display: flex; align-items: center; justify-content: space-between; }
-  .menu-overlay-head img { height: 34px; width: auto; display: block; }
-  .menu-links { flex: 1; min-height: 0; margin-top: 1.5rem; display: flex; flex-direction: column; }
-  .menu-links a {
+  .menu-overlay.is-open { display: flex; animation: reservasFadeIn 0.25s ease both; }
+  .reservas-menu-close {
+    position: fixed;
+    top: 0.6rem;
+    left: 1.25rem;
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-    border-top: 1px solid rgba(236, 231, 221, 0.25);
+    justify-content: center;
+    background: none;
+    border: none;
+    padding: 0.4rem;
     color: var(--cream);
+    cursor: pointer;
+    z-index: 501;
+    opacity: 0.9;
+    transition: opacity 0.15s ease;
+    animation: reservasFadeIn 0.3s ease both;
+  }
+  .reservas-menu-close svg { width: 2.4rem; height: 2.4rem; }
+  .reservas-menu-close:hover { opacity: 1; }
+  .reservas-menu-item {
+    position: relative;
+    display: block;
+    padding: 1.25rem 3.2rem 1.25rem 0;
+    border-top: 1px solid rgba(236, 231, 221, 0.28);
     text-decoration: none;
+    color: var(--cream);
+    transition: opacity 0.15s ease;
+    animation: reservasItemIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+  .reservas-menu-item:nth-child(2) { animation-delay: 0.05s; }
+  .reservas-menu-item:nth-child(3) { animation-delay: 0.13s; }
+  .reservas-menu-item:nth-child(4) { animation-delay: 0.21s; }
+  .reservas-menu-item:not(.is-disabled)::after {
+    content: "\2192";
+    position: absolute;
+    right: 0.2rem;
+    top: 1.25rem;
     font-family: var(--display);
-    text-transform: uppercase;
+    font-size: clamp(2.2rem, 10vw, 3.8rem);
     line-height: 1;
+    transition: transform 0.2s ease;
   }
-  /* Los tres enlaces principales se reparten el alto disponible. */
-  .menu-links a:not(.menu-minor) {
-    flex: 1 1 0;
-    min-height: 3.5rem;
-    max-height: 9.5rem;
-    font-size: clamp(2.6rem, min(17vw, 11dvh), 6.5rem);
-    letter-spacing: -0.01em;
+  .reservas-menu-item:not(.is-disabled):hover::after { transform: translateX(6px); }
+  .reservas-menu-item:not(.is-disabled):hover { opacity: 0.7; }
+  .reservas-menu-item.is-disabled { --item-opacity: 0.55; cursor: default; }
+  .reservas-menu-title {
+    display: block;
+    font-family: var(--display);
+    font-weight: 400;
+    text-transform: uppercase;
+    font-size: clamp(2.6rem, 13vw, 5rem);
+    line-height: 1;
+    letter-spacing: 0.01em;
   }
-  .menu-links a small { font-family: var(--display); font-size: 0.85rem; letter-spacing: 0; opacity: 0.6; }
-  .menu-links a:hover { opacity: 0.7; }
-  .menu-links a.menu-minor { flex: none; font-size: 1rem; letter-spacing: 0.04em; padding: 1.1rem 0; }
-  .menu-links a.menu-minor + .menu-minor { padding-bottom: 0; }
-  .menu-links a:not(.menu-minor) + .menu-minor { margin-top: auto; }
+  .reservas-menu-sub {
+    display: block;
+    font-size: clamp(0.8rem, 2.6vw, 0.95rem);
+    opacity: 0.75;
+    margin-top: 0.6rem;
+    line-height: 1.3;
+  }
+  .reservas-menu-minor {
+    padding: 1.25rem 0 0;
+    border-top: 1px solid rgba(236, 231, 221, 0.28);
+    align-self: stretch;
+    font-family: var(--display);
+    font-size: 0.9rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--white);
+    transition: opacity 0.15s ease;
+    animation: reservasItemIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.29s both;
+  }
+  .reservas-menu-minor:not(:last-child) { padding-bottom: 1.25rem; }
+  .reservas-menu-minor:hover { opacity: 0.7; }
+  .reservas-menu-minor-arrow { display: inline-block; transition: transform 0.2s ease; }
+  .reservas-menu-minor:hover .reservas-menu-minor-arrow,
+  .reservas-menu-minor:focus-visible .reservas-menu-minor-arrow { transform: translateX(6px); }
+  @keyframes reservasFadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes reservasItemIn {
+    from { opacity: 0; transform: translateY(28px) scale(0.97); }
+    to { opacity: var(--item-opacity, 1); transform: translateY(0) scale(1); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .menu-overlay, .reservas-menu-close, .reservas-menu-item, .reservas-menu-minor { animation: none; }
+  }
 
 </style>
 </head>
@@ -307,19 +367,22 @@
 </div>
 
 <div class="menu-overlay" id="menuOverlay" role="dialog" aria-modal="true" aria-label="Menú">
-  <div class="menu-overlay-head">
-    <img src="/assets/logo/roce-horizontal-white.png" alt="ROCE">
-    <button class="menu-btn" id="menuClose" type="button" aria-label="Cerrar">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg>
-    </button>
+  <button class="reservas-menu-close" id="menuClose" type="button" aria-label="Cerrar">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+  </button>
+  <a class="reservas-menu-item" href="/day/">
+    <span class="reservas-menu-title">Day</span>
+    <span class="reservas-menu-sub">10:00 – 20:00</span>
+  </a>
+  <a class="reservas-menu-item" href="/night/">
+    <span class="reservas-menu-title">Night</span>
+    <span class="reservas-menu-sub">20:00 – 02:00</span>
+  </a>
+  <div class="reservas-menu-item is-disabled" aria-disabled="true">
+    <span class="reservas-menu-title" data-i18n="menu_eventos_title">Eventos</span>
   </div>
-  <nav class="menu-links">
-    <a href="/day/">Day <small>10:00 – 20:00</small></a>
-    <a href="/night/">Night <small>20:00 – 02:00</small></a>
-    <a href="/fuck-who-doesn't-like-this-place/"><span data-i18n="menu_reservar_title">Reservar</span></a>
-    <a class="menu-minor" href="/fuck-who-doesn't-like-this-place/#alquila-el-espacio"><span data-i18n="menu_alquiler_link">Alquila el espacio</span> →</a>
-    <a class="menu-minor" href="https://www.instagram.com/somosroce" target="_blank" rel="noopener">@somosroce ↗</a>
-  </nav>
+  <a class="reservas-menu-minor" href="/fuck-who-doesn't-like-this-place/#alquila-el-espacio"><span data-i18n="menu_alquiler_link">Alquila el espacio</span> <span class="reservas-menu-minor-arrow" aria-hidden="true">→</span></a>
+  <a class="reservas-menu-minor" href="https://www.instagram.com/somosroce" target="_blank" rel="noopener">@somosroce <span class="reservas-menu-minor-arrow" aria-hidden="true">↗</span></a>
 </div>
 
 <div class="cookie-banner" id="cookieBanner">
