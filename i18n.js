@@ -121,7 +121,8 @@
     // Compra de entradas / reserva de plaza (/eventos/entradas/)
     tk_back_events: { es: '← Eventos', en: '← Events' },
     tk_step1: { es: 'Entradas', en: 'Tickets' },
-    tk_step2: { es: 'Tus datos', en: 'Your details' },
+    tk_step2: { es: 'Datos', en: 'Details' },
+    tk_h_data: { es: 'Tus datos', en: 'Your details' },
     tk_step3: { es: 'Confirmar', en: 'Confirm' },
     tk_test_banner: { es: 'Modo prueba: de momento no se cobra nada.', en: 'Test mode: nothing is charged for now.' },
     tk_qty_label: { es: 'Nº de entradas', en: 'Number of tickets' },
@@ -156,18 +157,23 @@
     tk_more: { es: 'Ver más eventos', en: 'See more events' },
     tk_ko_title: { es: 'El pago no se ha completado', en: "The payment wasn't completed" },
     tk_ko_text: { es: 'No se ha hecho ningún cargo. Puedes intentarlo de nuevo.', en: 'You have not been charged. You can try again.' },
+    tk_v_name: { es: 'Escribe tu nombre y apellidos.', en: 'Please enter your full name.' },
+    tk_v_email: { es: 'Escribe un email válido.', en: 'Please enter a valid email.' },
+    tk_v_phone: { es: 'Escribe un teléfono válido.', en: 'Please enter a valid phone number.' },
+    tk_v_age: { es: 'Este evento es solo para mayores de 18 años.', en: 'This event is for guests aged 18 and over only.' },
+    tk_v_consent: { es: 'Debes aceptar la política de privacidad.', en: 'You must accept the privacy policy.' },
     tk_ticket_one: { es: 'entrada', en: 'ticket' },
     tk_ticket_many: { es: 'entradas', en: 'tickets' },
 
-    // Elegir entre ROCE Day (día) y ROCE Night (noche)
+    // Elegir entre Day (día) y Night (noche)
     choose_now: { es: 'Ahora', en: 'Now' },
     home_w1: { es: 'Todo', en: 'It all' },
     home_w2: { es: 'empieza', en: 'starts' },
     home_w3: { es: 'con', en: 'with' },
     home_w4: { es: 'un', en: 'a' },
     home_w5: { es: 'roce', en: 'roce' },
-    switch_to_day: { es: 'Ir a ROCE Day', en: 'Go to ROCE Day' },
-    switch_to_night: { es: 'Ir a ROCE Night', en: 'Go to ROCE Night' },
+    switch_to_day: { es: 'Ir a Day', en: 'Go to Day' },
+    switch_to_night: { es: 'Ir a Night', en: 'Go to Night' },
 
     // privacidad.html
     privacy_title: { es: 'Política de privacidad', en: 'Privacy Policy' },

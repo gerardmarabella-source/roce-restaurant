@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="format-detection" content="telephone=no, address=no, email=no, date=no">
+<!-- Datos de ejemplo y modo prueba: no indexar hasta que haya agenda real. -->
+<meta name="robots" content="noindex">
+<title>Reserva de plaza — ROCE Valencia</title>
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" href="/assets/meta/favicon-32.png" sizes="32x32">
+<link rel="apple-touch-icon" href="/assets/meta/apple-touch-icon.png">
+<script src="/eventos/events.js"></script>
+<script>
+  // El color de la página es el del ambiente del evento: Day claro, Night oscuro.
+  (function () {
+    var id = new URLSearchParams(location.search).get('e');
+    var ev = window.ROCE_EVENT_UTIL.find(id);
+    if (!ev) { location.replace('/eventos/'); return; }
+    document.documentElement.setAttribute('data-env', ev.env);
+  })();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/styles.css?v=66">
+<style>
+  html { --bg: var(--white); --fg: var(--black); --line: rgba(10, 10, 10, 0.25); --pad: 1.25rem; }
+  html[data-env="night"] { --bg: var(--black); --fg: var(--white); --line: rgba(255, 255, 255, 0.3); }
+  html, body { background: var(--bg); color: var(--fg); }
+  body { min-height: 100vh; display: flex; flex-direction: column; font-family: var(--body); }
+
+  .tk-top { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 0 var(--pad); height: 64px; }
+  .tk-back { white-space: nowrap; font-family: var(--display); font-size: 1rem; letter-spacing: 0.04em; text-transform: uppercase; color: inherit; text-decoration: none; }
+  .tk-back:hover { opacity: 0.7; }
+  .tk-steps { display: flex; gap: 0.9rem; list-style: none; font-family: var(--display); font-size: 0.78rem; white-space: nowrap; letter-spacing: 0.04em; text-transform: uppercase; }
+  .tk-steps li { opacity: 0.28; transition: opacity 0.2s ease; }
+  .tk-steps li.is-on { opacity: 1; }
+  .tk-steps.is-hidden { visibility: hidden; }
+
+  .tk-wrap { width: 100%; max-width: 560px; margin: 0 auto; padding: 1rem var(--pad) 3rem; flex: 1; }
+  .tk-test { display: inline-block; margin-bottom: 1.25rem; padding: 0.4rem 0.8rem; border: 1px dashed currentColor; font-size: 0.8rem; opacity: 0.75; }
+
+  .tk-env { display: inline-flex; align-items: center; gap: 0.5rem; font-family: var(--display); font-size: 0.85rem; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.75; }
+  .tk-env .age-badge { width: 1.7rem; height: 1.7rem; }
+  .tk-title { margin: 0.5rem 0 0.4rem; font-family: var(--display); font-weight: 400; font-size: clamp(2.4rem, 11vw, 4rem); line-height: 0.92; letter-spacing: -0.01em; text-transform: uppercase; }
+  .tk-when { font-size: 1rem; line-height: 1.45; opacity: 0.8; }
+
+  .tk-h { margin: 2rem 0 1rem; font-family: var(--display); font-weight: 400; font-size: 1.5rem; text-transform: uppercase; line-height: 1; }
+  .tk-row { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1rem 0; border-top: 1px solid var(--line); }
+  .tk-row:last-of-type { border-bottom: 1px solid var(--line); }
+  .tk-row-label { font-family: var(--display); font-size: 1rem; letter-spacing: 0.03em; text-transform: uppercase; }
+  .tk-row-value { font-family: var(--display); font-size: 1.15rem; text-transform: uppercase; text-align: right; }
+  .tk-hint { margin-top: 0.6rem; font-size: 0.85rem; opacity: 0.7; }
+  .tk-hint.is-alert { color: #e5453a; opacity: 1; }
+
+  .tk-qty { display: inline-flex; align-items: center; gap: 1rem; }
+  .tk-qty button { width: 2.75rem; height: 2.75rem; border: 2px solid currentColor; border-radius: 50%; background: none; color: inherit; font-family: var(--display); font-size: 1.5rem; line-height: 1; cursor: pointer; }
+  .tk-qty button:disabled { opacity: 0.25; cursor: default; }
+  .tk-qty output { min-width: 1.6rem; text-align: center; font-family: var(--display); font-size: 2rem; }
+
+  .tk-field { display: block; margin-bottom: 1.25rem; }
+  .tk-field > span { display: block; margin-bottom: 0.35rem; font-family: var(--display); font-size: 0.8rem; letter-spacing: 0.06em; text-transform: uppercase; opacity: 0.7; }
+  .tk-field input[type="text"], .tk-field input[type="email"], .tk-field input[type="tel"], .tk-field textarea {
+    width: 100%; padding: 0.5rem 0 0.6rem; border: 0; border-bottom: 1px solid currentColor; border-radius: 0; background: transparent; color: inherit; font: inherit; font-size: 1.05rem;
+  }
+  .tk-field textarea { resize: none; min-height: 2.8rem; }
+  .tk-field input:focus, .tk-field textarea:focus { outline: none; border-bottom-color: #e5453a; }
+  .tk-check { display: flex; align-items: flex-start; gap: 0.7rem; margin: 0 0 1rem; font-size: 0.88rem; line-height: 1.45; cursor: pointer; }
+  .tk-check input { width: 1.15rem; height: 1.15rem; margin-top: 0.15rem; flex-shrink: 0; accent-color: var(--fg); }
+  .tk-check a { color: inherit; }
+  .tk-check.is-age { color: #e5453a; font-weight: 600; }
+  .tk-botcheck { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
+
+  .tk-actions { display: flex; gap: 0.75rem; margin-top: 1.75rem; }
+  .tk-btn {
+    flex: 1; padding: 1rem 1.25rem; border: 2px solid var(--fg); border-radius: 0; background: var(--fg); color: var(--bg);
+    font-family: var(--display); font-size: 1rem; letter-spacing: 0.04em; text-transform: uppercase; text-align: center; text-decoration: none; cursor: pointer;
+    transition: opacity 0.15s ease;
+  }
+  .tk-btn:hover { opacity: 0.85; }
+  .tk-btn:disabled { opacity: 0.35; cursor: default; }
+  .tk-btn.is-ghost { flex: 0 0 auto; background: none; color: var(--fg); }
+  .tk-error { margin-top: 1rem; color: #e5453a; font-size: 0.92rem; }
+  .tk-policy { margin-top: 1.25rem; font-size: 0.85rem; line-height: 1.5; opacity: 0.7; }
+
+  .tk-done { text-align: center; padding-top: 1rem; }
+  .tk-check-svg { width: 4.2rem; height: 4.2rem; }
+  .tk-check-svg circle { stroke: currentColor; stroke-width: 2.5; stroke-dasharray: 151; stroke-dashoffset: 151; animation: tkDraw 0.6s ease forwards; }
+  .tk-check-svg path { stroke: currentColor; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 40; stroke-dashoffset: 40; animation: tkDraw 0.4s ease 0.5s forwards; }
+  @keyframes tkDraw { to { stroke-dashoffset: 0; } }
+  @media (prefers-reduced-motion: reduce) { .tk-check-svg circle, .tk-check-svg path { animation: none; stroke-dashoffset: 0; } }
+  .tk-done h1 { margin: 1rem 0 0.5rem; font-family: var(--display); font-weight: 400; font-size: clamp(2.2rem, 9vw, 3.2rem); line-height: 0.95; text-transform: uppercase; }
+  .tk-done p { opacity: 0.8; line-height: 1.5; }
+  .tk-ref { display: inline-block; margin: 1.5rem 0 0.5rem; padding: 0.9rem 1.4rem; border: 2px dashed currentColor; font-family: var(--display); font-size: 1.8rem; letter-spacing: 0.08em; }
+  .tk-ref-label { display: block; margin-top: 1.5rem; font-family: var(--display); font-size: 0.8rem; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.6; }
+  .tk-done .tk-actions { flex-direction: column; }
+
+  .tk-foot { padding: 1.5rem 1rem 2rem; text-align: center; font-size: 0.68rem; line-height: 1.35; letter-spacing: 0.03em; opacity: 0.6; }
+  .tk-foot a { color: inherit; text-decoration: none; }
+  .tk-foot a:hover { text-decoration: underline; }
+  .tk-foot .lang-switch { display: flex; justify-content: center; margin-bottom: 0.4rem; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+
+<header class="tk-top">
+  <a class="tk-back" href="/eventos/" data-i18n="tk_back_events">← Eventos</a>
+  <ol class="tk-steps" id="tkSteps" aria-label="Pasos">
+    <li data-s="1" data-i18n="tk_step1">Entradas</li>
+    <li data-s="2" data-i18n="tk_step2">Datos</li>
+    <li data-s="3" data-i18n="tk_step3">Confirmar</li>
+  </ol>
+</header>
+
+<main class="tk-wrap">
+  <p class="tk-test" id="tkTest" data-i18n="tk_test_banner">Modo prueba: de momento no se cobra nada.</p>
+
+  <!-- Cabecera con el evento (pasos 1-3) -->
+  <div id="tkEvent">
+    <span class="tk-env" id="tkEnv"></span>
+    <h1 class="tk-title" id="tkTitle"></h1>
+    <p class="tk-when" id="tkWhen"></p>
+  </div>
+
+  <!-- 1 · Entradas -->
+  <section data-step="1" id="step1">
+    <div class="tk-row" style="margin-top:1.75rem">
+      <span class="tk-row-label" data-i18n="tk_qty_label">Nº de entradas</span>
+      <span class="tk-qty">
+        <button type="button" id="qtyMinus" aria-label="−">−</button>
+        <output id="qtyOut" aria-live="polite">1</output>
+        <button type="button" id="qtyPlus" aria-label="+">+</button>
+      </span>
+    </div>
+    <div class="tk-row" id="rowEach">
+      <span class="tk-row-label" data-i18n="tk_each">Precio por entrada</span>
+      <span class="tk-row-value" id="priceEach"></span>
+    </div>
+    <div class="tk-row">
+      <span class="tk-row-label" data-i18n="tk_total">Total</span>
+      <span class="tk-row-value" id="priceTotal"></span>
+    </div>
+    <p class="tk-hint" id="tkLeft"></p>
+    <div class="tk-actions"><button type="button" class="tk-btn" id="to2" data-i18n="tk_continue">Continuar</button></div>
+  </section>
+
+  <!-- 2 · Datos -->
+  <section data-step="2" id="step2" hidden>
+    <h2 class="tk-h" data-i18n="tk_h_data">Tus datos</h2>
+    <form id="dataForm" novalidate>
+      <label class="tk-field"><span data-i18n="tk_name">Nombre y apellidos</span><input type="text" name="nombre" id="fName" autocomplete="name" required minlength="3"></label>
+      <label class="tk-field"><span data-i18n="tk_email">Email</span><input type="email" name="email" id="fEmail" autocomplete="email" inputmode="email" required></label>
+      <label class="tk-field"><span data-i18n="tk_phone">Teléfono</span><input type="tel" name="telefono" id="fPhone" autocomplete="tel" inputmode="tel" required></label>
+      <label class="tk-field"><span data-i18n="tk_notes">Alergias o comentarios (opcional)</span><textarea name="comentarios" id="fNotes" rows="1"></textarea></label>
+      <label class="tk-check is-age" id="ageRow" hidden><input type="checkbox" id="fAge"><span data-i18n="tk_age">Confirmo que todos los asistentes son mayores de 18 años.</span></label>
+      <label class="tk-check"><input type="checkbox" id="fConsent"><span data-i18n-html="consent_text">He leído y acepto la <a href="/privacidad.html" target="_blank" rel="noopener">política de privacidad</a>.</span></label>
+      <input type="checkbox" class="tk-botcheck" id="fBot" tabindex="-1" autocomplete="off" aria-hidden="true">
+      <p class="tk-error" id="dataError" role="alert" hidden></p>
+      <div class="tk-actions">
+        <button type="button" class="tk-btn is-ghost" id="back1" data-i18n="tk_prev">Atrás</button>
+        <button type="submit" class="tk-btn" data-i18n="tk_continue">Continuar</button>
+      </div>
+    </form>
+  </section>
+
+  <!-- 3 · Confirmar -->
+  <section data-step="3" id="step3" hidden>
+    <h2 class="tk-h" data-i18n="tk_review_title">Revisa tu reserva</h2>
+    <div id="review"></div>
+    <p class="tk-policy" data-i18n="tk_policy">Si no puedes venir, avísanos en reservas@roce.es para liberar tu plaza.</p>
+    <p class="tk-error" id="payError" role="alert" hidden></p>
+    <div class="tk-actions">
+      <button type="button" class="tk-btn is-ghost" id="back2" data-i18n="tk_prev">Atrás</button>
+      <button type="button" class="tk-btn" id="confirmBtn" data-i18n="tk_confirm">Confirmar reserva</button>
+    </div>
+  </section>
+
+  <!-- 4 · Hecho -->
+  <section data-step="4" id="step4" class="tk-done" hidden>
+    <svg class="tk-check-svg" viewBox="0 0 52 52" aria-hidden="true"><circle cx="26" cy="26" r="24" fill="none"/><path fill="none" d="M14 27l7 7 17-17"/></svg>
+    <h1 data-i18n="tk_ok_title">¡Plaza reservada!</h1>
+    <p data-i18n="tk_ok_sub">Hemos recibido tu reserva. Te enviaremos la confirmación por email.</p>
+    <span class="tk-ref-label" data-i18n="tk_ref">Nº de referencia</span>
+    <span class="tk-ref" id="doneRef"></span>
+    <p id="doneSummary"></p>
+    <div class="tk-actions">
+      <button type="button" class="tk-btn" id="calBtn" data-i18n="tk_cal">Añadir al calendario</button>
+      <a class="tk-btn is-ghost" href="/eventos/" data-i18n="tk_more">Ver más eventos</a>
+    </div>
+  </section>
+</main>
+
+<footer class="tk-foot">
+  <div class="lang-switch">
+    <button type="button" data-lang="es">ES</button>
+    <button type="button" data-lang="en">EN</button>
+  </div>
+  <div>
+    <a href="/aviso-legal.html" data-i18n="footer_legal">Aviso legal</a> · <a href="/terminos.html" data-i18n="footer_terms">Términos y condiciones</a> · <a href="/cookies.html" data-i18n="footer_cookies">Cookies</a> · <a href="/privacidad.html" data-i18n="footer_privacy">Política de privacidad</a>
+  </div>
+</footer>
+
+<div class="cookie-banner" id="cookieBanner">
+  <p class="cookie-text"><span data-i18n="cookie_text">Usamos una cookie técnica propia para recordar tu elección. Si aceptas, también activamos el Píxel de Meta (Facebook e Instagram) y Google Tag Manager para medir y mejorar nuestra publicidad y nuestra web. El sistema de reservas es de un tercero (CoverManager) y puede usar las suyas.</span> <a href="/cookies.html" data-i18n="cookie_more_info">Más información</a>.</p>
+  <div class="cookie-actions">
+    <button class="cookie-reject" id="cookieReject" data-i18n="cookie_reject">Rechazar</button>
+    <button class="cookie-accept" id="cookieAccept" data-i18n="cookie_accept">Aceptar</button>
+  </div>
+</div>
+<script src="/cookies.js?v=3"></script>
+<script src="/i18n.js?v=59"></script>
+<script>
+  (function () {
+    var U = window.ROCE_EVENT_UTIL;
+    var params = new URLSearchParams(location.search);
+    var ev = U.find(params.get('e'));
+    if (!ev) return;
+
+    // ─── Pasarela de pago ───────────────────────────────────────────────
+    // Hoy no se cobra: enabled = false y todas las reservas se tratan como
+    // gratuitas. Para integrar Redsys:
+    //   1. enabled = true.
+    //   2. start(order) debe pedir a un servidor los parámetros firmados
+    //      (Ds_MerchantParameters / Ds_Signature, nunca la clave en el
+    //      navegador) y redirigir al TPV.
+    //   3. En Redsys, URL_OK = esta página con ?e=<id>&status=ok&ref=<ref> y
+    //      URL_KO = ?e=<id>&status=ko. La confirmación real del cobro debe
+    //      llegar al servidor por la URL de notificación de Redsys.
+    window.ROCE_PAYMENTS = {
+      enabled: false,
+      start: function (/* order */) { return Promise.reject(new Error('payments-not-configured')); }
+    };
+
+    // ─── Envío de la reserva ────────────────────────────────────────────
+    // Provisional: aviso por email a ROCE con Web3Forms. Sustituir por el
+    // backend de reservas cuando exista (aforo real, emails al cliente, QR).
+    var WEB3FORMS_KEY = '6e0e35fc-6443-4455-adc7-3999eabf6abc';
+    function submitOrder(order) {
+      var l = order.lang;
+      var payload = {
+        access_key: WEB3FORMS_KEY,
+        subject: 'Reserva de plaza — ' + ev.title.es + ' (' + order.ref + ')',
+        from_name: 'Eventos ROCE',
+        botcheck: '',
+        referencia: order.ref,
+        evento: ev.title.es,
+        ambiente: ev.env === 'night' ? 'Night (+18)' : 'Day',
+        fecha: ev.date + ' ' + ev.time,
+        lugar: ev.place.es,
+        entradas: order.qty,
+        importe_total: U.money(order.total_cents, 'es') + (window.ROCE_PAYMENTS.enabled ? '' : ' (modo prueba: sin cobro)'),
+        nombre: order.name,
+        email: order.email,
+        telefono: order.phone,
+        comentarios: order.notes || '-',
+        idioma: l
+      };
+      return fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify(payload)
+      }).then(function (r) { return r.json(); }).then(function (d) { if (!d.success) throw new Error(d.message || 'error'); });
+    }
+
+    // ─── Utilidades ─────────────────────────────────────────────────────
+    function $(id) { return document.getElementById(id); }
+    function lang() { return window.ROCE_I18N.getLang(); }
+    function t(k) { return window.ROCE_I18N.t(k); }
+    function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+    function newRef() { var c = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789', s = ''; for (var i = 0; i < 6; i++) s += c[Math.floor(Math.random() * c.length)]; return 'ROCE-' + s; }
+    function tickets(n) { return n + ' ' + (n === 1 ? t('tk_ticket_one') : t('tk_ticket_many')); }
+    function whenText() { return U.fmt(ev, lang(), { weekday: 'long', day: 'numeric', month: 'long' }) + ' · ' + ev.time + ' · ' + ev.place[lang()]; }
+
+    var MAX = Math.max(0, Math.min(ev.max_per_order || 6, ev.left));
+    var state = { qty: 1, step: 1, order: null };
+    var AGE = '<svg class="age-badge" viewBox="0 0 100 100" role="img" aria-label="+18"><circle cx="50" cy="50" r="44" fill="#ffffff" stroke="#e5453a" stroke-width="9"/><text x="44" y="65" text-anchor="middle" font-family="\'Helvetica Neue Web\',\'Helvetica Neue\',Arial,sans-serif" font-weight="700" font-size="46" letter-spacing="-3" fill="#0a0a0a">18</text><text x="77" y="52" text-anchor="middle" font-family="\'Helvetica Neue Web\',\'Helvetica Neue\',Arial,sans-serif" font-weight="700" font-size="30" fill="#0a0a0a">+</text></svg>';
+
+    // ─── Pintado ────────────────────────────────────────────────────────
+    function paintEvent() {
+      $('tkEnv').innerHTML = ev.env === 'night' ? 'Night ' + AGE : 'Day';
+      $('tkTitle').textContent = ev.title[lang()];
+      $('tkWhen').textContent = whenText();
+      $('tkTest').hidden = window.ROCE_PAYMENTS.enabled;
+      $('ageRow').hidden = ev.env !== 'night';
+    }
+    function paintPrices() {
+      var free = ev.price_cents === 0;
+      $('rowEach').hidden = free;
+      $('priceEach').textContent = U.money(ev.price_cents, lang());
+      $('priceTotal').textContent = free ? t('tk_free') : U.money(ev.price_cents * state.qty, lang());
+      $('qtyOut').textContent = state.qty;
+      $('qtyMinus').disabled = state.qty <= 1;
+      $('qtyPlus').disabled = state.qty >= MAX;
+      var hint = $('tkLeft');
+      hint.classList.toggle('is-alert', ev.left <= 5);
+      hint.textContent = ev.left <= 0 ? t('tk_soldout') : (ev.left <= 5 ? t('tk_last') : t('tk_left')).replace('{n}', ev.left);
+      $('to2').disabled = ev.left <= 0;
+    }
+    function paintReview() {
+      var o = state.order, l = lang();
+      var total = o.total_cents === 0 ? t('tk_free') : U.money(o.total_cents, l);
+      var rows = [
+        [t('tk_r_event'), ev.title[l]],
+        [t('tk_r_date'), U.fmt(ev, l, { weekday: 'short', day: 'numeric', month: 'long' }) + ' · ' + ev.time],
+        [t('tk_r_place'), ev.place[l]],
+        [t('tk_r_tickets'), tickets(o.qty)],
+        [t('tk_r_holder'), o.name],
+        [t('tk_r_contact'), o.email + '<br>' + esc(o.phone)],
+        [t('tk_total'), total]
+      ];
+      $('review').innerHTML = rows.map(function (r, i) {
+        var val = i === 5 ? r[1].replace(o.email, esc(o.email)) : esc(r[1]);
+        return '<div class="tk-row"><span class="tk-row-label">' + esc(r[0]) + '</span><span class="tk-row-value">' + val + '</span></div>';
+      }).join('');
+    }
+    function paintDone() {
+      var o = state.order;
+      $('doneRef').textContent = o.ref;
+      $('doneSummary').textContent = ev.title[lang()] + ' · ' + U.fmt(ev, lang(), { weekday: 'short', day: 'numeric', month: 'long' }) + ' · ' + ev.time + ' · ' + tickets(o.qty);
+    }
+    function repaint() {
+      paintEvent(); paintPrices();
+      if (state.order && state.step === 3) paintReview();
+      if (state.order && state.step === 4) paintDone();
+    }
+
+    // ─── Pasos (con historial para que "atrás" del navegador funcione) ───
+    function show(step, push) {
+      state.step = step;
+      [1, 2, 3, 4].forEach(function (n) { $('step' + n).hidden = n !== step; });
+      $('tkEvent').hidden = step === 4;
+      $('tkSteps').classList.toggle('is-hidden', step === 4);
+      document.querySelectorAll('#tkSteps li').forEach(function (li) { li.classList.toggle('is-on', Number(li.dataset.s) === step); });
+      if (step === 3) paintReview();
+      if (step === 4) paintDone();
+      if (push) history.pushState({ step: step }, '', '#paso-' + step);
+      window.scrollTo(0, 0);
+    }
+    window.addEventListener('popstate', function (e) {
+      var s = (e.state && e.state.step) || 1;
+      if (s === 4 || (s >= 3 && !state.order)) s = 1;
+      show(s, false);
+    });
+
+    // ─── Paso 1 ─────────────────────────────────────────────────────────
+    $('qtyMinus').addEventListener('click', function () { if (state.qty > 1) { state.qty--; paintPrices(); } });
+    $('qtyPlus').addEventListener('click', function () { if (state.qty < MAX) { state.qty++; paintPrices(); } });
+    $('to2').addEventListener('click', function () { show(2, true); });
+
+    // ─── Paso 2 ─────────────────────────────────────────────────────────
+    function fail(msg) { var e = $('dataError'); e.textContent = msg; e.hidden = false; }
+    $('back1').addEventListener('click', function () { history.back(); });
+    $('dataForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+      $('dataError').hidden = true;
+      var name = $('fName').value.trim(), email = $('fEmail').value.trim(), phone = $('fPhone').value.trim();
+      if (name.length < 3) { $('fName').focus(); return fail(t('tk_v_name')); }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) { $('fEmail').focus(); return fail(t('tk_v_email')); }
+      if (phone.replace(/\D/g, '').length < 9) { $('fPhone').focus(); return fail(t('tk_v_phone')); }
+      if (ev.env === 'night' && !$('fAge').checked) return fail(t('tk_v_age'));
+      if (!$('fConsent').checked) return fail(t('tk_v_consent'));
+      if ($('fBot').checked) return;
+      state.order = {
+        ref: newRef(), event: ev.id, qty: state.qty, lang: lang(),
+        total_cents: ev.price_cents * state.qty,
+        name: name, email: email, phone: phone, notes: $('fNotes').value.trim()
+      };
+      show(3, true);
+    });
+
+    // ─── Paso 3 ─────────────────────────────────────────────────────────
+    $('back2').addEventListener('click', function () { history.back(); });
+    $('confirmBtn').addEventListener('click', function () {
+      var btn = $('confirmBtn'), err = $('payError'), o = state.order;
+      err.hidden = true; btn.disabled = true; btn.textContent = t('tk_sending');
+      var needsPayment = window.ROCE_PAYMENTS.enabled && o.total_cents > 0;
+      var run;
+      if (needsPayment) {
+        try { sessionStorage.setItem('roce_order_draft', JSON.stringify(o)); } catch (x) {}
+        run = window.ROCE_PAYMENTS.start(o); // redirige al TPV; la vuelta llega con ?status=
+      } else {
+        run = submitOrder(o).then(function () { show(4, true); });
+      }
+      run.catch(function () {
+        err.textContent = t('tk_error'); err.hidden = false;
+        btn.disabled = false; btn.textContent = t('tk_confirm');
+      });
+    });
+
+    // ─── Paso 4: calendario (.ics) ─────────────────────────────────────
+    $('calBtn').addEventListener('click', function () {
+      var p = function (n) { return String(n).padStart(2, '0'); };
+      var start = new Date(ev.date + 'T' + ev.time + ':00+01:00');
+      var end = new Date(start.getTime() + (ev.duration_h || 2) * 3600000);
+      var fmtLocal = function (d) { var s = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Madrid', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' }).format(d); return s.replace(/[-: ]/g, '').replace(/^(\d{8})(\d{6})$/, '$1T$2'); };
+      var ics = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//ROCE//Eventos//ES', 'BEGIN:VEVENT',
+        'UID:' + state.order.ref + '@roce.es', 'DTSTAMP:' + new Date().toISOString().replace(/[-:]|\.\d{3}/g, ''),
+        'DTSTART;TZID=Europe/Madrid:' + fmtLocal(start), 'DTEND;TZID=Europe/Madrid:' + fmtLocal(end),
+        'SUMMARY:' + ev.title[lang()] + ' (' + (ev.env === 'night' ? 'Night' : 'Day') + ')',
+        'LOCATION:ROCE\\, Marqués del Túria 16\\, Valencia', 'DESCRIPTION:Ref. ' + state.order.ref, 'END:VEVENT', 'END:VCALENDAR'].join('\r\n');
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([ics], { type: 'text/calendar;charset=utf-8' }));
+      a.download = 'roce-' + ev.id + '.ics';
+      document.body.appendChild(a); a.click(); a.remove();
+    });
+
+    // ─── Vuelta de la pasarela (?status=ok|ko) ──────────────────────────
+    var status = params.get('status');
+    if (status) {
+      var draft = null;
+      try { draft = JSON.parse(sessionStorage.getItem('roce_order_draft') || 'null'); } catch (x) {}
+      if (draft && draft.event === ev.id) {
+        state.order = draft; state.qty = draft.qty;
+        if (status === 'ok' && params.get('ref') === draft.ref) {
+          try { sessionStorage.removeItem('roce_order_draft'); } catch (x) {}
+          history.replaceState({ step: 4 }, '', location.pathname + '?e=' + encodeURIComponent(ev.id));
+          show(4, false);
+        } else if (status === 'ko') {
+          history.replaceState({ step: 3 }, '', location.pathname + '?e=' + encodeURIComponent(ev.id));
+          show(3, false);
+          $('payError').textContent = t('tk_ko_title') + '. ' + t('tk_ko_text'); $('payError').hidden = false;
+        }
+      }
+    }
+
+    document.addEventListener('roce:lang', repaint);
+    history.replaceState({ step: state.step }, '', location.href);
+    if (state.step === 1 && !state.order) show(1, false);
+    repaint();
+  })();
+</script>
+</body>
+</html>
