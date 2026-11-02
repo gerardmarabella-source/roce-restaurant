@@ -45,6 +45,14 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<script>
+  // Fondo según la hora de Valencia: claro de 10:00 a 20:00 (Day), oscuro el
+  // resto (Night). Se fija antes de pintar para que no parpadee.
+  (function () {
+    var hour = Number(new Intl.DateTimeFormat('en-GB', { hour: '2-digit', hourCycle: 'h23', timeZone: 'Europe/Madrid' }).format(new Date()));
+    document.documentElement.setAttribute('data-mode', hour >= 10 && hour < 20 ? 'day' : 'night');
+  })();
+</script>
 <link rel="stylesheet" href="/styles.css?v=66">
 <style>
   /* Portada minimal: todo cabe SIEMPRE en una pantalla (sin scroll): cabecera,
@@ -52,6 +60,7 @@
      ROCE Night (noche). Los tamaños se calculan con el alto y el ancho
      disponibles para que se adapte a cualquier dispositivo. */
   html, body { height: 100%; overflow: hidden; background: var(--white); }
+  html[data-mode="night"], html[data-mode="night"] body { background: var(--black); }
 
   .home {
     --head: 64px;
@@ -64,7 +73,12 @@
     flex-direction: column;
     background: var(--white);
     color: var(--black);
+    transition: background 0.6s ease, color 0.6s ease;
   }
+  /* De noche la home se invierte: fondo negro y letras blancas. */
+  html[data-mode="night"] .home { background: var(--black); color: var(--white); }
+  html[data-mode="night"] .home-foot { color: rgba(236, 231, 221, 0.6); }
+  html[data-mode="night"] .home-square-night { border-color: var(--white); }
 
   .home-head { flex-shrink: 0; height: var(--head); display: flex; align-items: center; justify-content: flex-end; padding: 0 var(--pad); }
   .menu-btn { background: none; border: none; padding: 0.4rem; color: inherit; cursor: pointer; line-height: 0; }
@@ -396,12 +410,19 @@
 <script src="/i18n.js?v=49"></script>
 
 <script>
-  // Se destaca la opción que toca según la hora de Valencia: Day de 10:00 a
-  // 20:00 y Night el resto. No se recuerda nada: siempre se pregunta.
+  // Se destaca la opción que toca según la hora de Valencia (Day de 10:00 a
+  // 20:00, Night el resto) y se actualiza el fondo cada minuto. No se recuerda
+  // nada: siempre se pregunta.
   (function () {
-    var hour = Number(new Intl.DateTimeFormat('en-GB', { hour: '2-digit', hourCycle: 'h23', timeZone: 'Europe/Madrid' }).format(new Date()));
-    var isDay = hour >= 10 && hour < 20;
-    document.getElementById(isDay ? 'chooseDay' : 'chooseNight').classList.add('is-now');
+    function sync() {
+      var hour = Number(new Intl.DateTimeFormat('en-GB', { hour: '2-digit', hourCycle: 'h23', timeZone: 'Europe/Madrid' }).format(new Date()));
+      var isDay = hour >= 10 && hour < 20;
+      document.documentElement.setAttribute('data-mode', isDay ? 'day' : 'night');
+      document.getElementById('chooseDay').classList.toggle('is-now', isDay);
+      document.getElementById('chooseNight').classList.toggle('is-now', !isDay);
+    }
+    sync();
+    setInterval(sync, 60000);
   })();
 
   (function () {
