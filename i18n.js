@@ -113,10 +113,6 @@
     // events/index.html (los eventos en sí están en la propia página)
     events_eyebrow: { es: 'Agenda', en: 'Line-up' },
     events_title: { es: 'Eventos', en: 'Events' },
-    events_intro: {
-      es: 'Brunch, música y noches especiales. Día y noche, cada uno a su manera.',
-      en: 'Brunch, music and special nights. Day and night, each in its own way.',
-    },
     ev_back: { es: '← ROCE', en: '← ROCE' },
     ev_all: { es: 'Todos', en: 'All' },
     ev_cta: { es: 'Reservar plaza', en: 'Get tickets' },
