@@ -218,30 +218,39 @@
     flex-direction: column;
     background: var(--black);
     color: var(--cream);
-    padding: 1.25rem 1.5rem 2.5rem;
+    padding: 1.25rem 1.5rem 2rem;
+    overflow-y: auto;
   }
   .menu-overlay.is-open { display: flex; animation: menuIn 0.25s ease both; }
   @keyframes menuIn { from { opacity: 0; } to { opacity: 1; } }
   .menu-overlay-head { display: flex; align-items: center; justify-content: space-between; }
   .menu-overlay-head img { height: 34px; width: auto; display: block; }
-  .menu-links { margin-top: auto; display: flex; flex-direction: column; }
+  .menu-links { flex: 1; min-height: 0; margin-top: 1.5rem; display: flex; flex-direction: column; }
   .menu-links a {
     display: flex;
-    align-items: baseline;
+    align-items: center;
     justify-content: space-between;
     gap: 1rem;
-    padding: 1rem 0;
     border-top: 1px solid rgba(236, 231, 221, 0.25);
     color: var(--cream);
     text-decoration: none;
     font-family: var(--display);
-    font-size: clamp(2rem, 9vw, 3.4rem);
-    line-height: 1;
     text-transform: uppercase;
+    line-height: 1;
   }
-  .menu-links a small { font-family: var(--display); font-size: 0.85rem; opacity: 0.6; }
+  /* Los tres enlaces principales se reparten el alto disponible. */
+  .menu-links a:not(.menu-minor) {
+    flex: 1 1 0;
+    min-height: 3.5rem;
+    max-height: 9.5rem;
+    font-size: clamp(2.6rem, min(17vw, 11dvh), 6.5rem);
+    letter-spacing: -0.01em;
+  }
+  .menu-links a small { font-family: var(--display); font-size: 0.85rem; letter-spacing: 0; opacity: 0.6; }
   .menu-links a:hover { opacity: 0.7; }
-  .menu-links a.menu-minor { font-size: 1rem; letter-spacing: 0.04em; padding: 1.1rem 0 0; }
+  .menu-links a.menu-minor { flex: none; font-size: 1rem; letter-spacing: 0.04em; padding: 1.1rem 0; }
+  .menu-links a.menu-minor + .menu-minor { padding-bottom: 0; }
+  .menu-links a:not(.menu-minor) + .menu-minor { margin-top: auto; }
 
 </style>
 </head>
@@ -305,8 +314,8 @@
     </button>
   </div>
   <nav class="menu-links">
-    <a href="/day/">ROCE Day <small>10:00 – 20:00</small></a>
-    <a href="/night/">ROCE Night <small>20:00 – 02:00</small></a>
+    <a href="/day/">Day <small>10:00 – 20:00</small></a>
+    <a href="/night/">Night <small>20:00 – 02:00</small></a>
     <a href="/fuck-who-doesn't-like-this-place/"><span data-i18n="menu_reservar_title">Reservar</span></a>
     <a class="menu-minor" href="/fuck-who-doesn't-like-this-place/#alquila-el-espacio"><span data-i18n="menu_alquiler_link">Alquila el espacio</span> →</a>
     <a class="menu-minor" href="https://www.instagram.com/somosroce" target="_blank" rel="noopener">@somosroce ↗</a>
