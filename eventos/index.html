@@ -22,6 +22,11 @@
   (function () {
     var hour = Number(new Intl.DateTimeFormat('en-GB', { hour: '2-digit', hourCycle: 'h23', timeZone: 'Europe/Madrid' }).format(new Date()));
     document.documentElement.setAttribute('data-mode', hour >= 10 && hour < 20 ? 'day' : 'night');
+    // Filtro de entrada: ?f=day (desde Day), ?f=night (desde Night) o todos
+    // (desde el menú de la home). El fondo sigue al filtro: Day blanco, Night
+    // negro y, en Todos, según la hora.
+    var f = new URLSearchParams(location.search).get('f');
+    document.documentElement.setAttribute('data-view', f === 'day' || f === 'night' ? f : 'all');
   })();
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -32,8 +37,9 @@
   /* Agenda de eventos. La página sigue el modo claro/oscuro de la home; cada
      evento lleva el color de su ambiente: Day = blanco, Night = negro. */
   html { --bg: var(--white); --fg: var(--black); --pad: 1.25rem; }
-  html[data-mode="night"] { --bg: var(--black); --fg: var(--white); }
-  html, body { background: var(--bg); color: var(--fg); }
+  html[data-view="night"],
+  html[data-view="all"][data-mode="night"] { --bg: var(--black); --fg: var(--white); }
+  html, body { background: var(--bg); color: var(--fg); transition: background 0.3s ease, color 0.3s ease; }
   body { min-height: 100vh; display: flex; flex-direction: column; font-family: var(--body); }
 
   .ev-head { height: 64px; display: flex; align-items: center; padding: 0 var(--pad); }
@@ -135,7 +141,7 @@
 <body>
 
 <header class="ev-head">
-  <a class="ev-back" href="/" data-i18n="ev_back">← ROCE</a>
+  <a class="ev-back" id="evBack" href="/" data-i18n="ev_back">← ROCE</a>
 </header>
 
 <main class="ev-wrap">
@@ -144,7 +150,7 @@
   <p class="ev-demo" data-i18n="ev_demo">Eventos de ejemplo: la agenda real llegará pronto.</p>
 
   <div class="ev-filters" role="group" aria-label="Filtro">
-    <button type="button" class="ev-chip" data-filter="all" aria-pressed="true" data-i18n="ev_all">Todos</button>
+    <button type="button" class="ev-chip" data-filter="all" aria-pressed="false" data-i18n="ev_all">Todos</button>
     <button type="button" class="ev-chip" data-filter="day" aria-pressed="false">Day</button>
     <button type="button" class="ev-chip" data-filter="night" aria-pressed="false">Night</button>
   </div>
@@ -171,7 +177,7 @@
   </div>
 </div>
 <script src="/cookies.js?v=3"></script>
-<script src="/i18n.js?v=59"></script>
+<script src="/i18n.js?v=60"></script>
 <script src="/eventos/events.js"></script>
 <script>
   // Los eventos están en /eventos/events.js (misma fuente que la compra de entradas).
@@ -180,7 +186,14 @@
     var U = window.ROCE_EVENT_UTIL;
     var list = document.getElementById('evList');
     var empty = document.getElementById('evEmpty');
-    var filter = 'all';
+    var view = document.documentElement.getAttribute('data-view');
+    var filter = view; // 'all' | 'day' | 'night'
+    // "Volver" lleva al sitio de donde se vino (Day, Night o la home).
+    document.getElementById('evBack').setAttribute('href', view === 'all' ? '/' : '/' + view + '/');
+    function syncChips() {
+      document.querySelectorAll('.ev-chip').forEach(function (c) { c.setAttribute('aria-pressed', c.getAttribute('data-filter') === filter ? 'true' : 'false'); });
+    }
+    syncChips();
 
     function lang() { return window.ROCE_I18N ? window.ROCE_I18N.getLang() : 'es'; }
     function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
@@ -219,7 +232,9 @@
     document.querySelectorAll('.ev-chip').forEach(function (chip) {
       chip.addEventListener('click', function () {
         filter = chip.getAttribute('data-filter');
-        document.querySelectorAll('.ev-chip').forEach(function (c) { c.setAttribute('aria-pressed', c === chip ? 'true' : 'false'); });
+        document.documentElement.setAttribute('data-view', filter);
+        history.replaceState(null, '', filter === 'all' ? location.pathname : '?f=' + filter);
+        syncChips();
         render();
       });
     });
