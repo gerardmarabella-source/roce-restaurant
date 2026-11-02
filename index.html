@@ -75,18 +75,19 @@
     text-align: center;
   }
   .home-statement {
-    max-width: 14ch;
+    max-width: 16ch;
     font-family: var(--display);
-    font-weight: 700;
-    font-size: clamp(2.6rem, 11vw, 6.4rem);
-    line-height: 1.02;
-    letter-spacing: -0.01em;
+    font-weight: 400;
+    font-size: clamp(2.6rem, 11vw, 6rem);
+    line-height: 0.95;
+    text-transform: uppercase;
   }
   .home-intro {
     max-width: 32rem;
     margin-top: 1.6rem;
+    font-family: var(--display);
     font-size: clamp(0.95rem, 2.6vw, 1.1rem);
-    line-height: 1.55;
+    line-height: 1.5;
     color: rgba(10, 10, 10, 0.62);
   }
 
@@ -109,7 +110,7 @@
   .home-choice:hover { background: var(--black); color: var(--cream); }
   .home-choice-dining:hover { background: transparent; color: var(--black); }
   .home-choice strong { display: block; font-family: var(--display); font-weight: 400; font-size: 1.15rem; letter-spacing: 0.04em; text-transform: uppercase; }
-  .home-choice small { display: block; margin-top: 0.15rem; font-size: 0.8rem; opacity: 0.7; }
+  .home-choice small { display: block; margin-top: 0.15rem; font-family: var(--display); font-size: 0.85rem; opacity: 0.7; }
   .home-choice-arrow { font-family: var(--display); font-size: 1.6rem; line-height: 1; flex-shrink: 0; }
 
   .home-now {
@@ -117,8 +118,8 @@
     align-items: center;
     gap: 0.35rem;
     margin-bottom: 0.25rem;
-    font-size: 0.65rem;
-    font-weight: 600;
+    font-family: var(--display);
+    font-size: 0.7rem;
     letter-spacing: 0.08em;
     text-transform: uppercase;
   }
@@ -160,7 +161,7 @@
     line-height: 1;
     text-transform: uppercase;
   }
-  .menu-links a small { font-family: var(--body); font-size: 0.8rem; opacity: 0.6; text-transform: none; }
+  .menu-links a small { font-family: var(--display); font-size: 0.85rem; opacity: 0.6; }
   .menu-links a:hover { opacity: 0.7; }
   .menu-links a.menu-minor { font-size: 1rem; letter-spacing: 0.04em; padding: 1.1rem 0 0; }
 
