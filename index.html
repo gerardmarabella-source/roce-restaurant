@@ -67,19 +67,6 @@
   }
 
   .home-head { flex-shrink: 0; height: var(--head); display: flex; align-items: center; justify-content: flex-end; padding: 0 var(--pad); }
-  /* El ratón es el logo (solo con puntero fino; en táctil no se muestra). */
-  .cursor-logo { display: none; }
-  @media (hover: hover) and (pointer: fine) {
-    .home, .home a, .home button { cursor: none; }
-    .cursor-logo {
-      display: block; position: fixed; left: 0; top: 0; z-index: 9999;
-      width: 76px; height: auto; pointer-events: none;
-      mix-blend-mode: difference; opacity: 0; transition: opacity .2s ease, scale .2s ease;
-      will-change: transform;
-    }
-    .cursor-logo.on { opacity: 1; }
-    .cursor-logo.big { scale: 1.35; }
-  }
   .menu-btn { background: none; border: none; padding: 0.4rem; color: inherit; cursor: pointer; line-height: 0; }
   .menu-btn svg { width: 2rem; height: 2rem; }
 
@@ -251,7 +238,6 @@
 <body>
 
 <div class="home">
-  <img class="cursor-logo" id="cursorLogo" src="/assets/logo/roce-horizontal-white.png" alt="" aria-hidden="true">
   <header class="home-head">
     <button class="menu-btn" id="menuOpen" type="button" aria-label="Menú" aria-expanded="false" aria-controls="menuOverlay">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
@@ -346,17 +332,6 @@
     openBtn.addEventListener('click', function () { setMenu(true); });
     document.getElementById('menuClose').addEventListener('click', function () { setMenu(false); });
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape') setMenu(false); });
-  })();
-
-  (function () {
-    var c = document.getElementById('cursorLogo');
-    if (!c || !window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
-    document.addEventListener('mousemove', function (e) {
-      c.style.transform = 'translate(' + (e.clientX - c.offsetWidth / 2) + 'px,' + (e.clientY - c.offsetHeight / 2) + 'px)';
-      c.classList.add('on');
-      c.classList.toggle('big', !!e.target.closest('a, button'));
-    });
-    document.documentElement.addEventListener('mouseleave', function () { c.classList.remove('on'); });
   })();
 </script>
 
