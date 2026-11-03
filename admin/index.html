@@ -426,7 +426,7 @@
     if (i) return '<br><span class="ad-tag is-green">' + esc(i.number) + '</span>' + (i.drive_url ? ' <a href="' + esc(i.drive_url) + '" target="_blank" rel="noopener">Drive</a>' : '');
     return b.invoice_tax_id ? '<br><span class="ad-meta">Pide factura completa</span>' : '';
   }
-  var STATUS = { confirmed: 'Confirmada', pending: 'Pendiente', cancelled: 'Cancelada' };
+  var STATUS = { confirmed: 'Confirmada', pending: 'Pendiente de pago', cancelled: 'Cancelada' };
   var PAY = { free: 'Gratis', pending: 'Por cobrar', paid: 'Cobrado', refunded: 'Devuelto', failed: 'Fallido' };
   function renderBookings() {
     var list = filteredBookings();
@@ -451,7 +451,7 @@
     var b = bookings.filter(function (x) { return x.id === btn.dataset.id; })[0]; if (!b) return;
     var patch;
     if (btn.dataset.act === 'cancel') { if (!confirm('¿Cancelar la reserva ' + b.ref + ' de ' + b.name + '? Se liberan sus plazas.')) return; patch = { status: 'cancelled' }; }
-    else { if (!confirm('¿Marcar como cobrada la reserva ' + b.ref + '? Se emitirá la factura y se enviará por email al cliente.')) return; patch = { payment_status: 'paid' }; }
+    else { if (!confirm('¿Marcar como cobrada la reserva ' + b.ref + '? Se emitirá la factura y se enviará por email al cliente.')) return; patch = { payment_status: 'paid', status: 'confirmed' }; }
     api('bookings?id=eq.' + b.id, { method: 'PATCH', body: patch }).then(function () { Object.assign(b, patch); renderBookings(); renderEvents(); flash('Reserva actualizada.', 'ok'); }).catch(function (x) { flash(x.message, 'error'); });
   });
   $('bkCsv').addEventListener('click', function () {

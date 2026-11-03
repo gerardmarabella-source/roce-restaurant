@@ -269,16 +269,45 @@ async function issueAndSendInvoice(b: any): Promise<Response> {
   return new Response(`invoice ${inv.number} sent; ${driveNote}`);
 }
 
+// Aviso interno a ROCE cuando entra una reserva pagada con tarjeta (las gratuitas y las
+// de pago manual siguen avisando desde la web).
+async function notifyStaff(b: any): Promise<void> {
+  const { data: ev } = await serviceClient().from("events").select("title_es, starts_at").eq("id", b.event_id).single();
+  const when = ev ? new Intl.DateTimeFormat("es-ES", { timeZone: "Europe/Madrid", weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" }).format(new Date(ev.starts_at)) : "";
+  const total = (b.total_cents / 100).toLocaleString("es-ES", { style: "currency", currency: "EUR" });
+  await fetch("https://api.brevo.com/v3/smtp/email", {
+    method: "POST",
+    headers: brevoHeaders,
+    body: JSON.stringify({
+      sender: { name: "ROCE", email: FROM },
+      to: [{ email: REPLY_TO }],
+      subject: `Reserva pagada · ${ev?.title_es ?? b.event_id} (${b.ref})`,
+      htmlContent: `<p><b>${esc(String(ev?.title_es ?? b.event_id))}</b> · ${esc(when)}</p>
+<p>${esc(b.name)} · ${esc(b.email)} · ${esc(b.phone)}<br>${b.qty} entrada(s) · ${esc(total)} · cobrado con tarjeta<br>Ref. ${esc(b.ref)}</p>`,
+    }),
+  }).catch(() => {});
+}
+
 Deno.serve(async (req) => {
   if (!WEBHOOK_SECRET || req.headers.get("x-webhook-secret") !== WEBHOOK_SECRET) {
     return new Response("forbidden", { status: 403 });
   }
   const payload = await req.json();
   if (payload.table !== "bookings") return new Response("ignored");
-  if (payload.type === "INSERT") return await sendBookingEmail(payload.record);
+  if (payload.type === "INSERT") {
+    // Con pago online la reserva nace "pending": el email sale cuando el banco confirma el cobro.
+    if (payload.record.status === "pending") return new Response("awaiting payment");
+    return await sendBookingEmail(payload.record);
+  }
   if (payload.type === "UPDATE") {
     const n = payload.record, o = payload.old_record ?? {};
-    if (n.payment_status === "paid" && o.payment_status !== "paid" && n.status !== "cancelled") return await issueAndSendInvoice(n);
+    if (n.payment_status === "paid" && o.payment_status !== "paid" && n.status !== "cancelled") {
+      // Pasó de "pending" a pagada: es la primera vez que se confirma, así que sale el email de reserva.
+      let sent: Response | null = null;
+      if (o.status === "pending") { sent = await sendBookingEmail(n); await notifyStaff(n); }
+      const invoice = await issueAndSendInvoice(n);
+      return sent && !sent.ok && invoice.ok ? sent : invoice;
+    }
   }
   return new Response("ignored");
 });

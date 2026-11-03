@@ -11,7 +11,7 @@
 <link rel="icon" type="image/png" href="/assets/meta/favicon-32.png" sizes="32x32">
 <link rel="apple-touch-icon" href="/assets/meta/apple-touch-icon.png">
 <script src="/eventos/config.js?v=2"></script>
-<script src="/eventos/events.js?v=2"></script>
+<script src="/eventos/events.js?v=3"></script>
 <script>
   // El color de la página es el del ambiente del evento: Day claro, Night
   // oscuro. Hasta saber de qué evento se trata la página va oculta.
@@ -186,6 +186,8 @@
     <h2 class="tk-h" data-i18n="tk_review_title">Revisa tu reserva</h2>
     <div id="review"></div>
     <p class="tk-policy" data-i18n="tk_policy">Si no puedes venir, avísanos en reservas@roce.es para liberar tu plaza.</p>
+    <p class="tk-policy" id="payNote" data-i18n="tk_pay_note" hidden>Al continuar te llevamos al banco para pagar con tarjeta de forma segura. Tu plaza queda retenida durante 30 minutos.</p>
+    <p class="tk-policy" id="payWait" role="status" hidden></p>
     <p class="tk-error" id="payError" role="alert" hidden></p>
     <div class="tk-actions">
       <button type="button" class="tk-btn is-ghost" id="back2" data-i18n="tk_prev">Atrás</button>
@@ -201,6 +203,7 @@
     <span class="tk-ref-label" data-i18n="tk_ref">Nº de referencia</span>
     <span class="tk-ref" id="doneRef"></span>
     <p id="doneSummary"></p>
+    <p class="tk-policy" id="doneNote" hidden></p>
     <div class="tk-actions">
       <button type="button" class="tk-btn" id="calBtn" data-i18n="tk_cal">Añadir al calendario</button>
       <a class="tk-btn is-ghost" href="/eventos/" data-i18n="tk_more">Ver más eventos</a>
@@ -226,7 +229,7 @@
   </div>
 </div>
 <script src="/cookies.js?v=3"></script>
-<script src="/i18n.js?v=66"></script>
+<script src="/i18n.js?v=67"></script>
 <script>
   window.ROCE_EVENTS_READY.then(function () {
     var U = window.ROCE_EVENT_UTIL;
@@ -234,20 +237,50 @@
     var ev = U.find(params.get('e'));
     if (!ev) return;
 
-    // ─── Pasarela de pago ───────────────────────────────────────────────
-    // Hoy no se cobra: enabled = false y todas las reservas se tratan como
-    // gratuitas. Para integrar Redsys:
-    //   1. enabled = true.
-    //   2. start(order) debe pedir a un servidor los parámetros firmados
-    //      (Ds_MerchantParameters / Ds_Signature, nunca la clave en el
-    //      navegador) y redirigir al TPV.
-    //   3. En Redsys, URL_OK = esta página con ?e=<id>&status=ok&ref=<ref> y
-    //      URL_KO = ?e=<id>&status=ko. La confirmación real del cobro debe
-    //      llegar al servidor por la URL de notificación de Redsys.
+    // ─── Pasarela de pago (Redsys) ──────────────────────────────────────
+    // El cobro lo gestiona la función "redsys" de Supabase: aquí solo se le pide
+    // que firme el pedido y se envía el formulario al banco (la clave secreta no
+    // sale del servidor). El cobro se confirma cuando el banco avisa al servidor,
+    // no cuando el cliente vuelve a esta página. Si la función no está configurada,
+    // enabled queda en false y todo funciona como antes (sin cobro online).
+    var B = window.ROCE_BACKEND || {};
+    function payFn(body) {
+      return fetch(B.url + '/functions/v1/redsys', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', apikey: B.anonKey, Authorization: 'Bearer ' + B.anonKey },
+        body: JSON.stringify(body)
+      }).then(function (r) {
+        return r.json().catch(function () { return {}; }).then(function (d) {
+          if (!r.ok) throw new Error(d.error || 'network');
+          return d;
+        });
+      }, function () { throw new Error('network'); });
+    }
     window.ROCE_PAYMENTS = {
       enabled: false,
-      start: function (/* order */) { return Promise.reject(new Error('payments-not-configured')); }
+      env: 'test',
+      // Pide los datos firmados y redirige al TPV. Devuelve una promesa que solo se
+      // resuelve si algo falla (si todo va bien el navegador se va de la página).
+      start: function (order) {
+        return payFn({ action: 'pay', ref: order.ref, lang: order.lang, return_base: location.origin }).then(function (d) {
+          var f = document.createElement('form');
+          f.method = 'POST'; f.action = d.url; f.style.display = 'none';
+          ['Ds_SignatureVersion', 'Ds_MerchantParameters', 'Ds_Signature'].forEach(function (k) {
+            var i = document.createElement('input'); i.type = 'hidden'; i.name = k; i.value = d[k]; f.appendChild(i);
+          });
+          document.body.appendChild(f);
+          f.submit();
+          return new Promise(function () {});
+        });
+      }
     };
+    if (U.backend && ev.price_cents > 0) {
+      payFn({ action: 'status' }).then(function (d) {
+        window.ROCE_PAYMENTS.enabled = !!d.enabled;
+        window.ROCE_PAYMENTS.env = d.env || 'test';
+        repaint();
+      }).catch(function () {});
+    }
 
     // ─── Envío de la reserva ────────────────────────────────────────────
     // Con el panel conectado (eventos/config.js) la reserva se guarda en la
@@ -311,7 +344,14 @@
       $('tkEnv').innerHTML = ev.env === 'night' ? 'Night ' + AGE : 'Day';
       $('tkTitle').textContent = ev.title[lang()];
       $('tkWhen').textContent = whenText();
-      $('tkTest').hidden = window.ROCE_PAYMENTS.enabled;
+      var P = window.ROCE_PAYMENTS, tb = $('tkTest');
+      if (P.enabled) {
+        tb.hidden = P.env !== 'test';
+        tb.setAttribute('data-i18n', 'tk_test_pay'); tb.textContent = t('tk_test_pay');
+      } else {
+        tb.hidden = false;
+        tb.setAttribute('data-i18n', 'tk_test_banner'); tb.textContent = t('tk_test_banner');
+      }
       $('ageRow').hidden = ev.env !== 'night';
       $('invBox').hidden = ev.price_cents === 0;
     }
@@ -351,8 +391,15 @@
       $('doneRef').textContent = o.ref;
       $('doneSummary').textContent = ev.title[lang()] + ' · ' + U.fmt(ev, lang(), { weekday: 'short', day: 'numeric', month: 'long' }) + ' · ' + ev.time + ' · ' + tickets(o.qty);
     }
+    function needsPayment() { return window.ROCE_PAYMENTS.enabled && state.order && state.order.total_cents > 0; }
+    function paintConfirm() {
+      var pay = !!needsPayment(), btn = $('confirmBtn');
+      $('payNote').hidden = !pay;
+      btn.setAttribute('data-i18n', pay ? 'tk_pay' : 'tk_confirm');
+      if (!btn.disabled) btn.textContent = pay ? t('tk_pay').replace('{total}', U.money(state.order.total_cents, lang())) : t('tk_confirm');
+    }
     function repaint() {
-      paintEvent(); paintPrices();
+      paintEvent(); paintPrices(); paintConfirm();
       if (state.order && state.step === 3) paintReview();
       if (state.order && state.step === 4) paintDone();
     }
@@ -364,7 +411,7 @@
       $('tkEvent').hidden = step === 4;
       $('tkSteps').classList.toggle('is-hidden', step === 4);
       document.querySelectorAll('#tkSteps li').forEach(function (li) { li.classList.toggle('is-on', Number(li.dataset.s) === step); });
-      if (step === 3) paintReview();
+      if (step === 3) { paintReview(); paintConfirm(); }
       if (step === 4) paintDone();
       if (push) history.pushState({ step: step }, '', '#paso-' + step);
       window.scrollTo(0, 0);
@@ -410,18 +457,25 @@
     $('confirmBtn').addEventListener('click', function () {
       var btn = $('confirmBtn'), err = $('payError'), o = state.order;
       err.hidden = true; btn.disabled = true; btn.textContent = t('tk_sending');
-      var needsPayment = window.ROCE_PAYMENTS.enabled && o.total_cents > 0;
       var run;
-      if (needsPayment) {
-        try { sessionStorage.setItem('roce_order_draft', JSON.stringify(o)); } catch (x) {}
-        run = window.ROCE_PAYMENTS.start(o); // redirige al TPV; la vuelta llega con ?status=
+      if (needsPayment()) {
+        // 1) se guarda la reserva (la plaza queda retenida 30 min); 2) se va al banco.
+        run = (o.booked ? Promise.resolve() : U.book(ev, Object.assign({}, o, { online: true })).then(function (res) {
+          o.ref = res.ref; o.total_cents = res.total_cents; o.booked = true; ev.left = res.left;
+        })).then(function () {
+          try { sessionStorage.setItem('roce_order_draft', JSON.stringify(o)); } catch (x) {}
+          btn.textContent = t('tk_redirecting');
+          return window.ROCE_PAYMENTS.start(o);
+        });
       } else {
         run = saveOrder(o).then(function () { show(4, true); });
       }
       run.catch(function (e) {
-        var key = { sold_out: 'tk_err_soldout', event_past: 'tk_err_past', bad_qty: 'tk_err_soldout' }[e && e.message] || 'tk_error';
+        var code = e && e.message;
+        if (code === 'expired' || code === 'not_found') { o.booked = false; o.ref = newRef(); try { sessionStorage.removeItem('roce_order_draft'); } catch (x) {} }
+        var key = { sold_out: 'tk_err_soldout', event_past: 'tk_err_past', bad_qty: 'tk_err_soldout', expired: 'tk_err_expired', not_found: 'tk_err_expired' }[code] || 'tk_error';
         err.textContent = t(key); err.hidden = false;
-        btn.disabled = false; btn.textContent = t('tk_confirm');
+        btn.disabled = false; paintConfirm();
       });
     });
 
@@ -442,7 +496,9 @@
       document.body.appendChild(a); a.click(); a.remove();
     });
 
-    // ─── Vuelta de la pasarela (?status=ok|ko) ──────────────────────────
+    // ─── Vuelta del banco (?status=ok|ko) ───────────────────────────────
+    // "ok" solo significa que el cliente ha vuelto: el cobro real lo confirma el
+    // banco al servidor, así que se espera a ver la reserva como pagada.
     var status = params.get('status');
     if (status) {
       var draft = null;
@@ -450,9 +506,21 @@
       if (draft && draft.event === ev.id) {
         state.order = draft; state.qty = draft.qty;
         if (status === 'ok' && params.get('ref') === draft.ref) {
-          try { sessionStorage.removeItem('roce_order_draft'); } catch (x) {}
-          history.replaceState({ step: 4 }, '', location.pathname + '?e=' + encodeURIComponent(ev.id));
-          show(4, false);
+          history.replaceState({ step: 3 }, '', location.pathname + '?e=' + encodeURIComponent(ev.id));
+          show(3, false);
+          $('confirmBtn').disabled = true; $('confirmBtn').textContent = t('tk_pay_wait');
+          $('payWait').textContent = t('tk_pay_wait_text'); $('payWait').hidden = false;
+          var tries = 0;
+          (function poll() {
+            U.paymentStatus(draft.ref).then(function (st) {
+              if (st === 'paid' || ++tries >= 15) {
+                try { sessionStorage.removeItem('roce_order_draft'); } catch (x) {}
+                $('payWait').hidden = true;
+                if (st !== 'paid') { $('doneNote').textContent = t('tk_pay_delay'); $('doneNote').hidden = false; }
+                show(4, false);
+              } else { setTimeout(poll, 2000); }
+            });
+          })();
         } else if (status === 'ko') {
           history.replaceState({ step: 3 }, '', location.pathname + '?e=' + encodeURIComponent(ev.id));
           show(3, false);
