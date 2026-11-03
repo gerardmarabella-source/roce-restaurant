@@ -26,14 +26,9 @@
     // Home (index.html)
 
     // Desplegable de Reservas (home)
-    menu_reservar_title: { es: 'Reservar', en: 'Book' },
-    menu_reservar_sub: {
-      es: 'Reserva de cenas en primera planta',
-      en: 'Dinner bookings on the first floor',
-    },
     menu_alquiler_link: { es: 'Alquila el espacio', en: 'Rent the space' },
     menu_eventos_title: { es: 'Eventos', en: 'Events' },
-    menu_eventos_sub: { es: '*Próximamente', en: '*Coming soon' },
+    cta_reservar_mesa: { es: 'Reservar mesa', en: 'Book a table' },
 
     // Newsletter (widget compartido, usado en home)
     newsletter_text: { es: 'Entérate antes que nadie de todo.', en: 'Be the first to know.' },
@@ -56,13 +51,13 @@
 
     // reservar.html
     reservar_h1: { es: 'Reserva<br>tu mesa', en: 'Book<br>your table' },
+    reservar_day_soon: {
+      es: 'La reserva online de Day estará disponible muy pronto. Mientras tanto, escríbenos a <a href="mailto:reservas@roce.es">reservas@roce.es</a>.',
+      en: 'Online booking for Day will be available very soon. In the meantime, write to us at <a href="mailto:reservas@roce.es">reservas@roce.es</a>.',
+    },
     reservar_night: {
       es: 'Reservas de noche solo para mayores de 18 años',
       en: 'Night bookings are for guests aged 18 and over',
-    },
-    reservar_brunch: {
-      es: 'Nuestro espacio de brunch y cafetería es de acceso libre, sin reserva, todos los días de 10:00 a 20:00.',
-      en: 'Our brunch and café area is walk-in only, no reservation needed, every day from 10:00 to 20:00.',
     },
     consent_text: {
       es: 'He leído y acepto la <a href="/privacidad.html" target="_blank" rel="noopener">política de privacidad</a>. ROCE podrá contactarme por email o teléfono sobre mi reserva y añadirme a su base de datos de clientes para futuras comunicaciones.',
@@ -115,62 +110,86 @@
       en: "Hi! We'd like to rent ROCE's space for an event.",
     },
 
-    // eventos.html
+    // events/index.html (los eventos en sí están en la propia página)
     events_eyebrow: { es: 'Agenda', en: 'Line-up' },
     events_title: { es: 'Eventos', en: 'Events' },
-    events_intro: {
-      es: 'Noches en directo, catas y sesiones especiales en ROCE. Reserva tu plaza — hay sitio limitado.',
-      en: 'Live nights, tastings and special sessions at ROCE. Reserve your spot — space is limited.',
+    ev_back: { es: '← ROCE', en: '← ROCE' },
+    ev_all: { es: 'Todos', en: 'All' },
+    ev_cta: { es: 'Reservar plaza', en: 'Get tickets' },
+    ev_empty: { es: 'Muy pronto publicaremos aquí los próximos eventos.', en: 'We will soon publish the upcoming events here.' },
+    ev_demo: { es: 'Eventos de ejemplo: la agenda real llegará pronto.', en: 'Sample events: the real line-up is coming soon.' },
+    // Compra de entradas / reserva de plaza (/eventos/entradas/)
+    tk_back_events: { es: '← Eventos', en: '← Events' },
+    tk_step1: { es: 'Entradas', en: 'Tickets' },
+    tk_step2: { es: 'Datos', en: 'Details' },
+    tk_h_data: { es: 'Tus datos', en: 'Your details' },
+    tk_step3: { es: 'Confirmar', en: 'Confirm' },
+    tk_test_banner: { es: 'Modo prueba: de momento no se cobra nada.', en: 'Test mode: nothing is charged for now.' },
+    tk_qty_label: { es: 'Nº de entradas', en: 'Number of tickets' },
+    tk_left: { es: 'Quedan {n} plazas', en: '{n} spots left' },
+    tk_last: { es: 'Últimas {n} plazas', en: 'Last {n} spots' },
+    tk_soldout: { es: 'Agotado', en: 'Sold out' },
+    tk_each: { es: 'Precio por entrada', en: 'Price per ticket' },
+    tk_total: { es: 'Total', en: 'Total' },
+    tk_free: { es: 'Gratis', en: 'Free' },
+    tk_continue: { es: 'Continuar', en: 'Continue' },
+    tk_prev: { es: 'Atrás', en: 'Back' },
+    tk_name: { es: 'Nombre y apellidos', en: 'Full name' },
+    tk_email: { es: 'Email', en: 'Email' },
+    tk_phone: { es: 'Teléfono', en: 'Phone' },
+    tk_notes: { es: 'Alergias o comentarios (opcional)', en: 'Allergies or comments (optional)' },
+    tk_age: { es: 'Confirmo que todos los asistentes son mayores de 18 años.', en: 'I confirm that all guests are aged 18 or over.' },
+    tk_review_title: { es: 'Revisa tu reserva', en: 'Review your booking' },
+    tk_r_event: { es: 'Evento', en: 'Event' },
+    tk_r_date: { es: 'Fecha', en: 'Date' },
+    tk_r_place: { es: 'Lugar', en: 'Place' },
+    tk_r_tickets: { es: 'Entradas', en: 'Tickets' },
+    tk_r_holder: { es: 'A nombre de', en: 'Booked by' },
+    tk_r_contact: { es: 'Contacto', en: 'Contact' },
+    tk_policy: { es: 'Si no puedes venir, avísanos en reservas@roce.es para liberar tu plaza.', en: "If you can't make it, let us know at reservas@roce.es so we can free your spot." },
+    tk_confirm: { es: 'Confirmar reserva', en: 'Confirm booking' },
+    tk_sending: { es: 'Enviando…', en: 'Sending…' },
+    tk_error: { es: 'No se ha podido enviar, inténtalo de nuevo.', en: 'Something went wrong, please try again.' },
+    tk_ok_title: { es: '¡Plaza reservada!', en: 'Spot booked!' },
+    tk_ok_sub: { es: 'Hemos recibido tu reserva. Te enviaremos la confirmación por email.', en: "We've received your booking. We'll send you the confirmation by email." },
+    tk_ref: { es: 'Nº de referencia', en: 'Reference number' },
+    tk_cal: { es: 'Añadir al calendario', en: 'Add to calendar' },
+    tk_more: { es: 'Ver más eventos', en: 'See more events' },
+    tk_ko_title: { es: 'El pago no se ha completado', en: "The payment wasn't completed" },
+    tk_ko_text: { es: 'No se ha hecho ningún cargo. Puedes intentarlo de nuevo.', en: 'You have not been charged. You can try again.' },
+    tk_consent: {
+      es: 'He leído y acepto la <a href="/privacidad.html" target="_blank" rel="noopener">política de privacidad</a>. ROCE tratará mis datos para gestionar mi reserva y enviarme información sobre el evento.',
+      en: 'I have read and accept the <a href="/privacidad.html" target="_blank" rel="noopener">privacy policy</a>. ROCE will process my data to manage my booking and send me information about the event.',
     },
-    events_soldout_note: {
-      es: 'Solicitud, no compra — te confirmamos por email en cuanto la revisamos.',
-      en: "This is a request, not a purchase — we'll confirm by email once we review it.",
-    },
+    tk_inv_check: { es: 'Quiero factura completa (con mis datos fiscales o los de mi empresa).', en: 'I want a full invoice (with my tax details or my company\'s).' },
+    tk_inv_name: { es: 'Nombre o razón social', en: 'Name or company name' },
+    tk_inv_taxid: { es: 'NIF / CIF', en: 'Tax ID (NIF / CIF)' },
+    tk_inv_addr: { es: 'Dirección fiscal', en: 'Billing address' },
+    tk_inv_note: { es: 'La factura (simplificada, o completa si la pides) te llega por email cuando se confirma el pago.', en: 'Your invoice (simplified, or full if you ask for it) is emailed to you once the payment is confirmed.' },
+    tk_v_invoice: { es: 'Rellena nombre, NIF/CIF y dirección fiscal para la factura completa.', en: 'Please fill in name, tax ID and billing address for the full invoice.' },
+    tk_r_invoice: { es: 'Factura a', en: 'Invoice to' },
+    tk_marketing: { es: 'Quiero recibir novedades y eventos de ROCE por email (opcional).', en: 'I would like to receive news and events from ROCE by email (optional).' },
+    tk_err_soldout: { es: 'Lo sentimos, ya no quedan plazas suficientes para este evento.', en: 'Sorry, there are no longer enough spots left for this event.' },
+    tk_err_past: { es: 'Este evento ya ha comenzado o ha finalizado.', en: 'This event has already started or ended.' },
+    tk_v_name: { es: 'Escribe tu nombre y apellidos.', en: 'Please enter your full name.' },
+    tk_v_email: { es: 'Escribe un email válido.', en: 'Please enter a valid email.' },
+    tk_v_phone: { es: 'Escribe un teléfono válido.', en: 'Please enter a valid phone number.' },
+    tk_v_age: { es: 'Este evento es solo para mayores de 18 años.', en: 'This event is for guests aged 18 and over only.' },
+    tk_v_consent: { es: 'Debes aceptar la política de privacidad.', en: 'You must accept the privacy policy.' },
+    tk_ticket_one: { es: 'entrada', en: 'ticket' },
+    tk_ticket_many: { es: 'entradas', en: 'tickets' },
 
-    event_1_title: { es: 'Noche de Jazz', en: 'Jazz Night' },
-    event_1_meta: { es: 'Sala principal', en: 'Main room' },
-    event_1_desc: {
-      es: 'Trío en directo entre plato y plato — jazz de toda la vida, sin manteles ni silencio.',
-      en: 'A live trio between courses — classic jazz, no white tablecloths or hushed silence required.',
-    },
-    event_1_price: { es: 'Entrada libre con consumición', en: 'Free entry with a drink minimum' },
-    event_1_datetime: { es: 'Viernes 20 de noviembre · 21:00', en: 'Friday, November 20 · 21:00' },
-
-    event_2_title: { es: 'Sunset Sessions: DJ Set', en: 'Sunset Sessions: DJ Set' },
-    event_2_meta: { es: 'Terraza', en: 'Terrace' },
-    event_2_desc: {
-      es: 'La barra abierta hasta tarde y un DJ en la terraza. Aforo reducido.',
-      en: 'The bar stays open late and a DJ takes over the terrace. Limited capacity.',
-    },
-    event_2_price: { es: '10€ · incluye primera copa', en: '€10 · includes your first drink' },
-    event_2_datetime: { es: 'Sábado 28 de noviembre · 20:00', en: 'Saturday, November 28 · 20:00' },
-
-    event_3_title: { es: 'Cena Maridaje: Vinos de Autor', en: 'Wine Pairing Dinner' },
-    event_3_meta: { es: 'Menú especial · 5 platos', en: 'Special menu · 5 courses' },
-    event_3_desc: {
-      es: 'Menú degustación de cinco platos maridado con vinos de pequeños productores.',
-      en: 'A five-course tasting menu paired with wines from small producers.',
-    },
-    event_3_price: { es: '55€ por persona', en: '€55 per person' },
-    event_3_datetime: { es: 'Sábado 5 de diciembre · 21:00', en: 'Saturday, December 5 · 21:00' },
-
-    ticket_modal_eyebrow: { es: 'Reserva tu plaza', en: 'Reserve your spot' },
-    ticket_label_count: { es: 'Nº de entradas', en: 'Number of tickets' },
-    ticket_submit: { es: 'Enviar solicitud', en: 'Send request' },
-    ticket_submit_sending: { es: 'Enviando...', en: 'Sending...' },
-    ticket_status_error: {
-      es: 'No se ha podido enviar, inténtalo de nuevo.',
-      en: 'Something went wrong, please try again.',
-    },
-    ticket_success_title: { es: '¡Solicitud enviada!', en: 'Request sent!' },
-    ticket_success_sub: {
-      es: 'Te confirmamos tu plaza por email en cuanto la revisemos.',
-      en: "We'll confirm your spot by email once we review it.",
-    },
-    ticket_ref_label: { es: 'Nº de referencia', en: 'Reference number' },
+    // Elegir entre Day (día) y Night (noche)
+    choose_now: { es: 'Ahora', en: 'Now' },
+    home_w1: { es: 'Todo', en: 'It all' },
+    home_w2: { es: 'empieza', en: 'starts' },
+    home_w3: { es: 'con', en: 'with' },
+    home_w4: { es: 'un', en: 'a' },
+    home_w5: { es: 'roce', en: 'roce' },
 
     // privacidad.html
     privacy_title: { es: 'Política de privacidad', en: 'Privacy Policy' },
+    privacy_updated_p: { es: 'Última actualización: noviembre de 2026', en: 'Last updated: November 2026' },
     privacy_updated: { es: 'Última actualización: octubre de 2026', en: 'Last updated: October 2026' },
     privacy_h1: { es: '1. Responsable del tratamiento', en: '1. Data controller' },
     privacy_h2: { es: '2. Datos que tratamos y finalidad', en: '2. Data we process and purpose' },
@@ -182,6 +201,10 @@
       es: '<strong>Contacto y reservas:</strong> cuando nos escribes a reservas@roce.es, usas el sistema de reservas de mesa o nos contactas por WhatsApp desde la web (reservas de grupo, alquiler del espacio), tratamos tu nombre, email, teléfono y el contenido del mensaje para gestionar tu solicitud. Si aceptas expresamente recibir comunicaciones al reservar, también te añadimos a nuestra base de datos de clientes (CRM) para contactarte sobre tu reserva y enviarte comunicaciones sobre ROCE (eventos, novedades, ofertas).',
       en: '<strong>Contact and bookings:</strong> when you write to reservas@roce.es, use the table booking system or contact us on WhatsApp from the website (group bookings, space rental), we process your name, email, phone number and the content of your message to handle your request. If you expressly agree to receive communications when booking, we also add you to our customer database (CRM) to contact you about your booking and send you communications about ROCE (events, news, offers).',
     },
+    privacy_li_events: {
+      es: '<strong>Eventos y entradas:</strong> cuando reservas una plaza o entrada para un evento de ROCE Day o ROCE Night, tratamos tu nombre, email, teléfono, el número de entradas y los comentarios que quieras añadir para gestionar tu reserva, enviarte la confirmación y avisarte si hay cambios o cancelación del evento. Si el evento es de pago, también los datos necesarios para gestionar el cobro. No es necesario que nos facilites datos de salud; si indicas alergias u otras necesidades en los comentarios, los usaremos solo para atender tu reserva. Solo te enviaremos novedades y comunicaciones comerciales si marcas la casilla correspondiente.',
+      en: '<strong>Events and tickets:</strong> when you book a spot or ticket for a ROCE Day or ROCE Night event, we process your name, email, phone number, number of tickets and any comments you wish to add in order to manage your booking, send you the confirmation and notify you of changes to or cancellation of the event. If the event is paid, we also process the data needed to handle the payment. You do not need to give us any health data; if you mention allergies or other needs in the comments, we will use them only to attend to your booking. We will only send you news and commercial communications if you tick the corresponding box.',
+    },
     privacy_li_newsletter: {
       es: '<strong>Newsletter:</strong> si dejas tu email en el formulario de suscripción, lo usamos para enviarte comunicaciones comerciales sobre ROCE (aperturas, eventos, novedades).',
       en: '<strong>Newsletter:</strong> if you leave your email in the subscription form, we use it to send you commercial communications about ROCE (openings, events, news).',
@@ -192,18 +215,18 @@
     },
     privacy_h3: { es: '3. Legitimación', en: '3. Legal basis' },
     privacy_p3: {
-      es: 'La base legal para el tratamiento de tus datos es el consentimiento que nos das al enviarnos tu email o tu mensaje (art. 6.1.a del RGPD), y en el caso de las reservas, la ejecución de medidas precontractuales a petición tuya (art. 6.1.b del RGPD). Para añadirte a nuestra base de datos de clientes y enviarte comunicaciones comerciales, la base legal es el consentimiento expreso que nos das al aceptarlo durante la reserva.',
-      en: 'The legal basis for processing your data is the consent you give us when sending your email or message (art. 6.1.a GDPR), and for bookings, the performance of pre-contractual measures at your request (art. 6.1.b GDPR). To add you to our customer database and send you commercial communications, the legal basis is the explicit consent you give by accepting it during the booking.',
+      es: 'La base legal para el tratamiento de tus datos es el consentimiento que nos das al enviarnos tu email o tu mensaje (art. 6.1.a del RGPD), y en el caso de las reservas, la ejecución de medidas precontractuales a petición tuya (art. 6.1.b del RGPD). Para añadirte a nuestra base de datos de clientes y enviarte comunicaciones comerciales, la base legal es el consentimiento expreso que nos das al aceptarlo durante la reserva. Para las reservas de entradas a eventos, la base legal es la ejecución de la reserva que solicitas (art. 6.1.b del RGPD) y, para los avisos sobre tu evento, la necesidad de prestarte ese servicio. Las novedades y comunicaciones comerciales sobre eventos solo se envían con tu consentimiento, que das marcando la casilla opcional del formulario (art. 6.1.a del RGPD).',
+      en: 'The legal basis for processing your data is the consent you give us when sending your email or message (art. 6.1.a GDPR), and for bookings, the performance of pre-contractual measures at your request (art. 6.1.b GDPR). To add you to our customer database and send you commercial communications, the legal basis is the explicit consent you give by accepting it during the booking. For event ticket bookings, the legal basis is the performance of the booking you request (art. 6.1.b GDPR) and, for notices about your event, the need to provide you with that service. News and commercial communications about events are only sent with your consent, which you give by ticking the optional box in the form (art. 6.1.a GDPR).',
     },
     privacy_h4: { es: '4. Destinatarios', en: '4. Recipients' },
     privacy_p4: {
-      es: 'No cedemos tus datos a terceros, salvo obligación legal. Si aceptas las cookies, Meta Platforms Ireland Limited y Google Ireland Limited reciben los datos de navegación recogidos por el Píxel de Meta y por Google Tag Manager (ver política de cookies). Para gestionar las reservas de mesa utilizamos CoverManager, proveedor del sistema de reservas, que accede a los datos de la reserva para prestarnos ese servicio. Las solicitudes que envías por WhatsApp se tratan a través de dicha aplicación. Para la newsletter utilizamos Brevo, plataforma de email marketing que almacena tu email y envía las comunicaciones; actúa como encargado del tratamiento bajo contrato, cumpliendo con el RGPD.',
-      en: "We don't share your data with third parties, except where legally required. If you accept cookies, Meta Platforms Ireland Limited and Google Ireland Limited receive the browsing data collected by the Meta Pixel and Google Tag Manager (see our cookie policy). To manage table bookings we use CoverManager, the booking system provider, which accesses the booking data to provide us with that service. Requests you send via WhatsApp are handled through that application. For the newsletter we use Brevo, an email marketing platform that stores your email and sends the communications; it acts as a data processor under contract, complying with GDPR.",
+      es: 'No cedemos tus datos a terceros, salvo obligación legal. Si aceptas las cookies, Meta Platforms Ireland Limited y Google Ireland Limited reciben los datos de navegación recogidos por el Píxel de Meta y por Google Tag Manager (ver política de cookies). Para gestionar las reservas de mesa utilizamos CoverManager, proveedor del sistema de reservas, que accede a los datos de la reserva para prestarnos ese servicio. Las solicitudes que envías por WhatsApp se tratan a través de dicha aplicación. Para la newsletter utilizamos Brevo, plataforma de email marketing que almacena tu email y envía las comunicaciones; actúa como encargado del tratamiento bajo contrato, cumpliendo con el RGPD. Para gestionar las reservas de entradas a eventos utilizamos Supabase, proveedor de la base de datos donde se guardan las reservas, con servidores en la Unión Europea, y Brevo, que envía el email de confirmación y guarda tu contacto en nuestras listas; el aviso interno de cada reserva puede enviarse a través del servicio de formularios Web3Forms. Todos actúan como encargados del tratamiento bajo contrato.',
+      en: "We don't share your data with third parties, except where legally required. If you accept cookies, Meta Platforms Ireland Limited and Google Ireland Limited receive the browsing data collected by the Meta Pixel and Google Tag Manager (see our cookie policy). To manage table bookings we use CoverManager, the booking system provider, which accesses the booking data to provide us with that service. Requests you send via WhatsApp are handled through that application. For the newsletter we use Brevo, an email marketing platform that stores your email and sends the communications; it acts as a data processor under contract, complying with GDPR. To manage event ticket bookings we use Supabase, the provider of the database where bookings are stored, with servers in the European Union, and Brevo, which sends the confirmation email and stores your contact in our lists; the internal notice of each booking may be sent through the Web3Forms form service. All of them act as data processors under contract.",
     },
     privacy_h5: { es: '5. Conservación', en: '5. Data retention' },
     privacy_p5: {
-      es: 'Conservamos tus datos mientras exista una relación con ROCE (por ejemplo, mientras sigas suscrito a la newsletter) y, en todo caso, hasta que solicites su supresión.',
-      en: 'We keep your data for as long as you have a relationship with ROCE (for example, while you remain subscribed to the newsletter) and, in any case, until you request its deletion.',
+      es: 'Conservamos tus datos mientras exista una relación con ROCE (por ejemplo, mientras sigas suscrito a la newsletter) y, en todo caso, hasta que solicites su supresión. Los datos de las reservas de eventos se conservan mientras sea necesario para gestionar el evento y atender posibles reclamaciones, y durante los plazos que exijan las normas fiscales y mercantiles si hubo cobro.',
+      en: 'We keep your data for as long as you have a relationship with ROCE (for example, while you remain subscribed to the newsletter) and, in any case, until you request its deletion. Event booking data is kept for as long as needed to manage the event and handle any claims, and for the periods required by tax and commercial law if a payment was made.',
     },
     privacy_h6: { es: '6. Tus derechos', en: '6. Your rights' },
     privacy_p6_intro: {
@@ -411,6 +434,9 @@
       btn.classList.toggle('is-active', isActive);
       btn.setAttribute('aria-current', isActive ? 'true' : 'false');
     });
+
+    // Las páginas que pintan contenido con JS (p. ej. eventos) se repintan.
+    document.dispatchEvent(new Event('roce:lang'));
   }
 
   function setLang(lang) {

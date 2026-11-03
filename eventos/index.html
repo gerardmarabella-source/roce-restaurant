@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="format-detection" content="telephone=no, address=no, email=no, date=no">
+<!-- Datos de ejemplo: no indexar hasta que haya agenda real (quitar esta línea y el aviso .ev-demo). -->
+<meta name="robots" content="noindex">
+<title>Eventos — ROCE Valencia</title>
+<meta name="description" content="Agenda de eventos de Day y Night en ROCE Valencia: brunch, música y noches especiales.">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" href="/assets/meta/favicon-32.png" sizes="32x32">
+<link rel="apple-touch-icon" href="/assets/meta/apple-touch-icon.png">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Eventos — ROCE Valencia">
+<meta property="og:description" content="Brunch, música y noches especiales en Day y Night.">
+<meta property="og:image" content="https://roce.es/assets/meta/og-image.png">
+<meta property="og:url" content="https://roce.es/eventos/">
+<script>
+  // Mismo criterio que la home: claro de 10:00 a 20:00 (hora de Valencia) y
+  // oscuro el resto. Se fija antes de pintar para que no parpadee.
+  (function () {
+    var hour = Number(new Intl.DateTimeFormat('en-GB', { hour: '2-digit', hourCycle: 'h23', timeZone: 'Europe/Madrid' }).format(new Date()));
+    document.documentElement.setAttribute('data-mode', hour >= 10 && hour < 20 ? 'day' : 'night');
+    // Filtro de entrada: ?f=day (desde Day), ?f=night (desde Night) o todos
+    // (desde el menú de la home). El fondo sigue al filtro: Day blanco, Night
+    // negro y, en Todos, según la hora.
+    var f = new URLSearchParams(location.search).get('f');
+    document.documentElement.setAttribute('data-view', f === 'day' || f === 'night' ? f : 'all');
+  })();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/styles.css?v=66">
+<style>
+  /* Agenda de eventos. La página sigue el modo claro/oscuro de la home; cada
+     evento lleva el color de su ambiente: Day = blanco, Night = negro. */
+  html { --bg: var(--white); --fg: var(--black); --pad: 1.25rem; }
+  html[data-view="night"],
+  html[data-view="all"][data-mode="night"] { --bg: var(--black); --fg: var(--white); }
+  html, body { background: var(--bg); color: var(--fg); transition: background 0.3s ease, color 0.3s ease; }
+  body { min-height: 100vh; display: flex; flex-direction: column; font-family: var(--body); }
+
+  .ev-head { height: 64px; display: flex; align-items: center; padding: 0 var(--pad); }
+  .ev-back { font-family: var(--display); font-size: 1rem; letter-spacing: 0.04em; text-transform: uppercase; color: inherit; text-decoration: none; }
+  .ev-back:hover { opacity: 0.7; }
+
+  .ev-wrap { width: 100%; max-width: 1100px; margin: 0 auto; padding: 1rem var(--pad) 3rem; flex: 1; }
+  .ev-eyebrow { display: block; font-family: var(--display); font-size: 0.9rem; letter-spacing: 0.06em; text-transform: uppercase; opacity: 0.6; }
+  .ev-title {
+    margin: 0.4rem 0 0;
+    font-family: var(--display);
+    font-weight: 400;
+    font-size: clamp(3.6rem, 18vw, 11rem);
+    line-height: 0.84;
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
+  }
+  .ev-demo { display: inline-block; margin-top: 1rem; padding: 0.4rem 0.8rem; border: 1px dashed currentColor; font-size: 0.8rem; opacity: 0.7; }
+
+  /* Filtros como pestañas de texto: la activa a todo color, el resto apagadas. */
+  .ev-filters { display: flex; flex-wrap: wrap; gap: 0.5rem 2.25rem; margin: 2.25rem 0 1.5rem; }
+  .ev-chip {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--fg);
+    font-family: var(--display);
+    font-size: clamp(1.3rem, 4.5vw, 2rem);
+    line-height: 1;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    cursor: pointer;
+    opacity: 0.28;
+    transition: opacity 0.2s ease;
+  }
+  .ev-chip:hover { opacity: 0.6; }
+  .ev-chip[aria-pressed="true"] { opacity: 1; }
+
+  .ev-list { list-style: none; display: grid; gap: 1rem; }
+  .ev-card {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 1rem 1.75rem;
+    padding: 1.5rem;
+    border: 2px solid var(--black);
+  }
+  .ev-card[data-env="day"] { background: var(--white); color: var(--black); }
+  .ev-card[data-env="night"] { background: var(--black); color: var(--white); border-color: var(--white); }
+
+  .ev-date { min-width: 4.5rem; text-align: center; font-family: var(--display); text-transform: uppercase; line-height: 1; }
+  .ev-date-wd { display: block; font-size: 0.85rem; letter-spacing: 0.06em; opacity: 0.65; }
+  .ev-date-day { display: block; margin: 0.15rem 0; font-size: clamp(3.2rem, 9vw, 4.6rem); letter-spacing: -0.02em; }
+  .ev-date-mon { display: block; font-size: 0.95rem; letter-spacing: 0.06em; }
+
+  .ev-env { display: inline-flex; align-items: center; gap: 0.5rem; margin-bottom: 0.6rem; font-family: var(--display); font-size: 0.8rem; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.75; }
+  .ev-env .age-badge { width: 1.7rem; height: 1.7rem; flex-shrink: 0; }
+  .ev-name { font-family: var(--display); font-weight: 400; font-size: clamp(1.6rem, 5vw, 2.4rem); line-height: 1; letter-spacing: -0.005em; text-transform: uppercase; }
+  .ev-meta { margin-top: 0.5rem; font-size: 0.9rem; opacity: 0.7; }
+  .ev-desc { margin-top: 0.6rem; max-width: 38rem; font-size: 0.98rem; line-height: 1.5; opacity: 0.85; }
+
+  .ev-buy { display: flex; flex-direction: column; align-items: flex-end; gap: 0.75rem; text-align: right; }
+  .ev-price { font-family: var(--display); font-size: 1.15rem; letter-spacing: 0.02em; text-transform: uppercase; line-height: 1.1; }
+  .ev-cta {
+    display: inline-block;
+    padding: 0.75rem 1.25rem;
+    border: 2px solid currentColor;
+    border-radius: 0;
+    background: none;
+    color: inherit;
+    font-family: var(--display);
+    font-size: 0.95rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    cursor: pointer;
+    text-decoration: none;
+    text-align: center;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+  .ev-cta.is-soldout { opacity: 0.4; pointer-events: none; }
+  .ev-left { font-family: var(--display); font-size: 0.8rem; letter-spacing: 0.06em; text-transform: uppercase; color: #e5453a; }
+  .ev-card[data-env="day"] .ev-cta:hover { background: var(--black); color: var(--white); }
+  .ev-card[data-env="night"] .ev-cta:hover { background: var(--white); color: var(--black); }
+
+  .ev-empty { padding: 2rem 0; font-size: 1.05rem; opacity: 0.75; }
+
+  .ev-foot { padding: 1.5rem 1rem 2rem; text-align: center; font-size: 0.68rem; line-height: 1.35; letter-spacing: 0.03em; opacity: 0.6; }
+  .ev-foot a { color: inherit; text-decoration: none; }
+  .ev-foot a:hover { text-decoration: underline; }
+  .ev-foot .lang-switch { display: flex; justify-content: center; margin-bottom: 0.4rem; }
+
+
+  @media (max-width: 640px) {
+    .ev-card { grid-template-columns: auto 1fr; padding: 1.1rem; }
+    .ev-buy { grid-column: 1 / -1; flex-direction: row; align-items: center; justify-content: space-between; text-align: left; }
+  }
+</style>
+</head>
+<body>
+
+<header class="ev-head">
+  <a class="ev-back" id="evBack" href="/" data-i18n="ev_back">← ROCE</a>
+</header>
+
+<main class="ev-wrap">
+  <span class="ev-eyebrow" data-i18n="events_eyebrow">Agenda</span>
+  <h1 class="ev-title" data-i18n="events_title">Eventos</h1>
+  <p class="ev-demo" data-i18n="ev_demo">Eventos de ejemplo: la agenda real llegará pronto.</p>
+
+  <div class="ev-filters" role="group" aria-label="Filtro">
+    <button type="button" class="ev-chip" data-filter="all" aria-pressed="false" data-i18n="ev_all">Todos</button>
+    <button type="button" class="ev-chip" data-filter="day" aria-pressed="false">Day</button>
+    <button type="button" class="ev-chip" data-filter="night" aria-pressed="false">Night</button>
+  </div>
+
+  <ol class="ev-list" id="evList"></ol>
+  <p class="ev-empty" id="evEmpty" data-i18n="ev_empty" hidden>Muy pronto publicaremos aquí los próximos eventos.</p>
+</main>
+
+<footer class="ev-foot">
+  <div class="lang-switch">
+    <button type="button" data-lang="es">ES</button>
+    <button type="button" data-lang="en">EN</button>
+  </div>
+  <div>
+    <a href="/aviso-legal.html" data-i18n="footer_legal">Aviso legal</a> · <a href="/terminos.html" data-i18n="footer_terms">Términos y condiciones</a> · <a href="/cookies.html" data-i18n="footer_cookies">Cookies</a> · <a href="/privacidad.html" data-i18n="footer_privacy">Política de privacidad</a>
+  </div>
+</footer>
+
+<div class="cookie-banner" id="cookieBanner">
+  <p class="cookie-text"><span data-i18n="cookie_text">Usamos una cookie técnica propia para recordar tu elección. Si aceptas, también activamos el Píxel de Meta (Facebook e Instagram) y Google Tag Manager para medir y mejorar nuestra publicidad y nuestra web. El sistema de reservas es de un tercero (CoverManager) y puede usar las suyas.</span> <a href="/cookies.html" data-i18n="cookie_more_info">Más información</a>.</p>
+  <div class="cookie-actions">
+    <button class="cookie-reject" id="cookieReject" data-i18n="cookie_reject">Rechazar</button>
+    <button class="cookie-accept" id="cookieAccept" data-i18n="cookie_accept">Aceptar</button>
+  </div>
+</div>
+<script src="/cookies.js?v=3"></script>
+<script src="/i18n.js?v=65"></script>
+<script src="/eventos/config.js"></script>
+<script src="/eventos/events.js"></script>
+<script>
+  // Los eventos están en /eventos/events.js (misma fuente que la compra de entradas).
+  (function () {
+    var EVENTS = [];
+    var U = window.ROCE_EVENT_UTIL;
+    var list = document.getElementById('evList');
+    var empty = document.getElementById('evEmpty');
+    var view = document.documentElement.getAttribute('data-view');
+    var filter = view; // 'all' | 'day' | 'night'
+    // "Volver" lleva al sitio de donde se vino (Day, Night o la home).
+    document.getElementById('evBack').setAttribute('href', view === 'all' ? '/' : '/' + view + '/');
+    function syncChips() {
+      document.querySelectorAll('.ev-chip').forEach(function (c) { c.setAttribute('aria-pressed', c.getAttribute('data-filter') === filter ? 'true' : 'false'); });
+    }
+    syncChips();
+
+    function lang() { return window.ROCE_I18N ? window.ROCE_I18N.getLang() : 'es'; }
+    function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+    function t(k, fallback) { return (window.ROCE_I18N && window.ROCE_I18N.t(k)) || fallback; }
+
+    var AGE = '<svg class="age-badge" viewBox="0 0 100 100" role="img" aria-label="+18"><circle cx="50" cy="50" r="44" fill="#ffffff" stroke="#e5453a" stroke-width="9"/><text x="44" y="65" text-anchor="middle" font-family="\'Helvetica Neue Web\',\'Helvetica Neue\',Arial,sans-serif" font-weight="700" font-size="46" letter-spacing="-3" fill="#0a0a0a">18</text><text x="77" y="52" text-anchor="middle" font-family="\'Helvetica Neue Web\',\'Helvetica Neue\',Arial,sans-serif" font-weight="700" font-size="30" fill="#0a0a0a">+</text></svg>';
+
+    function render() {
+      var l = lang();
+      var upcoming = EVENTS.filter(function (e) {
+        return e.date >= U.today() && (filter === 'all' || e.env === filter);
+      }).sort(function (a, b) { return (a.date + a.time).localeCompare(b.date + b.time); });
+
+      list.innerHTML = upcoming.map(function (e) {
+        var wd = U.fmt(e, l, { weekday: 'short' }).replace('.', '');
+        var mon = U.fmt(e, l, { month: 'short' }).replace('.', '');
+        var day = U.fmt(e, l, { day: 'numeric' });
+        var env = e.env === 'night' ? 'Night ' + AGE : 'Day';
+        var sold = e.left <= 0;
+        var low = !sold && e.left <= 5 ? '<span class="ev-left">' + esc(t('tk_last', 'Últimas {n} plazas').replace('{n}', e.left)) + '</span>' : '';
+        var cta = sold
+          ? '<span class="ev-cta is-soldout">' + esc(t('tk_soldout', 'Agotado')) + '</span>'
+          : '<a class="ev-cta" href="/eventos/entradas/?e=' + encodeURIComponent(e.id) + '">' + esc(t('ev_cta', 'Reservar plaza')) + '</a>';
+        return '<li class="ev-card" data-env="' + e.env + '">' +
+          '<div class="ev-date"><span class="ev-date-wd">' + esc(wd) + '</span><span class="ev-date-day">' + esc(day) + '</span><span class="ev-date-mon">' + esc(mon) + '</span></div>' +
+          '<div class="ev-info"><span class="ev-env">' + env + '</span>' +
+            '<h2 class="ev-name">' + esc(e.title[l]) + '</h2>' +
+            '<p class="ev-meta">' + esc(e.time) + ' · ' + esc(e.place[l]) + '</p>' +
+            '<p class="ev-desc">' + esc(e.desc[l]) + '</p></div>' +
+          '<div class="ev-buy"><span class="ev-price">' + esc(e.price[l]) + '</span>' + low + cta + '</div>' +
+          '</li>';
+      }).join('');
+      empty.hidden = upcoming.length > 0;
+    }
+
+    document.querySelectorAll('.ev-chip').forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        filter = chip.getAttribute('data-filter');
+        document.documentElement.setAttribute('data-view', filter);
+        history.replaceState(null, '', filter === 'all' ? location.pathname : '?f=' + filter);
+        syncChips();
+        render();
+      });
+    });
+
+    document.addEventListener('roce:lang', render);
+    window.ROCE_EVENTS_READY.then(function (list) { EVENTS = list; render(); });
+  })();
+</script>
+</body>
+</html>

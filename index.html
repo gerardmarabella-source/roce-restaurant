@@ -6,13 +6,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="format-detection" content="telephone=no, address=no, email=no, date=no">
 <title>ROCE — Restaurant &amp; Cocktails, Valencia</title>
-<meta name="description" content="Restaurant & Cocktails en Valencia (Marqués del Túria 16). Cenas con reserva de miércoles a sábado; brunch y cafetería sin reserva, de 10:00 a 20:00.">
-<link rel="icon" href="favicon.ico" sizes="any">
-<link rel="icon" type="image/png" href="assets/meta/favicon-32.png" sizes="32x32">
-<link rel="apple-touch-icon" href="assets/meta/apple-touch-icon.png">
+<meta name="description" content="ROCE en Valencia (Marqués del Túria 16): Day, brunch y cafetería de 10:00 a 20:00 sin reserva, y Night, cenas y noche de 20:00 a 02:00.">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" href="/assets/meta/favicon-32.png" sizes="32x32">
+<link rel="apple-touch-icon" href="/assets/meta/apple-touch-icon.png">
 <meta property="og:type" content="website">
 <meta property="og:title" content="ROCE — Restaurant &amp; Cocktails, Valencia">
-<meta property="og:description" content="Restaurant & Cocktails en Valencia (Marqués del Túria 16). Cenas con reserva de miércoles a sábado; brunch y cafetería sin reserva, de 10:00 a 20:00.">
+<meta property="og:description" content="ROCE en Valencia (Marqués del Túria 16): Day, brunch y cafetería de 10:00 a 20:00 sin reserva, y Night, cenas y noche de 20:00 a 02:00.">
 <meta property="og:image" content="https://roce.es/assets/meta/og-image.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -45,166 +45,217 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-<!-- Prioridad baja: no son visibles hasta que se abre el newsletter,
-     así que no deben competir con la foto de fondo ni las fuentes,
-     pero conviene que empiecen a llegar pronto en vez de esperar a
-     que el usuario le dé al botón. -->
-<link rel="preload" as="image" href="assets/logo/newsletter-plate.webp" fetchpriority="low">
-<link rel="preload" as="image" href="assets/logo/newsletter-plate-broken.webp" fetchpriority="low">
-<link rel="stylesheet" href="styles.css?v=66">
+<script>
+  // Fondo según la hora de Valencia: claro de 10:00 a 20:00 (Day), oscuro el
+  // resto (Night). Se fija antes de pintar para que no parpadee.
+  (function () {
+    var hour = Number(new Intl.DateTimeFormat('en-GB', { hour: '2-digit', hourCycle: 'h23', timeZone: 'Europe/Madrid' }).format(new Date()));
+    document.documentElement.setAttribute('data-mode', hour >= 10 && hour < 20 ? 'day' : 'night');
+  })();
+</script>
+<link rel="stylesheet" href="/styles.css?v=66">
 <style>
-  html, body {
-    height: 100%;
-    overflow: hidden;
-    background: var(--black);
-  }
+  /* Portada minimal: todo cabe SIEMPRE en una pantalla (sin scroll): cabecera,
+     frase enorme en zigzag y dos cuadrados para elegir Day (día) o
+     Night (noche). Los tamaños se calculan con el alto y el ancho
+     disponibles para que se adapte a cualquier dispositivo. */
+  html, body { height: 100%; overflow: hidden; background: var(--white); }
+  html[data-mode="night"], html[data-mode="night"] body { background: var(--black); }
 
-  .teaser-page {
-    position: relative;
-    width: 100vw;
+  .home {
+    --head: 64px;
+    --foot: 72px;
+    --pad: 1.25rem;
+    --gap: 0.75rem;
+    --avail: calc(100dvh - var(--head) - var(--foot) - 1.5rem);
     height: 100dvh;
-    color: var(--cream);
-    overflow: hidden;
-    background: var(--black);
-  }
-
-  /* Imagen real (no CSS background) para que el zoom con transform:scale
-     nunca deje franjas negras, sea cual sea la proporción de pantalla —
-     con background-size esto dependía de qué eje fuera el limitante. */
-  .teaser-bg {
-    position: absolute;
-    inset: 0;
-    z-index: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: center;
-    transform: scale(1.1);
-  }
-
-  /* Oscurece la foto de fondo lo justo para que el texto/letras crema
-     se sigan leyendo encima, sin taparla del todo. */
-  .teaser-page::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    z-index: 1;
-    background: linear-gradient(180deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.15) 30%, rgba(0,0,0,0.25) 65%, rgba(0,0,0,0.75) 100%);
-  }
-
-  /* Cabecera centrada: logo + leyenda, uno encima del otro. */
-  .teaser-top {
-    position: absolute;
-    top: 2.25rem;
-    left: 0;
-    right: 0;
-    z-index: 4;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    text-align: center;
+    background: var(--white);
+    color: var(--black);
+    transition: background 0.6s ease, color 0.6s ease;
   }
-  /* Logo + leyenda como una sola imagen (tipografía exacta pedida por
-     el usuario), no logo + texto por separado. */
-  .teaser-top .lockup {
-    width: clamp(220px, 32vw, 380px);
-    height: auto;
-    display: block;
-  }
+  /* De noche la home se invierte: fondo negro y letras blancas. */
+  html[data-mode="night"] .home { background: var(--black); color: var(--white); }
+  html[data-mode="night"] .home-foot { color: rgba(236, 231, 221, 0.6); }
+  html[data-mode="night"] .home-square-night { border-color: var(--white); }
 
-  /* Franja inferior: pie compacto (idioma/legal) encima de las dos
-     llamadas a la acción a toda anchura. */
-  .teaser-bottom {
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 4;
+  .home-head { flex-shrink: 0; height: var(--head); display: flex; align-items: center; justify-content: flex-end; padding: 0 var(--pad); }
+  .menu-btn { background: none; border: none; padding: 0.4rem; color: inherit; cursor: pointer; line-height: 0; }
+  .menu-btn svg { width: 2rem; height: 2rem; }
+
+  /* Vertical (móvil, tablet): frase arriba y los dos bloques debajo, uno encima
+     del otro, a todo el ancho. El alto se reparte para que todo quepa sin scroll. */
+  .home-main {
+    --sw: calc(100vw - 2 * var(--pad));
+    --sh: min(calc(var(--sw) * 0.62), calc(var(--avail) * 0.215));
+    flex: 1;
+    min-height: 0;
     display: flex;
     flex-direction: column;
-    align-items: center;
+    justify-content: center;
+    gap: 1.25rem;
+    padding: 0 var(--pad);
   }
 
-  .teaser-footer {
-    margin-top: 0.6rem;
-    margin-bottom: 1rem;
-    text-align: center;
-    font-size: 0.72rem;
-    letter-spacing: 0.03em;
-  }
-  .teaser-footer a {
-    color: rgba(236, 231, 221, 0.55);
-    text-decoration: none;
-  }
-  .teaser-footer a:hover { text-decoration: underline; }
-  .teaser-footer .lang-switch { display: flex; justify-content: center; margin-bottom: 0.4rem; }
-
-  .teaser-cta-row {
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    padding: 0 1rem 0.5rem;
-  }
-
-  .teaser-cta {
-    display: block;
-    background: none;
-    border: none;
-    padding: 0;
-    margin: 0;
-    cursor: pointer;
-    color: var(--cream);
-    text-decoration: none;
+  .home-statement {
     font-family: var(--display);
+    font-weight: 400;
+    font-size: min(19vw, 14rem, calc((var(--avail) - 2 * var(--sh) - var(--gap) - 1.25rem) / 3.9));
+    width: 100%;
+    margin-inline: auto; /* centrada cuando la altura limita el tamaño */
+    max-width: 5.2em; /* el escalonado se mide en la letra, no en la pantalla: las palabras no se alejan en tablet */
+    line-height: 0.84;
+    letter-spacing: -0.02em;
     text-transform: uppercase;
-    letter-spacing: -0.01em;
-    line-height: 0.85;
-    font-size: clamp(1.5rem, 6vw, 3.4rem);
-    transition: opacity 0.15s ease;
   }
+  .home-statement .line { display: block; }
+  .home-statement .l1, .home-statement .l3 { text-align: left; }
+  .home-statement .l2, .home-statement .l4 { text-align: right; }
 
-  /* La etiqueta de Reservas es una imagen (tipografía exacta pedida),
-     no texto — se escala por altura en vez de font-size. */
-  .teaser-cta-img img {
-    display: block;
-    height: clamp(1.5rem, 6vw, 3rem);
-    width: auto;
+  .home-squares { display: grid; grid-template-columns: var(--sw); justify-content: center; gap: var(--gap); }
+  .home-square {
+    container-type: inline-size;
+    width: var(--sw);
+    height: var(--sh);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: calc(min(var(--sw), var(--sh)) * 0.09);
+    text-decoration: none;
+    overflow: hidden;
+    transition: transform 0.25s ease;
   }
-  .teaser-cta:hover { opacity: 0.85; }
+  .home-square:hover { transform: translateY(-4px); }
+  .home-square-day { background: var(--white); color: var(--black); border: 2px solid var(--black); }
+  .home-square-night { background: var(--black); color: var(--white); border: 2px solid var(--black); }
 
-  /* "Bookings" en inglés usa la fuente Helvetica Neue real (pasada
-     por el usuario) como texto vivo, en vez de una imagen — mismo
-     tamaño visual que la etiqueta de Reservas/Newsletter. */
-  html:not([lang="en"]) .lang-en-only { display: none; }
-  html[lang="en"] .lang-es-only { display: none; }
-  .teaser-cta-text {
+  .home-square-top { min-height: 1rem; display: flex; align-items: flex-start; justify-content: space-between; gap: 0.5rem; }
+  .age-badge { flex-shrink: 0; margin-left: auto; width: clamp(1.6rem, min(21cqw, calc(var(--sh) * 0.3)), 3.4rem); height: clamp(1.6rem, min(21cqw, calc(var(--sh) * 0.3)), 3.4rem); }
+  .home-square-bottom { display: flex; align-items: flex-end; justify-content: space-between; gap: 0.5rem; }
+  .home-square strong {
     display: block;
-    font-family: "Helvetica Neue Web", "Helvetica Neue", Arial, sans-serif;
-    font-size: clamp(1.8rem, 7.2vw, 3.6rem);
-    line-height: 0.85;
-    letter-spacing: -0.01em;
+    font-family: var(--display);
+    font-weight: 400;
+    font-size: clamp(0.8rem, min(15cqw, calc(var(--sh) * 0.2)), 4.5rem);
+    line-height: 0.95;
+    letter-spacing: 0.01em;
     text-transform: uppercase;
-    color: var(--cream);
+  }
+  .home-square small { display: block; margin-top: 0.35rem; font-family: var(--display); font-size: clamp(0.6rem, min(6.2cqw, calc(var(--sh) * 0.085)), 1.25rem); opacity: 0.75; }
+  .home-square-arrow { font-family: var(--display); font-size: clamp(1rem, min(13cqw, calc(var(--sh) * 0.17)), 3.4rem); line-height: 1; flex-shrink: 0; }
+
+  /* Pantallas diminutas (móvil muy pequeño tumbado): solo el nombre. */
+  @container (max-width: 96px) {
+    .home-square small, .home-square-arrow { display: none; }
   }
 
-  /* Menú de Reservas: al pulsar el botón se abre a pantalla completa con
-     las opciones (reservar, eventos y, más discreto, alquiler del espacio). */
-  .reservas-menu-wrap { position: relative; }
-  .reservas-menu-wrap.is-collapsed .reservas-menu { display: none; }
-  .reservas-menu {
+  .home-now {
+    display: none;
+    align-items: center;
+    gap: 0.35rem;
+    width: fit-content;
+    padding: 0.15rem 0.5rem;
+    border: 1px solid currentColor;
+    border-radius: 999px;
+    font-family: var(--display);
+    font-size: clamp(0.5rem, 5.4cqw, 0.8rem);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .home-now::before {
+    content: "";
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background: #ff1f1f;
+    box-shadow: 0 0 0 0 rgba(255, 31, 31, 0.7);
+    animation: liveDot 1.3s ease-in-out infinite;
+  }
+  @keyframes liveDot {
+    0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(255, 31, 31, 0.6); }
+    50% { opacity: 0.25; box-shadow: 0 0 0 5px rgba(255, 31, 31, 0); }
+  }
+  @media (prefers-reduced-motion: reduce) { .home-now::before { animation: none; } }
+  .home-square.is-now .home-now { display: flex; }
+
+  /* Cuadrado pequeño: "Ahora" queda solo como punto rojo para que quepa el +18. */
+  @container (max-width: 112px) {
+    .home-now { font-size: 0; gap: 0; padding: 0.2rem; }
+    .age-badge { width: 1.5rem; height: 1.5rem; }
+  }
+
+  .home-foot {
+    flex-shrink: 0;
+    height: var(--foot);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 0 1rem;
+    text-align: center;
+    font-size: 0.68rem;
+    line-height: 1.35;
+    letter-spacing: 0.03em;
+    color: rgba(10, 10, 10, 0.55);
+  }
+  .home-foot a { color: inherit; text-decoration: none; }
+  .home-foot a:hover { text-decoration: underline; }
+  .home-foot .lang-switch { display: flex; justify-content: center; margin-bottom: 0.25rem; }
+
+  /* Tablet vertical: bloques algo más bajos para que la frase pueda crecer con el ancho. */
+  @media (min-width: 600px) and (max-aspect-ratio: 5/4) {
+    .home-main { --sh: min(calc(var(--sw) * 0.62), calc(var(--avail) * 0.18)); }
+  }
+
+  /* Horizontal (escritorio, móvil tumbado): frase a la izquierda y los dos
+     cuadrados apilados a la derecha. */
+  @media (min-aspect-ratio: 5/4) {
+    .home { --pad: 2.5rem; }
+    .home-main {
+      --s: min(calc((var(--avail) - var(--gap)) / 2), 30vw);
+      --sw: var(--s);
+      --sh: var(--s);
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      gap: 2rem;
+    }
+    .home-statement {
+      width: auto;
+      margin-inline: 0;
+      max-width: none;
+      flex: 1;
+      min-width: 0;
+      font-size: min(10.5rem, calc(var(--avail) / 3.5), calc((100vw - 2 * var(--pad) - var(--s) - 2rem) / 4.4));
+    }
+    .home-squares { display: flex; flex-direction: column; justify-content: flex-start; }
+    .home-square-day, .home-square-night { align-self: flex-end; }
+  }
+
+  /* Menú a pantalla completa: el mismo que el de Reservas de Night
+     (opciones grandes pegadas abajo, flecha a la derecha, entrada escalonada). */
+  .menu-overlay {
     position: fixed;
     inset: 0;
-    margin: 0;
-    background: var(--black);
-    padding: 6rem 1rem 3rem;
-    display: flex;
+    z-index: 500;
+    display: none;
     flex-direction: column;
     justify-content: flex-end;
-    gap: 0;
-    z-index: 500;
-    animation: reservasFadeIn 0.25s ease both;
+    background: var(--black);
+    color: var(--cream);
+    padding: 6rem 1rem 3rem;
+    overflow-y: auto;
   }
+  .menu-overlay.is-open { display: flex; animation: reservasFadeIn 0.25s ease both; }
+  /* De día el menú también es blanco con letras negras (de noche, negro). */
+  html[data-mode="day"] .menu-overlay { background: var(--white); color: var(--black); }
+  html[data-mode="day"] .reservas-menu-close,
+  html[data-mode="day"] .reservas-menu-item,
+  html[data-mode="day"] .reservas-menu-minor { color: var(--black); }
+  html[data-mode="day"] .reservas-menu-item,
+  html[data-mode="day"] .reservas-menu-minor { border-top-color: rgba(10, 10, 10, 0.28); }
   .reservas-menu-close {
     position: fixed;
     top: 0.6rem;
@@ -237,7 +288,6 @@
   .reservas-menu-item:nth-child(2) { animation-delay: 0.05s; }
   .reservas-menu-item:nth-child(3) { animation-delay: 0.13s; }
   .reservas-menu-item:nth-child(4) { animation-delay: 0.21s; }
-  /* Flecha a la derecha: señal de que la opción se puede pulsar. */
   .reservas-menu-item:not(.is-disabled)::after {
     content: "\2192";
     position: absolute;
@@ -249,41 +299,8 @@
     transition: transform 0.2s ease;
   }
   .reservas-menu-item:not(.is-disabled):hover::after { transform: translateX(6px); }
-  .reservas-menu-minor {
-    margin-top: 0;
-    padding: 1.25rem 0 0;
-    border-top: 1px solid rgba(236, 231, 221, 0.28);
-    align-self: stretch;
-    font-family: var(--display);
-    font-size: 0.9rem;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    text-decoration: none;
-    color: var(--white);
-    transition: opacity 0.15s ease;
-    animation: reservasItemIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.29s both;
-  }
-  .reservas-menu-minor:hover { opacity: 0.7; }
-  .reservas-menu-minor-arrow { display: inline-block; transition: transform 0.2s ease; }
-  .reservas-menu-minor:hover .reservas-menu-minor-arrow,
-  .reservas-menu-minor:focus-visible .reservas-menu-minor-arrow { transform: translateX(6px); }
-  @keyframes reservasFadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-  }
-  @keyframes reservasItemIn {
-    from { opacity: 0; transform: translateY(28px) scale(0.97); }
-    /* La opacidad final la fija --item-opacity (1 por defecto, 0.55
-       en los deshabilitados) — si aquí pusiéramos 1 a secas, la propia
-       animación pisaría la opacidad reducida al terminar. */
-    to { opacity: var(--item-opacity, 1); transform: translateY(0) scale(1); }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .reservas-menu, .reservas-menu-close, .reservas-menu-item, .reservas-menu-minor { animation: none; }
-  }
   .reservas-menu-item:not(.is-disabled):hover { opacity: 0.7; }
   .reservas-menu-item.is-disabled { --item-opacity: 0.55; cursor: default; }
-  .reservas-menu-sub.is-alert { color: var(--maroon); opacity: 1; }
   .reservas-menu-title {
     display: block;
     font-family: var(--display);
@@ -300,423 +317,154 @@
     margin-top: 0.6rem;
     line-height: 1.3;
   }
-
-  /* Newsletter: el botón abre un plato encima de la página. */
-  .newsletter-widget { position: relative; z-index: 200; color: var(--cream); }
-  .newsletter-widget:not(.is-collapsed) .newsletter-toggle { opacity: 0; pointer-events: none; }
-  .newsletter-toggle { position: relative; }
-  .newsletter-toggle.is-subscribed { opacity: 0.6; cursor: default; }
-  .newsletter-strike {
-    display: none;
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-  }
-  .newsletter-strike path {
-    fill: none;
-    stroke: #c0392b;
-    stroke-width: 10;
-    stroke-linecap: round;
-  }
-  .newsletter-toggle.is-subscribed .newsletter-strike { display: block; }
-
-  /* El formulario aparece dentro de un plato real (foto pasada por
-     el usuario) en vez de una caja — el contenido queda encajado en
-     el hueco central plano del plato, como si estuviera grabado ahí. */
-  .newsletter-widget .newsletter-body {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: min(92vw, 560px);
-    aspect-ratio: 1 / 1;
-    background: url("assets/logo/newsletter-plate.webp") center / contain no-repeat;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 500;
-  }
-  .newsletter-widget.is-collapsed .newsletter-body { display: none; }
-  /* Al pedir confirmación de cierre, el plato pasa a la versión rota
-     — el pequeño chantaje visual de marca antes de dejar ir al
-     suscriptor. */
-  .newsletter-widget .newsletter-body.is-broken {
-    background-image: url("assets/logo/newsletter-plate-broken.webp");
-  }
-  .newsletter-body.is-broken .newsletter-close { display: none; }
-
-  .newsletter-plate-content,
-  .newsletter-confirm-close {
-    width: 42%;
-    text-align: center;
-    color: var(--black);
-  }
-
-  .newsletter-body .newsletter-title {
+  .reservas-menu-minor {
+    padding: 1.25rem 0 0;
+    border-top: 1px solid rgba(236, 231, 221, 0.28);
+    align-self: stretch;
     font-family: var(--display);
-    font-size: clamp(0.85rem, 2.1vw, 1.15rem);
+    font-size: 0.9rem;
+    letter-spacing: 0.04em;
     text-transform: uppercase;
-    margin-bottom: 0.35rem;
-  }
-  .newsletter-body .newsletter-text,
-  .newsletter-body .newsletter-thanks {
-    font-size: clamp(0.55rem, 1.3vw, 0.75rem);
-    color: rgba(10, 10, 10, 0.7);
-    margin-bottom: 0.6rem;
-    line-height: 1.35;
-  }
-  .newsletter-body .newsletter-error {
-    font-size: 0.75rem;
-    color: #ff8a7a;
-    margin-top: 0.4rem;
-  }
-  .newsletter-body .newsletter-form { display: flex; flex-direction: column; gap: 0.45rem; }
-  .newsletter-body .newsletter-input {
-    flex: 1;
-    min-width: 0;
-    padding: 0.5rem 0.6rem;
-    font-family: var(--body);
-    font-size: clamp(0.55rem, 1.3vw, 0.75rem);
-    border-radius: 2px;
-    background: rgba(10, 10, 10, 0.05);
-    border: 1px solid rgba(10, 10, 10, 0.25);
-    color: var(--black);
-  }
-  .newsletter-body .newsletter-input::placeholder { color: rgba(10, 10, 10, 0.4); }
-  .newsletter-body .newsletter-input:focus { outline: none; }
-  .newsletter-body .newsletter-submit {
-    padding: 0.5rem 0.7rem;
-    font-family: var(--display);
-    font-size: clamp(0.55rem, 1.3vw, 0.75rem);
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.02em;
-    background: var(--black);
+    text-decoration: none;
     color: var(--white);
-    border: none;
-    border-radius: 2px;
-    cursor: pointer;
-    transition: transform 0.15s ease;
+    transition: opacity 0.15s ease;
+    animation: reservasItemIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.29s both;
   }
-  .newsletter-body .newsletter-submit:hover { transform: translateY(-1px); }
-  .newsletter-body .newsletter-close {
-    position: absolute;
-    top: 0.75rem;
-    right: 2.25rem;
-    width: 1.9rem;
-    height: 1.9rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0.25rem;
-    background: rgba(10, 10, 10, 0.75);
-    border: none;
-    border-radius: 50%;
-    color: var(--white);
-    font-size: 1.2rem;
-    line-height: 1;
-    cursor: pointer;
+  .reservas-menu-minor:not(:last-child) { padding-bottom: 1.25rem; }
+  .reservas-menu-minor:hover { opacity: 0.7; }
+  .reservas-menu-minor-arrow { display: inline-block; transition: transform 0.2s ease; }
+  .reservas-menu-minor:hover .reservas-menu-minor-arrow,
+  .reservas-menu-minor:focus-visible .reservas-menu-minor-arrow { transform: translateX(6px); }
+  @keyframes reservasFadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes reservasItemIn {
+    from { opacity: 0; transform: translateY(28px) scale(0.97); }
+    to { opacity: var(--item-opacity, 1); transform: translateY(0) scale(1); }
   }
-  .newsletter-body .newsletter-close:hover { background: rgba(10, 10, 10, 0.9); }
-
-  @media (max-width: 640px) {
-    .newsletter-body .newsletter-close { right: 1.5rem; }
-  }
-
-  .newsletter-confirm-text {
-    font-size: clamp(0.6rem, 1.4vw, 0.8rem);
-    line-height: 1.35;
-    margin-bottom: 0.7rem;
-  }
-  .newsletter-confirm-actions { display: flex; flex-direction: column; gap: 0.4rem; }
-  .newsletter-confirm-actions button {
-    border: none;
-    border-radius: 2px;
-    padding: 0.45rem 0.6rem;
-    font-family: var(--display);
-    text-transform: uppercase;
-    letter-spacing: 0.02em;
-    font-size: clamp(0.5rem, 1.1vw, 0.65rem);
-    cursor: pointer;
-  }
-  #newsletterConfirmStay { background: var(--black); color: var(--white); }
-  #newsletterConfirmYes {
-    background: none;
-    color: rgba(10, 10, 10, 0.55);
-    text-decoration: underline;
-  }
-
-  @media (max-width: 640px) {
-    .newsletter-widget .newsletter-body { width: min(92vw, 400px); }
-  }
-
-  @media (max-width: 640px) {
-    /* A este ancho, "Reservas" y "Newsletter" no caben lado a lado —
-       se apilan en vertical. Misma altura para las dos (igual que en
-       la imagen de referencia), cada una con su ancho natural — así
-       "Newsletter" (más letras) llega casi al borde y "Reservas"
-       queda proporcionalmente más corta, sin verse desigual. */
-    .teaser-cta-row {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 0.3rem;
-      padding: 0 1rem 0.75rem;
-    }
-    .teaser-cta { font-size: clamp(2.1rem, 12.5vw, 3rem); }
-    .teaser-cta-img img { height: clamp(2.4rem, 11.5vw, 3.2rem); width: auto; }
-    .teaser-cta-text { font-size: clamp(2.5rem, 14.5vw, 3.9rem); }
-    /* Foto propia para móvil (1080x1920, ya compuesta para vertical) y
-       sin el zoom de escritorio. */
-    .teaser-bg { transform: none; }
+  @media (prefers-reduced-motion: reduce) {
+    .menu-overlay, .reservas-menu-close, .reservas-menu-item, .reservas-menu-minor { animation: none; }
   }
 
 </style>
 </head>
 <body>
 
-<div class="teaser-page">
-  <picture>
-    <source media="(max-width: 640px)" srcset="assets/teaser/bg-mobile.jpg?v=2">
-    <img class="teaser-bg" src="assets/teaser/bg-desktop.jpg?v=3" alt="">
-  </picture>
+<div class="home">
+  <header class="home-head">
+    <button class="menu-btn" id="menuOpen" type="button" aria-label="Menú" aria-expanded="false" aria-controls="menuOverlay">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+    </button>
+  </header>
 
-  <div class="teaser-top">
-    <img class="lockup" src="assets/logo/roce-lockup-cream.png?v=2" alt="ROCE — Restaurant &amp; Cocktails, Marqués del Túria 16, Valencia (Spain)">
-  </div>
+  <main class="home-main">
+    <h1 class="home-statement">
+      <span class="line l1"><span data-i18n="home_w1">Todo</span></span>
+      <span class="line l2"><span data-i18n="home_w2">empieza</span></span>
+      <span class="line l3"><span data-i18n="home_w3">con</span> <span data-i18n="home_w4">un</span></span>
+      <span class="line l4"><span data-i18n="home_w5">roce</span></span>
+    </h1>
 
-  <div class="teaser-bottom">
-    <div class="teaser-cta-row">
-      <div class="reservas-menu-wrap is-collapsed" id="reservasWidget" data-nosnippet>
-        <button class="teaser-cta teaser-cta-img reservas-toggle" id="reservasToggle" aria-label="Reservas" aria-expanded="false">
-          <img class="lang-es-only" src="assets/logo/label-reservas.png" alt="Reservas">
-          <span class="teaser-cta-text lang-en-only">Bookings</span>
-        </button>
-        <div class="reservas-menu" id="reservasMenu">
-          <button class="reservas-menu-close" id="reservasMenuClose" aria-label="Cerrar">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-          </button>
-          <a class="reservas-menu-item" href="fuck-who-doesn't-like-this-place">
-            <span class="reservas-menu-title" data-i18n="menu_reservar_title">Reservar</span>
-            <span class="reservas-menu-sub" data-i18n="menu_reservar_sub">Reserva de cenas en primera planta</span>
-          </a>
-          <div class="reservas-menu-item is-disabled" aria-disabled="true">
-            <span class="reservas-menu-title" data-i18n="menu_eventos_title">Eventos</span>
-            <span class="reservas-menu-sub is-alert" data-i18n="menu_eventos_sub">*Próximamente</span>
+    <div class="home-squares">
+      <a class="home-square home-square-day" id="chooseDay" href="/day/">
+        <div class="home-square-top"><span class="home-now" data-i18n="choose_now">Ahora</span></div>
+        <div class="home-square-bottom">
+          <div>
+            <strong>Day</strong>
+            <small>10:00 – 20:00</small>
           </div>
-          <a class="reservas-menu-minor" href="fuck-who-doesn't-like-this-place#alquila-el-espacio"><span data-i18n="menu_alquiler_link">Alquila el espacio</span> <span class="reservas-menu-minor-arrow" aria-hidden="true">→</span></a>
+          <span class="home-square-arrow" aria-hidden="true">→</span>
         </div>
-      </div>
-
-      <div class="newsletter-widget is-collapsed" id="newsletterWidget" data-nosnippet>
-        <button class="teaser-cta teaser-cta-img newsletter-toggle" id="newsletterToggle" aria-label="Newsletter">
-          <img src="assets/logo/label-newsletter.png" alt="Newsletter">
-          <svg class="newsletter-strike" viewBox="0 0 200 50" preserveAspectRatio="none" aria-hidden="true">
-            <path d="M6 23 C 40 19, 70 27, 100 22 S 160 18, 194 22" />
-          </svg>
-        </button>
-        <div class="newsletter-body" id="newsletterBody">
-          <button class="newsletter-close" id="newsletterClose" aria-label="Cerrar">&times;</button>
-
-          <div class="newsletter-plate-content" id="newsletterPlateContent">
-            <p class="newsletter-title">Newsletter</p>
-            <p class="newsletter-text" data-i18n="newsletter_text">Entérate antes que nadie de todo.</p>
-            <form class="newsletter-form" id="newsletterForm">
-              <input type="text" name="email_address_check" value="" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute; left:-9999px; width:1px; height:1px; opacity:0;">
-              <input type="email" name="email" class="newsletter-input" placeholder="tu@email.com" data-i18n-placeholder="newsletter_placeholder" required>
-              <button type="submit" class="newsletter-submit" data-i18n="newsletter_submit">Enviar</button>
-            </form>
+      </a>
+      <a class="home-square home-square-night" id="chooseNight" href="/night/">
+        <div class="home-square-top"><span class="home-now" data-i18n="choose_now">Ahora</span><svg class="age-badge" viewBox="0 0 100 100" role="img" aria-label="+18"><circle cx="50" cy="50" r="44" fill="#ffffff" stroke="#e5453a" stroke-width="9"/><text x="44" y="65" text-anchor="middle" font-family="'Helvetica Neue Web','Helvetica Neue',Arial,sans-serif" font-weight="700" font-size="46" letter-spacing="-3" fill="#0a0a0a">18</text><text x="77" y="52" text-anchor="middle" font-family="'Helvetica Neue Web','Helvetica Neue',Arial,sans-serif" font-weight="700" font-size="30" fill="#0a0a0a">+</text></svg></div>
+        <div class="home-square-bottom">
+          <div>
+            <strong>Night</strong>
+            <small>20:00 – 02:00</small>
           </div>
-
-          <div class="newsletter-confirm-close" id="newsletterConfirmClose" hidden>
-            <p class="newsletter-confirm-text" data-i18n="newsletter_confirm_close">¿Seguro que quieres abandonar?</p>
-            <div class="newsletter-confirm-actions">
-              <button type="button" id="newsletterConfirmStay" data-i18n="newsletter_confirm_stay">No, quedarme</button>
-              <button type="button" id="newsletterConfirmYes" data-i18n="newsletter_confirm_yes">Sí, cerrar</button>
-            </div>
-          </div>
+          <span class="home-square-arrow" aria-hidden="true">→</span>
         </div>
-      </div>
+      </a>
     </div>
+  </main>
 
-    <div class="teaser-footer">
-      <div class="lang-switch">
-        <button type="button" data-lang="es">ES</button>
-        <button type="button" data-lang="en">EN</button>
-      </div>
-      <a href="aviso-legal.html" data-i18n="footer_legal">Aviso legal</a> · <a href="terminos.html" data-i18n="footer_terms">Términos y condiciones</a> · <a href="cookies.html" data-i18n="footer_cookies">Cookies</a> · <a href="privacidad.html" data-i18n="footer_privacy">Política de privacidad</a>
+  <div class="home-foot">
+    <div class="lang-switch">
+      <button type="button" data-lang="es">ES</button>
+      <button type="button" data-lang="en">EN</button>
+    </div>
+    <div class="home-legal">
+      <a href="/aviso-legal.html" data-i18n="footer_legal">Aviso legal</a> · <a href="/terminos.html" data-i18n="footer_terms">Términos y condiciones</a> · <a href="/cookies.html" data-i18n="footer_cookies">Cookies</a> · <a href="/privacidad.html" data-i18n="footer_privacy">Política de privacidad</a>
     </div>
   </div>
 </div>
 
+<div class="menu-overlay" id="menuOverlay" role="dialog" aria-modal="true" aria-label="Menú">
+  <button class="reservas-menu-close" id="menuClose" type="button" aria-label="Cerrar">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+  </button>
+  <a class="reservas-menu-item" href="/day/">
+    <span class="reservas-menu-title">Day</span>
+    <span class="reservas-menu-sub">10:00 – 20:00</span>
+  </a>
+  <a class="reservas-menu-item" href="/night/">
+    <span class="reservas-menu-title">Night</span>
+    <span class="reservas-menu-sub">20:00 – 02:00</span>
+  </a>
+  <a class="reservas-menu-item" href="/eventos/">
+    <span class="reservas-menu-title" data-i18n="menu_eventos_title">Eventos</span>
+  </a>
+  <a class="reservas-menu-minor" href="/fuck-who-doesn't-like-this-place/#alquila-el-espacio"><span data-i18n="menu_alquiler_link">Alquila el espacio</span> <span class="reservas-menu-minor-arrow" aria-hidden="true">→</span></a>
+  <a class="reservas-menu-minor" href="https://www.instagram.com/somosroce" target="_blank" rel="noopener">@somosroce <span class="reservas-menu-minor-arrow" aria-hidden="true">↗</span></a>
+</div>
+
 <div class="cookie-banner" id="cookieBanner">
-  <p class="cookie-text"><span data-i18n="cookie_text">Usamos una cookie técnica propia para recordar tu elección. Si aceptas, también activamos el Píxel de Meta (Facebook e Instagram) y Google Tag Manager para medir y mejorar nuestra publicidad y nuestra web. El sistema de reservas es de un tercero (CoverManager) y puede usar las suyas.</span> <a href="cookies.html" data-i18n="cookie_more_info">Más información</a>.</p>
+  <p class="cookie-text"><span data-i18n="cookie_text">Usamos una cookie técnica propia para recordar tu elección. Si aceptas, también activamos el Píxel de Meta (Facebook e Instagram) y Google Tag Manager para medir y mejorar nuestra publicidad y nuestra web. El sistema de reservas es de un tercero (CoverManager) y puede usar las suyas.</span> <a href="/cookies.html" data-i18n="cookie_more_info">Más información</a>.</p>
   <div class="cookie-actions">
     <button class="cookie-reject" id="cookieReject" data-i18n="cookie_reject">Rechazar</button>
     <button class="cookie-accept" id="cookieAccept" data-i18n="cookie_accept">Aceptar</button>
   </div>
 </div>
-<script src="cookies.js?v=3"></script>
-<script src="i18n.js?v=45"></script>
+<script src="/cookies.js?v=3"></script>
+<script src="/i18n.js?v=65"></script>
 
 <script>
-  function initNewsletterWidget() {
-    const widget = document.getElementById('newsletterWidget');
-    const toggleBtn = document.getElementById('newsletterToggle');
-    const closeBtn = document.getElementById('newsletterClose');
-    const form = document.getElementById('newsletterForm');
-    const body = document.getElementById('newsletterBody');
-    const plateContent = document.getElementById('newsletterPlateContent');
-    const confirmClose = document.getElementById('newsletterConfirmClose');
-    const confirmStayBtn = document.getElementById('newsletterConfirmStay');
-    const confirmYesBtn = document.getElementById('newsletterConfirmYes');
-    const emailInput = form ? form.querySelector('.newsletter-input') : null;
-    if (!widget || !toggleBtn || !closeBtn || !form || !body) return;
-
-    // Si ya se ha suscrito antes (en esta visita o en una anterior), no
-    // tiene sentido volver a abrirle el formulario ni hacerle pasar por
-    // el "¿seguro que quieres abandonar?" para cerrarlo — se deja el
-    // botón inhabilitado directamente.
-    const SUBSCRIBED_KEY = 'roce_newsletter_subscribed';
-    const BREVO_FORM_URL = 'https://09b89631.sibforms.com/serve/MUIFAF9K8yBt3eUgE5AdCUzdOMG_xaAsrikiOKxkAj-on75IyPoom9DsrlDprrNnFJnAqKNB6FSKe_-Ls-02qvrRciK3dQq1AX78U0VaDUsC1SRJZyJM1OrL9dcp1fS_wtJLYFwVM1ZEo5RBVkoVIwKSVt890IDG72NYzcDDxLN3oAi_Tsl3nnNaX2XxPAkE91wK9fDb_itS_nW4EQ==';
-    if (localStorage.getItem(SUBSCRIBED_KEY)) {
-      toggleBtn.disabled = true;
-      toggleBtn.classList.add('is-subscribed');
+  // Se marca "Ahora" en lo que está abierto según la hora de Valencia (Day de
+  // 10:00 a 20:00, Night de miércoles a sábado) y se actualiza cada minuto.
+  // No se recuerda nada: siempre se pregunta.
+  (function () {
+    var DAYS = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
+    // Night abre de miércoles a sábado de 20:00 a 02:00 (la madrugada del
+    // domingo cuenta como la noche del sábado, etc.).
+    function nightOpen(weekday, hour) {
+      var open = function (d) { return d >= 3 && d <= 6; };
+      return hour >= 20 ? open(weekday) : hour < 2 && open((weekday + 6) % 7);
     }
-
-    // El input de email es pequeño a propósito (para que quepa en el
-    // plato) y eso hace que iOS haga zoom al enfocarlo — es lo que se
-    // quiere, para que se vea bien lo que escribes. El problema era que
-    // ese zoom se quedaba puesto después. Forzamos que se quite al
-    // cerrar el teclado (blur) o al enviar, subiendo un momento
-    // maximum-scale y devolviéndolo enseguida a su valor original.
-    function resetZoom() {
-      const viewport = document.querySelector('meta[name="viewport"]');
-      if (!viewport) return;
-      const original = viewport.getAttribute('content');
-      viewport.setAttribute('content', original + ', maximum-scale=1.0');
-      setTimeout(() => viewport.setAttribute('content', original), 300);
+    function sync() {
+      var p = {};
+      new Intl.DateTimeFormat('en-GB', { weekday: 'short', hour: '2-digit', hourCycle: 'h23', timeZone: 'Europe/Madrid' })
+        .formatToParts(new Date()).forEach(function (x) { p[x.type] = x.value; });
+      var hour = Number(p.hour);
+      var isDay = hour >= 10 && hour < 20;
+      document.documentElement.setAttribute('data-mode', isDay ? 'day' : 'night');
+      // "Ahora" solo en lo que está abierto en este momento.
+      document.getElementById('chooseDay').classList.toggle('is-now', isDay);
+      document.getElementById('chooseNight').classList.toggle('is-now', nightOpen(DAYS[p.weekday], hour));
     }
-    if (emailInput) emailInput.addEventListener('blur', resetZoom);
+    sync();
+    setInterval(sync, 60000);
+  })();
 
-    toggleBtn.addEventListener('click', () => {
-      widget.classList.remove('is-collapsed');
-      // Por si se dejó a medio cerrar la última vez, vuelve a arrancar
-      // mostrando el formulario, no la pregunta de confirmación.
-      if (plateContent && confirmClose) {
-        plateContent.hidden = false;
-        confirmClose.hidden = true;
-        body.classList.remove('is-broken');
-      }
-      closeBtn.style.display = '';
-    });
-
-    // En vez de cerrar directamente, la X pregunta primero — un
-    // pequeño empujón de humor de marca antes de dejar escapar al
-    // suscriptor. El plato pasa a la versión rota para reforzar el
-    // dramatismo de la pregunta.
-    closeBtn.addEventListener('click', () => {
-      if (plateContent && confirmClose) {
-        plateContent.hidden = true;
-        confirmClose.hidden = false;
-        body.classList.add('is-broken');
-      } else {
-        widget.classList.add('is-collapsed');
-      }
-    });
-
-    if (confirmStayBtn && confirmClose && plateContent) {
-      confirmStayBtn.addEventListener('click', () => {
-        confirmClose.hidden = true;
-        plateContent.hidden = false;
-        body.classList.remove('is-broken');
-      });
+  (function () {
+    var overlay = document.getElementById('menuOverlay');
+    var openBtn = document.getElementById('menuOpen');
+    function setMenu(open) {
+      overlay.classList.toggle('is-open', open);
+      openBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
     }
-
-    if (confirmYesBtn) {
-      confirmYesBtn.addEventListener('click', () => {
-        widget.classList.add('is-collapsed');
-      });
-    }
-
-    document.addEventListener('click', (e) => {
-      if (!widget.contains(e.target)) widget.classList.add('is-collapsed');
-    });
-
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      if (emailInput) emailInput.blur();
-      resetZoom();
-      const submitBtn = form.querySelector('.newsletter-submit');
-      submitBtn.disabled = true;
-      submitBtn.textContent = '...';
-
-      try {
-        // La lista de suscriptores vive en Brevo: se envía el email a su
-        // formulario (el campo email_address_check es la trampa para bots,
-        // debe ir siempre vacío).
-        const payload = new FormData();
-        payload.append('EMAIL', emailInput.value.trim());
-        payload.append('email_address_check', form.elements.email_address_check.value);
-        payload.append('locale', window.ROCE_I18N.getLang() === 'en' ? 'en' : 'es');
-        const res = await fetch(BREVO_FORM_URL + '?isAjax=1', {
-          method: 'POST',
-          headers: { Accept: 'application/json' },
-          body: payload,
-        });
-        const data = await res.json();
-        if (!data.success) throw new Error(data.message || 'Error desconocido');
-        plateContent.innerHTML = `<p class="newsletter-thanks">${window.ROCE_I18N.t('newsletter_thanks')}</p>`;
-        localStorage.setItem(SUBSCRIBED_KEY, '1');
-        toggleBtn.disabled = true;
-        toggleBtn.classList.add('is-subscribed');
-        // Ya se ha suscrito, no tiene sentido preguntarle si quiere
-        // irse (ni mostrarle el plato roto) — se cierra solo, así que
-        // la X tampoco pinta nada aquí.
-        closeBtn.style.display = 'none';
-        setTimeout(() => widget.classList.add('is-collapsed'), 2000);
-      } catch (err) {
-        submitBtn.disabled = false;
-        submitBtn.textContent = window.ROCE_I18N.t('newsletter_submit');
-        const existing = plateContent.querySelector('.newsletter-error');
-        if (existing) existing.remove();
-        plateContent.querySelector('.newsletter-text').insertAdjacentHTML(
-          'afterend',
-          `<p class="newsletter-error">${window.ROCE_I18N.t('newsletter_error')}</p>`
-        );
-      }
-    });
-  }
-
-  function initReservasMenu() {
-    const widget = document.getElementById('reservasWidget');
-    const toggleBtn = document.getElementById('reservasToggle');
-    const closeBtn = document.getElementById('reservasMenuClose');
-    if (!widget || !toggleBtn) return;
-
-    toggleBtn.addEventListener('click', () => {
-      const willOpen = widget.classList.contains('is-collapsed');
-      widget.classList.toggle('is-collapsed');
-      toggleBtn.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
-    });
-
-    if (closeBtn) {
-      closeBtn.addEventListener('click', () => {
-        widget.classList.add('is-collapsed');
-        toggleBtn.setAttribute('aria-expanded', 'false');
-      });
-    }
-
-    document.addEventListener('click', (e) => {
-      if (!widget.contains(e.target)) {
-        widget.classList.add('is-collapsed');
-        toggleBtn.setAttribute('aria-expanded', 'false');
-      }
-    });
-  }
-
-  initNewsletterWidget();
-  initReservasMenu();
+    openBtn.addEventListener('click', function () { setMenu(true); });
+    document.getElementById('menuClose').addEventListener('click', function () { setMenu(false); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') setMenu(false); });
+  })();
 </script>
 
 </body>
