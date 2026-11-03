@@ -126,7 +126,6 @@
     transition: background 0.15s ease, color 0.15s ease;
   }
   .ev-cta.is-soldout { opacity: 0.4; pointer-events: none; }
-  .ev-left { font-family: var(--display); font-size: 0.8rem; letter-spacing: 0.06em; text-transform: uppercase; color: #e5453a; }
   .ev-card[data-env="day"] .ev-cta:hover { background: var(--black); color: var(--white); }
   .ev-card[data-env="night"] .ev-cta:hover { background: var(--white); color: var(--black); }
 
@@ -183,7 +182,7 @@
   </div>
 </div>
 <script src="/cookies.js?v=4"></script>
-<script src="/i18n.js?v=72"></script>
+<script src="/i18n.js?v=74"></script>
 <script src="/eventos/config.js?v=2"></script>
 <script src="/eventos/events.js?v=8"></script>
 <script>
@@ -220,7 +219,6 @@
         var day = U.fmt(e, l, { day: 'numeric' });
         var env = (e.env === 'night' ? 'Night ' + AGE : 'Day') + (U.isLive(e) ? ' <span class="ev-now">' + esc(t('choose_now', 'Ahora')) + '</span>' : '');
         var sold = e.left <= 0;
-        var low = !sold && e.left <= 5 ? '<span class="ev-left">' + esc(t('tk_last', 'Últimas {n} plazas').replace('{n}', e.left)) + '</span>' : '';
         var cta = sold
           ? '<span class="ev-cta is-soldout">' + esc(t('tk_soldout', 'Agotado')) + '</span>'
           : '<a class="ev-cta" href="/eventos/entradas/?e=' + encodeURIComponent(e.id) + '">' + esc(t('ev_cta', 'Reservar plaza')) + '</a>';
@@ -230,7 +228,7 @@
             '<h2 class="ev-name">' + esc(e.title[l]) + '</h2>' +
             '<p class="ev-meta">' + esc(U.range(e)) + ' · ' + esc(e.place[l]) + '</p>' +
             '<p class="ev-desc">' + esc(e.desc[l]) + '</p></div>' +
-          '<div class="ev-buy"><span class="ev-price">' + esc(e.price[l]) + '</span>' + low + cta + '</div>' +
+          '<div class="ev-buy"><span class="ev-price">' + esc(e.price[l]) + '</span>' + cta + '</div>' +
           '</li>';
       }).join('');
       empty.hidden = upcoming.length > 0;

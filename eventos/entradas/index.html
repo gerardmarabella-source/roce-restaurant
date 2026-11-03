@@ -234,7 +234,7 @@
   </div>
 </div>
 <script src="/cookies.js?v=4"></script>
-<script src="/i18n.js?v=72"></script>
+<script src="/i18n.js?v=74"></script>
 <script>
   window.ROCE_EVENTS_READY.then(function () {
     var U = window.ROCE_EVENT_UTIL;
@@ -373,8 +373,10 @@
       $('qtyMinus').disabled = state.qty <= 1;
       $('qtyPlus').disabled = state.qty >= MAX;
       var hint = $('tkLeft');
-      hint.classList.toggle('is-alert', ev.left <= 5);
-      hint.textContent = ev.left <= 0 ? t('tk_soldout') : (ev.left <= 5 ? t('tk_last') : t('tk_left')).replace('{n}', ev.left);
+      // Sin cifras de plazas: solo se avisa cuando ya no queda ninguna.
+      hint.classList.toggle('is-alert', ev.left <= 0);
+      hint.textContent = ev.left <= 0 ? t('tk_soldout') : '';
+      hint.hidden = ev.left > 0;
       $('to2').disabled = ev.left <= 0;
     }
     function paintReview() {
