@@ -109,9 +109,6 @@
   .reserve-form-intro { font-size: 0.95rem; opacity: 0.85; margin-bottom: 1.25rem; line-height: 1.5; }
   .reserve-night { margin-top: 0; color: #e5453a; font-weight: 600; opacity: 1; display: flex; align-items: center; gap: 0.6rem; }
   .reserve-night[hidden] { display: none; }
-  .reserve-hours { margin: 0 0 1.25rem; font-family: var(--display); font-size: 0.95rem; letter-spacing: 0.04em; text-transform: uppercase; line-height: 1.5; }
-  .reserve-hours span { display: block; opacity: 0.85; }
-  .reserve-hours span[hidden] { display: none; }
   .age-badge { flex-shrink: 0; width: 2.8rem; height: 2.8rem; }
 
   /* El widget de CoverManager usa el tema "trans-white" (texto blanco sobre
@@ -292,11 +289,6 @@
       </div>
     </div>
 
-    <p class="reserve-hours" id="reserveHours">
-      <span id="hoursDay" data-i18n="hours_day">Day · Todos los días, de 10:00 a 20:00</span>
-      <span id="hoursNight" data-i18n="hours_night">Night · De miércoles a sábado, de 20:00 a 02:00</span>
-    </p>
-
     <section id="panelBooking">
     <p class="reserve-form-intro reserve-night" id="nightNotice"><svg class="age-badge" viewBox="0 0 100 100" role="img" aria-label="+18"><circle cx="50" cy="50" r="44" fill="#ffffff" stroke="#e5453a" stroke-width="9"/><text x="44" y="65" text-anchor="middle" font-family="'Helvetica Neue Web','Helvetica Neue',Arial,sans-serif" font-weight="700" font-size="46" letter-spacing="-3" fill="#0a0a0a">18</text><text x="77" y="52" text-anchor="middle" font-family="'Helvetica Neue Web','Helvetica Neue',Arial,sans-serif" font-weight="700" font-size="30" fill="#0a0a0a">+</text></svg> <span data-i18n="reservar_night">Reservas de noche solo para mayores de 18 años</span></p>
 
@@ -380,7 +372,7 @@
 </div>
 <script src="/cookies.js?v=3"></script>
 <script src="https://www.covermanager.com/js/iframeResizer/iframeResizer.min.js"></script>
-<script src="/i18n.js?v=69"></script>
+<script src="/i18n.js?v=68"></script>
 
 <script>
   const WHATSAPP_NUMBER = '34614073163';
@@ -433,8 +425,6 @@
     backLink.setAttribute('href', zone === 'all' ? '/' : '/' + zone + '/');
     document.body.classList.toggle('zone-day', zone === 'day');
     document.getElementById('nightNotice').hidden = zone === 'day';
-    document.getElementById('hoursDay').hidden = zone === 'night';
-    document.getElementById('hoursNight').hidden = zone === 'day';
     const day = zone === 'day';
     document.querySelector('.footer-headline').textContent = day ? 'Coffee, Bakery & Kitchen' : 'Restaurant & Cocktails';
     document.getElementById('footerLogo').setAttribute('src', '/assets/logo/roce-tilted-' + (day ? 'black' : 'white') + '.png');
