@@ -102,31 +102,36 @@
     fmt: function (e, lang, opts) { return new Intl.DateTimeFormat(lang, Object.assign({ timeZone: TZ }, opts)).format(this.day(e)); },
     money: money,
 
-    // Texto que no cabe: se desplaza de un lado a otro (con pausa en los extremos)
-    // para poder leerlo entero. Si cabe, queda quieto. Respeta "reducir movimiento".
+    // Texto que no cabe: circula en bucle, siempre en el mismo sentido, con un punto
+    // entre una vuelta y la siguiente. Si cabe, queda quieto. Respeta "reducir movimiento".
     setMarquee: function (box, text) {
       if (!document.getElementById('roceMarqueeCss')) {
         var st = document.createElement('style'); st.id = 'roceMarqueeCss';
-        st.textContent = '.mq{display:inline-block;white-space:nowrap}.mq-on{text-overflow:clip!important}.mq-on .mq{animation:mqScroll var(--mq-dur,8s) ease-in-out infinite alternate}@keyframes mqScroll{0%,14%{transform:translateX(0)}86%,100%{transform:translateX(calc(-1*var(--mq-shift)))}}';
+        st.textContent = '.mq{display:inline-block;white-space:nowrap}.mq-on{text-overflow:clip!important}.mq-on .mq{animation:mqLoop var(--mq-dur,10s) linear infinite}@keyframes mqLoop{from{transform:translateX(0)}to{transform:translateX(calc(-1*var(--mq-cycle)))}}';
         document.head.appendChild(st);
       }
       var inner = box.querySelector('.mq');
       if (!inner) { inner = document.createElement('span'); inner.className = 'mq'; box.textContent = ''; box.appendChild(inner); }
-      inner.textContent = text;
       function measure() {
-        box.classList.remove('mq-on'); inner.style.removeProperty('--mq-shift');
+        box.classList.remove('mq-on'); inner.style.removeProperty('--mq-cycle');
+        inner.textContent = text;
         var over = inner.offsetWidth - box.clientWidth;
-        if (over > 4 && !(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches)) {
-          inner.style.setProperty('--mq-shift', over + 'px');
-          inner.style.setProperty('--mq-dur', Math.max(6, over / 28 + 4).toFixed(1) + 's');
-          box.classList.add('mq-on');
-        }
+        if (over <= 4 || (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches)) return;
+        // Dos copias seguidas: al desplazar exactamente una vuelta, la segunda ocupa el sitio de la primera.
+        inner.textContent = '';
+        var one = document.createElement('span'); one.textContent = text + '\u00A0\u00A0\u00A0·\u00A0\u00A0\u00A0';
+        inner.appendChild(one);
+        var cycle = one.offsetWidth;
+        inner.appendChild(one.cloneNode(true));
+        inner.style.setProperty('--mq-cycle', cycle + 'px');
+        inner.style.setProperty('--mq-dur', Math.max(6, cycle / 38).toFixed(1) + 's'); // ~38 px/s
+        box.classList.add('mq-on');
       }
       box.__mqMeasure = measure;
       requestAnimationFrame(measure);
       if (!window.__mqResize) {
         window.__mqResize = true;
-        window.addEventListener('resize', function () { document.querySelectorAll('.mq-on, [data-mq]').forEach(function (b) { if (b.__mqMeasure) b.__mqMeasure(); }); });
+        window.addEventListener('resize', function () { document.querySelectorAll('[data-mq]').forEach(function (b) { if (b.__mqMeasure) b.__mqMeasure(); }); });
       }
       box.setAttribute('data-mq', '');
     },
