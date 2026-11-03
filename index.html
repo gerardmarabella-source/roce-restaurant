@@ -46,11 +46,12 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 <script>
-  // Fondo según la hora de Valencia: claro de 10:00 a 20:00 (Day), oscuro el
-  // resto (Night). Se fija antes de pintar para que no parpadee.
+  // Fondo según la hora de Valencia: claro de 08:00 a 20:00, oscuro el resto.
+  // (El "Ahora" de Day sigue su horario de apertura, 10:00-20:00.) Se fija
+  // antes de pintar para que no parpadee.
   (function () {
     var hour = Number(new Intl.DateTimeFormat('en-GB', { hour: '2-digit', hourCycle: 'h23', timeZone: 'Europe/Madrid' }).format(new Date()));
-    document.documentElement.setAttribute('data-mode', hour >= 10 && hour < 20 ? 'day' : 'night');
+    document.documentElement.setAttribute('data-mode', hour >= 8 && hour < 20 ? 'day' : 'night');
   })();
 </script>
 <link rel="stylesheet" href="/styles.css?v=66">
@@ -444,8 +445,8 @@
       new Intl.DateTimeFormat('en-GB', { weekday: 'short', hour: '2-digit', hourCycle: 'h23', timeZone: 'Europe/Madrid' })
         .formatToParts(new Date()).forEach(function (x) { p[x.type] = x.value; });
       var hour = Number(p.hour);
-      var isDay = hour >= 10 && hour < 20;
-      document.documentElement.setAttribute('data-mode', isDay ? 'day' : 'night');
+      var isDay = hour >= 10 && hour < 20; // Day abierto
+      document.documentElement.setAttribute('data-mode', hour >= 8 && hour < 20 ? 'day' : 'night');
       // "Ahora" solo en lo que está abierto en este momento.
       document.getElementById('chooseDay').classList.toggle('is-now', isDay);
       document.getElementById('chooseNight').classList.toggle('is-now', nightOpen(DAYS[p.weekday], hour));

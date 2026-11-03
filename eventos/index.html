@@ -17,11 +17,11 @@
 <meta property="og:image" content="https://roce.es/assets/meta/og-image.png">
 <meta property="og:url" content="https://roce.es/eventos/">
 <script>
-  // Mismo criterio que la home: claro de 10:00 a 20:00 (hora de Valencia) y
+  // Mismo criterio que la home: claro de 08:00 a 20:00 (hora de Valencia) y
   // oscuro el resto. Se fija antes de pintar para que no parpadee.
   (function () {
     var hour = Number(new Intl.DateTimeFormat('en-GB', { hour: '2-digit', hourCycle: 'h23', timeZone: 'Europe/Madrid' }).format(new Date()));
-    document.documentElement.setAttribute('data-mode', hour >= 10 && hour < 20 ? 'day' : 'night');
+    document.documentElement.setAttribute('data-mode', hour >= 8 && hour < 20 ? 'day' : 'night');
     // Filtro de entrada: ?f=day (desde Day), ?f=night (desde Night) o todos
     // (desde el menú de la home). El fondo sigue al filtro: Day blanco, Night
     // negro y, en Todos, según la hora.
