@@ -88,7 +88,6 @@
   body.zone-day .topbar { background: var(--white); }
   body.zone-day .reserve-form-page { background: var(--white); color: var(--black); }
   body.zone-day .reserve-back { color: var(--black); }
-  body.zone-day .reserve-day-soon { border-color: rgba(10, 10, 10, 0.3); }
   /* ...y lo mismo con "Alquila el espacio" y el pie. */
   .private-events, .site-footer { transition: background 0.3s ease, color 0.3s ease; }
   body.zone-day .private-events,
@@ -107,10 +106,9 @@
   body.zone-day .pe-note { color: rgba(10, 10, 10, 0.55); }
   body.zone-day .footer-info p { color: var(--black); }
   body.zone-day .footer-instagram { background: var(--black); color: var(--white); }
-  .reserve-day-soon { padding: 1.25rem 1.4rem; border: 1px solid rgba(236, 231, 221, 0.3); font-size: 0.98rem; line-height: 1.5; }
-  .reserve-day-soon a { color: inherit; }
   .reserve-form-intro { font-size: 0.95rem; opacity: 0.85; margin-bottom: 1.25rem; line-height: 1.5; }
   .reserve-night { margin-top: 0; color: #e5453a; font-weight: 600; opacity: 1; display: flex; align-items: center; gap: 0.6rem; }
+  .reserve-night[hidden] { display: none; }
   .age-badge { flex-shrink: 0; width: 2.8rem; height: 2.8rem; }
 
   /* El widget de CoverManager usa el tema "trans-white" (texto blanco sobre
@@ -287,12 +285,12 @@
       <h1 data-i18n-html="reservar_h1">Reserva<br>tu mesa</h1>
       <div class="reserve-zones" role="group" aria-label="Day / Night">
         <button type="button" class="reserve-zone" data-zone="day" aria-pressed="false">Day</button>
-        <button type="button" class="reserve-zone" data-zone="night" aria-pressed="true">Night</button>
+        <button type="button" class="reserve-zone" data-zone="night" aria-pressed="false">Night</button>
       </div>
     </div>
 
-    <section id="panelNight">
-    <p class="reserve-form-intro reserve-night"><svg class="age-badge" viewBox="0 0 100 100" role="img" aria-label="+18"><circle cx="50" cy="50" r="44" fill="#ffffff" stroke="#e5453a" stroke-width="9"/><text x="44" y="65" text-anchor="middle" font-family="'Helvetica Neue Web','Helvetica Neue',Arial,sans-serif" font-weight="700" font-size="46" letter-spacing="-3" fill="#0a0a0a">18</text><text x="77" y="52" text-anchor="middle" font-family="'Helvetica Neue Web','Helvetica Neue',Arial,sans-serif" font-weight="700" font-size="30" fill="#0a0a0a">+</text></svg> <span data-i18n="reservar_night">Reservas de noche solo para mayores de 18 años</span></p>
+    <section id="panelBooking">
+    <p class="reserve-form-intro reserve-night" id="nightNotice"><svg class="age-badge" viewBox="0 0 100 100" role="img" aria-label="+18"><circle cx="50" cy="50" r="44" fill="#ffffff" stroke="#e5453a" stroke-width="9"/><text x="44" y="65" text-anchor="middle" font-family="'Helvetica Neue Web','Helvetica Neue',Arial,sans-serif" font-weight="700" font-size="46" letter-spacing="-3" fill="#0a0a0a">18</text><text x="77" y="52" text-anchor="middle" font-family="'Helvetica Neue Web','Helvetica Neue',Arial,sans-serif" font-weight="700" font-size="30" fill="#0a0a0a">+</text></svg> <span data-i18n="reservar_night">Reservas de noche solo para mayores de 18 años</span></p>
 
     <div class="cm-widget">
       <div class="group-notice" id="groupNotice">
@@ -303,10 +301,6 @@
     </div>
     </section>
 
-    <!-- Day: aquí irá el segundo motor de reservas. -->
-    <section id="panelDay" hidden>
-      <p class="reserve-day-soon" data-i18n-html="reservar_day_soon">La reserva online de Day estará disponible muy pronto. Mientras tanto, escríbenos a <a href="mailto:reservas@roce.es">reservas@roce.es</a>.</p>
-    </section>
   </div>
 </main>
 
@@ -378,11 +372,15 @@
 </div>
 <script src="/cookies.js?v=3"></script>
 <script src="https://www.covermanager.com/js/iframeResizer/iframeResizer.min.js"></script>
-<script src="/i18n.js?v=67"></script>
+<script src="/i18n.js?v=68"></script>
 
 <script>
   const WHATSAPP_NUMBER = '34614073163';
   const CM_BASE = 'https://www.covermanager.com/reserve/module_restaurant/restaurante-roce-valencia/';
+  // Tres motores de CoverManager: Day (solo comidas), Night (solo cenas) y el
+  // conjunto (sin filtro), que es el que se ve al entrar sin elegir ambiente.
+  const CM_QUERY = { day: '?only_lunch=1', night: '?only_dinner=1', all: '' };
+  let zone = 'all';
   const cmFrame = document.getElementById('restaurante-roce-valencia');
   iFrameResize({ checkOrigin: ['https://www.covermanager.com'] }, '#restaurante-roce-valencia');
 
@@ -404,7 +402,7 @@
   }).observe(cmFrame);
 
   function syncCoverManagerLang() {
-    const url = CM_BASE + (window.ROCE_I18N.getLang() === 'en' ? 'english' : 'spanish');
+    const url = CM_BASE + (window.ROCE_I18N.getLang() === 'en' ? 'english' : 'spanish') + CM_QUERY[zone];
     if (cmFrame.getAttribute('src') !== url) cmFrame.setAttribute('src', url);
   }
   document.addEventListener('DOMContentLoaded', syncCoverManagerLang);
@@ -417,23 +415,25 @@
   document.addEventListener('DOMContentLoaded', updateGroupLink);
   new MutationObserver(updateGroupLink).observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
 
-  // Selector Day / Night: Night es el motor de CoverManager de arriba; Day
-  // queda pendiente del segundo motor. #day en la URL abre Day directamente.
+  // Selector Day / Night: cada ambiente tiene su motor. #day y #night en la URL
+  // abren ese ambiente; sin ellos se ve el motor conjunto.
   const zoneTabs = document.querySelectorAll('.reserve-zone');
-  const panels = { night: document.getElementById('panelNight'), day: document.getElementById('panelDay') };
   const backLink = document.querySelector('.reserve-back');
-  function setZone(zone) {
+  function setZone(next) {
+    zone = next;
     zoneTabs.forEach((b) => b.setAttribute('aria-pressed', b.dataset.zone === zone ? 'true' : 'false'));
-    Object.keys(panels).forEach((k) => { panels[k].hidden = k !== zone; });
-    backLink.setAttribute('href', '/' + zone + '/');
+    backLink.setAttribute('href', zone === 'all' ? '/' : '/' + zone + '/');
     document.body.classList.toggle('zone-day', zone === 'day');
-    document.querySelector('.footer-headline').textContent = zone === 'day' ? 'Coffee, Bakery & Kitchen' : 'Restaurant & Cocktails';
-    document.getElementById('footerLogo').setAttribute('src', '/assets/logo/roce-tilted-' + (zone === 'day' ? 'black' : 'white') + '.png');
-    document.getElementById('navLogo').setAttribute('src', '/assets/logo/roce-horizontal-' + (zone === 'day' ? 'black' : 'white') + '.png');
-    if (zone === 'night' && cmFrame.iFrameResizer) cmFrame.iFrameResizer.resize();
+    document.getElementById('nightNotice').hidden = zone === 'day';
+    const day = zone === 'day';
+    document.querySelector('.footer-headline').textContent = day ? 'Coffee, Bakery & Kitchen' : 'Restaurant & Cocktails';
+    document.getElementById('footerLogo').setAttribute('src', '/assets/logo/roce-tilted-' + (day ? 'black' : 'white') + '.png');
+    document.getElementById('navLogo').setAttribute('src', '/assets/logo/roce-horizontal-' + (day ? 'black' : 'white') + '.png');
+    syncCoverManagerLang();
   }
   zoneTabs.forEach((b) => b.addEventListener('click', () => setZone(b.dataset.zone)));
   if (location.hash === '#day') setZone('day');
+  else if (location.hash === '#night') setZone('night');
 
   const alquilerDetails = document.getElementById('alquilerDetails');
   function openAlquilerIfTargeted() {
