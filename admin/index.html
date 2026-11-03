@@ -144,13 +144,19 @@
       <ul class="ad-list" id="teamList"></ul>
       <form class="ad-sheet-inline" id="teamForm" autocomplete="off">
         <h2 class="ad-sub">Añadir a alguien</h2>
-        <ol class="ad-steps">
-          <li>Crea su cuenta en <a id="sbUsers" href="#" target="_blank" rel="noopener">Supabase → Authentication → Users</a> (<em>Add user → Create new user</em>, email y contraseña, con “Auto Confirm User” marcado).</li>
-          <li>Escribe aquí el mismo email y pulsa <b>Dar acceso</b>.</li>
-        </ol>
+        <p class="ad-meta" style="margin-bottom:0.8rem">Se crea su cuenta y entra al instante. Apunta la contraseña y pásasela: solo se muestra una vez, y cada persona puede cambiarla abajo.</p>
         <div class="ad-bar" style="justify-content:flex-start">
-          <input type="email" id="teamEmail" placeholder="persona@roce.es" required style="flex:1 1 15rem">
-          <button class="ad-btn" type="submit" id="teamAdd">Dar acceso</button>
+          <input type="email" id="teamEmail" placeholder="persona@roce.es" required style="flex:1 1 14rem">
+          <input type="text" id="teamPass" placeholder="Contraseña (mín. 10)" required minlength="10" style="flex:1 1 12rem" spellcheck="false">
+          <button class="ad-btn is-ghost" type="button" id="teamGen">Generar</button>
+          <button class="ad-btn" type="submit" id="teamAdd">Crear y dar acceso</button>
+        </div>
+      </form>
+      <form class="ad-sheet-inline" id="pwForm" autocomplete="off">
+        <h2 class="ad-sub">Mi contraseña</h2>
+        <div class="ad-bar" style="justify-content:flex-start">
+          <input type="password" id="pwNew" placeholder="Nueva contraseña (mín. 10)" required minlength="10" autocomplete="new-password" style="flex:1 1 16rem">
+          <button class="ad-btn is-ghost" type="submit" id="pwSave">Cambiar</button>
         </div>
       </form>
     </section>
@@ -452,7 +458,19 @@
   });
 
   // ─── Equipo ─────────────────────────────────────────────────────────
-  $('sbUsers').href = 'https://supabase.com/dashboard/project/' + cfg.url.replace(/^https:\/\/([^.]+)\..*$/, '$1') + '/auth/users';
+  // Crear cuentas y cambiar contraseñas ajenas lo hace la función admin-team (servidor).
+  function teamCall(action, email, password) {
+    var pre = session && session.expires_at < Date.now() ? refresh() : Promise.resolve();
+    return pre.then(function () {
+      return fetch(cfg.url + '/functions/v1/admin-team', { method: 'POST', headers: { apikey: cfg.anonKey, Authorization: 'Bearer ' + session.access_token, 'Content-Type': 'application/json' }, body: JSON.stringify({ action: action, email: email, password: password }) });
+    }).then(function (r) { return r.json().catch(function () { return {}; }).then(function (d) { if (!r.ok) { var e = new Error(d.error || ('Error ' + r.status)); e.code = d.error; throw e; } return d; }); });
+  }
+  var TEAM_ERR = { weak_password: 'La contraseña debe tener al menos 10 caracteres.', bad_email: 'Ese email no es válido.', create_failed: 'No se ha podido crear la cuenta.', no_account: 'Esa persona no tiene cuenta todavía.', self: 'No puedes quitarte a ti mismo.', forbidden: 'No tienes permiso.' };
+  function genPass() {
+    var chars = 'abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789', a = new Uint32Array(14), o = '';
+    crypto.getRandomValues(a); for (var i = 0; i < a.length; i++) o += chars[a[i] % chars.length];
+    return o;
+  }
   function loadTeam() {
     return api('rpc/admin_team', { method: 'POST', body: {} }).then(function (rows) {
       var me = String(session.email).toLowerCase();
@@ -461,26 +479,50 @@
         return '<li class="ad-person"><div><b>' + esc(p.email) + '</b>' + (mine ? ' <span class="ad-tag">Tú</span>' : '') +
           '<div class="ad-meta">' + (p.has_account
             ? (p.last_sign_in ? 'Último acceso: ' + esc(fmtDate(p.last_sign_in, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })) : 'Cuenta creada, aún no ha entrado')
-            : '<span class="ad-tag is-red">Sin cuenta</span> Falta crearla en Supabase') + '</div></div>' +
-          (mine ? '' : '<button class="ad-btn is-small is-danger" data-email="' + esc(p.email) + '" type="button">Quitar acceso</button>') + '</li>';
+            : '<span class="ad-tag is-red">Sin cuenta</span> Créala con “Nueva contraseña”') + '</div></div>' +
+          '<div class="ad-actions" style="grid-column:auto">' + (mine ? '' : '<button class="ad-btn is-small is-ghost" data-act="pw" data-email="' + esc(p.email) + '" type="button">' + (p.has_account ? 'Nueva contraseña' : 'Crear cuenta') + '</button> <button class="ad-btn is-small is-danger" data-act="rm" data-email="' + esc(p.email) + '" type="button">Quitar</button>') + '</div></li>';
       }).join('');
     }).catch(function (e) { flash('No se ha podido cargar el equipo: ' + e.message, 'error'); });
   }
+  function showCreds(email, pass, verb) {
+    flash(verb + ' ' + email + ' · contraseña: ' + pass + ' (pásasela ahora; no se vuelve a mostrar)', 'ok');
+    clearTimeout(msgTimer);
+  }
+  $('teamGen').addEventListener('click', function () { $('teamPass').value = genPass(); });
   $('teamForm').addEventListener('submit', function (e) {
     e.preventDefault();
-    var email = $('teamEmail').value.trim().toLowerCase(); if (!email) return;
+    var email = $('teamEmail').value.trim().toLowerCase(), pass = $('teamPass').value;
     $('teamAdd').disabled = true;
-    api('admins', { method: 'POST', body: { email: email } }).then(function () {
-      $('teamEmail').value = ''; flash('Acceso concedido a ' + email + '.', 'ok'); return loadTeam();
-    }).catch(function (x) { flash(x.code === '23505' ? 'Esa persona ya tiene acceso.' : 'No se ha podido añadir: ' + x.message, 'error'); })
+    teamCall('create', email, pass).then(function (d) {
+      $('teamEmail').value = ''; $('teamPass').value = '';
+      if (d.existed) flash('Esa persona ya tenía cuenta: ahora tiene acceso al panel con su contraseña de siempre.', 'ok'); else showCreds(email, pass, 'Cuenta creada para');
+      return loadTeam();
+    }).catch(function (x) { flash(TEAM_ERR[x.code] || ('No se ha podido añadir: ' + x.message), 'error'); })
       .then(function () { $('teamAdd').disabled = false; });
   });
   $('teamList').addEventListener('click', function (ev) {
     var btn = ev.target.closest('button[data-email]'); if (!btn) return;
     var email = btn.dataset.email;
-    if (!confirm('¿Quitar el acceso al panel a ' + email + '? Su cuenta sigue existiendo pero ya no podrá ver nada.')) return;
-    api('admins?email=eq.' + encodeURIComponent(email), { method: 'DELETE' }).then(function () { flash('Acceso retirado a ' + email + '.', 'ok'); return loadTeam(); })
-      .catch(function (x) { flash(x.message, 'error'); });
+    if (btn.dataset.act === 'rm') {
+      if (!confirm('¿Quitar a ' + email + '? Se borra su acceso al panel y su cuenta.')) return;
+      teamCall('remove', email).then(function () { flash('Acceso retirado a ' + email + '.', 'ok'); return loadTeam(); })
+        .catch(function (x) { flash(TEAM_ERR[x.code] || x.message, 'error'); });
+    } else {
+      var pass = genPass();
+      if (!confirm('¿Generar una contraseña nueva para ' + email + '? La anterior dejará de funcionar.')) return;
+      teamCall('create', email, pass).then(function (d) { return d.existed ? teamCall('set_password', email, pass) : d; })
+        .then(function () { showCreds(email, pass, 'Contraseña nueva para'); return loadTeam(); })
+        .catch(function (x) { flash(TEAM_ERR[x.code] || x.message, 'error'); });
+    }
+  });
+  $('pwForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var pass = $('pwNew').value; $('pwSave').disabled = true;
+    fetch(cfg.url + '/auth/v1/user', { method: 'PUT', headers: { apikey: cfg.anonKey, Authorization: 'Bearer ' + session.access_token, 'Content-Type': 'application/json' }, body: JSON.stringify({ password: pass }) })
+      .then(function (r) { return r.json().then(function (d) { if (!r.ok) throw new Error(d.msg || d.message || d.error_description || 'error'); }); })
+      .then(function () { $('pwNew').value = ''; flash('Contraseña cambiada.', 'ok'); })
+      .catch(function (x) { flash('No se ha podido cambiar: ' + x.message, 'error'); })
+      .then(function () { $('pwSave').disabled = false; });
   });
 
   // ─── Arranque ───────────────────────────────────────────────────────

@@ -21,9 +21,10 @@ Todo es gratis para el volumen de un local.
 3. En **SQL Editor** ejecuta (con tu email): `insert into admins (email) values ('tu@email.com');`
    Repite para cada persona del equipo.
 
-   Las siguientes personas se añaden desde el propio panel (`roce.es/admin/` →
-   pestaña **Equipo**): primero se crea su cuenta en Supabase (paso 1) y luego se
-   le da acceso desde el panel, sin SQL.
+   Las siguientes personas se gestionan desde el propio panel (`roce.es/admin/` →
+   pestaña **Equipo**): crear cuenta con contraseña, cambiarla o quitar el acceso.
+   Lo hace la Edge Function `admin-team` (despliégala igual que `booking-email`,
+   con “Verify JWT” activado; no necesita secretos: Supabase le da la clave de servicio).
 
 ## 4. Conectar la web
 En **Project Settings → API** copia:
