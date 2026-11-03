@@ -73,9 +73,42 @@ con Redsys, cuando el TPV confirme el pago), el sistema:
   se pueden cambiar con los secretos `ISSUER_NAME`, `ISSUER_TAX_ID` e `ISSUER_ADDRESS`.
 - Las facturas no se borran ni se editan desde el panel. Si hay que anular una, hace falta una factura rectificativa (a hacer con la gestoría).
 
-## 7. Cobro con Redsys (más adelante)
-Hace falta un servidor que firme los datos del pago: otra función de Supabase.
-La web ya tiene el hueco (`ROCE_PAYMENTS` en `eventos/entradas/index.html`).
+## 7. Cobro con tarjeta (Redsys)
+El cliente paga en la página segura del banco (redirección); ROCE nunca ve los datos de la tarjeta.
+
+**Cómo funciona**
+1. En el paso 3 del embudo, si el evento es de pago, la web guarda la reserva como *pendiente*
+   (la plaza queda retenida **30 minutos**) y pide a la función `redsys` los datos firmados.
+2. El navegador envía el formulario a Redsys; el cliente paga.
+3. Redsys avisa a la función `redsys` (URL de notificación). Ella comprueba la **firma**, el **importe**
+   y el comercio, y marca la reserva como cobrada.
+4. Eso dispara `booking-email`: sale el **email de reserva**, el **aviso a ROCE** y la **factura** (PDF + Drive).
+5. El cliente vuelve a la web (`?status=ok`) y ve la confirmación en cuanto el banco ha avisado.
+
+**Puesta en marcha**
+1. Ejecuta `supabase/schema.sql` (o solo las partes nuevas: tabla `payments`, `confirm_payment`, `booking_status`, `book_event` con `p_online`).
+2. **Edge Functions → Create function** `redsys` con `supabase/functions/redsys/index.ts`
+   y **desactiva “Verify JWT”** (Redsys no envía token; la seguridad es la firma).
+3. Vuelve a desplegar `booking-email` (ahora sabe esperar al pago antes de enviar el email).
+4. **Edge Functions → Secrets**:
+   - `REDSYS_MERCHANT_CODE` (código de comercio / FUC)
+   - `REDSYS_TERMINAL` (normalmente `1`)
+   - `REDSYS_SECRET_KEY` (clave secreta de firma SHA-256, la que te da el banco)
+   - `REDSYS_ENV`: `test` (entorno de pruebas) o `live` (real)
+   - opcional: `SITE_URL` (por defecto `https://roce.es`), `REDSYS_EXTRA_ORIGINS`, `REDSYS_MERCHANT_NAME`
+5. En el portal del banco (Canales de Redsys) activa el envío de notificación HTTP; la URL la manda la propia función:
+   `https://<proyecto>.supabase.co/functions/v1/redsys`.
+
+**Pruebas (entorno `test`)**: datos públicos de la documentación de Redsys para su entorno de pruebas
+(comercio 999008881, terminal 1) y las tarjetas de prueba de su documentación. Con `REDSYS_ENV=live`
+y los datos reales del contrato se cobra de verdad: antes de pasar a `live`, haz un pago de prueba de importe pequeño.
+
+**Importante**
+- Sin los secretos, la función responde “disabled” y la web sigue como antes (reserva sin cobro online).
+- Una reserva pendiente que no paga en 30 minutos deja de ocupar plaza (sigue apareciendo como “Pendiente de pago” en el panel).
+- Si el banco cobra una reserva ya cancelada, el pago queda registrado en `payments` y hay que devolverlo desde el portal de Redsys.
+- Las **devoluciones** se hacen desde el portal de Redsys; de momento el panel no las gestiona (ni las facturas rectificativas).
+- Redsys pide mostrar en la web las condiciones de venta y la política de cancelación/devolución. Revisa `terminos.html` con la gestoría.
 
 ## Dónde se guardan los datos
 - Reservas: tabla `bookings` de Supabase (nombre, email, teléfono, comentarios, entradas, estado).

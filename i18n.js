@@ -51,10 +51,7 @@
 
     // reservar.html
     reservar_h1: { es: 'Reserva<br>tu mesa', en: 'Book<br>your table' },
-    reservar_day_soon: {
-      es: 'La reserva online de Day estará disponible muy pronto. Mientras tanto, escríbenos a <a href="mailto:reservas@roce.es">reservas@roce.es</a>.',
-      en: 'Online booking for Day will be available very soon. In the meantime, write to us at <a href="mailto:reservas@roce.es">reservas@roce.es</a>.',
-    },
+    hours_day: { es: 'Day · Todos los días, de 10:00 a 20:00', en: 'Day · Every day, 10:00 – 20:00' },
     reservar_night: {
       es: 'Reservas de noche solo para mayores de 18 años',
       en: 'Night bookings are for guests aged 18 and over',
@@ -147,6 +144,14 @@
     tk_r_contact: { es: 'Contacto', en: 'Contact' },
     tk_policy: { es: 'Si no puedes venir, avísanos en reservas@roce.es para liberar tu plaza.', en: "If you can't make it, let us know at reservas@roce.es so we can free your spot." },
     tk_confirm: { es: 'Confirmar reserva', en: 'Confirm booking' },
+    tk_pay: { es: 'Pagar {total}', en: 'Pay {total}' },
+    tk_pay_note: { es: 'Al continuar te llevamos al banco para pagar con tarjeta de forma segura. Tu plaza queda retenida durante 30 minutos.', en: "When you continue we'll take you to the bank to pay securely by card. Your spot is held for 30 minutes." },
+    tk_test_pay: { es: 'Entorno de pruebas del banco: no se cobra dinero real.', en: "Bank test environment: no real money is charged." },
+    tk_redirecting: { es: 'Redirigiendo al banco…', en: 'Redirecting to the bank…' },
+    tk_pay_wait: { es: 'Confirmando el pago…', en: 'Confirming the payment…' },
+    tk_pay_wait_text: { es: 'Estamos esperando la confirmación del banco. No cierres esta página.', en: "We're waiting for the bank's confirmation. Please don't close this page." },
+    tk_pay_delay: { es: 'El banco aún no nos ha confirmado el cobro. En cuanto lo haga recibirás el email de confirmación y tu factura.', en: "The bank hasn't confirmed the payment yet. As soon as it does you'll get your confirmation email and invoice." },
+    tk_err_expired: { es: 'Tu plaza retenida ha caducado (30 minutos). Vuelve a confirmar la reserva.', en: 'Your held spot has expired (30 minutes). Please confirm the booking again.' },
     tk_sending: { es: 'Enviando…', en: 'Sending…' },
     tk_error: { es: 'No se ha podido enviar, inténtalo de nuevo.', en: 'Something went wrong, please try again.' },
     tk_ok_title: { es: '¡Plaza reservada!', en: 'Spot booked!' },
@@ -219,8 +224,8 @@
     },
     privacy_h4: { es: '4. Destinatarios', en: '4. Recipients' },
     privacy_p4: {
-      es: 'No cedemos tus datos a terceros, salvo obligación legal. Si aceptas las cookies, Meta Platforms Ireland Limited y Google Ireland Limited reciben los datos de navegación recogidos por el Píxel de Meta y por Google Tag Manager (ver política de cookies). Para gestionar las reservas de mesa utilizamos CoverManager, proveedor del sistema de reservas, que accede a los datos de la reserva para prestarnos ese servicio. Las solicitudes que envías por WhatsApp se tratan a través de dicha aplicación. Para la newsletter utilizamos Brevo, plataforma de email marketing que almacena tu email y envía las comunicaciones; actúa como encargado del tratamiento bajo contrato, cumpliendo con el RGPD. Para gestionar las reservas de entradas a eventos utilizamos Supabase, proveedor de la base de datos donde se guardan las reservas, con servidores en la Unión Europea, y Brevo, que envía el email de confirmación y guarda tu contacto en nuestras listas; el aviso interno de cada reserva puede enviarse a través del servicio de formularios Web3Forms. Todos actúan como encargados del tratamiento bajo contrato.',
-      en: "We don't share your data with third parties, except where legally required. If you accept cookies, Meta Platforms Ireland Limited and Google Ireland Limited receive the browsing data collected by the Meta Pixel and Google Tag Manager (see our cookie policy). To manage table bookings we use CoverManager, the booking system provider, which accesses the booking data to provide us with that service. Requests you send via WhatsApp are handled through that application. For the newsletter we use Brevo, an email marketing platform that stores your email and sends the communications; it acts as a data processor under contract, complying with GDPR. To manage event ticket bookings we use Supabase, the provider of the database where bookings are stored, with servers in the European Union, and Brevo, which sends the confirmation email and stores your contact in our lists; the internal notice of each booking may be sent through the Web3Forms form service. All of them act as data processors under contract.",
+      es: 'No cedemos tus datos a terceros, salvo obligación legal. Si aceptas las cookies, Meta Platforms Ireland Limited y Google Ireland Limited reciben los datos de navegación recogidos por el Píxel de Meta y por Google Tag Manager (ver política de cookies). Para gestionar las reservas de mesa utilizamos CoverManager, proveedor del sistema de reservas, que accede a los datos de la reserva para prestarnos ese servicio. Las solicitudes que envías por WhatsApp se tratan a través de dicha aplicación. Para la newsletter utilizamos Brevo, plataforma de email marketing que almacena tu email y envía las comunicaciones; actúa como encargado del tratamiento bajo contrato, cumpliendo con el RGPD. Para gestionar las reservas de entradas a eventos utilizamos Supabase, proveedor de la base de datos donde se guardan las reservas, con servidores en la Unión Europea, y Brevo, que envía el email de confirmación y guarda tu contacto en nuestras listas; el aviso interno de cada reserva puede enviarse a través del servicio de formularios Web3Forms. Si pagas con tarjeta, el cobro lo realiza Redsys, el TPV virtual de nuestra entidad bancaria, en su propia página segura: ROCE no recibe ni guarda los datos de tu tarjeta, solo la confirmación del pago. Todos actúan como encargados del tratamiento bajo contrato.',
+      en: "We don't share your data with third parties, except where legally required. If you accept cookies, Meta Platforms Ireland Limited and Google Ireland Limited receive the browsing data collected by the Meta Pixel and Google Tag Manager (see our cookie policy). To manage table bookings we use CoverManager, the booking system provider, which accesses the booking data to provide us with that service. Requests you send via WhatsApp are handled through that application. For the newsletter we use Brevo, an email marketing platform that stores your email and sends the communications; it acts as a data processor under contract, complying with GDPR. To manage event ticket bookings we use Supabase, the provider of the database where bookings are stored, with servers in the European Union, and Brevo, which sends the confirmation email and stores your contact in our lists; the internal notice of each booking may be sent through the Web3Forms form service. If you pay by card, the payment is processed by Redsys, our bank's virtual POS, on its own secure page: ROCE does not receive or store your card details, only the payment confirmation. All of them act as data processors under contract.",
     },
     privacy_h5: { es: '5. Conservación', en: '5. Data retention' },
     privacy_p5: {

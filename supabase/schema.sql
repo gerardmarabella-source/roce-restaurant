@@ -77,6 +77,11 @@ create table if not exists public.bookings (
 alter table public.bookings add column if not exists marketing_optin boolean not null default false;
 -- Momento en que se cobró (pasarela o a mano).
 alter table public.bookings add column if not exists paid_at timestamptz;
+-- Asistencia en la puerta: cuántas personas de la reserva han entrado (0 a qty) y cuándo se marcó.
+alter table public.bookings add column if not exists checked_in integer not null default 0;
+alter table public.bookings add column if not exists checked_in_at timestamptz;
+alter table public.bookings drop constraint if exists bookings_checked_in_range;
+alter table public.bookings add constraint bookings_checked_in_range check (checked_in >= 0 and checked_in <= qty);
 -- Datos para factura completa (solo si el cliente la pide): nombre/razón social, NIF/CIF y dirección fiscal.
 alter table public.bookings add column if not exists invoice_name text not null default '';
 alter table public.bookings add column if not exists invoice_tax_id text not null default '';
