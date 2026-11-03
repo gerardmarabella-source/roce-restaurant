@@ -150,6 +150,7 @@
       <label class="ad-field"><span>Lugar (español)</span><input type="text" id="fPlaceEs" placeholder="Primera planta"></label>
       <label class="ad-field"><span>Lugar (inglés)</span><input type="text" id="fPlaceEn" placeholder="First floor"></label>
       <label class="ad-field"><span>Precio por entrada (€)</span><input type="number" id="fPrice" min="0" step="0.5" value="0" required><p class="ad-hint">0 = gratis.</p></label>
+      <label class="ad-field"><span>IVA incluido en el precio (%)</span><input type="number" id="fVat" min="0" max="30" step="0.5" value="10" required><p class="ad-hint">Confírmalo con la gestoría: se usa en las facturas.</p></label>
       <label class="ad-field"><span>Duración (horas)</span><input type="number" id="fDur" min="0.5" step="0.5" value="2" required></label>
       <label class="ad-field"><span>Plazas totales</span><input type="number" id="fCap" min="0" step="1" value="30" required></label>
       <label class="ad-field"><span>Máx. entradas por reserva</span><input type="number" id="fMax" min="1" max="20" step="1" value="6" required></label>
@@ -264,7 +265,7 @@
   function loadAll() {
     return Promise.all([
       api('events?select=*&order=starts_at.desc'),
-      api('bookings?select=*&order=created_at.desc')
+      api('bookings?select=*,invoices(number,kind,drive_url)&order=created_at.desc')
     ]).then(function (r) { events = r[0] || []; bookings = r[1] || []; renderEvents(); renderBookingFilter(); renderBookings(); })
       .catch(function (e) { flash('No se han podido cargar los datos: ' + e.message, 'error'); });
   }
@@ -331,7 +332,7 @@
     $('fEnv').value = v.env; $('fStart').value = asCopy || !v.starts_at ? '' : toInputValue(v.starts_at);
     $('fTitleEs').value = v.title_es; $('fTitleEn').value = v.title_en; $('fDescEs').value = v.desc_es; $('fDescEn').value = v.desc_en;
     $('fPlaceEs').value = v.place_es; $('fPlaceEn').value = v.place_en;
-    $('fPrice').value = v.price_cents / 100; $('fDur').value = v.duration_h; $('fCap').value = v.capacity; $('fMax').value = v.max_per_order;
+    $('fPrice').value = v.price_cents / 100; $('fVat').value = v.vat_percent == null ? 10 : v.vat_percent; $('fDur').value = v.duration_h; $('fCap').value = v.capacity; $('fMax').value = v.max_per_order;
     $('fLabelEs').value = v.price_label_es; $('fPub').checked = editing ? v.published : false;
     $('fId').value = editing ? v.id : (asCopy ? '' : ''); $('fId').readOnly = !!editing;
     $('evModal').hidden = false; document.body.style.overflow = 'hidden';
@@ -349,7 +350,7 @@
       env: $('fEnv').value, starts_at: madridToISO($('fStart').value),
       duration_h: Number($('fDur').value), title_es: $('fTitleEs').value.trim(), title_en: $('fTitleEn').value.trim(),
       desc_es: $('fDescEs').value.trim(), desc_en: $('fDescEn').value.trim(), place_es: $('fPlaceEs').value.trim(), place_en: $('fPlaceEn').value.trim(),
-      price_cents: Math.round(Number($('fPrice').value) * 100), price_label_es: $('fLabelEs').value.trim(), price_label_en: '',
+      price_cents: Math.round(Number($('fPrice').value) * 100), vat_percent: Number($('fVat').value), price_label_es: $('fLabelEs').value.trim(), price_label_en: '',
       capacity: Math.round(Number($('fCap').value)), max_per_order: Math.round(Number($('fMax').value)), published: $('fPub').checked
     };
     if (!row.title_es) return fail('Falta el título.');
@@ -382,6 +383,12 @@
     var id = $('bkEvent').value, q = $('bkSearch').value.trim().toLowerCase();
     return bookings.filter(function (b) { return (!id || b.event_id === id) && (!q || (b.name + ' ' + b.email + ' ' + b.ref + ' ' + b.phone).toLowerCase().indexOf(q) !== -1); });
   }
+  function invoiceOf(b) { var i = b.invoices; return Array.isArray(i) ? i[0] : i; }
+  function invoiceCell(b) {
+    var i = invoiceOf(b);
+    if (i) return '<br><span class="ad-tag is-green">' + esc(i.number) + '</span>' + (i.drive_url ? ' <a href="' + esc(i.drive_url) + '" target="_blank" rel="noopener">Drive</a>' : '');
+    return b.invoice_tax_id ? '<br><span class="ad-meta">Pide factura completa</span>' : '';
+  }
   var STATUS = { confirmed: 'Confirmada', pending: 'Pendiente', cancelled: 'Cancelada' };
   var PAY = { free: 'Gratis', pending: 'Por cobrar', paid: 'Cobrado', refunded: 'Devuelto', failed: 'Fallido' };
   function renderBookings() {
@@ -397,7 +404,7 @@
         '<td>' + esc(b.name) + (b.notes ? '<br><span class="ad-meta">' + esc(b.notes) + '</span>' : '') + '</td>' +
         '<td>' + esc(b.email) + '<br>' + esc(b.phone) + (b.marketing_optin ? '<br><span class="ad-tag is-green">Quiere novedades</span>' : '') + '</td>' +
         '<td>' + b.qty + '<br><span class="ad-meta">' + esc(money(b.total_cents)) + '</span></td>' +
-        '<td>' + esc(STATUS[b.status]) + '</td><td>' + esc(PAY[b.payment_status]) + '</td>' +
+        '<td>' + esc(STATUS[b.status]) + '</td><td>' + esc(PAY[b.payment_status]) + invoiceCell(b) + '</td>' +
         '<td class="nowrap">' + (b.status !== 'cancelled' ? '<button class="ad-btn is-small is-danger" data-id="' + b.id + '" data-act="cancel" type="button">Cancelar</button>' : '') +
           (b.payment_status === 'pending' && b.status !== 'cancelled' ? ' <button class="ad-btn is-small is-ghost" data-id="' + b.id + '" data-act="paid" type="button">Marcar cobrado</button>' : '') + '</td></tr>';
     }).join('');
@@ -407,13 +414,13 @@
     var b = bookings.filter(function (x) { return x.id === btn.dataset.id; })[0]; if (!b) return;
     var patch;
     if (btn.dataset.act === 'cancel') { if (!confirm('¿Cancelar la reserva ' + b.ref + ' de ' + b.name + '? Se liberan sus plazas.')) return; patch = { status: 'cancelled' }; }
-    else patch = { payment_status: 'paid' };
+    else { if (!confirm('¿Marcar como cobrada la reserva ' + b.ref + '? Se emitirá la factura y se enviará por email al cliente.')) return; patch = { payment_status: 'paid' }; }
     api('bookings?id=eq.' + b.id, { method: 'PATCH', body: patch }).then(function () { Object.assign(b, patch); renderBookings(); renderEvents(); flash('Reserva actualizada.', 'ok'); }).catch(function (x) { flash(x.message, 'error'); });
   });
   $('bkCsv').addEventListener('click', function () {
-    var rows = [['Ref', 'Evento', 'Fecha evento', 'Nombre', 'Email', 'Teléfono', 'Entradas', 'Total €', 'Estado', 'Pago', 'Novedades', 'Comentarios', 'Reservado']].concat(filteredBookings().map(function (b) {
+    var rows = [['Ref', 'Evento', 'Fecha evento', 'Nombre', 'Email', 'Teléfono', 'Entradas', 'Total €', 'Estado', 'Pago', 'Novedades', 'Comentarios', 'Reservado', 'Factura']].concat(filteredBookings().map(function (b) {
       var e = eventById(b.event_id);
-      return [b.ref, e ? e.title_es : b.event_id, e ? fmtDate(e.starts_at, { dateStyle: 'short', timeStyle: 'short' }) : '', b.name, b.email, b.phone, b.qty, (b.total_cents / 100).toFixed(2).replace('.', ','), STATUS[b.status], PAY[b.payment_status], b.marketing_optin ? 'sí' : 'no', b.notes, fmtDate(b.created_at, { dateStyle: 'short', timeStyle: 'short' })];
+      return [b.ref, e ? e.title_es : b.event_id, e ? fmtDate(e.starts_at, { dateStyle: 'short', timeStyle: 'short' }) : '', b.name, b.email, b.phone, b.qty, (b.total_cents / 100).toFixed(2).replace('.', ','), STATUS[b.status], PAY[b.payment_status], b.marketing_optin ? 'sí' : 'no', b.notes, fmtDate(b.created_at, { dateStyle: 'short', timeStyle: 'short' }), (invoiceOf(b) || {}).number || ''];
     }));
     var csv = '﻿' + rows.map(function (r) { return r.map(function (c) { return '"' + String(c == null ? '' : c).replace(/"/g, '""') + '"'; }).join(';'); }).join('\r\n');
     var a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' })); a.download = 'reservas-roce.csv';

@@ -49,7 +49,24 @@ Quién entra en Brevo: **todos** los que reservan van a “Asistentes a eventos�
 (comunicación sobre su evento). A la **newsletter** solo van quienes marcan la
 casilla opcional “quiero recibir novedades” (consentimiento aparte, exigido por la LSSI/RGPD).
 
-## 6. Cobro con Redsys (más adelante)
+## 6. Facturas (eventos de pago)
+Cuando una reserva de pago pasa a **cobrada** (hoy con el botón "Marcar cobrado" del panel;
+con Redsys, cuando el TPV confirme el pago), el sistema:
+1. emite la factura con numeración correlativa **F-AAAA-NNNN** (el contador está en la base de datos, sin saltos),
+2. genera el PDF con los datos fiscales de ROCE,
+3. lo envía adjunto por email al cliente (con Brevo),
+4. lo sube a la carpeta de Drive.
+
+- **IVA:** cada evento lleva su porcentaje (campo "IVA incluido" del panel). Confírmalo con la gestoría.
+- **Cliente:** por defecto factura **simplificada**; si en la compra marca "factura completa", lleva su nombre, NIF y dirección.
+- **Webhook:** `booking_email` debe estar activo para **Insert y Update**.
+- **Drive:** `supabase/drive-script.gs` se despliega como aplicación web de Apps Script (propiedad `DRIVE_TOKEN`);
+  su URL y ese texto van a los secretos `DRIVE_SCRIPT_URL` y `DRIVE_SCRIPT_TOKEN` de Supabase.
+- **Datos del emisor:** por defecto BRUNCH DINNER ETC. SL, B25943804 y la dirección de la política de privacidad;
+  se pueden cambiar con los secretos `ISSUER_NAME`, `ISSUER_TAX_ID` e `ISSUER_ADDRESS`.
+- Las facturas no se borran ni se editan desde el panel. Si hay que anular una, hace falta una factura rectificativa (a hacer con la gestoría).
+
+## 7. Cobro con Redsys (más adelante)
 Hace falta un servidor que firme los datos del pago: otra función de Supabase.
 La web ya tiene el hueco (`ROCE_PAYMENTS` en `eventos/entradas/index.html`).
 

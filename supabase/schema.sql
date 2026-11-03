@@ -38,6 +38,9 @@ create table if not exists public.events (
   created_at     timestamptz not null default now()
 );
 
+-- IVA del evento (%): el precio por entrada ya incluye el IVA.
+alter table public.events add column if not exists vat_percent numeric(4,1) not null default 10 check (vat_percent >= 0 and vat_percent <= 30);
+
 -- ─── Reservas ─────────────────────────────────────────────────────────────
 create table if not exists public.bookings (
   id             uuid primary key default gen_random_uuid(),
@@ -59,6 +62,10 @@ create table if not exists public.bookings (
   created_at     timestamptz not null default now()
 );
 alter table public.bookings add column if not exists marketing_optin boolean not null default false;
+-- Datos para factura completa (solo si el cliente la pide): nombre/razón social, NIF/CIF y dirección fiscal.
+alter table public.bookings add column if not exists invoice_name text not null default '';
+alter table public.bookings add column if not exists invoice_tax_id text not null default '';
+alter table public.bookings add column if not exists invoice_address text not null default '';
 create index if not exists bookings_event_idx on public.bookings(event_id);
 
 -- ─── Seguridad por filas (RLS) ────────────────────────────────────────────
@@ -102,9 +109,11 @@ grant select on public.events_public to anon, authenticated;
 -- ─── Reservar (único camino del público para escribir) ───────────────────
 -- Bloquea el evento mientras comprueba el aforo, así dos personas a la vez
 -- no pueden pasarse de plazas.
+drop function if exists public.book_event(text, integer, text, text, text, text, text, boolean);
 create or replace function public.book_event(
   p_event text, p_qty integer, p_name text, p_email text, p_phone text,
-  p_notes text default '', p_lang text default 'es', p_marketing boolean default false
+  p_notes text default '', p_lang text default 'es', p_marketing boolean default false,
+  p_invoice_name text default '', p_invoice_tax_id text default '', p_invoice_address text default ''
 ) returns table (o_ref text, o_spots_left integer, o_total_cents integer)
 language plpgsql security definer set search_path = public as $$
 declare
@@ -135,11 +144,13 @@ begin
     exit when not exists (select 1 from public.bookings b where b.ref = v_ref);
   end loop;
 
-  insert into public.bookings (ref, event_id, qty, name, email, phone, notes, lang, marketing_optin, total_cents, status, payment_status)
+  insert into public.bookings (ref, event_id, qty, name, email, phone, notes, lang, marketing_optin, invoice_name, invoice_tax_id, invoice_address, total_cents, status, payment_status)
   values (
     v_ref, ev.id, p_qty, trim(p_name), lower(trim(p_email)), trim(p_phone),
     left(coalesce(p_notes, ''), 500), case when p_lang = 'en' then 'en' else 'es' end,
-    coalesce(p_marketing, false), ev.price_cents * p_qty, 'confirmed',
+    coalesce(p_marketing, false),
+    left(trim(coalesce(p_invoice_name, '')), 150), left(upper(trim(coalesce(p_invoice_tax_id, ''))), 20), left(trim(coalesce(p_invoice_address, '')), 250),
+    ev.price_cents * p_qty, 'confirmed',
     case when ev.price_cents = 0 then 'free' else 'pending' end
   );
 
@@ -147,5 +158,92 @@ begin
 end;
 $$;
 
-revoke all on function public.book_event(text, integer, text, text, text, text, text, boolean) from public;
-grant execute on function public.book_event(text, integer, text, text, text, text, text, boolean) to anon, authenticated;
+revoke all on function public.book_event(text, integer, text, text, text, text, text, boolean, text, text, text) from public;
+grant execute on function public.book_event(text, integer, text, text, text, text, text, boolean, text, text, text) to anon, authenticated;
+
+-- ─── Facturas ─────────────────────────────────────────────────────────────
+-- Una factura por reserva de pago, que se emite cuando la reserva pasa a "paid".
+-- La numeración (serie F + año + correlativo) no tiene saltos: el contador se
+-- bloquea y se incrementa en la misma transacción que crea la factura.
+create table if not exists public.invoice_counters (
+  series   text not null,
+  year     integer not null,
+  last_seq integer not null default 0,
+  primary key (series, year)
+);
+
+create table if not exists public.invoices (
+  id               uuid primary key default gen_random_uuid(),
+  number           text not null unique,            -- p. ej. F-2026-0001
+  series           text not null,
+  year             integer not null,
+  seq              integer not null,
+  booking_id       uuid not null unique references public.bookings(id) on delete restrict,
+  kind             text not null check (kind in ('simplified', 'full')),
+  issued_at        timestamptz not null default now(),
+  customer_name    text not null,
+  customer_tax_id  text not null default '',
+  customer_address text not null default '',
+  customer_email   text not null,
+  description      text not null,
+  qty              integer not null,
+  unit_cents       integer not null,                -- precio por entrada con IVA
+  total_cents      integer not null,
+  vat_percent      numeric(4,1) not null,
+  base_cents       integer not null,                -- base imponible
+  vat_cents        integer not null,                -- cuota de IVA
+  drive_url        text not null default '',
+  email_sent_at    timestamptz,
+  unique (series, year, seq)
+);
+
+alter table public.invoice_counters enable row level security;
+alter table public.invoices enable row level security;
+drop policy if exists invoices_admin_read on public.invoices;
+create policy invoices_admin_read on public.invoices for select to authenticated using (public.is_admin());
+-- Las facturas no se editan ni se borran desde el panel: sin políticas de escritura.
+
+-- Emite (o devuelve, si ya existe) la factura de una reserva cobrada.
+-- Solo la usa la función de Supabase con la clave de servicio.
+create or replace function public.issue_invoice(p_booking uuid) returns public.invoices
+language plpgsql security definer set search_path = public as $$
+declare
+  b        public.bookings;
+  e        public.events;
+  inv      public.invoices;
+  v_series text := 'F';
+  v_year   integer;
+  v_seq    integer;
+  v_base   integer;
+begin
+  select * into inv from public.invoices where booking_id = p_booking;
+  if found then return inv; end if;
+
+  select * into b from public.bookings where id = p_booking for update;
+  if not found then raise exception 'booking_not_found'; end if;
+  if b.payment_status <> 'paid' or b.status = 'cancelled' or b.total_cents <= 0 then raise exception 'not_billable'; end if;
+  select * into e from public.events where id = b.event_id;
+
+  v_year := extract(year from (now() at time zone 'Europe/Madrid'))::integer;
+  insert into public.invoice_counters (series, year, last_seq) values (v_series, v_year, 0) on conflict do nothing;
+  update public.invoice_counters set last_seq = last_seq + 1
+    where series = v_series and year = v_year returning last_seq into v_seq;
+
+  v_base := round(b.total_cents::numeric / (1 + e.vat_percent / 100))::integer;
+
+  insert into public.invoices (
+    number, series, year, seq, booking_id, kind, customer_name, customer_tax_id, customer_address, customer_email,
+    description, qty, unit_cents, total_cents, vat_percent, base_cents, vat_cents
+  ) values (
+    v_series || '-' || v_year || '-' || lpad(v_seq::text, 4, '0'), v_series, v_year, v_seq, b.id,
+    case when b.invoice_tax_id <> '' then 'full' else 'simplified' end,
+    case when b.invoice_name <> '' then b.invoice_name else b.name end,
+    b.invoice_tax_id, b.invoice_address, b.email,
+    'Entrada: ' || e.title_es, b.qty, (b.total_cents / b.qty), b.total_cents, e.vat_percent, v_base, b.total_cents - v_base
+  ) returning * into inv;
+  return inv;
+end;
+$$;
+
+revoke all on function public.issue_invoice(uuid) from public, anon, authenticated;
+grant execute on function public.issue_invoice(uuid) to service_role;

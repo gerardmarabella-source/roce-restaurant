@@ -73,6 +73,9 @@
   .tk-check input { width: 1.15rem; height: 1.15rem; margin-top: 0.15rem; flex-shrink: 0; accent-color: var(--fg); }
   .tk-check a { color: inherit; }
   .tk-check.is-age { color: #e5453a; font-weight: 600; }
+  .tk-inv { margin: 0 0 1rem; padding: 1rem; border: 1px solid var(--line); }
+  .tk-inv .tk-field:last-child { margin-bottom: 0; }
+  .tk-inv-note { margin-top: 0.75rem; font-size: 0.8rem; opacity: 0.65; line-height: 1.4; }
   .tk-botcheck { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
 
   .tk-actions { display: flex; gap: 0.75rem; margin-top: 1.75rem; }
@@ -157,6 +160,15 @@
       <label class="tk-field"><span data-i18n="tk_email">Email</span><input type="email" name="email" id="fEmail" autocomplete="email" inputmode="email" required></label>
       <label class="tk-field"><span data-i18n="tk_phone">Teléfono</span><input type="tel" name="telefono" id="fPhone" autocomplete="tel" inputmode="tel" required></label>
       <label class="tk-field"><span data-i18n="tk_notes">Alergias o comentarios (opcional)</span><textarea name="comentarios" id="fNotes" rows="1"></textarea></label>
+      <div id="invBox" hidden>
+        <label class="tk-check"><input type="checkbox" id="fInv"><span data-i18n="tk_inv_check">Quiero factura completa (con mis datos fiscales o los de mi empresa).</span></label>
+        <div class="tk-inv" id="invFields" hidden>
+          <label class="tk-field"><span data-i18n="tk_inv_name">Nombre o razón social</span><input type="text" id="fInvName" autocomplete="organization" maxlength="150"></label>
+          <label class="tk-field"><span data-i18n="tk_inv_taxid">NIF / CIF</span><input type="text" id="fInvTax" autocomplete="off" maxlength="20"></label>
+          <label class="tk-field"><span data-i18n="tk_inv_addr">Dirección fiscal</span><input type="text" id="fInvAddr" autocomplete="street-address" maxlength="250"></label>
+        </div>
+        <p class="tk-inv-note" data-i18n="tk_inv_note">La factura (simplificada, o completa si la pides) te llega por email cuando se confirma el pago.</p>
+      </div>
       <label class="tk-check is-age" id="ageRow" hidden><input type="checkbox" id="fAge"><span data-i18n="tk_age">Confirmo que todos los asistentes son mayores de 18 años.</span></label>
       <label class="tk-check"><input type="checkbox" id="fConsent"><span data-i18n-html="tk_consent">He leído y acepto la <a href="/privacidad.html" target="_blank" rel="noopener">política de privacidad</a>. ROCE tratará mis datos para gestionar mi reserva y enviarme información sobre el evento.</span></label>
       <label class="tk-check"><input type="checkbox" id="fMarketing"><span data-i18n="tk_marketing">Quiero recibir novedades y eventos de ROCE por email (opcional).</span></label>
@@ -214,7 +226,7 @@
   </div>
 </div>
 <script src="/cookies.js?v=3"></script>
-<script src="/i18n.js?v=62"></script>
+<script src="/i18n.js?v=63"></script>
 <script>
   window.ROCE_EVENTS_READY.then(function () {
     var U = window.ROCE_EVENT_UTIL;
@@ -262,6 +274,7 @@
         telefono: order.phone,
         comentarios: order.notes || '-',
         novedades: order.marketing ? 'sí' : 'no',
+        factura_completa: order.invoiceTaxId ? (order.invoiceName + ' · ' + order.invoiceTaxId + ' · ' + order.invoiceAddress) : 'no (simplificada)',
         idioma: l
       };
       return fetch('https://api.web3forms.com/submit', {
@@ -300,6 +313,7 @@
       $('tkWhen').textContent = whenText();
       $('tkTest').hidden = window.ROCE_PAYMENTS.enabled;
       $('ageRow').hidden = ev.env !== 'night';
+      $('invBox').hidden = ev.price_cents === 0;
     }
     function paintPrices() {
       var free = ev.price_cents === 0;
@@ -326,8 +340,9 @@
         [t('tk_r_contact'), o.email + '<br>' + esc(o.phone)],
         [t('tk_total'), total]
       ];
+      if (o.invoiceTaxId) rows.splice(6, 0, [t('tk_r_invoice'), o.invoiceName + '<br>' + o.invoiceTaxId + '<br>' + o.invoiceAddress]);
       $('review').innerHTML = rows.map(function (r, i) {
-        var val = i === 5 ? r[1].replace(o.email, esc(o.email)) : esc(r[1]);
+        var val = i === 5 ? r[1].replace(o.email, esc(o.email)) : (r[0] === t('tk_r_invoice') ? r[1].split('<br>').map(esc).join('<br>') : esc(r[1]));
         return '<div class="tk-row"><span class="tk-row-label">' + esc(r[0]) + '</span><span class="tk-row-value">' + val + '</span></div>';
       }).join('');
     }
@@ -367,6 +382,7 @@
 
     // ─── Paso 2 ─────────────────────────────────────────────────────────
     function fail(msg) { var e = $('dataError'); e.textContent = msg; e.hidden = false; }
+    $('fInv').addEventListener('change', function () { $('invFields').hidden = !$('fInv').checked; });
     $('back1').addEventListener('click', function () { history.back(); });
     $('dataForm').addEventListener('submit', function (e) {
       e.preventDefault();
@@ -375,13 +391,16 @@
       if (name.length < 3) { $('fName').focus(); return fail(t('tk_v_name')); }
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) { $('fEmail').focus(); return fail(t('tk_v_email')); }
       if (phone.replace(/\D/g, '').length < 9) { $('fPhone').focus(); return fail(t('tk_v_phone')); }
+      var invOn = ev.price_cents > 0 && $('fInv').checked;
+      if (invOn && ($('fInvName').value.trim().length < 2 || $('fInvAddr').value.trim().length < 5 || !/^[A-Za-z0-9.\-\s]{6,20}$/.test($('fInvTax').value.trim()))) { $('fInvName').focus(); return fail(t('tk_v_invoice')); }
       if (ev.env === 'night' && !$('fAge').checked) return fail(t('tk_v_age'));
       if (!$('fConsent').checked) return fail(t('tk_v_consent'));
       if ($('fBot').checked) return;
       state.order = {
         ref: newRef(), event: ev.id, qty: state.qty, lang: lang(),
         total_cents: ev.price_cents * state.qty,
-        name: name, email: email, phone: phone, notes: $('fNotes').value.trim(), marketing: $('fMarketing').checked
+        name: name, email: email, phone: phone, notes: $('fNotes').value.trim(), marketing: $('fMarketing').checked,
+        invoiceName: invOn ? $('fInvName').value.trim() : '', invoiceTaxId: invOn ? $('fInvTax').value.trim() : '', invoiceAddress: invOn ? $('fInvAddr').value.trim() : ''
       };
       show(3, true);
     });
