@@ -69,7 +69,7 @@
       return { es: money(r.price_cents, 'es') + ' por persona', en: money(r.price_cents, 'en') + ' per person' };
     }
     return {
-      id: r.id, env: r.env,
+      id: r.id, env: r.env, starts_at: r.starts_at,
       date: parts.year + '-' + parts.month + '-' + parts.day, time: parts.hour + ':' + parts.minute,
       duration_h: Number(r.duration_h), price_cents: r.price_cents, left: r.spots_left, max_per_order: r.max_per_order,
       place: { es: r.place_es, en: r.place_en || r.place_es },
@@ -101,6 +101,18 @@
     day: function (e) { return new Date(e.date + 'T12:00:00+01:00'); },
     fmt: function (e, lang, opts) { return new Intl.DateTimeFormat(lang, Object.assign({ timeZone: TZ }, opts)).format(this.day(e)); },
     money: money,
+
+    // Inicio y fin del evento (ms). Los de ejemplo no traen starts_at: se
+    // calculan con la fecha y la hora de Valencia.
+    bounds: function (e) {
+      var s = e.starts_at ? Date.parse(e.starts_at) : Date.parse(e.date + 'T' + e.time + ':00+01:00');
+      return [s, s + e.duration_h * 3600000];
+    },
+    // ¿Está en marcha ahora mismo?
+    isLive: function (e) {
+      var b = this.bounds(e), now = Date.now();
+      return now >= b[0] && now < b[1];
+    },
 
     // Reserva real en la base de datos (función book_event). Devuelve la
     // referencia, las plazas que quedan y el total, o rechaza con un código:
