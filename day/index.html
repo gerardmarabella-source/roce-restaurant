@@ -185,7 +185,7 @@
   .back-home { display: inline-flex; padding: 0.3rem; margin-left: -0.3rem; color: inherit; line-height: 0; transition: transform 0.2s ease; }
   .back-home:hover { transform: translateX(-4px); }
   .back-home svg { width: 2rem; height: 2rem; }
-  .teaser-nav .newsletter-toggle img { height: clamp(0.85rem, 2.6vw, 1.1rem); width: auto; }
+  .teaser-nav .newsletter-toggle img { display: block; height: clamp(0.85rem, 2.6vw, 1.1rem); width: auto; }
 
   /* Reservar mesa y Eventos: abajo a la izquierda, uno encima del otro. */
   .teaser-links { display: flex; flex-direction: column; align-items: flex-start; gap: 0.35rem; }
@@ -367,7 +367,7 @@
       <button class="teaser-cta teaser-cta-img newsletter-toggle" id="newsletterToggle" aria-label="Newsletter">
         <img src="/assets/logo/label-newsletter-black.png" alt="Newsletter">
         <svg class="newsletter-strike" viewBox="0 0 200 50" preserveAspectRatio="none" aria-hidden="true">
-          <path d="M6 23 C 40 19, 70 27, 100 22 S 160 18, 194 22" />
+          <path d="M6 26 C 40 22, 70 30, 100 25 S 160 21, 194 25" />
         </svg>
       </button>
       <div class="newsletter-body" id="newsletterBody">
