@@ -51,6 +51,9 @@ create table if not exists public.events (
   created_at     timestamptz not null default now()
 );
 
+-- Imagen de cabecera del evento (URL pública en el Storage de Supabase; vacío = sin imagen).
+alter table public.events add column if not exists image_url text not null default '';
+
 -- IVA del evento (%): el precio por entrada ya incluye el IVA.
 alter table public.events add column if not exists vat_percent numeric(4,1) not null default 10 check (vat_percent >= 0 and vat_percent <= 30);
 
@@ -154,12 +157,33 @@ select
         and (b.status = 'confirmed' or (b.status = 'pending' and b.created_at > now() - interval '30 minutes'))
     ), 0),
     0
-  )::int as spots_left
+  )::int as spots_left,
+  e.image_url
 from public.events e
 where e.published
   and e.starts_at + (e.duration_h * interval '1 hour') > now();
 
 grant select on public.events_public to anon, authenticated;
+
+-- Imágenes de los eventos: bucket público (se ven en la web) que solo los
+-- administradores pueden subir o borrar. Máx. 5 MB, solo JPG/PNG/WebP.
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values ('event-images', 'event-images', true, 5242880, array['image/jpeg', 'image/png', 'image/webp'])
+on conflict (id) do update
+  set public = true, file_size_limit = 5242880, allowed_mime_types = array['image/jpeg', 'image/png', 'image/webp'];
+
+drop policy if exists event_images_admin_select on storage.objects;
+create policy event_images_admin_select on storage.objects for select to authenticated
+  using (bucket_id = 'event-images' and public.is_admin());
+drop policy if exists event_images_admin_insert on storage.objects;
+create policy event_images_admin_insert on storage.objects for insert to authenticated
+  with check (bucket_id = 'event-images' and public.is_admin());
+drop policy if exists event_images_admin_update on storage.objects;
+create policy event_images_admin_update on storage.objects for update to authenticated
+  using (bucket_id = 'event-images' and public.is_admin()) with check (bucket_id = 'event-images' and public.is_admin());
+drop policy if exists event_images_admin_delete on storage.objects;
+create policy event_images_admin_delete on storage.objects for delete to authenticated
+  using (bucket_id = 'event-images' and public.is_admin());
 
 -- ─── Reservar (único camino del público para escribir) ───────────────────
 -- Bloquea el evento mientras comprueba el aforo, así dos personas a la vez

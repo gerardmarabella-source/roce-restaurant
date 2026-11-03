@@ -69,7 +69,7 @@
       return { es: money(r.price_cents, 'es') + ' por persona', en: money(r.price_cents, 'en') + ' per person' };
     }
     return {
-      id: r.id, env: r.env, starts_at: r.starts_at,
+      id: r.id, env: r.env, starts_at: r.starts_at, image: r.image_url || '',
       date: parts.year + '-' + parts.month + '-' + parts.day, time: parts.hour + ':' + parts.minute,
       duration_h: Number(r.duration_h), price_cents: r.price_cents, left: r.spots_left, max_per_order: r.max_per_order,
       place: { es: r.place_es, en: r.place_en || r.place_es },
@@ -101,6 +101,23 @@
     day: function (e) { return new Date(e.date + 'T12:00:00+01:00'); },
     fmt: function (e, lang, opts) { return new Intl.DateTimeFormat(lang, Object.assign({ timeZone: TZ }, opts)).format(this.day(e)); },
     money: money,
+
+    // Cartel del evento a pantalla completa (se cierra tocando o con Esc).
+    poster: function (src) {
+      if (!src) return;
+      if (!document.getElementById('rocePosterCss')) {
+        var st = document.createElement('style'); st.id = 'rocePosterCss';
+        st.textContent = '.roce-lightbox{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.88);cursor:zoom-out;padding:1rem}.roce-lightbox img{max-width:min(94vw,900px);max-height:92vh;object-fit:contain;box-shadow:0 0 0 1px rgba(255,255,255,.2)}';
+        document.head.appendChild(st);
+      }
+      var box = document.createElement('div'); box.className = 'roce-lightbox'; box.setAttribute('role', 'dialog');
+      var img = document.createElement('img'); img.src = src; img.alt = '';
+      box.appendChild(img);
+      function close() { box.remove(); document.removeEventListener('keydown', onKey); }
+      function onKey(e) { if (e.key === 'Escape') close(); }
+      box.addEventListener('click', close); document.addEventListener('keydown', onKey);
+      document.body.appendChild(box);
+    },
 
     // Inicio y fin del evento (ms). Los de ejemplo no traen starts_at: se
     // calculan con la fecha y la hora de Valencia.
