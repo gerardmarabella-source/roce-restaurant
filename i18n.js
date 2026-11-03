@@ -51,6 +51,8 @@
 
     // reservar.html
     reservar_h1: { es: 'Reserva<br>tu mesa', en: 'Book<br>your table' },
+    hours_day: { es: 'Day · Todos los días, de 10:00 a 20:00', en: 'Day · Every day, 10:00 – 20:00' },
+    hours_night: { es: 'Night · De miércoles a sábado, de 20:00 a 02:00', en: 'Night · Wednesday to Saturday, 20:00 – 02:00' },
     reservar_night: {
       es: 'Reservas de noche solo para mayores de 18 años',
       en: 'Night bookings are for guests aged 18 and over',
