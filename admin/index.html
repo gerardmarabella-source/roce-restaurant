@@ -65,6 +65,12 @@
   .ad-bar-cap { height: 6px; background: var(--line); margin-top: 0.5rem; }
   .ad-bar-cap i { display: block; height: 100%; background: var(--fg); }
 
+  /* Equipo */
+  .ad-sub { font-family: var(--display); font-weight: 400; font-size: 1.2rem; text-transform: uppercase; margin: 2rem 0 0.6rem; }
+  .ad-steps { margin: 0 0 1rem 1.2rem; font-size: 0.92rem; line-height: 1.5; }
+  .ad-steps a { text-decoration: underline; }
+  .ad-person { display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; align-items: center; justify-content: space-between; padding: 0.9rem 1rem; border: 1px solid var(--fg); }
+
   /* Reservas */
   .ad-table-wrap { overflow-x: auto; }
   table.ad-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
@@ -108,6 +114,7 @@
     <div class="ad-tabs">
       <button class="ad-tab" data-tab="events" aria-pressed="true" type="button">Eventos</button>
       <button class="ad-tab" data-tab="bookings" aria-pressed="false" type="button">Reservas</button>
+      <button class="ad-tab" data-tab="team" aria-pressed="false" type="button">Equipo</button>
     </div>
     <p class="ad-msg" id="appMsg" hidden></p>
 
@@ -130,6 +137,22 @@
         <th>Ref.</th><th>Evento</th><th>Nombre</th><th>Contacto</th><th>Entradas</th><th>Estado</th><th>Pago</th><th></th>
       </tr></thead><tbody id="bkBody"></tbody></table></div>
       <p class="ad-empty" id="bkEmpty" hidden>No hay reservas.</p>
+    </section>
+
+    <section id="tabTeam" hidden>
+      <p class="ad-meta" style="margin-bottom:1rem">Quien aparece aquí puede entrar en el panel y ver y editar eventos, reservas y facturas. Todos tienen los mismos permisos.</p>
+      <ul class="ad-list" id="teamList"></ul>
+      <form class="ad-sheet-inline" id="teamForm" autocomplete="off">
+        <h2 class="ad-sub">Añadir a alguien</h2>
+        <ol class="ad-steps">
+          <li>Crea su cuenta en <a id="sbUsers" href="#" target="_blank" rel="noopener">Supabase → Authentication → Users</a> (<em>Add user → Create new user</em>, email y contraseña, con “Auto Confirm User” marcado).</li>
+          <li>Escribe aquí el mismo email y pulsa <b>Dar acceso</b>.</li>
+        </ol>
+        <div class="ad-bar" style="justify-content:flex-start">
+          <input type="email" id="teamEmail" placeholder="persona@roce.es" required style="flex:1 1 15rem">
+          <button class="ad-btn" type="submit" id="teamAdd">Dar acceso</button>
+        </div>
+      </form>
     </section>
   </main>
 </div>
@@ -276,7 +299,8 @@
   document.querySelectorAll('.ad-tab').forEach(function (t) {
     t.addEventListener('click', function () {
       document.querySelectorAll('.ad-tab').forEach(function (x) { x.setAttribute('aria-pressed', x === t ? 'true' : 'false'); });
-      $('tabEvents').hidden = t.dataset.tab !== 'events'; $('tabBookings').hidden = t.dataset.tab !== 'bookings';
+      $('tabEvents').hidden = t.dataset.tab !== 'events'; $('tabBookings').hidden = t.dataset.tab !== 'bookings'; $('tabTeam').hidden = t.dataset.tab !== 'team';
+      if (t.dataset.tab === 'team') loadTeam();
     });
   });
 
@@ -425,6 +449,38 @@
     var csv = '﻿' + rows.map(function (r) { return r.map(function (c) { return '"' + String(c == null ? '' : c).replace(/"/g, '""') + '"'; }).join(';'); }).join('\r\n');
     var a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' })); a.download = 'reservas-roce.csv';
     document.body.appendChild(a); a.click(); a.remove();
+  });
+
+  // ─── Equipo ─────────────────────────────────────────────────────────
+  $('sbUsers').href = 'https://supabase.com/dashboard/project/' + cfg.url.replace(/^https:\/\/([^.]+)\..*$/, '$1') + '/auth/users';
+  function loadTeam() {
+    return api('rpc/admin_team', { method: 'POST', body: {} }).then(function (rows) {
+      var me = String(session.email).toLowerCase();
+      $('teamList').innerHTML = (rows || []).map(function (p) {
+        var mine = p.email.toLowerCase() === me;
+        return '<li class="ad-person"><div><b>' + esc(p.email) + '</b>' + (mine ? ' <span class="ad-tag">Tú</span>' : '') +
+          '<div class="ad-meta">' + (p.has_account
+            ? (p.last_sign_in ? 'Último acceso: ' + esc(fmtDate(p.last_sign_in, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })) : 'Cuenta creada, aún no ha entrado')
+            : '<span class="ad-tag is-red">Sin cuenta</span> Falta crearla en Supabase') + '</div></div>' +
+          (mine ? '' : '<button class="ad-btn is-small is-danger" data-email="' + esc(p.email) + '" type="button">Quitar acceso</button>') + '</li>';
+      }).join('');
+    }).catch(function (e) { flash('No se ha podido cargar el equipo: ' + e.message, 'error'); });
+  }
+  $('teamForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var email = $('teamEmail').value.trim().toLowerCase(); if (!email) return;
+    $('teamAdd').disabled = true;
+    api('admins', { method: 'POST', body: { email: email } }).then(function () {
+      $('teamEmail').value = ''; flash('Acceso concedido a ' + email + '.', 'ok'); return loadTeam();
+    }).catch(function (x) { flash(x.code === '23505' ? 'Esa persona ya tiene acceso.' : 'No se ha podido añadir: ' + x.message, 'error'); })
+      .then(function () { $('teamAdd').disabled = false; });
+  });
+  $('teamList').addEventListener('click', function (ev) {
+    var btn = ev.target.closest('button[data-email]'); if (!btn) return;
+    var email = btn.dataset.email;
+    if (!confirm('¿Quitar el acceso al panel a ' + email + '? Su cuenta sigue existiendo pero ya no podrá ver nada.')) return;
+    api('admins?email=eq.' + encodeURIComponent(email), { method: 'DELETE' }).then(function () { flash('Acceso retirado a ' + email + '.', 'ok'); return loadTeam(); })
+      .catch(function (x) { flash(x.message, 'error'); });
   });
 
   // ─── Arranque ───────────────────────────────────────────────────────

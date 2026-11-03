@@ -21,6 +21,10 @@ Todo es gratis para el volumen de un local.
 3. En **SQL Editor** ejecuta (con tu email): `insert into admins (email) values ('tu@email.com');`
    Repite para cada persona del equipo.
 
+   Las siguientes personas se añaden desde el propio panel (`roce.es/admin/` →
+   pestaña **Equipo**): primero se crea su cuenta en Supabase (paso 1) y luego se
+   le da acceso desde el panel, sin SQL.
+
 ## 4. Conectar la web
 En **Project Settings → API** copia:
 - **Project URL** → `url`

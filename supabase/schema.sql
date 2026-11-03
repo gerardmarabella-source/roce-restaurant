@@ -77,6 +77,33 @@ drop policy if exists admins_self on public.admins;
 create policy admins_self on public.admins for select to authenticated
   using (lower(email) = lower(coalesce(auth.jwt() ->> 'email', '')));
 
+-- Equipo: cualquier administrador ve la lista, añade y quita personas.
+-- No puede quitarse a sí mismo (así siempre queda al menos una persona).
+drop policy if exists admins_team_select on public.admins;
+create policy admins_team_select on public.admins for select to authenticated
+  using (public.is_admin());
+
+drop policy if exists admins_team_insert on public.admins;
+create policy admins_team_insert on public.admins for insert to authenticated
+  with check (public.is_admin() and email = lower(email) and email ~ '^[^@\s]+@[^@\s]+\.[^@\s]+$');
+
+drop policy if exists admins_team_delete on public.admins;
+create policy admins_team_delete on public.admins for delete to authenticated
+  using (public.is_admin() and lower(email) <> lower(coalesce(auth.jwt() ->> 'email', '')));
+
+-- Lista del equipo con el estado de su cuenta de acceso (solo administradores).
+create or replace function public.admin_team()
+returns table (email text, has_account boolean, last_sign_in timestamptz)
+language sql stable security definer set search_path = public, auth as $$
+  select a.email, u.id is not null, u.last_sign_in_at
+  from public.admins a
+  left join auth.users u on lower(u.email) = lower(a.email)
+  where public.is_admin()
+  order by a.email;
+$$;
+revoke all on function public.admin_team() from public, anon;
+grant execute on function public.admin_team() to authenticated;
+
 drop policy if exists events_admin_all on public.events;
 create policy events_admin_all on public.events for all to authenticated
   using (public.is_admin()) with check (public.is_admin());
