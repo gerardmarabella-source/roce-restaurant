@@ -160,58 +160,72 @@ a { color: inherit; }
   .topnav a:not(.nav-cta) { display: none; }
 }
 
-/* Aviso de cookies — centrado en toda la pantalla, como un aviso
-   modal, igual en todas las páginas del sitio. */
+/* Aviso de cookies — protagonista: ocupa la pantalla con un fondo oscurecido y una
+   tarjeta grande, con dos botones del mismo tamaño (aceptar / rechazar). En las
+   páginas legales va en modo compacto (abajo y sin bloquear) para poder leerlas. */
 .cookie-banner {
   position: fixed;
-  top: 50%;
-  left: 50%;
-  right: auto;
-  bottom: auto;
-  transform: translate(-50%, -50%);
+  inset: 0;
   z-index: 600;
-  max-width: 320px;
-  margin: 0;
-  background: var(--black);
-  color: var(--cream);
-  border-radius: 2px;
-  padding: 1.1rem 1.25rem;
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.28);
   display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  gap: 0.85rem;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+  background: rgba(0, 0, 0, 0.78);
+  -webkit-backdrop-filter: blur(5px);
+  backdrop-filter: blur(5px);
+  overflow-y: auto;
 }
 .cookie-banner.is-hidden { display: none; }
+html.cookie-open { overflow: hidden; }
 
-@media (max-width: 640px) {
-  .cookie-banner { max-width: min(320px, calc(100vw - 2.5rem)); }
-}
-
-.cookie-text { flex: 0 1 auto; font-size: 0.82rem; line-height: 1.5; }
-.cookie-text a { color: var(--camel); }
-
-.cookie-actions { display: flex; gap: 0.6rem; flex-shrink: 0; justify-content: flex-end; }
-
-.cookie-reject,
-.cookie-accept {
-  border: none;
-  border-radius: 2px;
-  padding: 0.55rem 1rem;
-  font-family: var(--body);
-  font-size: 0.8rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: transform 0.15s ease;
-}
-.cookie-reject {
-  background: transparent;
+.cookie-card {
+  width: min(100%, 30rem);
+  max-height: 100%;
+  overflow-y: auto;
+  background: var(--black);
   color: var(--cream);
   border: 1px solid rgba(236, 231, 221, 0.35);
+  padding: 1.75rem 1.5rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
 }
+.cookie-title {
+  font-family: var(--display);
+  font-size: clamp(1.9rem, 7vw, 2.6rem);
+  line-height: 0.95;
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+}
+.cookie-text { font-size: 0.92rem; line-height: 1.55; }
+.cookie-text a { color: var(--cream); text-decoration: underline; }
+
+.cookie-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+.cookie-reject,
+.cookie-accept {
+  min-height: 3.4rem;
+  padding: 0.8rem 1rem;
+  border: 2px solid var(--cream);
+  border-radius: 0;
+  font-family: var(--display);
+  font-size: 1.05rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: transform 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+.cookie-reject { background: transparent; color: var(--cream); }
 .cookie-accept { background: var(--cream); color: var(--black); }
-.cookie-reject:hover,
+.cookie-reject:hover { background: rgba(236, 231, 221, 0.12); }
 .cookie-accept:hover { transform: translateY(-1px); }
+
+/* Compacto (páginas legales): barra abajo que no tapa el texto. */
+.cookie-banner.is-compact { inset: auto 0 0 0; padding: 0.75rem; background: transparent; -webkit-backdrop-filter: none; backdrop-filter: none; pointer-events: none; overflow: visible; }
+.cookie-banner.is-compact .cookie-card { pointer-events: auto; width: min(100%, 38rem); padding: 1rem 1.1rem; gap: 0.7rem; margin: 0 auto; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35); }
+.cookie-banner.is-compact .cookie-title { font-size: 1.2rem; }
+.cookie-banner.is-compact .cookie-text { font-size: 0.82rem; }
+.cookie-banner.is-compact .cookie-reject, .cookie-banner.is-compact .cookie-accept { min-height: 2.8rem; font-size: 0.95rem; }
 
 /* Páginas legales (aviso legal, términos, cookies, privacidad) */
 .legal-wrapper { max-width: 760px; margin: 0 auto; padding: 8rem 1.5rem 5rem; }
