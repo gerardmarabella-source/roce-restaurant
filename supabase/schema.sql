@@ -8,12 +8,25 @@ create extension if not exists pgcrypto;
 create table if not exists public.admins (
   email text primary key
 );
+-- 'admin' gestiona el equipo (crear, cambiar contraseñas, quitar); 'staff' solo eventos y reservas.
+alter table public.admins add column if not exists role text not null default 'staff';
+alter table public.admins drop constraint if exists admins_role_check;
+alter table public.admins add constraint admins_role_check check (role in ('admin', 'staff'));
 
 create or replace function public.is_admin() returns boolean
 language sql stable security definer set search_path = public as $$
   select exists (
     select 1 from public.admins
     where lower(email) = lower(coalesce(auth.jwt() ->> 'email', ''))
+  );
+$$;
+
+-- ¿Puede gestionar el equipo? (solo role = 'admin')
+create or replace function public.can_manage_team() returns boolean
+language sql stable security definer set search_path = public as $$
+  select exists (
+    select 1 from public.admins
+    where role = 'admin' and lower(email) = lower(coalesce(auth.jwt() ->> 'email', ''))
   );
 $$;
 
@@ -77,29 +90,36 @@ drop policy if exists admins_self on public.admins;
 create policy admins_self on public.admins for select to authenticated
   using (lower(email) = lower(coalesce(auth.jwt() ->> 'email', '')));
 
--- Equipo: cualquier administrador ve la lista, añade y quita personas.
--- No puede quitarse a sí mismo (así siempre queda al menos una persona).
+-- Equipo: solo los administradores (role = 'admin') ven la lista, añaden, cambian
+-- el nivel y quitan personas. Nadie puede quitarse ni cambiarse el nivel a sí mismo
+-- (así siempre queda al menos un administrador).
 drop policy if exists admins_team_select on public.admins;
 create policy admins_team_select on public.admins for select to authenticated
-  using (public.is_admin());
+  using (public.can_manage_team());
 
 drop policy if exists admins_team_insert on public.admins;
 create policy admins_team_insert on public.admins for insert to authenticated
-  with check (public.is_admin() and email = lower(email) and email ~ '^[^@\s]+@[^@\s]+\.[^@\s]+$');
+  with check (public.can_manage_team() and email = lower(email) and email ~ '^[^@\s]+@[^@\s]+\.[^@\s]+$');
+
+drop policy if exists admins_team_update on public.admins;
+create policy admins_team_update on public.admins for update to authenticated
+  using (public.can_manage_team() and lower(email) <> lower(coalesce(auth.jwt() ->> 'email', '')))
+  with check (public.can_manage_team() and lower(email) <> lower(coalesce(auth.jwt() ->> 'email', '')));
 
 drop policy if exists admins_team_delete on public.admins;
 create policy admins_team_delete on public.admins for delete to authenticated
-  using (public.is_admin() and lower(email) <> lower(coalesce(auth.jwt() ->> 'email', '')));
+  using (public.can_manage_team() and lower(email) <> lower(coalesce(auth.jwt() ->> 'email', '')));
 
--- Lista del equipo con el estado de su cuenta de acceso (solo administradores).
-create or replace function public.admin_team()
-returns table (email text, has_account boolean, last_sign_in timestamptz)
+-- Lista del equipo con nivel y estado de la cuenta (solo administradores).
+drop function if exists public.admin_team();
+create function public.admin_team()
+returns table (email text, role text, has_account boolean, last_sign_in timestamptz)
 language sql stable security definer set search_path = public, auth as $$
-  select a.email, u.id is not null, u.last_sign_in_at
+  select a.email, a.role, u.id is not null, u.last_sign_in_at
   from public.admins a
   left join auth.users u on lower(u.email) = lower(a.email)
-  where public.is_admin()
-  order by a.email;
+  where public.can_manage_team()
+  order by (a.role = 'admin') desc, a.email;
 $$;
 revoke all on function public.admin_team() from public, anon;
 grant execute on function public.admin_team() to authenticated;

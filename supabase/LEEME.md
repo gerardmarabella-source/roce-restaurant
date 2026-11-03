@@ -18,11 +18,13 @@ Todo es gratis para el volumen de un local.
    marcando “Auto Confirm User”.
 2. **Authentication → Sign In / Providers**: desactiva **“Allow new users to sign up”**
    (para que nadie más pueda crearse una cuenta).
-3. En **SQL Editor** ejecuta (con tu email): `insert into admins (email) values ('tu@email.com');`
+3. En **SQL Editor** ejecuta (con tu email): `insert into admins (email, role) values ('tu@email.com', 'admin');`
    Repite para cada persona del equipo.
 
    Las siguientes personas se gestionan desde el propio panel (`roce.es/admin/` →
    pestaña **Equipo**): crear cuenta con contraseña, cambiarla o quitar el acceso.
+   Hay dos niveles: **Administrador** (gestiona el equipo) y **Equipo** (solo eventos,
+   reservas y su propia contraseña).
    Lo hace la Edge Function `admin-team` (despliégala igual que `booking-email`,
    con “Verify JWT” activado; no necesita secretos: Supabase le da la clave de servicio).
 
