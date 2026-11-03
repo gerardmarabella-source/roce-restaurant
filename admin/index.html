@@ -400,9 +400,19 @@
     else if (act === 'pub') api('events?id=eq.' + encodeURIComponent(e.id), { method: 'PATCH', body: { published: !e.published } }).then(function () { e.published = !e.published; renderEvents(); flash(e.published ? 'Evento publicado.' : 'Evento despublicado.', 'ok'); }).catch(function (x) { flash(x.message, 'error'); });
     else if (act === 'book') { document.querySelector('[data-tab="bookings"]').click(); $('bkEvent').value = e.id; renderBookings(); }
     else if (act === 'del') {
-      if (taken(e.id) > 0 || bookings.some(function (x) { return x.event_id === e.id; })) { flash('Este evento tiene reservas, no se puede borrar. Despublícalo para quitarlo de la web.', 'error'); return; }
-      if (!confirm('¿Borrar “' + e.title_es + '”? No se puede deshacer.')) return;
-      api('events?id=eq.' + encodeURIComponent(e.id), { method: 'DELETE' }).then(function () { events = events.filter(function (x) { return x.id !== e.id; }); renderEvents(); flash('Evento borrado.', 'ok'); }).catch(function (x) { flash(x.message, 'error'); });
+      var evb = bookings.filter(function (x) { return x.event_id === e.id; });
+      var withInvoice = evb.filter(function (x) { return invoiceOf(x); })[0];
+      var active = evb.filter(function (x) { return x.status !== 'cancelled'; });
+      var charged = evb.filter(function (x) { return x.payment_status === 'paid' || x.payment_status === 'refunded'; });
+      if (withInvoice) { flash('No se puede borrar: la reserva ' + withInvoice.ref + ' tiene la factura ' + invoiceOf(withInvoice).number + ' emitida y las facturas no se borran. Despublica el evento para quitarlo de la web.', 'error'); return; }
+      if (active.length) { flash('Este evento tiene ' + active.length + (active.length === 1 ? ' reserva activa' : ' reservas activas') + '. Cancélalas en Reservas para poder borrarlo, o despublícalo para quitarlo de la web.', 'error'); return; }
+      if (charged.length) { flash('Tiene reservas canceladas que ya estaban cobradas (' + charged.map(function (x) { return x.ref; }).join(', ') + '). Se conservan para tener el registro del cobro: despublica el evento para quitarlo de la web.', 'error'); return; }
+      var msg = evb.length ? '¿Borrar “' + e.title_es + '” y ' + (evb.length === 1 ? 'su reserva cancelada' : 'sus ' + evb.length + ' reservas canceladas') + '? No se puede deshacer.' : '¿Borrar “' + e.title_es + '”? No se puede deshacer.';
+      if (!confirm(msg)) return;
+      (evb.length ? api('bookings?event_id=eq.' + encodeURIComponent(e.id), { method: 'DELETE' }) : Promise.resolve())
+        .then(function () { return api('events?id=eq.' + encodeURIComponent(e.id), { method: 'DELETE' }); })
+        .then(function () { events = events.filter(function (x) { return x.id !== e.id; }); bookings = bookings.filter(function (x) { return x.event_id !== e.id; }); renderEvents(); renderBookingFilter(); renderBookings(); flash('Evento borrado.', 'ok'); })
+        .catch(function (x) { flash('No se ha podido borrar: ' + x.message, 'error'); });
     }
   });
 
