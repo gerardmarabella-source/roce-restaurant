@@ -151,7 +151,6 @@
     tk_confirm: { es: 'Confirmar reserva', en: 'Confirm booking' },
     tk_pay: { es: 'Pagar {total}', en: 'Pay {total}' },
     tk_pay_note: { es: 'Al continuar te llevamos al banco para pagar con tarjeta de forma segura. Tu plaza queda retenida durante 30 minutos.', en: "When you continue we'll take you to the bank to pay securely by card. Your spot is held for 30 minutes." },
-    tk_test_pay: { es: 'Entorno de pruebas del banco: no se cobra dinero real.', en: "Bank test environment: no real money is charged." },
     tk_redirecting: { es: 'Redirigiendo al banco…', en: 'Redirecting to the bank…' },
     tk_pay_wait: { es: 'Confirmando el pago…', en: 'Confirming the payment…' },
     tk_pay_wait_text: { es: 'Estamos esperando la confirmación del banco. No cierres esta página.', en: "We're waiting for the bank's confirmation. Please don't close this page." },

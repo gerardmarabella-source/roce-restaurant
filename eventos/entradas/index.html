@@ -234,7 +234,7 @@
   </div>
 </div>
 <script src="/cookies.js?v=4"></script>
-<script src="/i18n.js?v=71"></script>
+<script src="/i18n.js?v=72"></script>
 <script>
   window.ROCE_EVENTS_READY.then(function () {
     var U = window.ROCE_EVENT_UTIL;
@@ -356,8 +356,7 @@
       if (ev.price_cents === 0) {
         tb.hidden = true; // un evento gratuito no tiene nada que "probar"
       } else if (P.enabled) {
-        tb.hidden = P.env !== 'test';
-        tb.setAttribute('data-i18n', 'tk_test_pay'); tb.textContent = t('tk_test_pay');
+        tb.hidden = true; // pago con tarjeta activo: sin avisos de prueba
       } else {
         tb.hidden = false;
         tb.setAttribute('data-i18n', 'tk_test_banner'); tb.textContent = t('tk_test_banner');
