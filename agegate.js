@@ -1,6 +1,6 @@
-// Aviso de espacio +18 (Night y sus reservas de noche).
+// Aviso de espacio +16 (Night y sus reservas de noche).
 //
-// Una vez por visita (sessionStorage) se pide confirmar que se tiene 18 años o más.
+// Una vez por visita (sessionStorage) se pide confirmar que se tiene 16 años o más.
 // Es un aviso, no una verificación de edad. Si hay aviso de cookies sin resolver,
 // espera a que se cierre para no apilar dos avisos.
 //
@@ -18,10 +18,10 @@
     '.age-actions button{min-height:3.4rem;padding:.8rem 1rem;border:2px solid #ece7dd;border-radius:0;font-family:var(--display,"Helvetica Neue",Arial,sans-serif);font-size:1.05rem;letter-spacing:.04em;text-transform:uppercase;cursor:pointer}' +
     '.age-yes{background:#ece7dd;color:#0a0a0a}.age-no{background:transparent;color:#ece7dd}' +
     '@media (max-width:420px){.age-actions{grid-template-columns:1fr}}';
-  var BADGE = '<svg class="age-badge-lg" viewBox="0 0 100 100" role="img" aria-label="+18"><circle cx="50" cy="50" r="44" fill="#ffffff" stroke="#e5453a" stroke-width="9"/><text x="44" y="65" text-anchor="middle" font-family="\'Helvetica Neue Web\',\'Helvetica Neue\',Arial,sans-serif" font-weight="700" font-size="46" letter-spacing="-3" fill="#0a0a0a">18</text><text x="77" y="52" text-anchor="middle" font-family="\'Helvetica Neue Web\',\'Helvetica Neue\',Arial,sans-serif" font-weight="700" font-size="30" fill="#0a0a0a">+</text></svg>';
+  var BADGE = '<svg class="age-badge-lg" viewBox="0 0 100 100" role="img" aria-label="+16"><circle cx="50" cy="50" r="44" fill="#ffffff" stroke="#e5453a" stroke-width="9"/><text x="44" y="65" text-anchor="middle" font-family="\'Helvetica Neue Web\',\'Helvetica Neue\',Arial,sans-serif" font-weight="700" font-size="46" letter-spacing="-3" fill="#0a0a0a">16</text><text x="77" y="52" text-anchor="middle" font-family="\'Helvetica Neue Web\',\'Helvetica Neue\',Arial,sans-serif" font-weight="700" font-size="30" fill="#0a0a0a">+</text></svg>';
   var FALLBACK = {
-    es: { age_title: 'Estás entrando en un espacio +18', age_text: 'Night, y sus reservas de noche, son solo para mayores de 18 años. ¿Tienes 18 años o más?', age_yes: 'Sí, tengo 18 o más', age_no: 'No, ir a Day' },
-    en: { age_title: "You're entering an 18+ space", age_text: 'Night, and its evening bookings, are only for guests aged 18 and over. Are you 18 or older?', age_yes: "Yes, I'm 18 or older", age_no: 'No, take me to Day' }
+    es: { age_title: 'Estás entrando en un espacio +16', age_text: 'Night, y sus reservas de noche, son solo para mayores de 16 años. ¿Tienes 16 años o más?', age_yes: 'Sí, tengo 16 o más', age_no: 'No, ir a Day' },
+    en: { age_title: "You're entering an 16+ space", age_text: 'Night, and its evening bookings, are only for guests aged 16 and over. Are you 16 or older?', age_yes: "Yes, I'm 16 or older", age_no: 'No, take me to Day' }
   };
 
   function confirmed() { try { return sessionStorage.getItem(KEY) === '1'; } catch (e) { return false; } }

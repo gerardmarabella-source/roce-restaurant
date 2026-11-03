@@ -133,8 +133,6 @@
 
   /* Equipo */
   .ad-sub { font-family: var(--display); font-weight: 400; font-size: 1.2rem; text-transform: uppercase; margin: 2rem 0 0.6rem; }
-  .ad-steps { margin: 0 0 1rem 1.2rem; font-size: 0.92rem; line-height: 1.5; }
-  .ad-steps a { text-decoration: underline; }
   .ad-person { display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; align-items: center; justify-content: space-between; padding: 0.9rem 1rem; border: 1px solid var(--fg); }
 
   /* Reservas */
@@ -305,7 +303,7 @@
     <p class="ad-msg is-error" id="evFormMsg" hidden></p>
     <div class="ad-grid">
       <label class="ad-field"><span>Ambiente</span>
-        <select id="fEnv"><option value="day">Day</option><option value="night">Night (+18)</option></select></label>
+        <select id="fEnv"><option value="day">Day</option><option value="night">Night (+16)</option></select></label>
       <label class="ad-field"><span>Fecha y hora (Valencia)</span><input type="datetime-local" id="fStart" required></label>
       <label class="ad-field full"><span>Título (español)</span><input type="text" id="fTitleEs" required maxlength="80"></label>
       <label class="ad-field full"><span>Título (inglés)</span><input type="text" id="fTitleEn" maxlength="80"><p class="ad-hint">Si lo dejas vacío se usa el español.</p></label>
@@ -475,7 +473,7 @@
       return '<li class="ad-card' + (e.published ? '' : ' is-draft') + (past ? ' is-past' : '') + '">' +
         '<div class="ad-date"><b>' + esc(fmtDate(e.starts_at, { day: 'numeric' })) + '</b><span>' + esc(fmtDate(e.starts_at, { month: 'short' }).replace('.', '')) + '</span></div>' +
         '<div><div class="ad-name">' + esc(e.title_es) + '</div>' +
-        '<div class="ad-meta"><span class="ad-tag ' + e.env + '">' + (e.env === 'night' ? 'Night +18' : 'Day') + '</span>' +
+        '<div class="ad-meta"><span class="ad-tag ' + e.env + '">' + (e.env === 'night' ? 'Night +16' : 'Day') + '</span>' +
           '<span class="ad-tag ' + (e.published ? 'is-green' : 'is-red') + '">' + (e.published ? 'Publicado' : 'Borrador') + '</span>' +
           esc(fmtDate(e.starts_at, { weekday: 'short', hour: '2-digit', minute: '2-digit' })) + ' · ' + esc(money(e.price_cents)) + '</div>' +
         '<div class="ad-meta">' + t + ' de ' + e.capacity + ' plazas reservadas</div><div class="ad-bar-cap"><i style="width:' + pct + '%"></i></div></div>' +
