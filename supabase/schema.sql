@@ -75,6 +75,8 @@ create table if not exists public.bookings (
   created_at     timestamptz not null default now()
 );
 alter table public.bookings add column if not exists marketing_optin boolean not null default false;
+-- Momento en que se cobró (pasarela o a mano).
+alter table public.bookings add column if not exists paid_at timestamptz;
 -- Datos para factura completa (solo si el cliente la pide): nombre/razón social, NIF/CIF y dirección fiscal.
 alter table public.bookings add column if not exists invoice_name text not null default '';
 alter table public.bookings add column if not exists invoice_tax_id text not null default '';
@@ -143,7 +145,8 @@ select
   greatest(
     e.capacity - coalesce((
       select sum(b.qty) from public.bookings b
-      where b.event_id = e.id and b.status in ('pending', 'confirmed')
+      where b.event_id = e.id
+        and (b.status = 'confirmed' or (b.status = 'pending' and b.created_at > now() - interval '30 minutes'))
     ), 0),
     0
   )::int as spots_left
@@ -157,10 +160,12 @@ grant select on public.events_public to anon, authenticated;
 -- Bloquea el evento mientras comprueba el aforo, así dos personas a la vez
 -- no pueden pasarse de plazas.
 drop function if exists public.book_event(text, integer, text, text, text, text, text, boolean);
+drop function if exists public.book_event(text, integer, text, text, text, text, text, boolean, text, text, text);
 create or replace function public.book_event(
   p_event text, p_qty integer, p_name text, p_email text, p_phone text,
   p_notes text default '', p_lang text default 'es', p_marketing boolean default false,
-  p_invoice_name text default '', p_invoice_tax_id text default '', p_invoice_address text default ''
+  p_invoice_name text default '', p_invoice_tax_id text default '', p_invoice_address text default '',
+  p_online boolean default false
 ) returns table (o_ref text, o_spots_left integer, o_total_cents integer)
 language plpgsql security definer set search_path = public as $$
 declare
@@ -180,7 +185,9 @@ begin
   then raise exception 'bad_data'; end if;
 
   select coalesce(sum(b.qty), 0) into taken
-  from public.bookings b where b.event_id = ev.id and b.status in ('pending', 'confirmed');
+  from public.bookings b
+  where b.event_id = ev.id
+    and (b.status = 'confirmed' or (b.status = 'pending' and b.created_at > now() - interval '30 minutes'));
   if taken + p_qty > ev.capacity then raise exception 'sold_out'; end if;
 
   loop
@@ -197,7 +204,9 @@ begin
     left(coalesce(p_notes, ''), 500), case when p_lang = 'en' then 'en' else 'es' end,
     coalesce(p_marketing, false),
     left(trim(coalesce(p_invoice_name, '')), 150), left(upper(trim(coalesce(p_invoice_tax_id, ''))), 20), left(trim(coalesce(p_invoice_address, '')), 250),
-    ev.price_cents * p_qty, 'confirmed',
+    ev.price_cents * p_qty,
+    -- Con pago online la plaza queda retenida (30 min) hasta que el banco confirma el cobro.
+    case when p_online and ev.price_cents > 0 then 'pending' else 'confirmed' end,
     case when ev.price_cents = 0 then 'free' else 'pending' end
   );
 
@@ -205,8 +214,66 @@ begin
 end;
 $$;
 
-revoke all on function public.book_event(text, integer, text, text, text, text, text, boolean, text, text, text) from public;
-grant execute on function public.book_event(text, integer, text, text, text, text, text, boolean, text, text, text) to anon, authenticated;
+revoke all on function public.book_event(text, integer, text, text, text, text, text, boolean, text, text, text, boolean) from public;
+grant execute on function public.book_event(text, integer, text, text, text, text, text, boolean, text, text, text, boolean) to anon, authenticated;
+
+-- ─── Pagos con tarjeta (Redsys) ───────────────────────────────────────────
+-- Un intento de pago por fila (order_id es el número de pedido que ve Redsys).
+-- Los escribe solo la función "redsys" con la clave de servicio.
+create table if not exists public.payments (
+  order_id      text primary key,
+  booking_id    uuid not null references public.bookings(id) on delete cascade,
+  amount_cents  integer not null check (amount_cents > 0),
+  status        text not null default 'started' check (status in ('started', 'paid', 'failed')),
+  response_code text,
+  auth_code     text,
+  created_at    timestamptz not null default now(),
+  updated_at    timestamptz not null default now()
+);
+alter table public.payments enable row level security;
+drop policy if exists payments_admin_read on public.payments;
+create policy payments_admin_read on public.payments for select to authenticated using (public.is_admin());
+
+-- Confirma (o rechaza) un pago con la respuesta del banco. Es atómico y repetible:
+-- si Redsys avisa dos veces, la segunda no hace nada.
+create or replace function public.confirm_payment(p_order text, p_amount integer, p_response text, p_auth text)
+returns text
+language plpgsql security definer set search_path = public as $$
+declare
+  pay public.payments%rowtype;
+  v_ok boolean;
+  v_booking public.bookings%rowtype;
+begin
+  select * into pay from public.payments where order_id = p_order for update;
+  if not found then return 'unknown_order'; end if;
+  if pay.amount_cents <> p_amount then return 'amount_mismatch'; end if;
+  if pay.status = 'paid' then return 'already_paid'; end if;
+
+  v_ok := coalesce(p_response, '') ~ '^[0-9]{1,4}$' and p_response::integer between 0 and 99;
+  update public.payments
+     set status = case when v_ok then 'paid' else 'failed' end,
+         response_code = left(p_response, 10), auth_code = left(coalesce(p_auth, ''), 20), updated_at = now()
+   where order_id = p_order;
+  if not v_ok then return 'failed'; end if;
+
+  select * into v_booking from public.bookings where id = pay.booking_id for update;
+  if v_booking.status = 'cancelled' then return 'paid_but_cancelled'; end if; -- cobrado de una reserva anulada: hay que devolverlo
+  update public.bookings
+     set status = 'confirmed', payment_status = 'paid', paid_at = coalesce(paid_at, now())
+   where id = pay.booking_id and payment_status <> 'paid';
+  return 'paid';
+end;
+$$;
+revoke all on function public.confirm_payment(text, integer, text, text) from public, anon, authenticated;
+grant execute on function public.confirm_payment(text, integer, text, text) to service_role;
+
+-- Estado de pago de una reserva por su referencia (para la pantalla de vuelta del banco).
+create or replace function public.booking_status(p_ref text) returns text
+language sql stable security definer set search_path = public as $$
+  select coalesce((select payment_status from public.bookings where ref = p_ref), 'unknown');
+$$;
+revoke all on function public.booking_status(text) from public;
+grant execute on function public.booking_status(text) to anon, authenticated;
 
 -- ─── Facturas ─────────────────────────────────────────────────────────────
 -- Una factura por reserva de pago, que se emite cuando la reserva pasa a "paid".
