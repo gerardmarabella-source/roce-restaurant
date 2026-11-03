@@ -150,14 +150,7 @@ select
   e.id, e.env, e.starts_at, e.duration_h,
   e.title_es, e.title_en, e.desc_es, e.desc_en, e.place_es, e.place_en,
   e.price_cents, e.price_label_es, e.price_label_en, e.max_per_order,
-  greatest(
-    e.capacity - coalesce((
-      select sum(b.qty) from public.bookings b
-      where b.event_id = e.id
-        and (b.status = 'confirmed' or (b.status = 'pending' and b.created_at > now() - interval '30 minutes'))
-    ), 0),
-    0
-  )::int as spots_left,
+  greatest(e.capacity - public.event_taken(e.id), 0)::int as spots_left,
   e.image_url
 from public.events e
 where e.published
@@ -213,10 +206,7 @@ begin
      or length(regexp_replace(coalesce(p_phone, ''), '[^0-9]', '', 'g')) < 9
   then raise exception 'bad_data'; end if;
 
-  select coalesce(sum(b.qty), 0) into taken
-  from public.bookings b
-  where b.event_id = ev.id
-    and (b.status = 'confirmed' or (b.status = 'pending' and b.created_at > now() - interval '30 minutes'));
+  taken := public.event_taken(ev.id);
   if taken + p_qty > ev.capacity then raise exception 'sold_out'; end if;
 
   loop
@@ -303,6 +293,113 @@ language sql stable security definer set search_path = public as $$
 $$;
 revoke all on function public.booking_status(text) from public;
 grant execute on function public.booking_status(text) to anon, authenticated;
+
+-- ─── Listas de invitados (enlace para apuntar gente sin pasar por la pasarela) ─────
+-- Cada lista tiene un enlace secreto (token): quien lo recibe apunta el nombre de
+-- sus invitados hasta el máximo y la fecha de cierre. Entran gratis y cuentan en el
+-- aforo del evento. Las tablas solo las toca el panel; el público usa guest_list_get
+-- y guest_list_save con el token.
+create table if not exists public.guest_lists (
+  id           uuid primary key default gen_random_uuid(),
+  event_id     text not null references public.events(id) on delete restrict,
+  token        text not null unique default replace(gen_random_uuid()::text, '-', ''),
+  label        text not null check (length(trim(label)) >= 2),   -- p. ej. "Lista de Pedro"
+  max_people   integer not null check (max_people between 1 and 500),
+  closes_at    timestamptz not null,
+  closed       boolean not null default false,
+  note         text not null default '',                          -- mensaje para quien rellena la lista
+  host_name    text not null default '',                          -- lo rellena quien recibe el enlace
+  host_contact text not null default '',
+  created_at   timestamptz not null default now()
+);
+create table if not exists public.guest_list_entries (
+  id            uuid primary key default gen_random_uuid(),
+  list_id       uuid not null references public.guest_lists(id) on delete cascade,
+  name          text not null check (length(trim(name)) between 2 and 80),
+  checked_in    boolean not null default false,
+  checked_in_at timestamptz,
+  created_at    timestamptz not null default now()
+);
+create index if not exists guest_list_entries_list_idx on public.guest_list_entries(list_id);
+
+alter table public.guest_lists enable row level security;
+alter table public.guest_list_entries enable row level security;
+drop policy if exists guest_lists_admin_all on public.guest_lists;
+create policy guest_lists_admin_all on public.guest_lists for all to authenticated using (public.is_admin()) with check (public.is_admin());
+drop policy if exists guest_list_entries_admin_all on public.guest_list_entries;
+create policy guest_list_entries_admin_all on public.guest_list_entries for all to authenticated using (public.is_admin()) with check (public.is_admin());
+
+-- Plazas ocupadas de un evento: reservas confirmadas (o pendientes de pago hace menos
+-- de 30 min) más las personas apuntadas en listas.
+create or replace function public.event_taken(p_event text) returns integer
+language sql stable security definer set search_path = public as $$
+  select (coalesce((select sum(b.qty) from public.bookings b
+                    where b.event_id = p_event
+                      and (b.status = 'confirmed' or (b.status = 'pending' and b.created_at > now() - interval '30 minutes'))), 0)
+        + coalesce((select count(*) from public.guest_list_entries e join public.guest_lists l on l.id = e.list_id
+                    where l.event_id = p_event), 0))::integer;
+$$;
+
+-- Lo que ve quien abre el enlace de una lista.
+create or replace function public.guest_list_get(p_token text) returns jsonb
+language plpgsql stable security definer set search_path = public as $$
+declare l public.guest_lists%rowtype; ev public.events%rowtype; names jsonb;
+begin
+  select * into l from public.guest_lists where token = p_token;
+  if not found then return null; end if;
+  select * into ev from public.events where id = l.event_id;
+  select coalesce(jsonb_agg(e.name order by e.created_at), '[]'::jsonb) into names from public.guest_list_entries e where e.list_id = l.id;
+  return jsonb_build_object(
+    'label', l.label, 'note', l.note, 'max_people', l.max_people, 'closes_at', l.closes_at,
+    'closed', (l.closed or l.closes_at <= now() or ev.starts_at + (ev.duration_h * interval '1 hour') <= now()),
+    'host_name', l.host_name, 'host_contact', l.host_contact, 'names', names,
+    'event', jsonb_build_object('title_es', ev.title_es, 'title_en', ev.title_en, 'env', ev.env, 'starts_at', ev.starts_at,
+                                'duration_h', ev.duration_h, 'place_es', ev.place_es, 'place_en', ev.place_en, 'image_url', ev.image_url));
+end;
+$$;
+
+-- Guarda la lista tal como la deja quien tiene el enlace (sustituye a la anterior).
+-- Controla máximo, cierre y aforo con el evento bloqueado. Quien ya entró por la
+-- puerta no se borra.
+create or replace function public.guest_list_save(p_token text, p_host_name text, p_host_contact text, p_names text[])
+returns jsonb
+language plpgsql security definer set search_path = public as $$
+declare
+  l public.guest_lists%rowtype; ev public.events%rowtype;
+  clean text[]; kept integer; added integer; final_n integer;
+begin
+  select * into l from public.guest_lists where token = p_token for update;
+  if not found then raise exception 'list_not_found'; end if;
+  select * into ev from public.events where id = l.event_id for update;
+  if l.closed or l.closes_at <= now() or ev.starts_at + (ev.duration_h * interval '1 hour') <= now() then raise exception 'list_closed'; end if;
+  if length(trim(coalesce(p_host_name, ''))) < 2 or length(trim(coalesce(p_host_contact, ''))) < 5 then raise exception 'bad_data'; end if;
+
+  -- Nombres limpios, sin repetidos (sin distinguir mayúsculas) y en el orden en que llegaron.
+  select coalesce(array_agg(n order by first_pos), '{}') into clean from (
+    select min(left(trim(x.n), 80)) as n, min(x.pos) as first_pos
+    from unnest(coalesce(p_names, '{}')) with ordinality as x(n, pos)
+    where length(trim(x.n)) >= 2
+    group by lower(left(trim(x.n), 80))
+  ) q;
+
+  delete from public.guest_list_entries where list_id = l.id and not checked_in and lower(name) <> all (select lower(c) from unnest(clean) c);
+  select count(*) into kept from public.guest_list_entries where list_id = l.id;
+  select count(*) into added from unnest(clean) c where lower(c) not in (select lower(name) from public.guest_list_entries where list_id = l.id);
+  final_n := kept + added;
+  if final_n > l.max_people then raise exception 'too_many'; end if;
+  -- Tras borrar los que sobran, event_taken ya cuenta solo a los que se quedan.
+  if added > 0 and public.event_taken(ev.id) + added > ev.capacity then raise exception 'sold_out'; end if;
+
+  insert into public.guest_list_entries (list_id, name)
+  select l.id, c from unnest(clean) c where lower(c) not in (select lower(name) from public.guest_list_entries where list_id = l.id);
+  update public.guest_lists set host_name = left(trim(p_host_name), 80), host_contact = left(trim(p_host_contact), 120) where id = l.id;
+  return jsonb_build_object('ok', true, 'count', final_n);
+end;
+$$;
+revoke all on function public.guest_list_get(text) from public;
+revoke all on function public.guest_list_save(text, text, text, text[]) from public;
+grant execute on function public.guest_list_get(text) to anon, authenticated;
+grant execute on function public.guest_list_save(text, text, text, text[]) to anon, authenticated;
 
 -- ─── Facturas ─────────────────────────────────────────────────────────────
 -- Una factura por reserva de pago, que se emite cuando la reserva pasa a "paid".
