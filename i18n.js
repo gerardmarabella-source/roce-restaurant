@@ -26,7 +26,6 @@
     // Home (index.html)
 
     // Desplegable de Reservas (home)
-    menu_reservar_title: { es: 'Reservar', en: 'Book' },
     menu_alquiler_link: { es: 'Alquila el espacio', en: 'Rent the space' },
     menu_eventos_title: { es: 'Eventos', en: 'Events' },
     cta_reservar_mesa: { es: 'Reservar mesa', en: 'Book a table' },
@@ -187,8 +186,6 @@
     home_w3: { es: 'con', en: 'with' },
     home_w4: { es: 'un', en: 'a' },
     home_w5: { es: 'roce', en: 'roce' },
-    switch_to_day: { es: 'Ir a Day', en: 'Go to Day' },
-    switch_to_night: { es: 'Ir a Night', en: 'Go to Night' },
 
     // privacidad.html
     privacy_title: { es: 'Política de privacidad', en: 'Privacy Policy' },
