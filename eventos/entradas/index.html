@@ -11,7 +11,7 @@
 <link rel="icon" type="image/png" href="/assets/meta/favicon-32.png" sizes="32x32">
 <link rel="apple-touch-icon" href="/assets/meta/apple-touch-icon.png">
 <script src="/eventos/config.js?v=2"></script>
-<script src="/eventos/events.js?v=5"></script>
+<script src="/eventos/events.js?v=6"></script>
 <script>
   // El color de la página es el del ambiente del evento: Day claro, Night
   // oscuro. Hasta saber de qué evento se trata la página va oculta.
@@ -336,7 +336,7 @@
     function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
     function newRef() { var c = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789', s = ''; for (var i = 0; i < 6; i++) s += c[Math.floor(Math.random() * c.length)]; return 'ROCE-' + s; }
     function tickets(n) { return n + ' ' + (n === 1 ? t('tk_ticket_one') : t('tk_ticket_many')); }
-    function whenText() { return U.fmt(ev, lang(), { weekday: 'long', day: 'numeric', month: 'long' }) + ' · ' + ev.time + ' · ' + ev.place[lang()]; }
+    function whenText() { return U.fmt(ev, lang(), { weekday: 'long', day: 'numeric', month: 'long' }) + ' · ' + U.range(ev) + ' · ' + ev.place[lang()]; }
 
     document.querySelector('.tk-back').setAttribute('href', '/eventos/?f=' + ev.env);
 
@@ -383,7 +383,7 @@
       var total = o.total_cents === 0 ? t('tk_free') : U.money(o.total_cents, l);
       var rows = [
         [t('tk_r_event'), ev.title[l]],
-        [t('tk_r_date'), U.fmt(ev, l, { weekday: 'short', day: 'numeric', month: 'long' }) + ' · ' + ev.time],
+        [t('tk_r_date'), U.fmt(ev, l, { weekday: 'short', day: 'numeric', month: 'long' }) + ' · ' + U.range(ev)],
         [t('tk_r_place'), ev.place[l]],
         [t('tk_r_tickets'), tickets(o.qty)],
         [t('tk_r_holder'), o.name],

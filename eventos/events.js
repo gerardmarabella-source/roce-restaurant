@@ -125,6 +125,11 @@
       var s = e.starts_at ? Date.parse(e.starts_at) : Date.parse(e.date + 'T' + e.time + ':00+01:00');
       return [s, s + e.duration_h * 3600000];
     },
+    // "09:00 – 11:00" (hora de Valencia), a partir del inicio y la duración.
+    range: function (e) {
+      var b = this.bounds(e), f = new Intl.DateTimeFormat('es-ES', { timeZone: TZ, hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
+      return f.format(b[0]) + ' – ' + f.format(b[1]);
+    },
     // ¿Está en marcha ahora mismo?
     isLive: function (e) {
       var b = this.bounds(e), now = Date.now();
