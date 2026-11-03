@@ -117,7 +117,6 @@
     ev_all: { es: 'Todos', en: 'All' },
     ev_cta: { es: 'Reservar plaza', en: 'Get tickets' },
     ev_empty: { es: 'Muy pronto publicaremos aquí los próximos eventos.', en: 'We will soon publish the upcoming events here.' },
-    ev_demo: { es: 'Eventos de ejemplo: la agenda real llegará pronto.', en: 'Sample events: the real line-up is coming soon.' },
     // Compra de entradas / reserva de plaza (/eventos/entradas/)
     tk_back_events: { es: '← Eventos', en: '← Events' },
     tk_step1: { es: 'Entradas', en: 'Tickets' },
