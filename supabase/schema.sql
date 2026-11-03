@@ -89,6 +89,8 @@ alter table public.bookings add constraint bookings_checked_in_range check (chec
 alter table public.bookings add column if not exists invoice_name text not null default '';
 alter table public.bookings add column if not exists invoice_tax_id text not null default '';
 alter table public.bookings add column if not exists invoice_address text not null default '';
+-- DNI / NIE / pasaporte de quien compra (se pide en el formulario de entradas).
+alter table public.bookings add column if not exists dni text not null default '';
 create index if not exists bookings_event_idx on public.bookings(event_id);
 
 -- ─── Seguridad por filas (RLS) ────────────────────────────────────────────
@@ -183,11 +185,12 @@ create policy event_images_admin_delete on storage.objects for delete to authent
 -- no pueden pasarse de plazas.
 drop function if exists public.book_event(text, integer, text, text, text, text, text, boolean);
 drop function if exists public.book_event(text, integer, text, text, text, text, text, boolean, text, text, text);
+drop function if exists public.book_event(text, integer, text, text, text, text, text, boolean, text, text, text, boolean);
 create or replace function public.book_event(
   p_event text, p_qty integer, p_name text, p_email text, p_phone text,
   p_notes text default '', p_lang text default 'es', p_marketing boolean default false,
   p_invoice_name text default '', p_invoice_tax_id text default '', p_invoice_address text default '',
-  p_online boolean default false
+  p_online boolean default false, p_dni text default null
 ) returns table (o_ref text, o_spots_left integer, o_total_cents integer)
 language plpgsql security definer set search_path = public as $$
 declare
@@ -205,6 +208,8 @@ begin
      or coalesce(p_email, '') !~* '^[^@[:space:]]+@[^@[:space:]]+\.[^@[:space:]]{2,}$'
      or length(regexp_replace(coalesce(p_phone, ''), '[^0-9]', '', 'g')) < 9
   then raise exception 'bad_data'; end if;
+  -- DNI/NIE/pasaporte: si llega, debe tener entre 5 y 20 letras o números (la web siempre lo envía).
+  if p_dni is not null and upper(regexp_replace(p_dni, '[\s.\-]', '', 'g')) !~ '^[A-Z0-9]{5,20}$' then raise exception 'bad_data'; end if;
 
   taken := public.event_taken(ev.id);
   if taken + p_qty > ev.capacity then raise exception 'sold_out'; end if;
@@ -217,12 +222,13 @@ begin
     exit when not exists (select 1 from public.bookings b where b.ref = v_ref);
   end loop;
 
-  insert into public.bookings (ref, event_id, qty, name, email, phone, notes, lang, marketing_optin, invoice_name, invoice_tax_id, invoice_address, total_cents, status, payment_status)
+  insert into public.bookings (ref, event_id, qty, name, email, phone, notes, lang, marketing_optin, invoice_name, invoice_tax_id, invoice_address, dni, total_cents, status, payment_status)
   values (
     v_ref, ev.id, p_qty, trim(p_name), lower(trim(p_email)), trim(p_phone),
     left(coalesce(p_notes, ''), 500), case when p_lang = 'en' then 'en' else 'es' end,
     coalesce(p_marketing, false),
     left(trim(coalesce(p_invoice_name, '')), 150), left(upper(trim(coalesce(p_invoice_tax_id, ''))), 20), left(trim(coalesce(p_invoice_address, '')), 250),
+    left(upper(regexp_replace(coalesce(p_dni, ''), '[\s.\-]', '', 'g')), 20),
     ev.price_cents * p_qty,
     -- Con pago online la plaza queda retenida (30 min) hasta que el banco confirma el cobro.
     case when p_online and ev.price_cents > 0 then 'pending' else 'confirmed' end,
@@ -233,8 +239,8 @@ begin
 end;
 $$;
 
-revoke all on function public.book_event(text, integer, text, text, text, text, text, boolean, text, text, text, boolean) from public;
-grant execute on function public.book_event(text, integer, text, text, text, text, text, boolean, text, text, text, boolean) to anon, authenticated;
+revoke all on function public.book_event(text, integer, text, text, text, text, text, boolean, text, text, text, boolean, text) from public;
+grant execute on function public.book_event(text, integer, text, text, text, text, text, boolean, text, text, text, boolean, text) to anon, authenticated;
 
 -- ─── Pagos con tarjeta (Redsys) ───────────────────────────────────────────
 -- Un intento de pago por fila (order_id es el número de pedido que ve Redsys).

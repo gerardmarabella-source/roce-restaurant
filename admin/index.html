@@ -712,7 +712,7 @@
   $('bkEvent').addEventListener('change', renderBookings); $('bkSearch').addEventListener('input', renderBookings);
   function filteredBookings() {
     var id = $('bkEvent').value, q = $('bkSearch').value.trim().toLowerCase();
-    return bookings.filter(function (b) { return (!id || b.event_id === id) && (!q || (b.name + ' ' + b.email + ' ' + b.ref + ' ' + b.phone).toLowerCase().indexOf(q) !== -1); });
+    return bookings.filter(function (b) { return (!id || b.event_id === id) && (!q || (b.name + ' ' + b.email + ' ' + b.ref + ' ' + b.phone + ' ' + (b.dni || '')).toLowerCase().indexOf(q) !== -1); });
   }
   function invoiceOf(b) { var i = b.invoices; return Array.isArray(i) ? i[0] : i; }
   function invoiceCell(b) {
@@ -732,7 +732,7 @@
       return '<tr class="' + (b.status === 'cancelled' ? 'is-cancelled' : '') + '">' +
         '<td class="nowrap"><b>' + esc(b.ref) + '</b><br><span class="ad-meta">' + esc(fmtDate(b.created_at, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })) + '</span></td>' +
         '<td>' + esc(e ? e.title_es : b.event_id) + '</td>' +
-        '<td>' + esc(b.name) + (b.notes ? '<br><span class="ad-meta">' + esc(b.notes) + '</span>' : '') + '</td>' +
+        '<td>' + esc(b.name) + (b.dni ? '<br><span class="ad-meta">DNI ' + esc(b.dni) + '</span>' : '') + (b.notes ? '<br><span class="ad-meta">' + esc(b.notes) + '</span>' : '') + '</td>' +
         '<td>' + esc(b.email) + '<br>' + esc(b.phone) + (b.marketing_optin ? '<br><span class="ad-tag is-green">Quiere novedades</span>' : '') + '</td>' +
         '<td>' + b.qty + '<br><span class="ad-meta">' + esc(money(b.total_cents)) + '</span></td>' +
         '<td>' + esc(STATUS[b.status]) + '</td><td>' + esc(PAY[b.payment_status]) + invoiceCell(b) + '</td>' +
@@ -749,9 +749,9 @@
     api('bookings?id=eq.' + b.id, { method: 'PATCH', body: patch }).then(function () { Object.assign(b, patch); renderBookings(); renderEvents(); flash('Reserva actualizada.', 'ok'); }).catch(function (x) { flash(x.message, 'error'); });
   });
   $('bkCsv').addEventListener('click', function () {
-    var rows = [['Ref', 'Evento', 'Fecha evento', 'Nombre', 'Email', 'Teléfono', 'Entradas', 'Total €', 'Estado', 'Pago', 'Novedades', 'Comentarios', 'Reservado', 'Factura', 'Han venido']].concat(filteredBookings().map(function (b) {
+    var rows = [['Ref', 'Evento', 'Fecha evento', 'Nombre', 'Email', 'Teléfono', 'DNI', 'Entradas', 'Total €', 'Estado', 'Pago', 'Novedades', 'Comentarios', 'Reservado', 'Factura', 'Han venido']].concat(filteredBookings().map(function (b) {
       var e = eventById(b.event_id);
-      return [b.ref, e ? e.title_es : b.event_id, e ? fmtDate(e.starts_at, { dateStyle: 'short', timeStyle: 'short' }) : '', b.name, b.email, b.phone, b.qty, (b.total_cents / 100).toFixed(2).replace('.', ','), STATUS[b.status], PAY[b.payment_status], b.marketing_optin ? 'sí' : 'no', b.notes, fmtDate(b.created_at, { dateStyle: 'short', timeStyle: 'short' }), (invoiceOf(b) || {}).number || '', b.status === 'cancelled' ? '' : b.checked_in + '/' + b.qty];
+      return [b.ref, e ? e.title_es : b.event_id, e ? fmtDate(e.starts_at, { dateStyle: 'short', timeStyle: 'short' }) : '', b.name, b.email, b.phone, b.dni || '', b.qty, (b.total_cents / 100).toFixed(2).replace('.', ','), STATUS[b.status], PAY[b.payment_status], b.marketing_optin ? 'sí' : 'no', b.notes, fmtDate(b.created_at, { dateStyle: 'short', timeStyle: 'short' }), (invoiceOf(b) || {}).number || '', b.status === 'cancelled' ? '' : b.checked_in + '/' + b.qty];
     }));
     var csv = '﻿' + rows.map(function (r) { return r.map(function (c) { return '"' + String(c == null ? '' : c).replace(/"/g, '""') + '"'; }).join(';'); }).join('\r\n');
     var a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' })); a.download = 'reservas-roce.csv';
@@ -981,7 +981,7 @@
           '<button class="ck-step" data-id="' + b.id + '" data-act="plus" type="button" aria-label="Uno más"' + (b.checked_in >= b.qty ? ' disabled' : '') + '>+</button>' +
           '<button class="ck-main' + (done ? ' is-done' : '') + '" data-id="' + b.id + '" data-act="all" type="button">' + (done ? '✓ Todos' : 'Todos') + '</button>';
       return '<li class="ck-row' + (done ? ' is-in' : '') + (!done && !some && ended ? ' is-late' : '') + '">' +
-        '<div><div class="ck-name">' + esc(b.name) + '</div><div class="ck-meta">' + esc(b.ref) + ' · ' + b.qty + (b.qty === 1 ? ' entrada' : ' entradas') + ' · ' + pay + ' · ' + esc(state) +
+        '<div><div class="ck-name">' + esc(b.name) + '</div><div class="ck-meta">' + esc(b.ref) + (b.dni ? ' · DNI ' + esc(b.dni) : '') + ' · ' + b.qty + (b.qty === 1 ? ' entrada' : ' entradas') + ' · ' + pay + ' · ' + esc(state) +
           (b.notes ? '<br>' + esc(b.notes) : '') + '</div></div>' +
         '<div class="ck-controls">' + controls + '</div></li>';
     }).join('');
