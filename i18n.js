@@ -89,15 +89,6 @@
       es: 'Reservas de noche solo para mayores de 16 años',
       en: 'Night bookings are for guests aged 16 and over',
     },
-    consent_text: {
-      es: 'He leído y acepto la <a href="/privacidad.html" target="_blank" rel="noopener">política de privacidad</a>. ROCE podrá contactarme por email o teléfono sobre mi reserva y añadirme a su base de datos de clientes para futuras comunicaciones.',
-      en: 'I have read and accept the <a href="/privacidad.html" target="_blank" rel="noopener">privacy policy</a>. ROCE may contact me by email or phone about my booking and add me to its customer database for future communications.',
-    },
-    label_name: { es: 'Nombre', en: 'Name' },
-    placeholder_name: { es: 'Tu nombre', en: 'Your name' },
-    label_email: { es: 'Email', en: 'Email' },
-    placeholder_email: { es: 'tu@email.com', en: 'your@email.com' },
-    label_phone: { es: 'Teléfono', en: 'Phone' },
 
     // Aviso de grupos grandes (reservar.html)
     group_notice: {

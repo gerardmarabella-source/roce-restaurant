@@ -1,9 +1,9 @@
 // Agenda de eventos de ROCE: una sola fuente para la lista (/eventos/) y para
 // la compra de entradas (/eventos/entradas/).
 //
-// Con el panel conectado (eventos/config.js) los eventos salen de la base de
-// datos; si no, se usan los de ejemplo de abajo. Las páginas esperan a
-// ROCE_EVENTS_READY (una promesa con la lista) antes de pintar.
+// Los eventos salen de la base de datos (conexión en eventos/config.js); sin
+// conexión la lista queda vacía. Las páginas esperan a ROCE_EVENTS_READY (una
+// promesa con la lista) antes de pintar.
 //
 // Forma de cada evento:
 //   id, env ('day'|'night'), date (AAAA-MM-DD) y time (HH:MM) en hora de Valencia,
@@ -13,45 +13,6 @@
   var TZ = 'Europe/Madrid';
   var cfg = window.ROCE_BACKEND || {};
   var backend = !!(cfg.url && cfg.anonKey);
-
-  // Datos de ejemplo — solo se usan si el panel no está conectado.
-  var SAMPLE = [
-    {
-      id: 'brunch-vinilos', env: 'day', date: '2026-12-12', time: '11:00', duration_h: 4, price_cents: 0, left: 40, max_per_order: 6,
-      place: { es: 'Planta baja', en: 'Ground floor' },
-      title: { es: 'Brunch con vinilos', en: 'Brunch with vinyl' },
-      desc: { es: 'Sábado de brunch con una selección de vinilos de la casa y café de especialidad.', en: 'Saturday brunch with a selection of house vinyl and specialty coffee.' },
-      price: { es: 'Entrada libre', en: 'Free entry' }
-    },
-    {
-      id: 'taller-cafe', env: 'day', date: '2026-12-13', time: '12:00', duration_h: 2, price_cents: 2500, left: 12, max_per_order: 4,
-      place: { es: 'Planta baja · aforo 12', en: 'Ground floor · 12 seats' },
-      title: { es: 'Taller de café de especialidad', en: 'Specialty coffee workshop' },
-      desc: { es: 'Cata guiada y práctica de métodos de filtrado con nuestro equipo de barra.', en: 'Guided tasting and hands-on brewing methods with our bar team.' },
-      price: { es: '25 € por persona', en: '€25 per person' }
-    },
-    {
-      id: 'noche-jazz', env: 'night', date: '2026-12-17', time: '21:30', duration_h: 3, price_cents: 0, left: 30, max_per_order: 6,
-      place: { es: 'Primera planta', en: 'First floor' },
-      title: { es: 'Noche de jazz', en: 'Jazz night' },
-      desc: { es: 'Trío en directo entre plato y plato: jazz de toda la vida, sin manteles ni silencio.', en: 'A live trio between courses: classic jazz, no tablecloths, no hushed silence.' },
-      price: { es: 'Libre con consumición', en: 'Free with a drink' }
-    },
-    {
-      id: 'dj-primera-planta', env: 'night', date: '2026-12-18', time: '22:30', duration_h: 4, price_cents: 1000, left: 50, max_per_order: 6,
-      place: { es: 'Primera planta', en: 'First floor' },
-      title: { es: 'DJ set en la primera planta', en: 'DJ set upstairs' },
-      desc: { es: 'La barra abierta hasta tarde y un DJ invitado. Aforo reducido.', en: 'The bar stays open late with a guest DJ. Limited capacity.' },
-      price: { es: '10 € · incluye primera copa', en: '€10 · includes first drink' }
-    },
-    {
-      id: 'cena-maridaje', env: 'night', date: '2026-12-19', time: '21:00', duration_h: 3, price_cents: 5500, left: 4, max_per_order: 4,
-      place: { es: 'Primera planta', en: 'First floor' },
-      title: { es: 'Cena maridaje: vinos de autor', en: 'Pairing dinner: author wines' },
-      desc: { es: 'Menú degustación de cinco platos maridado con vinos de pequeños productores.', en: 'Five-course tasting menu paired with wines from small producers.' },
-      price: { es: '55 € por persona', en: '€55 per person' }
-    }
-  ];
 
   function money(cents, lang) {
     return (cents / 100).toLocaleString(lang === 'en' ? 'en-GB' : 'es-ES', { style: 'currency', currency: 'EUR', minimumFractionDigits: cents % 100 ? 2 : 0 });
@@ -88,7 +49,7 @@
       .then(function (rows) { list = rows.map(fromRow); return list; })
       .catch(function () { list = []; window.ROCE_EVENTS_ERROR = true; return list; });
   } else {
-    list = SAMPLE;
+    list = [];
     ready = Promise.resolve(list);
   }
 
@@ -153,10 +114,9 @@
       document.body.appendChild(box);
     },
 
-    // Inicio y fin del evento (ms). Los de ejemplo no traen starts_at: se
-    // calculan con la fecha y la hora de Valencia.
+    // Inicio y fin del evento (ms).
     bounds: function (e) {
-      var s = e.starts_at ? Date.parse(e.starts_at) : Date.parse(e.date + 'T' + e.time + ':00+01:00');
+      var s = Date.parse(e.starts_at);
       return [s, s + e.duration_h * 3600000];
     },
     // "09:00 – 11:00" (hora de Valencia), a partir del inicio y la duración.
