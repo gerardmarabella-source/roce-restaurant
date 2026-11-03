@@ -95,7 +95,7 @@
   /* Cabecera centrada: logo + leyenda, uno encima del otro. */
   .teaser-top {
     position: absolute;
-    top: 3.6rem;
+    top: 4.8rem;
     left: 0;
     right: 0;
     z-index: 4;
@@ -212,6 +212,7 @@
   /* Reservar mesa y Eventos: abajo a la izquierda, uno encima del otro. */
   .teaser-links { display: flex; flex-direction: column; align-items: flex-start; gap: 0.35rem; }
   .teaser-link { font-size: clamp(2rem, 5.2vw, 3.4rem); }
+  @media (min-width: 641px) { .teaser-link { font-size: clamp(3rem, 6.2vw, 5.2rem); } }
 
   /* Newsletter: el botón abre un plato encima de la página. */
   .newsletter-widget { position: relative; z-index: 200; color: var(--cream); }
