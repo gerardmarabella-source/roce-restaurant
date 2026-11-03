@@ -72,9 +72,21 @@
   .ad-img img { width: 100%; height: 100%; object-fit: cover; }
   .ad-img em { font-size: 0.85rem; opacity: 0.6; }
   .ad-img-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.5rem; }
-  .ad-img-fit { display: flex; flex-wrap: wrap; gap: 0.25rem 1.25rem; margin-top: 0.6rem; font-size: 0.88rem; }
-  .ad-img-fit label { display: flex; align-items: center; gap: 0.4rem; cursor: pointer; }
   .ad-img-actions label { cursor: pointer; }
+
+  /* Editor de encuadre */
+  .ad-modal.ie-modal { z-index: 150; align-items: center; }
+  .ie-sheet { max-width: 28rem; padding: 1rem; }
+  .ie-sheet h2 { font-size: 1.4rem; margin-bottom: 0.7rem; }
+  .ie-stage { position: relative; width: min(100%, 24rem, 52vh); margin: 0 auto; aspect-ratio: 1; border: 1px solid var(--fg); background: repeating-conic-gradient(#ddd 0 25%, #fff 0 50%) 50% / 16px 16px; touch-action: none; cursor: grab; overflow: hidden; }
+  .ie-stage.is-drag { cursor: grabbing; }
+  .ie-stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  .ie-zoom { display: flex; align-items: center; gap: 0.75rem; margin: 0.9rem 0 0.6rem; font-size: 0.78rem; letter-spacing: 0.06em; text-transform: uppercase; }
+  .ie-zoom input { flex: 1; width: auto; padding: 0; border: 0; accent-color: var(--fg); }
+  .ie-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; }
+  .ie-bg { display: flex; align-items: center; gap: 0.4rem; margin-left: auto; font-size: 0.78rem; letter-spacing: 0.06em; text-transform: uppercase; }
+  .ie-bg input { width: 2.6rem; height: 2rem; padding: 0; border: 1px solid var(--fg); background: none; cursor: pointer; }
+  .ie-actions { display: flex; justify-content: flex-end; gap: 0.6rem; margin-top: 1.1rem; }
 
   /* Asistencia (puerta del evento) */
   .ck-sum { margin: 0 0 0.75rem; }
@@ -225,6 +237,25 @@
 </div>
 
 <!-- Formulario de evento -->
+<!-- Editor de encuadre del cartel -->
+<div class="ad-modal ie-modal" id="ieModal" hidden>
+  <div class="ad-sheet ie-sheet" role="dialog" aria-modal="true" aria-label="Encuadrar cartel">
+    <h2>Encuadrar cartel</h2>
+    <div class="ie-stage" id="ieStage"><canvas id="ieCanvas"></canvas></div>
+    <p class="ad-hint">Arrastra para mover y usa el zoom (o pellizca / la rueda del ratón). Lo que ves es lo que se publica.</p>
+    <label class="ie-zoom"><span>Zoom</span><input type="range" id="ieZoom" min="0" max="100" value="0"></label>
+    <div class="ie-tools">
+      <button type="button" class="ad-btn is-ghost is-small" id="ieFit">Cartel entero</button>
+      <button type="button" class="ad-btn is-ghost is-small" id="ieFill">Rellenar</button>
+      <label class="ie-bg"><span>Fondo</span><input type="color" id="ieBg" value="#ffffff"></label>
+    </div>
+    <div class="ie-actions">
+      <button type="button" class="ad-btn is-ghost" id="ieCancel">Cancelar</button>
+      <button type="button" class="ad-btn" id="ieApply">Aplicar</button>
+    </div>
+  </div>
+</div>
+
 <div class="ad-modal" id="evModal" hidden>
   <form class="ad-sheet" id="evForm">
     <h2 id="evFormTitle">Nuevo evento</h2>
@@ -249,13 +280,10 @@
         <div class="ad-img-actions">
           <label class="ad-btn is-ghost is-small" for="fImgFile">Subir imagen</label>
           <input type="file" id="fImgFile" accept="image/jpeg,image/png,image/webp" hidden>
+          <button type="button" class="ad-btn is-ghost is-small" id="imgEdit" hidden>Encuadrar</button>
           <button type="button" class="ad-btn is-ghost is-small" id="imgRemove" hidden>Quitar</button>
         </div>
-        <div class="ad-img-fit" id="imgFit" hidden>
-          <label><input type="radio" name="imgFit" value="cover" checked> Recortar al centro</label>
-          <label><input type="radio" name="imgFit" value="contain"> Cartel entero (con bordes)</label>
-        </div>
-        <p class="ad-hint">Se muestra como un cuadrado pequeño (el cartel). Se recorta y se comprime sola, da igual lo que pese la foto.</p>
+        <p class="ad-hint">Se muestra como un cuadrado pequeño (el cartel). Con “Encuadrar” lo mueves y le haces zoom; se comprime sola, da igual lo que pese la foto.</p>
       </div>
       <label class="ad-field full"><span>Texto del precio (opcional)</span><input type="text" id="fLabelEs" placeholder="p. ej. 10 € · incluye primera copa"><p class="ad-hint">Si lo dejas vacío sale “Entrada libre” o “X € por persona”.</p></label>
       <label class="ad-field full"><span>Identificador en la dirección</span><input type="text" id="fId" pattern="[a-z0-9-]{3,60}" required><p class="ad-hint">Solo minúsculas, números y guiones. No se puede cambiar después.</p></label>
@@ -450,50 +478,108 @@
     var src = imgBlob ? imgPreview : imgUrl;
     $('imgPrev').hidden = !src; if (src) $('imgPrev').src = src;
     $('imgEmpty').hidden = !!src; $('imgRemove').hidden = !src;
-    $('imgFit').hidden = !imgFile;
+    $('imgEdit').hidden = !src;
   }
-  // Cuadrado de hasta 1200 px en JPG. "cover" recorta al centro; "contain" deja el
-  // cartel entero y rellena los bordes con el color de su esquina.
-  function squareImage(file, fit) {
+  // ─── Editor de encuadre ─────────────────────────────────────────────
+  // Se mueve y se hace zoom a la imagen dentro de un cuadrado; al aplicar se
+  // exporta a 1200×1200 en JPG (comprimido sola, pese lo que pese el original).
+  var ie = { img: null, S: 0, s: 1, ox: 0, oy: 0, fit: 1, fill: 1, max: 4, bg: '#ffffff', pts: {}, pinch: 0 };
+  function ieClamp() {
+    var w = ie.img.naturalWidth * ie.s, h = ie.img.naturalHeight * ie.s;
+    ie.ox = w <= ie.S ? (ie.S - w) / 2 : Math.min(0, Math.max(ie.S - w, ie.ox));
+    ie.oy = h <= ie.S ? (ie.S - h) / 2 : Math.min(0, Math.max(ie.S - h, ie.oy));
+  }
+  function ieDraw(ctx, f) {
+    ctx.fillStyle = ie.bg; ctx.fillRect(0, 0, ie.S * f, ie.S * f);
+    ctx.drawImage(ie.img, ie.ox * f, ie.oy * f, ie.img.naturalWidth * ie.s * f, ie.img.naturalHeight * ie.s * f);
+  }
+  function iePaint() {
+    var c = $('ieCanvas'), r = window.devicePixelRatio || 1; ie.S = $('ieStage').clientWidth;
+    c.width = Math.round(ie.S * r); c.height = Math.round(ie.S * r);
+    ieClamp(); ieDraw(c.getContext('2d'), r);
+    $('ieZoom').value = Math.round(100 * Math.log(ie.s / ie.fit) / Math.log(ie.max / ie.fit));
+  }
+  function ieZoomTo(s, cx, cy) { // zoom manteniendo fijo el punto (cx, cy) del cuadro
+    s = Math.min(ie.max, Math.max(ie.fit, s));
+    var k = s / ie.s; ie.ox = cx - (cx - ie.ox) * k; ie.oy = cy - (cy - ie.oy) * k; ie.s = s; iePaint();
+  }
+  function ieSetScale(s) { ie.s = s; ie.ox = (ie.S - ie.img.naturalWidth * s) / 2; ie.oy = (ie.S - ie.img.naturalHeight * s) / 2; iePaint(); }
+  function ieCornerColor() {
+    var t = document.createElement('canvas'); t.width = t.height = 1; var g = t.getContext('2d');
+    g.drawImage(ie.img, 0, 0, 1, 1, 0, 0, 1, 1); var d = g.getImageData(0, 0, 1, 1).data;
+    return '#' + [d[0], d[1], d[2]].map(function (v) { return ('0' + v.toString(16)).slice(-2); }).join('');
+  }
+  function openEditor(src) { // src: File o URL
+    var url = typeof src === 'string' ? src : URL.createObjectURL(src), img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = function () {
+      if (typeof src !== 'string') URL.revokeObjectURL(url);
+      ie.img = img; $('ieModal').hidden = false; ie.S = $('ieStage').clientWidth;
+      ie.fit = Math.min(ie.S / img.naturalWidth, ie.S / img.naturalHeight);
+      ie.fill = Math.max(ie.S / img.naturalWidth, ie.S / img.naturalHeight);
+      ie.max = Math.max(ie.fill * 4, ie.fit * 2);
+      try { ie.bg = ieCornerColor(); } catch (e) { ie.bg = '#ffffff'; }
+      $('ieBg').value = ie.bg; ieSetScale(ie.fill); // empieza rellenando el cuadrado
+    };
+    img.onerror = function () { $('evFormMsg').textContent = 'No se ha podido abrir la imagen.'; $('evFormMsg').hidden = false; };
+    img.src = url;
+  }
+  function ieExport() {
+    var size = 1200, f = size / ie.S, c = document.createElement('canvas'); c.width = c.height = size;
+    ieDraw(c.getContext('2d'), f);
     return new Promise(function (resolve, reject) {
-      var img = new Image(), url = URL.createObjectURL(file);
-      img.onload = function () {
-        var iw = img.naturalWidth, ih = img.naturalHeight;
-        var size = Math.min(1200, fit === 'cover' ? Math.min(iw, ih) : Math.max(iw, ih));
-        var c = document.createElement('canvas'); c.width = size; c.height = size;
-        var g = c.getContext('2d'), bg = '#fff';
-        if (fit === 'contain') {
-          var t = document.createElement('canvas'); t.width = t.height = 1; var tg = t.getContext('2d');
-          tg.drawImage(img, 0, 0, 1, 1, 0, 0, 1, 1); var d = tg.getImageData(0, 0, 1, 1).data; bg = 'rgb(' + d[0] + ',' + d[1] + ',' + d[2] + ')';
-        }
-        g.fillStyle = bg; g.fillRect(0, 0, size, size);
-        if (fit === 'cover') { var m = Math.min(iw, ih); g.drawImage(img, (iw - m) / 2, (ih - m) / 2, m, m, 0, 0, size, size); }
-        else { var sc = Math.min(size / iw, size / ih), w = iw * sc, h = ih * sc; g.drawImage(img, (size - w) / 2, (size - h) / 2, w, h); }
-        URL.revokeObjectURL(url);
-        (function encode(q) {
-          c.toBlob(function (blob) {
-            if (!blob) return reject(new Error('No se ha podido procesar la imagen.'));
-            if (blob.size > 900 * 1024 && q > 0.5) return encode(q - 0.15); // si pesa mucho, más compresión
-            resolve(blob);
-          }, 'image/jpeg', q);
-        })(0.85);
-      };
-      img.onerror = function () { URL.revokeObjectURL(url); reject(new Error('No se ha podido leer la imagen.')); };
-      img.src = url;
+      (function encode(q) {
+        c.toBlob(function (blob) {
+          if (!blob) return reject(new Error('No se ha podido procesar la imagen.'));
+          if (blob.size > 900 * 1024 && q > 0.5) return encode(q - 0.15);
+          resolve(blob);
+        }, 'image/jpeg', q);
+      })(0.85);
     });
   }
-  function processImage() {
-    var fit = (document.querySelector('input[name=imgFit]:checked') || {}).value || 'cover';
-    return squareImage(imgFile, fit).then(function (b) {
-      imgBlob = b; if (imgPreview) URL.revokeObjectURL(imgPreview); imgPreview = URL.createObjectURL(b); $('evFormMsg').hidden = true; paintImg();
-    }).catch(function (x) { $('evFormMsg').textContent = x.message; $('evFormMsg').hidden = false; });
-  }
+  $('ieZoom').addEventListener('input', function () {
+    var t = Number(this.value) / 100; ieZoomTo(ie.fit * Math.pow(ie.max / ie.fit, t), ie.S / 2, ie.S / 2);
+  });
+  $('ieFit').addEventListener('click', function () { ieSetScale(ie.fit); });
+  $('ieFill').addEventListener('click', function () { ieSetScale(ie.fill); });
+  $('ieBg').addEventListener('input', function () { ie.bg = this.value; iePaint(); });
+  $('ieStage').addEventListener('wheel', function (e) {
+    e.preventDefault(); var r = this.getBoundingClientRect();
+    ieZoomTo(ie.s * Math.exp(-e.deltaY * 0.0015), e.clientX - r.left, e.clientY - r.top);
+  }, { passive: false });
+  $('ieStage').addEventListener('pointerdown', function (e) {
+    this.setPointerCapture(e.pointerId); ie.pts[e.pointerId] = { x: e.clientX, y: e.clientY }; this.classList.add('is-drag');
+    var ids = Object.keys(ie.pts); if (ids.length === 2) ie.pinch = Math.hypot(ie.pts[ids[0]].x - ie.pts[ids[1]].x, ie.pts[ids[0]].y - ie.pts[ids[1]].y);
+  });
+  $('ieStage').addEventListener('pointermove', function (e) {
+    var p = ie.pts[e.pointerId]; if (!p) return; var ids = Object.keys(ie.pts);
+    if (ids.length === 2) { // pellizco
+      var a = ie.pts[ids[0]], b = ie.pts[ids[1]]; if (e.pointerId == ids[0]) a = { x: e.clientX, y: e.clientY }; else b = { x: e.clientX, y: e.clientY };
+      var d = Math.hypot(a.x - b.x, a.y - b.y), r = this.getBoundingClientRect();
+      if (ie.pinch) ieZoomTo(ie.s * d / ie.pinch, (a.x + b.x) / 2 - r.left, (a.y + b.y) / 2 - r.top);
+      ie.pinch = d;
+    } else { ie.ox += e.clientX - p.x; ie.oy += e.clientY - p.y; iePaint(); }
+    ie.pts[e.pointerId] = { x: e.clientX, y: e.clientY };
+  });
+  function ieUp(e) { delete ie.pts[e.pointerId]; ie.pinch = 0; if (!Object.keys(ie.pts).length) $('ieStage').classList.remove('is-drag'); }
+  $('ieStage').addEventListener('pointerup', ieUp); $('ieStage').addEventListener('pointercancel', ieUp);
+  $('ieCancel').addEventListener('click', function () { $('ieModal').hidden = true; if (!imgBlob && !imgUrl) { imgFile = null; $('fImgFile').value = ''; paintImg(); } });
+  $('ieApply').addEventListener('click', function () {
+    $('ieApply').disabled = true;
+    ieExport().then(function (b) {
+      imgBlob = b; if (imgPreview) URL.revokeObjectURL(imgPreview); imgPreview = URL.createObjectURL(b);
+      $('ieModal').hidden = true; $('evFormMsg').hidden = true; paintImg();
+    }).catch(function (x) { $('evFormMsg').textContent = x.message; $('evFormMsg').hidden = false; })
+      .then(function () { $('ieApply').disabled = false; });
+  });
+  window.addEventListener('resize', function () { if (!$('ieModal').hidden && ie.img) { var k = $('ieStage').clientWidth / ie.S; if (k && isFinite(k)) { ie.fit *= k; ie.fill *= k; ie.max *= k; ie.s *= k; ie.ox *= k; ie.oy *= k; } iePaint(); } });
+
   $('fImgFile').addEventListener('change', function () {
     var f = this.files && this.files[0]; if (!f) return;
     if (!/^image\/(jpeg|png|webp)$/.test(f.type)) { $('evFormMsg').textContent = 'La imagen debe ser JPG, PNG o WebP.'; $('evFormMsg').hidden = false; return; }
-    imgFile = f; processImage();
+    imgFile = f; openEditor(f);
   });
-  document.querySelectorAll('input[name=imgFit]').forEach(function (r) { r.addEventListener('change', function () { if (imgFile) processImage(); }); });
+  $('imgEdit').addEventListener('click', function () { openEditor(imgFile || imgUrl); });
   $('imgRemove').addEventListener('click', function () { imgBlob = null; imgFile = null; imgUrl = ''; $('fImgFile').value = ''; paintImg(); });
   function storageAuth() {
     var pre = session && session.expires_at < Date.now() ? refresh() : Promise.resolve();
@@ -526,7 +612,7 @@
     $('fPrice').value = v.price_cents / 100; $('fVat').value = v.vat_percent == null ? 10 : v.vat_percent; $('fDur').value = v.duration_h; $('fCap').value = v.capacity; $('fMax').value = v.max_per_order;
     $('fLabelEs').value = v.price_label_es; $('fPub').checked = editing ? v.published : false;
     $('fId').value = editing ? v.id : (asCopy ? '' : ''); $('fId').readOnly = !!editing;
-    imgUrl = v.image_url || ''; imgBlob = null; imgFile = null; $('fImgFile').value = ''; document.querySelector('input[name=imgFit][value=cover]').checked = true; paintImg();
+    imgUrl = v.image_url || ''; imgBlob = null; imgFile = null; $('fImgFile').value = ''; paintImg();
     $('evModal').hidden = false; document.body.style.overflow = 'hidden';
   }
   function closeForm() { $('evModal').hidden = true; document.body.style.overflow = ''; }
