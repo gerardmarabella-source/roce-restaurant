@@ -114,6 +114,15 @@
       document.body.appendChild(box);
     },
 
+    // Planta del evento con el texto de siempre, aunque en la base de datos se
+    // escribiera de otra forma ("Main floor", "primera planta"…). Vacío si no hay.
+    floor: function (e, lang) {
+      var raw = (e.place && (e.place.es || e.place.en)) || '';
+      if (!raw) return '';
+      var first = /primera|first|alta|upper/i.test(raw);
+      return lang === 'en' ? (first ? 'First floor' : 'Ground floor') : (first ? 'Primera planta' : 'Planta baja');
+    },
+
     // Inicio y fin del evento (ms).
     bounds: function (e) {
       var s = Date.parse(e.starts_at);

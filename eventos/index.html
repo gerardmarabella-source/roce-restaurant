@@ -182,9 +182,9 @@
   </div>
 </div>
 <script src="/cookies.js?v=4"></script>
-<script src="/i18n.js?v=77"></script>
+<script src="/i18n.js?v=78"></script>
 <script src="/eventos/config.js?v=2"></script>
-<script src="/eventos/events.js?v=9"></script>
+<script src="/eventos/events.js?v=10"></script>
 <script>
   // Los eventos están en /eventos/events.js (misma fuente que la compra de entradas).
   (function () {
@@ -226,7 +226,7 @@
           '<div class="ev-date"><span class="ev-date-wd">' + esc(wd) + '</span><span class="ev-date-day">' + esc(day) + '</span><span class="ev-date-mon">' + esc(mon) + '</span></div>' +
           '<div class="ev-info">' + (e.image ? '<button type="button" class="ev-poster" data-src="' + esc(e.image) + '" aria-label="Ver el cartel"><img src="' + esc(e.image) + '" alt="" loading="lazy"></button>' : '') + '<span class="ev-env">' + env + '</span>' +
             '<h2 class="ev-name">' + esc(e.title[l]) + '</h2>' +
-            '<p class="ev-meta">' + esc(U.range(e)) + ' · ' + esc(e.place[l]) + '</p>' +
+            '<p class="ev-meta">' + esc(U.range(e)) + (U.floor(e, l) ? ' · ' + esc(U.floor(e, l)) : '') + '</p>' +
             '<p class="ev-desc">' + esc(e.desc[l]) + '</p></div>' +
           '<div class="ev-buy"><span class="ev-price">' + esc(e.price[l]) + '</span>' + cta + '</div>' +
           '</li>';

@@ -309,8 +309,9 @@
       <label class="ad-field full"><span>Título (inglés)</span><input type="text" id="fTitleEn" maxlength="80"><p class="ad-hint">Si lo dejas vacío se usa el español.</p></label>
       <label class="ad-field full"><span>Descripción (español)</span><textarea id="fDescEs" maxlength="400"></textarea></label>
       <label class="ad-field full"><span>Descripción (inglés)</span><textarea id="fDescEn" maxlength="400"></textarea></label>
-      <label class="ad-field"><span>Lugar (español)</span><input type="text" id="fPlaceEs" placeholder="Primera planta"></label>
-      <label class="ad-field"><span>Lugar (inglés)</span><input type="text" id="fPlaceEn" placeholder="First floor"></label>
+      <label class="ad-field full"><span>Planta del evento</span>
+        <select id="fFloor"><option value="ground">Planta baja</option><option value="first">Primera planta</option></select>
+        <p class="ad-hint">El lugar siempre es ROCE (Marqués del Túria 16, Valencia); aquí eliges en qué planta es.</p></label>
       <label class="ad-field"><span>Precio por entrada (€)</span><input type="number" id="fPrice" min="0" step="0.5" value="0" required><p class="ad-hint">0 = gratis.</p></label>
       <label class="ad-field"><span>IVA incluido en el precio (%)</span><input type="number" id="fVat" min="0" max="30" step="0.5" value="10" required><p class="ad-hint">Confírmalo con la gestoría: se usa en las facturas.</p></label>
       <label class="ad-field"><span>Duración (horas)</span><input type="number" id="fDur" min="0.5" step="0.5" value="2" required></label>
@@ -646,6 +647,10 @@
     storageAuth().then(function (h) { return fetch(cfg.url + '/storage/v1/object/event-images/' + m[1], { method: 'DELETE', headers: h }); }).catch(function () {});
   }
 
+  // La planta solo puede ser una de estas dos (se guarda en place_es / place_en).
+  var FLOORS = { ground: { es: 'Planta baja', en: 'Ground floor' }, first: { es: 'Primera planta', en: 'First floor' } };
+  function floorKey(es) { return /primera|first|alta|upper/i.test(es || '') ? 'first' : 'ground'; }
+
   function openForm(e, asCopy) {
     editing = e && !asCopy ? e : null;
     $('evFormTitle').textContent = editing ? 'Editar evento' : (asCopy ? 'Duplicar evento' : 'Nuevo evento');
@@ -653,7 +658,7 @@
     var v = e || { env: 'day', starts_at: '', title_es: '', title_en: '', desc_es: '', desc_en: '', place_es: '', place_en: '', price_cents: 0, price_label_es: '', duration_h: 2, capacity: 30, max_per_order: 6, published: false, id: '' };
     $('fEnv').value = v.env; $('fStart').value = asCopy || !v.starts_at ? '' : toInputValue(v.starts_at);
     $('fTitleEs').value = v.title_es; $('fTitleEn').value = v.title_en; $('fDescEs').value = v.desc_es; $('fDescEn').value = v.desc_en;
-    $('fPlaceEs').value = v.place_es; $('fPlaceEn').value = v.place_en;
+    $('fFloor').value = floorKey(v.place_es);
     $('fPrice').value = v.price_cents / 100; $('fVat').value = v.vat_percent == null ? 10 : v.vat_percent; $('fDur').value = v.duration_h; $('fCap').value = v.capacity; $('fMax').value = v.max_per_order;
     $('fLabelEs').value = v.price_label_es; $('fPub').checked = editing ? v.published : false;
     $('fId').value = editing ? v.id : (asCopy ? '' : ''); $('fId').readOnly = !!editing;
@@ -672,7 +677,7 @@
     var row = {
       env: $('fEnv').value, starts_at: madridToISO($('fStart').value),
       duration_h: Number($('fDur').value), title_es: $('fTitleEs').value.trim(), title_en: $('fTitleEn').value.trim(),
-      desc_es: $('fDescEs').value.trim(), desc_en: $('fDescEn').value.trim(), place_es: $('fPlaceEs').value.trim(), place_en: $('fPlaceEn').value.trim(),
+      desc_es: $('fDescEs').value.trim(), desc_en: $('fDescEn').value.trim(), place_es: FLOORS[$('fFloor').value].es, place_en: FLOORS[$('fFloor').value].en,
       price_cents: Math.round(Number($('fPrice').value) * 100), vat_percent: Number($('fVat').value), price_label_es: $('fLabelEs').value.trim(), price_label_en: '',
       capacity: Math.round(Number($('fCap').value)), max_per_order: Math.round(Number($('fMax').value)), published: $('fPub').checked
     };
