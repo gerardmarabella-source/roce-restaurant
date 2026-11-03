@@ -101,7 +101,8 @@
   .home-statement {
     font-family: var(--display);
     font-weight: 400;
-    font-size: min(19vw, 10.5rem, calc((var(--avail) - 2 * var(--sh) - var(--gap) - 1.25rem) / 3.9));
+    font-size: min(19vw, 14rem, calc((var(--avail) - 2 * var(--sh) - var(--gap) - 1.25rem) / 3.9));
+    max-width: 5.2em; /* el escalonado se mide en la letra, no en la pantalla: las palabras no se alejan en tablet */
     line-height: 0.84;
     letter-spacing: -0.02em;
     text-transform: uppercase;
@@ -201,6 +202,11 @@
   .home-foot a:hover { text-decoration: underline; }
   .home-foot .lang-switch { display: flex; justify-content: center; margin-bottom: 0.25rem; }
 
+  /* Tablet vertical: bloques algo más bajos para que la frase pueda crecer con el ancho. */
+  @media (min-width: 600px) and (max-aspect-ratio: 5/4) {
+    .home-main { --sh: min(calc(var(--sw) * 0.62), calc(var(--avail) * 0.18)); }
+  }
+
   /* Horizontal (escritorio, móvil tumbado): frase a la izquierda y los dos
      cuadrados apilados a la derecha. */
   @media (min-aspect-ratio: 5/4) {
@@ -215,6 +221,7 @@
       gap: 2rem;
     }
     .home-statement {
+      max-width: none;
       flex: 1;
       min-width: 0;
       font-size: min(10.5rem, calc(var(--avail) / 3.5), calc((100vw - 2 * var(--pad) - var(--s) - 2rem) / 4.4));
