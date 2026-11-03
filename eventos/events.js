@@ -69,7 +69,7 @@
       return { es: money(r.price_cents, 'es') + ' por persona', en: money(r.price_cents, 'en') + ' per person' };
     }
     return {
-      id: r.id, env: r.env, starts_at: r.starts_at,
+      id: r.id, env: r.env, starts_at: r.starts_at, image: r.image_url || '',
       date: parts.year + '-' + parts.month + '-' + parts.day, time: parts.hour + ':' + parts.minute,
       duration_h: Number(r.duration_h), price_cents: r.price_cents, left: r.spots_left, max_per_order: r.max_per_order,
       place: { es: r.place_es, en: r.place_en || r.place_es },
@@ -102,11 +102,67 @@
     fmt: function (e, lang, opts) { return new Intl.DateTimeFormat(lang, Object.assign({ timeZone: TZ }, opts)).format(this.day(e)); },
     money: money,
 
+    // Texto que no cabe: circula en bucle, siempre en el mismo sentido, con un punto
+    // entre una vuelta y la siguiente. Si cabe, queda quieto. Respeta "reducir movimiento".
+    setMarquee: function (box, text) {
+      if (!document.getElementById('roceMarqueeCss')) {
+        var st = document.createElement('style'); st.id = 'roceMarqueeCss';
+        st.textContent = '.mq{display:inline-block;white-space:nowrap}.mq-on{text-overflow:clip!important}.mq-on .mq{animation:mqLoop var(--mq-dur,10s) linear infinite}@keyframes mqLoop{from{transform:translateX(0)}to{transform:translateX(calc(-1*var(--mq-cycle)))}}';
+        document.head.appendChild(st);
+      }
+      var inner = box.querySelector('.mq');
+      if (!inner) { inner = document.createElement('span'); inner.className = 'mq'; box.textContent = ''; box.appendChild(inner); }
+      function measure() {
+        box.classList.remove('mq-on'); inner.style.removeProperty('--mq-cycle');
+        inner.textContent = text;
+        var over = inner.offsetWidth - box.clientWidth;
+        if (over <= 4 || (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches)) return;
+        // Dos copias seguidas: al desplazar exactamente una vuelta, la segunda ocupa el sitio de la primera.
+        inner.textContent = '';
+        var one = document.createElement('span'); one.textContent = text + '\u00A0\u00A0\u00A0·\u00A0\u00A0\u00A0';
+        inner.appendChild(one);
+        var cycle = one.offsetWidth;
+        inner.appendChild(one.cloneNode(true));
+        inner.style.setProperty('--mq-cycle', cycle + 'px');
+        inner.style.setProperty('--mq-dur', Math.max(6, cycle / 38).toFixed(1) + 's'); // ~38 px/s
+        box.classList.add('mq-on');
+      }
+      box.__mqMeasure = measure;
+      requestAnimationFrame(measure);
+      if (!window.__mqResize) {
+        window.__mqResize = true;
+        window.addEventListener('resize', function () { document.querySelectorAll('[data-mq]').forEach(function (b) { if (b.__mqMeasure) b.__mqMeasure(); }); });
+      }
+      box.setAttribute('data-mq', '');
+    },
+
+    // Cartel del evento a pantalla completa (se cierra tocando o con Esc).
+    poster: function (src) {
+      if (!src) return;
+      if (!document.getElementById('rocePosterCss')) {
+        var st = document.createElement('style'); st.id = 'rocePosterCss';
+        st.textContent = '.roce-lightbox{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.88);cursor:zoom-out;padding:1rem}.roce-lightbox img{max-width:min(94vw,900px);max-height:92vh;object-fit:contain;box-shadow:0 0 0 1px rgba(255,255,255,.2)}';
+        document.head.appendChild(st);
+      }
+      var box = document.createElement('div'); box.className = 'roce-lightbox'; box.setAttribute('role', 'dialog');
+      var img = document.createElement('img'); img.src = src; img.alt = '';
+      box.appendChild(img);
+      function close() { box.remove(); document.removeEventListener('keydown', onKey); }
+      function onKey(e) { if (e.key === 'Escape') close(); }
+      box.addEventListener('click', close); document.addEventListener('keydown', onKey);
+      document.body.appendChild(box);
+    },
+
     // Inicio y fin del evento (ms). Los de ejemplo no traen starts_at: se
     // calculan con la fecha y la hora de Valencia.
     bounds: function (e) {
       var s = e.starts_at ? Date.parse(e.starts_at) : Date.parse(e.date + 'T' + e.time + ':00+01:00');
       return [s, s + e.duration_h * 3600000];
+    },
+    // "09:00 – 11:00" (hora de Valencia), a partir del inicio y la duración.
+    range: function (e) {
+      var b = this.bounds(e), f = new Intl.DateTimeFormat('es-ES', { timeZone: TZ, hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
+      return f.format(b[0]) + ' – ' + f.format(b[1]);
     },
     // ¿Está en marcha ahora mismo?
     isLive: function (e) {

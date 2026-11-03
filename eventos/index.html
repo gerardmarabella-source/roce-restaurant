@@ -79,16 +79,19 @@
 
   .ev-list { list-style: none; display: grid; gap: 1rem; }
   .ev-card {
+    --card-pad: 1.5rem;
     display: grid;
     grid-template-columns: auto 1fr auto;
     align-items: center;
     gap: 1rem 1.75rem;
-    padding: 1.5rem;
+    padding: var(--card-pad);
     border: 2px solid var(--black);
   }
   .ev-card[data-env="day"] { background: var(--white); color: var(--black); }
   .ev-card[data-env="night"] { background: var(--black); color: var(--white); border-color: var(--white); }
 
+  .ev-poster { float: right; width: 8.5rem; height: 8.5rem; margin: 0 0 0.6rem 1rem; padding: 0; border: 1px solid currentColor; background: none; color: inherit; cursor: zoom-in; }
+  .ev-poster img { display: block; width: 100%; height: 100%; object-fit: cover; }
   .ev-date { min-width: 4.5rem; text-align: center; font-family: var(--display); text-transform: uppercase; line-height: 1; }
   .ev-date-wd { display: block; font-size: 0.85rem; letter-spacing: 0.06em; opacity: 0.65; }
   .ev-date-day { display: block; margin: 0.15rem 0; font-size: clamp(3.2rem, 9vw, 4.6rem); letter-spacing: -0.02em; }
@@ -136,7 +139,8 @@
 
 
   @media (max-width: 640px) {
-    .ev-card { grid-template-columns: auto 1fr; padding: 1.1rem; }
+    .ev-card { grid-template-columns: auto 1fr; --card-pad: 1.1rem; }
+    .ev-poster { width: 6.5rem; height: 6.5rem; margin-left: 0.75rem; }
     .ev-buy { grid-column: 1 / -1; flex-direction: row; align-items: center; justify-content: space-between; text-align: left; }
   }
 </style>
@@ -181,7 +185,7 @@
 <script src="/cookies.js?v=3"></script>
 <script src="/i18n.js?v=70"></script>
 <script src="/eventos/config.js?v=2"></script>
-<script src="/eventos/events.js?v=3"></script>
+<script src="/eventos/events.js?v=8"></script>
 <script>
   // Los eventos están en /eventos/events.js (misma fuente que la compra de entradas).
   (function () {
@@ -222,9 +226,9 @@
           : '<a class="ev-cta" href="/eventos/entradas/?e=' + encodeURIComponent(e.id) + '">' + esc(t('ev_cta', 'Reservar plaza')) + '</a>';
         return '<li class="ev-card" data-env="' + e.env + '">' +
           '<div class="ev-date"><span class="ev-date-wd">' + esc(wd) + '</span><span class="ev-date-day">' + esc(day) + '</span><span class="ev-date-mon">' + esc(mon) + '</span></div>' +
-          '<div class="ev-info"><span class="ev-env">' + env + '</span>' +
+          '<div class="ev-info">' + (e.image ? '<button type="button" class="ev-poster" data-src="' + esc(e.image) + '" aria-label="Ver el cartel"><img src="' + esc(e.image) + '" alt="" loading="lazy"></button>' : '') + '<span class="ev-env">' + env + '</span>' +
             '<h2 class="ev-name">' + esc(e.title[l]) + '</h2>' +
-            '<p class="ev-meta">' + esc(e.time) + ' · ' + esc(e.place[l]) + '</p>' +
+            '<p class="ev-meta">' + esc(U.range(e)) + ' · ' + esc(e.place[l]) + '</p>' +
             '<p class="ev-desc">' + esc(e.desc[l]) + '</p></div>' +
           '<div class="ev-buy"><span class="ev-price">' + esc(e.price[l]) + '</span>' + low + cta + '</div>' +
           '</li>';
@@ -242,6 +246,9 @@
       });
     });
 
+    list.addEventListener('click', function (ev) {
+      var b = ev.target.closest('.ev-poster'); if (b) U.poster(b.getAttribute('data-src'));
+    });
     document.addEventListener('roce:lang', render);
     setInterval(render, 60000);
     window.ROCE_EVENTS_READY.then(function (list) { EVENTS = list; render(); });

@@ -11,7 +11,7 @@
 <link rel="icon" type="image/png" href="/assets/meta/favicon-32.png" sizes="32x32">
 <link rel="apple-touch-icon" href="/assets/meta/apple-touch-icon.png">
 <script src="/eventos/config.js?v=2"></script>
-<script src="/eventos/events.js?v=3"></script>
+<script src="/eventos/events.js?v=8"></script>
 <script>
   // El color de la página es el del ambiente del evento: Day claro, Night
   // oscuro. Hasta saber de qué evento se trata la página va oculta.
@@ -88,6 +88,10 @@
   .tk-btn:disabled { opacity: 0.35; cursor: default; }
   .tk-btn.is-ghost { flex: 0 0 auto; background: none; color: var(--fg); }
   .tk-error { margin-top: 1rem; color: #e5453a; font-size: 0.92rem; }
+  .tk-poster { float: right; width: 7.5rem; height: 7.5rem; margin: 0 0 0.75rem 1rem; padding: 0; border: 1px solid currentColor; background: none; color: inherit; cursor: zoom-in; }
+  .tk-poster[hidden] { display: none; }
+  .tk-poster img { display: block; width: 100%; height: 100%; object-fit: cover; }
+  #tkEvent::after { content: ""; display: block; clear: both; }
   .tk-policy { margin-top: 1.25rem; font-size: 0.85rem; line-height: 1.5; opacity: 0.7; }
 
   .tk-done { text-align: center; padding-top: 1rem; }
@@ -125,6 +129,7 @@
 
   <!-- Cabecera con el evento (pasos 1-3) -->
   <div id="tkEvent">
+    <button type="button" class="tk-poster" id="tkPoster" aria-label="Ver el cartel" hidden><img alt=""></button>
     <span class="tk-env" id="tkEnv"></span>
     <h1 class="tk-title" id="tkTitle"></h1>
     <p class="tk-when" id="tkWhen"></p>
@@ -331,7 +336,7 @@
     function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
     function newRef() { var c = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789', s = ''; for (var i = 0; i < 6; i++) s += c[Math.floor(Math.random() * c.length)]; return 'ROCE-' + s; }
     function tickets(n) { return n + ' ' + (n === 1 ? t('tk_ticket_one') : t('tk_ticket_many')); }
-    function whenText() { return U.fmt(ev, lang(), { weekday: 'long', day: 'numeric', month: 'long' }) + ' · ' + ev.time + ' · ' + ev.place[lang()]; }
+    function whenText() { return U.fmt(ev, lang(), { weekday: 'long', day: 'numeric', month: 'long' }) + ' · ' + U.range(ev) + ' · ' + ev.place[lang()]; }
 
     document.querySelector('.tk-back').setAttribute('href', '/eventos/?f=' + ev.env);
 
@@ -339,13 +344,18 @@
     var state = { qty: 1, step: 1, order: null };
     var AGE = '<svg class="age-badge" viewBox="0 0 100 100" role="img" aria-label="+18"><circle cx="50" cy="50" r="44" fill="#ffffff" stroke="#e5453a" stroke-width="9"/><text x="44" y="65" text-anchor="middle" font-family="\'Helvetica Neue Web\',\'Helvetica Neue\',Arial,sans-serif" font-weight="700" font-size="46" letter-spacing="-3" fill="#0a0a0a">18</text><text x="77" y="52" text-anchor="middle" font-family="\'Helvetica Neue Web\',\'Helvetica Neue\',Arial,sans-serif" font-weight="700" font-size="30" fill="#0a0a0a">+</text></svg>';
 
+    $('tkPoster').addEventListener('click', function () { U.poster(ev.image); });
+
     // ─── Pintado ────────────────────────────────────────────────────────
     function paintEvent() {
       $('tkEnv').innerHTML = ev.env === 'night' ? 'Night ' + AGE : 'Day';
       $('tkTitle').textContent = ev.title[lang()];
+      if (ev.image) { $('tkPoster').querySelector('img').src = ev.image; $('tkPoster').hidden = false; }
       $('tkWhen').textContent = whenText();
       var P = window.ROCE_PAYMENTS, tb = $('tkTest');
-      if (P.enabled) {
+      if (ev.price_cents === 0) {
+        tb.hidden = true; // un evento gratuito no tiene nada que "probar"
+      } else if (P.enabled) {
         tb.hidden = P.env !== 'test';
         tb.setAttribute('data-i18n', 'tk_test_pay'); tb.textContent = t('tk_test_pay');
       } else {
@@ -373,7 +383,7 @@
       var total = o.total_cents === 0 ? t('tk_free') : U.money(o.total_cents, l);
       var rows = [
         [t('tk_r_event'), ev.title[l]],
-        [t('tk_r_date'), U.fmt(ev, l, { weekday: 'short', day: 'numeric', month: 'long' }) + ' · ' + ev.time],
+        [t('tk_r_date'), U.fmt(ev, l, { weekday: 'short', day: 'numeric', month: 'long' }) + ' · ' + U.range(ev)],
         [t('tk_r_place'), ev.place[l]],
         [t('tk_r_tickets'), tickets(o.qty)],
         [t('tk_r_holder'), o.name],

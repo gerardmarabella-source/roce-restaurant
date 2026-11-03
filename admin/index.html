@@ -17,6 +17,8 @@
 
   .ad-top { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 0.9rem 1.25rem; border-bottom: 1px solid var(--line); position: sticky; top: 0; background: var(--bg); z-index: 20; }
   .ad-brand { font-family: var(--display); font-size: 1.3rem; text-transform: uppercase; letter-spacing: 0.02em; }
+  .ad-brand { display: inline-flex; align-items: center; }
+  .ad-brand img { display: block; height: 1.7rem; width: auto; }
   .ad-brand small { font-size: 0.75rem; opacity: 0.55; margin-left: 0.4rem; }
   .ad-user { font-size: 0.8rem; opacity: 0.7; text-align: right; }
   .ad-link { background: none; border: 0; padding: 0; text-decoration: underline; cursor: pointer; font-size: 0.8rem; }
@@ -64,6 +66,15 @@
   .ad-actions { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 0.5rem; }
   .ad-bar-cap { height: 6px; background: var(--line); margin-top: 0.5rem; }
   .ad-bar-cap i { display: block; height: 100%; background: var(--fg); }
+
+  /* Imagen del evento */
+  .ad-img { width: 12rem; aspect-ratio: 1; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 1px solid var(--fg); background: var(--line); }
+  .ad-img img { width: 100%; height: 100%; object-fit: cover; }
+  .ad-img em { font-size: 0.85rem; opacity: 0.6; }
+  .ad-img-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.5rem; }
+  .ad-img-fit { display: flex; flex-wrap: wrap; gap: 0.25rem 1.25rem; margin-top: 0.6rem; font-size: 0.88rem; }
+  .ad-img-fit label { display: flex; align-items: center; gap: 0.4rem; cursor: pointer; }
+  .ad-img-actions label { cursor: pointer; }
 
   /* Asistencia (puerta del evento) */
   .ck-sum { margin: 0 0 0.75rem; }
@@ -138,7 +149,7 @@
 <!-- Panel -->
 <div id="appView" hidden>
   <header class="ad-top">
-    <span class="ad-brand">ROCE<small>panel</small></span>
+    <span class="ad-brand"><img src="/assets/logo/roce-horizontal-black.png" alt="ROCE"><small>panel</small></span>
     <span class="ad-user"><span id="whoami"></span><br><button class="ad-link" id="logout" type="button">Salir</button></span>
   </header>
   <main class="ad-wrap">
@@ -233,6 +244,19 @@
       <label class="ad-field"><span>Duración (horas)</span><input type="number" id="fDur" min="0.5" step="0.5" value="2" required></label>
       <label class="ad-field"><span>Plazas totales</span><input type="number" id="fCap" min="0" step="1" value="30" required></label>
       <label class="ad-field"><span>Máx. entradas por reserva</span><input type="number" id="fMax" min="1" max="20" step="1" value="6" required></label>
+      <div class="ad-field full"><span>Imagen de cabecera (opcional)</span>
+        <div class="ad-img"><img id="imgPrev" alt="" hidden><em id="imgEmpty">Sin imagen</em></div>
+        <div class="ad-img-actions">
+          <label class="ad-btn is-ghost is-small" for="fImgFile">Subir imagen</label>
+          <input type="file" id="fImgFile" accept="image/jpeg,image/png,image/webp" hidden>
+          <button type="button" class="ad-btn is-ghost is-small" id="imgRemove" hidden>Quitar</button>
+        </div>
+        <div class="ad-img-fit" id="imgFit" hidden>
+          <label><input type="radio" name="imgFit" value="cover" checked> Recortar al centro</label>
+          <label><input type="radio" name="imgFit" value="contain"> Cartel entero (con bordes)</label>
+        </div>
+        <p class="ad-hint">Se muestra como un cuadrado pequeño (el cartel). Se recorta y se comprime sola, da igual lo que pese la foto.</p>
+      </div>
       <label class="ad-field full"><span>Texto del precio (opcional)</span><input type="text" id="fLabelEs" placeholder="p. ej. 10 € · incluye primera copa"><p class="ad-hint">Si lo dejas vacío sale “Entrada libre” o “X € por persona”.</p></label>
       <label class="ad-field full"><span>Identificador en la dirección</span><input type="text" id="fId" pattern="[a-z0-9-]{3,60}" required><p class="ad-hint">Solo minúsculas, números y guiones. No se puede cambiar después.</p></label>
     </div>
@@ -411,7 +435,7 @@
       if (!confirm(msg)) return;
       (evb.length ? api('bookings?event_id=eq.' + encodeURIComponent(e.id), { method: 'DELETE' }) : Promise.resolve())
         .then(function () { return api('events?id=eq.' + encodeURIComponent(e.id), { method: 'DELETE' }); })
-        .then(function () { events = events.filter(function (x) { return x.id !== e.id; }); bookings = bookings.filter(function (x) { return x.event_id !== e.id; }); renderEvents(); renderBookingFilter(); renderBookings(); flash('Evento borrado.', 'ok'); })
+        .then(function () { events = events.filter(function (x) { return x.id !== e.id; }); bookings = bookings.filter(function (x) { return x.event_id !== e.id; }); if (e.image_url) deleteImage(e.image_url); renderEvents(); renderBookingFilter(); renderBookings(); flash('Evento borrado.', 'ok'); })
         .catch(function (x) { flash('No se ha podido borrar: ' + x.message, 'error'); });
     }
   });
@@ -419,6 +443,78 @@
   // ─── Eventos: formulario ────────────────────────────────────────────
   var editing = null; // evento que se edita (null = nuevo)
   function slug(s) { return String(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 50); }
+  // ─── Imagen de cabecera ─────────────────────────────────────────────
+  // Se elige, se reduce (máx. 1600 px de ancho, JPG) y se sube al guardar el evento.
+  var imgUrl = '', imgBlob = null, imgPreview = '', imgFile = null;
+  function paintImg() {
+    var src = imgBlob ? imgPreview : imgUrl;
+    $('imgPrev').hidden = !src; if (src) $('imgPrev').src = src;
+    $('imgEmpty').hidden = !!src; $('imgRemove').hidden = !src;
+    $('imgFit').hidden = !imgFile;
+  }
+  // Cuadrado de hasta 1200 px en JPG. "cover" recorta al centro; "contain" deja el
+  // cartel entero y rellena los bordes con el color de su esquina.
+  function squareImage(file, fit) {
+    return new Promise(function (resolve, reject) {
+      var img = new Image(), url = URL.createObjectURL(file);
+      img.onload = function () {
+        var iw = img.naturalWidth, ih = img.naturalHeight;
+        var size = Math.min(1200, fit === 'cover' ? Math.min(iw, ih) : Math.max(iw, ih));
+        var c = document.createElement('canvas'); c.width = size; c.height = size;
+        var g = c.getContext('2d'), bg = '#fff';
+        if (fit === 'contain') {
+          var t = document.createElement('canvas'); t.width = t.height = 1; var tg = t.getContext('2d');
+          tg.drawImage(img, 0, 0, 1, 1, 0, 0, 1, 1); var d = tg.getImageData(0, 0, 1, 1).data; bg = 'rgb(' + d[0] + ',' + d[1] + ',' + d[2] + ')';
+        }
+        g.fillStyle = bg; g.fillRect(0, 0, size, size);
+        if (fit === 'cover') { var m = Math.min(iw, ih); g.drawImage(img, (iw - m) / 2, (ih - m) / 2, m, m, 0, 0, size, size); }
+        else { var sc = Math.min(size / iw, size / ih), w = iw * sc, h = ih * sc; g.drawImage(img, (size - w) / 2, (size - h) / 2, w, h); }
+        URL.revokeObjectURL(url);
+        (function encode(q) {
+          c.toBlob(function (blob) {
+            if (!blob) return reject(new Error('No se ha podido procesar la imagen.'));
+            if (blob.size > 900 * 1024 && q > 0.5) return encode(q - 0.15); // si pesa mucho, más compresión
+            resolve(blob);
+          }, 'image/jpeg', q);
+        })(0.85);
+      };
+      img.onerror = function () { URL.revokeObjectURL(url); reject(new Error('No se ha podido leer la imagen.')); };
+      img.src = url;
+    });
+  }
+  function processImage() {
+    var fit = (document.querySelector('input[name=imgFit]:checked') || {}).value || 'cover';
+    return squareImage(imgFile, fit).then(function (b) {
+      imgBlob = b; if (imgPreview) URL.revokeObjectURL(imgPreview); imgPreview = URL.createObjectURL(b); $('evFormMsg').hidden = true; paintImg();
+    }).catch(function (x) { $('evFormMsg').textContent = x.message; $('evFormMsg').hidden = false; });
+  }
+  $('fImgFile').addEventListener('change', function () {
+    var f = this.files && this.files[0]; if (!f) return;
+    if (!/^image\/(jpeg|png|webp)$/.test(f.type)) { $('evFormMsg').textContent = 'La imagen debe ser JPG, PNG o WebP.'; $('evFormMsg').hidden = false; return; }
+    imgFile = f; processImage();
+  });
+  document.querySelectorAll('input[name=imgFit]').forEach(function (r) { r.addEventListener('change', function () { if (imgFile) processImage(); }); });
+  $('imgRemove').addEventListener('click', function () { imgBlob = null; imgFile = null; imgUrl = ''; $('fImgFile').value = ''; paintImg(); });
+  function storageAuth() {
+    var pre = session && session.expires_at < Date.now() ? refresh() : Promise.resolve();
+    return pre.then(function () { return { apikey: cfg.anonKey, Authorization: 'Bearer ' + session.access_token }; });
+  }
+  function uploadImage(blob) {
+    var name = Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8) + '.jpg';
+    return storageAuth().then(function (h) {
+      h['Content-Type'] = 'image/jpeg';
+      return fetch(cfg.url + '/storage/v1/object/event-images/' + name, { method: 'POST', headers: h, body: blob });
+    }).then(function (r) {
+      if (!r.ok) return r.json().catch(function () { return {}; }).then(function (d) { throw new Error('No se ha podido subir la imagen: ' + (d.message || r.status)); });
+      return cfg.url + '/storage/v1/object/public/event-images/' + name;
+    });
+  }
+  function deleteImage(url) {
+    var m = String(url || '').match(/\/object\/public\/event-images\/([^/?]+)$/); if (!m) return;
+    if (events.some(function (x) { return x.image_url === url; })) return; // otra ficha la sigue usando
+    storageAuth().then(function (h) { return fetch(cfg.url + '/storage/v1/object/event-images/' + m[1], { method: 'DELETE', headers: h }); }).catch(function () {});
+  }
+
   function openForm(e, asCopy) {
     editing = e && !asCopy ? e : null;
     $('evFormTitle').textContent = editing ? 'Editar evento' : (asCopy ? 'Duplicar evento' : 'Nuevo evento');
@@ -430,6 +526,7 @@
     $('fPrice').value = v.price_cents / 100; $('fVat').value = v.vat_percent == null ? 10 : v.vat_percent; $('fDur').value = v.duration_h; $('fCap').value = v.capacity; $('fMax').value = v.max_per_order;
     $('fLabelEs').value = v.price_label_es; $('fPub').checked = editing ? v.published : false;
     $('fId').value = editing ? v.id : (asCopy ? '' : ''); $('fId').readOnly = !!editing;
+    imgUrl = v.image_url || ''; imgBlob = null; imgFile = null; $('fImgFile').value = ''; document.querySelector('input[name=imgFit][value=cover]').checked = true; paintImg();
     $('evModal').hidden = false; document.body.style.overflow = 'hidden';
   }
   function closeForm() { $('evModal').hidden = true; document.body.style.overflow = ''; }
@@ -454,12 +551,15 @@
     var id = $('fId').value.trim();
     if (!/^[a-z0-9-]{3,60}$/.test(id)) return fail('El identificador debe tener 3-60 caracteres: minúsculas, números y guiones.');
     $('evSave').disabled = true;
-    var req = editing
-      ? api('events?id=eq.' + encodeURIComponent(editing.id), { method: 'PATCH', body: row, prefer: 'return=representation' })
-      : api('events', { method: 'POST', body: Object.assign({ id: id }, row), prefer: 'return=representation' });
-    req.then(function (rows) {
+    var oldImage = editing ? (editing.image_url || '') : '';
+    (imgBlob ? uploadImage(imgBlob) : Promise.resolve(imgUrl)).then(function (url) {
+      row.image_url = url;
+      return editing
+        ? api('events?id=eq.' + encodeURIComponent(editing.id), { method: 'PATCH', body: row, prefer: 'return=representation' })
+        : api('events', { method: 'POST', body: Object.assign({ id: id }, row), prefer: 'return=representation' });
+    }).then(function (rows) {
       var saved = rows && rows[0];
-      if (saved) { events = events.filter(function (x) { return x.id !== saved.id; }).concat(saved); }
+      if (saved) { events = events.filter(function (x) { return x.id !== saved.id; }).concat(saved); if (oldImage && oldImage !== saved.image_url) deleteImage(oldImage); }
       closeForm(); renderEvents(); renderBookingFilter(); flash(editing ? 'Evento guardado.' : 'Evento creado.' + (saved && !saved.published ? ' Está como borrador: publícalo para que salga en la web.' : ''), 'ok');
     }).catch(function (x) { fail(x.code === '23505' ? 'Ya existe un evento con ese identificador.' : x.message); })
       .then(function () { $('evSave').disabled = false; });
