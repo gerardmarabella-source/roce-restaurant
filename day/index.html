@@ -350,6 +350,9 @@
 
   @media (max-width: 640px) {
     .teaser-link { font-size: clamp(1.9rem, 9.8vw, 3rem); }
+    /* Instagram en su propia línea, debajo de Reservar mesa y Eventos. */
+    .teaser-cta-row { flex-direction: column; align-items: stretch; gap: 0.5rem; }
+    .teaser-insta { position: static; align-self: flex-end; padding: 0; }
     /* Foto propia para móvil (1080x1920, ya compuesta para vertical) y
        sin el zoom de escritorio. */
     .teaser-bg { transform: none; }
