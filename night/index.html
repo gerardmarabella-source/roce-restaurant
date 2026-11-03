@@ -111,6 +111,16 @@
     height: auto;
     display: block;
   }
+  /* Pantallas grandes: el logo con la dirección va pequeño arriba a la izquierda, junto a la
+     flecha de volver. En móvil se queda centrado como estaba. */
+  @media (min-width: 641px) {
+    .teaser-top .lockup { position: fixed; top: 0.6rem; left: 4rem; width: clamp(190px, 18vw, 270px); }
+    .teaser-top { top: 10.5rem; } /* el banner "Ahora" baja del todo para no pisar el logo */
+  }
+  @media (min-width: 1240px) {
+    .teaser-top { top: 1rem; }
+    .teaser-live { margin-top: 0; }
+  }
 
   /* Evento en marcha: "Ahora" bajo el logo, enlaza a la agenda de este ambiente. */
   .teaser-live { display: inline-flex; align-items: center; gap: 0.6rem; max-width: 92vw; margin-top: 0.9rem; padding: 0.45rem 0.95rem; border: 1px solid currentColor; border-radius: 999px; color: inherit; text-decoration: none; font-family: var(--display); font-size: 0.85rem; letter-spacing: 0.05em; text-transform: uppercase; background: rgba(10, 10, 10, 0.45); }
@@ -451,10 +461,10 @@
   </div>
 </div>
 <script src="/cookies.js?v=4"></script>
-<script src="/i18n.js?v=77"></script>
+<script src="/i18n.js?v=78"></script>
 <script src="/agegate.js?v=3"></script>
 <script src="/eventos/config.js?v=2"></script>
-<script src="/eventos/events.js?v=9"></script>
+<script src="/eventos/events.js?v=10"></script>
 
 <script>
   function initNewsletterWidget() {

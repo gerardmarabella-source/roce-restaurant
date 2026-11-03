@@ -36,7 +36,7 @@ const T = {
     subject: (t: string) => `Tu plaza en ${t} · ROCE`,
     title: "¡Plaza reservada!",
     intro: "Aquí tienes los datos de tu reserva. Enseña este email o tu número de referencia al llegar.",
-    ref: "Referencia", event: "Evento", date: "Fecha", place: "Lugar", tickets: "Entradas",
+    ref: "Referencia", event: "Evento", date: "Fecha", place: "Lugar", floor: "Planta", tickets: "Entradas",
     free: "Gratis", total: "Total", unpaid: "Pago pendiente: te indicaremos cómo hacerlo.",
     age: "Evento solo para mayores de 18 años.",
     cancel: "Si no puedes venir, escríbenos a reservas@roce.es para liberar tu plaza.",
@@ -49,7 +49,7 @@ const T = {
     subject: (t: string) => `Your spot at ${t} · ROCE`,
     title: "Spot booked!",
     intro: "Here are your booking details. Show this email or your reference number when you arrive.",
-    ref: "Reference", event: "Event", date: "Date", place: "Place", tickets: "Tickets",
+    ref: "Reference", event: "Event", date: "Date", place: "Place", floor: "Floor", tickets: "Tickets",
     free: "Free", total: "Total", unpaid: "Payment pending: we'll let you know how to pay.",
     age: "Guests must be aged 18 or over.",
     cancel: "If you can't make it, write to reservas@roce.es so we can free your spot.",
@@ -83,7 +83,11 @@ async function sendBookingEmail(b: any): Promise<Response> {
   const l = b.lang === "en" ? "en" : "es";
   const t = T[l];
   const title = l === "en" && ev.title_en ? ev.title_en : ev.title_es;
-  const place = l === "en" && ev.place_en ? ev.place_en : ev.place_es;
+  // El lugar es siempre ROCE; la planta se normaliza a "Planta baja" / "Primera planta".
+  const address = "ROCE · Marqués del Túria 16, Valencia";
+  const floorRaw = ev.place_es || ev.place_en || "";
+  const firstFloor = /primera|first|alta|upper/i.test(floorRaw);
+  const floor = !floorRaw ? "" : l === "en" ? (firstFloor ? "First floor" : "Ground floor") : (firstFloor ? "Primera planta" : "Planta baja");
   const when = new Intl.DateTimeFormat(t.locale, {
     timeZone: "Europe/Madrid", weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit",
   }).format(new Date(ev.starts_at));
@@ -94,7 +98,7 @@ async function sendBookingEmail(b: any): Promise<Response> {
 <tr><td style="padding:28px 24px 8px;color:#fff;font:32px Arial,sans-serif;text-transform:uppercase">${esc(t.title)}</td></tr>
 <tr><td style="padding:0 24px 20px;color:#ddd;font:16px/1.5 Arial,sans-serif">${esc(t.intro)}</td></tr>
 <tr><td style="padding:0 24px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0">${rowsHtml([
-    [t.ref, b.ref], [t.event, title], [t.date, when], [t.place, place], [t.tickets, String(b.qty)], [t.total, total],
+    [t.ref, b.ref], [t.event, title], [t.date, when], [t.place, address], ...(floor ? [[t.floor, floor]] : []), [t.tickets, String(b.qty)], [t.total, total],
   ])}</table></td></tr>
 <tr><td style="padding:20px 24px 4px;color:#e5453a;font:14px Arial,sans-serif">${b.payment_status === "pending" ? esc(t.unpaid) : ""}${ev.env === "night" ? " " + esc(t.age) : ""}</td></tr>
 <tr><td style="padding:12px 24px 32px;color:#aaa;font:13px/1.5 Arial,sans-serif">${esc(t.cancel)}</td></tr>`);
