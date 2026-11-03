@@ -17,11 +17,11 @@
 <meta property="og:image" content="https://roce.es/assets/meta/og-image.png">
 <meta property="og:url" content="https://roce.es/eventos/">
 <script>
-  // Mismo criterio que la home: claro de 10:00 a 20:00 (hora de Valencia) y
+  // Mismo criterio que la home: claro de 08:00 a 20:00 (hora de Valencia) y
   // oscuro el resto. Se fija antes de pintar para que no parpadee.
   (function () {
     var hour = Number(new Intl.DateTimeFormat('en-GB', { hour: '2-digit', hourCycle: 'h23', timeZone: 'Europe/Madrid' }).format(new Date()));
-    document.documentElement.setAttribute('data-mode', hour >= 10 && hour < 20 ? 'day' : 'night');
+    document.documentElement.setAttribute('data-mode', hour >= 8 && hour < 20 ? 'day' : 'night');
     // Filtro de entrada: ?f=day (desde Day), ?f=night (desde Night) o todos
     // (desde el menú de la home). El fondo sigue al filtro: Day blanco, Night
     // negro y, en Todos, según la hora.
@@ -95,6 +95,10 @@
   .ev-date-mon { display: block; font-size: 0.95rem; letter-spacing: 0.06em; }
 
   .ev-env { display: inline-flex; align-items: center; gap: 0.5rem; margin-bottom: 0.6rem; font-family: var(--display); font-size: 0.8rem; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.75; }
+  .ev-now { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.1rem 0.55rem; border: 1px solid currentColor; border-radius: 999px; letter-spacing: 0.08em; }
+  .ev-now::before { content: ""; width: 0.5rem; height: 0.5rem; border-radius: 50%; background: #ff1f1f; animation: evLive 1.3s ease-in-out infinite; }
+  @keyframes evLive { 0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(255, 31, 31, 0.6); } 50% { opacity: 0.25; box-shadow: 0 0 0 5px rgba(255, 31, 31, 0); } }
+  @media (prefers-reduced-motion: reduce) { .ev-now::before { animation: none; } }
   .ev-env .age-badge { width: 1.7rem; height: 1.7rem; flex-shrink: 0; }
   .ev-name { font-family: var(--display); font-weight: 400; font-size: clamp(1.6rem, 5vw, 2.4rem); line-height: 1; letter-spacing: -0.005em; text-transform: uppercase; }
   .ev-meta { margin-top: 0.5rem; font-size: 0.9rem; opacity: 0.7; }
@@ -176,8 +180,8 @@
 </div>
 <script src="/cookies.js?v=3"></script>
 <script src="/i18n.js?v=66"></script>
-<script src="/eventos/config.js"></script>
-<script src="/eventos/events.js"></script>
+<script src="/eventos/config.js?v=2"></script>
+<script src="/eventos/events.js?v=2"></script>
 <script>
   // Los eventos están en /eventos/events.js (misma fuente que la compra de entradas).
   (function () {
@@ -203,14 +207,14 @@
     function render() {
       var l = lang();
       var upcoming = EVENTS.filter(function (e) {
-        return e.date >= U.today() && (filter === 'all' || e.env === filter);
+        return (e.date >= U.today() || U.isLive(e)) && (filter === 'all' || e.env === filter);
       }).sort(function (a, b) { return (a.date + a.time).localeCompare(b.date + b.time); });
 
       list.innerHTML = upcoming.map(function (e) {
         var wd = U.fmt(e, l, { weekday: 'short' }).replace('.', '');
         var mon = U.fmt(e, l, { month: 'short' }).replace('.', '');
         var day = U.fmt(e, l, { day: 'numeric' });
-        var env = e.env === 'night' ? 'Night ' + AGE : 'Day';
+        var env = (e.env === 'night' ? 'Night ' + AGE : 'Day') + (U.isLive(e) ? ' <span class="ev-now">' + esc(t('choose_now', 'Ahora')) + '</span>' : '');
         var sold = e.left <= 0;
         var low = !sold && e.left <= 5 ? '<span class="ev-left">' + esc(t('tk_last', 'Últimas {n} plazas').replace('{n}', e.left)) + '</span>' : '';
         var cta = sold
@@ -239,6 +243,7 @@
     });
 
     document.addEventListener('roce:lang', render);
+    setInterval(render, 60000);
     window.ROCE_EVENTS_READY.then(function (list) { EVENTS = list; render(); });
   })();
 </script>

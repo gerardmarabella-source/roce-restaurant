@@ -46,11 +46,12 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 <script>
-  // Fondo según la hora de Valencia: claro de 10:00 a 20:00 (Day), oscuro el
-  // resto (Night). Se fija antes de pintar para que no parpadee.
+  // Fondo según la hora de Valencia: claro de 08:00 a 20:00, oscuro el resto.
+  // (El "Ahora" de Day sigue su horario de apertura, 10:00-20:00.) Se fija
+  // antes de pintar para que no parpadee.
   (function () {
     var hour = Number(new Intl.DateTimeFormat('en-GB', { hour: '2-digit', hourCycle: 'h23', timeZone: 'Europe/Madrid' }).format(new Date()));
-    document.documentElement.setAttribute('data-mode', hour >= 10 && hour < 20 ? 'day' : 'night');
+    document.documentElement.setAttribute('data-mode', hour >= 8 && hour < 20 ? 'day' : 'night');
   })();
 </script>
 <link rel="stylesheet" href="/styles.css?v=66">
@@ -64,7 +65,7 @@
 
   .home {
     --head: 64px;
-    --foot: 72px;
+    --foot: 96px;
     --pad: 1.25rem;
     --gap: 0.75rem;
     --avail: calc(100dvh - var(--head) - var(--foot) - 1.5rem);
@@ -88,7 +89,12 @@
      del otro, a todo el ancho. El alto se reparte para que todo quepa sin scroll. */
   .home-main {
     --sw: calc(100vw - 2 * var(--pad));
-    --sh: min(calc(var(--sw) * 0.62), calc(var(--avail) * 0.215));
+    /* Evento en marcha: una franja bajo su cuadrado (--live-n = cuántas hay,
+       lo fija el script). Su alto se descuenta del resto para no hacer scroll. */
+    --live-n: 0;
+    --live-h: clamp(2.6rem, calc(var(--avail) * 0.075), 3.6rem);
+    --live-x: calc(var(--live-n) * (var(--live-h) + var(--gap)));
+    --sh: min(calc(var(--sw) * 0.62), calc((var(--avail) - var(--live-x)) * 0.215));
     flex: 1;
     min-height: 0;
     display: flex;
@@ -101,7 +107,7 @@
   .home-statement {
     font-family: var(--display);
     font-weight: 400;
-    font-size: min(19vw, 14rem, calc((var(--avail) - 2 * var(--sh) - var(--gap) - 1.25rem) / 3.9));
+    font-size: min(19vw, 14rem, calc((var(--avail) - 2 * var(--sh) - var(--gap) - 1.25rem - var(--live-x)) / 3.9));
     width: 100%;
     margin-inline: auto; /* centrada cuando la altura limita el tamaño */
     max-width: 5.2em; /* el escalonado se mide en la letra, no en la pantalla: las palabras no se alejan en tablet */
@@ -186,6 +192,32 @@
     .age-badge { width: 1.5rem; height: 1.5rem; }
   }
 
+  /* Evento en marcha: franja bajo el cuadrado de su ambiente, del mismo color. */
+  .home-live {
+    container-type: inline-size;
+    width: var(--sw);
+    height: var(--live-h);
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    padding: 0 calc(var(--live-h) * 0.32);
+    text-decoration: none;
+    overflow: hidden;
+    transition: transform 0.25s ease;
+  }
+  .home-live[hidden] { display: none; }
+  .home-live:hover { transform: translateY(-3px); }
+  .home-live-day { background: var(--white); color: var(--black); border: 2px solid var(--black); }
+  .home-live-night { background: var(--black); color: var(--white); border: 2px solid var(--black); }
+  html[data-mode="night"] .home-live-night { border-color: var(--white); }
+  .home-live .home-now { display: flex; flex-shrink: 0; }
+  .home-live-title { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: var(--display); text-transform: uppercase; letter-spacing: 0.01em; font-size: clamp(0.85rem, min(5.2cqw, calc(var(--live-h) * 0.4)), 1.5rem); }
+  .home-live-time { flex-shrink: 0; font-family: var(--display); font-size: clamp(0.65rem, min(3.6cqw, calc(var(--live-h) * 0.26)), 1rem); opacity: 0.7; white-space: nowrap; }
+  .home-live-arrow { flex-shrink: 0; font-family: var(--display); font-size: 1.2rem; line-height: 1; }
+  @container (max-width: 400px) { .home-live-time { display: none; } }
+  @container (max-width: 270px) { .home-live .home-now { font-size: 0; gap: 0; padding: 0.2rem; } }
+  @container (max-width: 150px) { .home-live-arrow { display: none; } }
+
   .home-foot {
     flex-shrink: 0;
     height: var(--foot);
@@ -201,12 +233,16 @@
     color: rgba(10, 10, 10, 0.55);
   }
   .home-foot a { color: inherit; text-decoration: none; }
+  .home-foot .home-insta { display: inline-flex; align-items: center; gap: 0.4rem; margin-bottom: 0.5rem; color: var(--black); font-family: var(--display); font-size: 0.9rem; letter-spacing: 0.04em; text-transform: uppercase; }
+  html[data-mode="night"] .home-foot .home-insta { color: var(--white); }
+  .home-insta svg { width: 1.2rem; height: 1.2rem; }
+  .home-foot a.home-insta:hover { text-decoration: none; opacity: 0.7; }
   .home-foot a:hover { text-decoration: underline; }
   .home-foot .lang-switch { display: flex; justify-content: center; margin-bottom: 0.25rem; }
 
   /* Tablet vertical: bloques algo más bajos para que la frase pueda crecer con el ancho. */
   @media (min-width: 600px) and (max-aspect-ratio: 5/4) {
-    .home-main { --sh: min(calc(var(--sw) * 0.62), calc(var(--avail) * 0.18)); }
+    .home-main { --sh: min(calc(var(--sw) * 0.62), calc((var(--avail) - var(--live-x)) * 0.18)); }
   }
 
   /* Horizontal (escritorio, móvil tumbado): frase a la izquierda y los dos
@@ -214,7 +250,7 @@
   @media (min-aspect-ratio: 5/4) {
     .home { --pad: 2.5rem; }
     .home-main {
-      --s: min(calc((var(--avail) - var(--gap)) / 2), 30vw);
+      --s: min(calc((var(--avail) - var(--gap) - var(--live-x)) / 2), 30vw);
       --sw: var(--s);
       --sh: var(--s);
       flex-direction: row;
@@ -231,7 +267,7 @@
       font-size: min(10.5rem, calc(var(--avail) / 3.5), calc((100vw - 2 * var(--pad) - var(--s) - 2rem) / 4.4));
     }
     .home-squares { display: flex; flex-direction: column; justify-content: flex-start; }
-    .home-square-day, .home-square-night { align-self: flex-end; }
+    .home-square-day, .home-square-night, .home-live { align-self: flex-end; }
   }
 
   /* Menú a pantalla completa: el mismo que el de Reservas de Night
@@ -374,6 +410,12 @@
           <span class="home-square-arrow" aria-hidden="true">→</span>
         </div>
       </a>
+      <a class="home-live home-live-day" id="liveDay" href="/eventos/?f=day" hidden>
+        <span class="home-now" data-i18n="choose_now">Ahora</span>
+        <span class="home-live-title"></span>
+        <span class="home-live-time"></span>
+        <span class="home-live-arrow" aria-hidden="true">→</span>
+      </a>
       <a class="home-square home-square-night" id="chooseNight" href="/night/">
         <div class="home-square-top"><span class="home-now" data-i18n="choose_now">Ahora</span><svg class="age-badge" viewBox="0 0 100 100" role="img" aria-label="+18"><circle cx="50" cy="50" r="44" fill="#ffffff" stroke="#e5453a" stroke-width="9"/><text x="44" y="65" text-anchor="middle" font-family="'Helvetica Neue Web','Helvetica Neue',Arial,sans-serif" font-weight="700" font-size="46" letter-spacing="-3" fill="#0a0a0a">18</text><text x="77" y="52" text-anchor="middle" font-family="'Helvetica Neue Web','Helvetica Neue',Arial,sans-serif" font-weight="700" font-size="30" fill="#0a0a0a">+</text></svg></div>
         <div class="home-square-bottom">
@@ -384,10 +426,17 @@
           <span class="home-square-arrow" aria-hidden="true">→</span>
         </div>
       </a>
+      <a class="home-live home-live-night" id="liveNight" href="/eventos/?f=night" hidden>
+        <span class="home-now" data-i18n="choose_now">Ahora</span>
+        <span class="home-live-title"></span>
+        <span class="home-live-time"></span>
+        <span class="home-live-arrow" aria-hidden="true">→</span>
+      </a>
     </div>
   </main>
 
   <div class="home-foot">
+    <a class="home-insta" href="https://www.instagram.com/somosroce" target="_blank" rel="noopener" aria-label="Instagram @somosroce"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1.1" fill="currentColor" stroke="none"/></svg><span>@somosroce</span></a>
     <div class="lang-switch">
       <button type="button" data-lang="es">ES</button>
       <button type="button" data-lang="en">EN</button>
@@ -426,6 +475,8 @@
 </div>
 <script src="/cookies.js?v=3"></script>
 <script src="/i18n.js?v=66"></script>
+<script src="/eventos/config.js?v=2"></script>
+<script src="/eventos/events.js?v=2"></script>
 
 <script>
   // Se marca "Ahora" en lo que está abierto según la hora de Valencia (Day de
@@ -444,12 +495,34 @@
       new Intl.DateTimeFormat('en-GB', { weekday: 'short', hour: '2-digit', hourCycle: 'h23', timeZone: 'Europe/Madrid' })
         .formatToParts(new Date()).forEach(function (x) { p[x.type] = x.value; });
       var hour = Number(p.hour);
-      var isDay = hour >= 10 && hour < 20;
-      document.documentElement.setAttribute('data-mode', isDay ? 'day' : 'night');
+      var isDay = hour >= 10 && hour < 20; // Day abierto
+      document.documentElement.setAttribute('data-mode', hour >= 8 && hour < 20 ? 'day' : 'night');
       // "Ahora" solo en lo que está abierto en este momento.
       document.getElementById('chooseDay').classList.toggle('is-now', isDay);
       document.getElementById('chooseNight').classList.toggle('is-now', nightOpen(DAYS[p.weekday], hour));
+      renderLive();
     }
+
+    // Eventos en marcha ahora mismo: franja bajo el cuadrado de su ambiente.
+    var U = window.ROCE_EVENT_UTIL, EVENTS = [];
+    var TZ = 'Europe/Madrid';
+    function hm(ms) { return new Intl.DateTimeFormat('es-ES', { timeZone: TZ, hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).format(ms); }
+    function renderLive() {
+      var l = window.ROCE_I18N ? window.ROCE_I18N.getLang() : 'es', n = 0;
+      [['day', 'liveDay'], ['night', 'liveNight']].forEach(function (c) {
+        var el = document.getElementById(c[1]);
+        var e = U && EVENTS.filter(function (x) { return x.env === c[0] && U.isLive(x); })[0];
+        if (!e) { el.hidden = true; return; }
+        var b = U.bounds(e);
+        el.querySelector('.home-live-title').textContent = e.title[l] || e.title.es;
+        el.querySelector('.home-live-time').textContent = hm(b[0]) + ' – ' + hm(b[1]);
+        el.hidden = false; n++;
+      });
+      document.querySelector('.home-main').style.setProperty('--live-n', n);
+    }
+    if (window.ROCE_EVENTS_READY) window.ROCE_EVENTS_READY.then(function (list) { EVENTS = list; renderLive(); });
+    document.addEventListener('roce:lang', renderLive);
+
     sync();
     setInterval(sync, 60000);
   })();

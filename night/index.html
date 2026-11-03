@@ -138,9 +138,11 @@
   }
   .teaser-footer a:hover { text-decoration: underline; }
   .teaser-footer .lang-switch { display: flex; justify-content: center; margin-bottom: 0.4rem; }
-  .teaser-footer-minor { margin-bottom: 0.35rem; }
+  .teaser-footer-minor { margin-bottom: 0.5rem; }
+  .teaser-footer .teaser-footer-minor a { color: inherit; font-family: var(--display); font-size: clamp(1.1rem, 1.7vw, 1.5rem); letter-spacing: 0.03em; text-transform: uppercase; }
 
   .teaser-cta-row {
+    position: relative;
     width: 100%;
     display: flex;
     justify-content: space-between;
@@ -185,11 +187,16 @@
   .back-home { display: inline-flex; padding: 0.3rem; margin-left: -0.3rem; color: inherit; line-height: 0; transition: transform 0.2s ease; }
   .back-home:hover { transform: translateX(-4px); }
   .back-home svg { width: 2rem; height: 2rem; }
-  .teaser-nav .newsletter-toggle img { height: clamp(0.85rem, 2.6vw, 1.1rem); width: auto; }
+  .teaser-nav .newsletter-toggle img { display: block; height: clamp(0.85rem, 2.6vw, 1.1rem); width: auto; }
+
+  /* Instagram: abajo a la derecha, grande, a la altura de la última línea de los enlaces. */
+  .teaser-insta { position: absolute; right: 1rem; bottom: 0.65rem; display: inline-flex; align-items: baseline; gap: 0.35rem; color: inherit; text-decoration: none; font-family: var(--display); font-size: clamp(1.1rem, 2.4vw, 2rem); letter-spacing: 0.02em; text-transform: uppercase; white-space: nowrap; }
+  .teaser-insta-arrow { display: inline-block; transition: transform 0.2s ease; }
+  .teaser-insta:hover .teaser-insta-arrow { transform: translate(3px, -3px); }
 
   /* Reservar mesa y Eventos: abajo a la izquierda, uno encima del otro. */
   .teaser-links { display: flex; flex-direction: column; align-items: flex-start; gap: 0.35rem; }
-  .teaser-link { font-size: clamp(2rem, 5.2vw, 3.4rem); }
+  .teaser-link { font-size: clamp(2rem, 5.2vw, 3.4rem); white-space: nowrap; }
   @media (min-width: 641px) { .teaser-link { font-size: clamp(3rem, 6.2vw, 5.2rem); } }
 
   /* Newsletter: el botón abre un plato encima de la página. */
@@ -344,6 +351,9 @@
 
   @media (max-width: 640px) {
     .teaser-link { font-size: clamp(1.9rem, 9.8vw, 3rem); }
+    /* Instagram en su propia línea, debajo de Reservar mesa y Eventos. */
+    .teaser-cta-row { flex-direction: column; align-items: stretch; gap: 0.5rem; }
+    .teaser-insta { position: static; align-self: flex-end; padding: 0; }
     /* Foto propia para móvil (1080x1920, ya compuesta para vertical) y
        sin el zoom de escritorio. */
     .teaser-bg { transform: none; }
@@ -367,7 +377,7 @@
       <button class="teaser-cta teaser-cta-img newsletter-toggle" id="newsletterToggle" aria-label="Newsletter">
         <img src="/assets/logo/label-newsletter.png" alt="Newsletter">
         <svg class="newsletter-strike" viewBox="0 0 200 50" preserveAspectRatio="none" aria-hidden="true">
-          <path d="M6 23 C 40 19, 70 27, 100 22 S 160 18, 194 22" />
+          <path d="M6 26 C 40 22, 70 30, 100 25 S 160 21, 194 25" />
         </svg>
       </button>
       <div class="newsletter-body" id="newsletterBody">
@@ -405,6 +415,7 @@
         <a class="teaser-cta teaser-link" href="/fuck-who-doesn't-like-this-place/" data-i18n="cta_reservar_mesa">Reservar mesa</a>
         <a class="teaser-cta teaser-link" href="/eventos/?f=night" data-i18n="menu_eventos_title">Eventos</a>
       </div>
+      <a class="teaser-insta" href="https://www.instagram.com/somosroce" target="_blank" rel="noopener">@somosroce <span class="teaser-insta-arrow" aria-hidden="true">↗</span></a>
     </div>
 
     <div class="teaser-footer">
@@ -412,7 +423,7 @@
         <button type="button" data-lang="es">ES</button>
         <button type="button" data-lang="en">EN</button>
       </div>
-      <div class="teaser-footer-minor"><a href="/fuck-who-doesn't-like-this-place/#alquila-el-espacio" data-i18n="menu_alquiler_link">Alquila el espacio</a> · <a href="https://www.instagram.com/somosroce" target="_blank" rel="noopener">@somosroce</a></div>
+      <div class="teaser-footer-minor"><a href="/fuck-who-doesn't-like-this-place/#alquila-el-espacio" data-i18n="menu_alquiler_link">Alquila el espacio</a></div>
       <a href="/aviso-legal.html" data-i18n="footer_legal">Aviso legal</a> · <a href="/terminos.html" data-i18n="footer_terms">Términos y condiciones</a> · <a href="/cookies.html" data-i18n="footer_cookies">Cookies</a> · <a href="/privacidad.html" data-i18n="footer_privacy">Política de privacidad</a>
     </div>
   </div>
