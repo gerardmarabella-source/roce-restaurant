@@ -155,7 +155,7 @@
       return fetch(cfg.url + '/rest/v1/rpc/book_event', {
         method: 'POST',
         headers: { apikey: cfg.anonKey, Authorization: 'Bearer ' + cfg.anonKey, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ p_event: ev.id, p_qty: o.qty, p_name: o.name, p_email: o.email, p_phone: o.phone, p_notes: o.notes || '', p_lang: o.lang, p_marketing: !!o.marketing, p_invoice_name: o.invoiceName || '', p_invoice_tax_id: o.invoiceTaxId || '', p_invoice_address: o.invoiceAddress || '', p_online: !!o.online })
+        body: JSON.stringify({ p_event: ev.id, p_qty: o.qty, p_name: o.name, p_email: o.email, p_phone: o.phone, p_dni: o.dni || '', p_notes: o.notes || '', p_lang: o.lang, p_marketing: !!o.marketing, p_invoice_name: o.invoiceName || '', p_invoice_tax_id: o.invoiceTaxId || '', p_invoice_address: o.invoiceAddress || '', p_online: !!o.online })
       }).then(function (r) {
         return r.json().then(function (body) {
           if (!r.ok) {

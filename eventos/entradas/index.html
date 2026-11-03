@@ -11,7 +11,7 @@
 <link rel="icon" type="image/png" href="/assets/meta/favicon-32.png" sizes="32x32">
 <link rel="apple-touch-icon" href="/assets/meta/apple-touch-icon.png">
 <script src="/eventos/config.js?v=2"></script>
-<script src="/eventos/events.js?v=10"></script>
+<script src="/eventos/events.js?v=11"></script>
 <script>
   // El color de la página es el del ambiente del evento: Day claro, Night
   // oscuro. Hasta saber de qué evento se trata la página va oculta.
@@ -164,6 +164,7 @@
       <label class="tk-field"><span data-i18n="tk_name">Nombre y apellidos</span><input type="text" name="nombre" id="fName" autocomplete="name" required minlength="3"></label>
       <label class="tk-field"><span data-i18n="tk_email">Email</span><input type="email" name="email" id="fEmail" autocomplete="email" inputmode="email" required></label>
       <label class="tk-field"><span data-i18n="tk_phone">Teléfono</span><input type="tel" name="telefono" id="fPhone" autocomplete="tel" inputmode="tel" required></label>
+      <label class="tk-field"><span data-i18n="tk_dni">DNI / NIE / pasaporte</span><input type="text" name="dni" id="fDni" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="20" required></label>
       <label class="tk-field"><span data-i18n="tk_notes">Alergias o comentarios (opcional)</span><textarea name="comentarios" id="fNotes" rows="1"></textarea></label>
       <div id="invBox" hidden>
         <label class="tk-check"><input type="checkbox" id="fInv"><span data-i18n="tk_inv_check">Quiero factura completa (con mis datos fiscales o los de mi empresa).</span></label>
@@ -234,7 +235,7 @@
   </div>
 </div>
 <script src="/cookies.js?v=4"></script>
-<script src="/i18n.js?v=78"></script>
+<script src="/i18n.js?v=79"></script>
 <script>
   window.ROCE_EVENTS_READY.then(function () {
     var U = window.ROCE_EVENT_UTIL;
@@ -388,7 +389,7 @@
         [t('tk_r_place'), esc(t('tk_address'))]
       ];
       if (U.floor(ev, l)) rows.push([t('tk_r_floor'), esc(U.floor(ev, l))]);
-      rows.push([t('tk_r_tickets'), esc(tickets(o.qty))], [t('tk_r_holder'), esc(o.name)], [t('tk_r_contact'), esc(o.email) + '<br>' + esc(o.phone)]);
+      rows.push([t('tk_r_tickets'), esc(tickets(o.qty))], [t('tk_r_holder'), esc(o.name)], [t('tk_r_dni'), esc(o.dni)], [t('tk_r_contact'), esc(o.email) + '<br>' + esc(o.phone)]);
       if (o.invoiceTaxId) rows.push([t('tk_r_invoice'), [o.invoiceName, o.invoiceTaxId, o.invoiceAddress].map(esc).join('<br>')]);
       rows.push([t('tk_total'), esc(total)]);
       $('review').innerHTML = rows.map(function (r) {
@@ -443,10 +444,11 @@
     $('dataForm').addEventListener('submit', function (e) {
       e.preventDefault();
       $('dataError').hidden = true;
-      var name = $('fName').value.trim(), email = $('fEmail').value.trim(), phone = $('fPhone').value.trim();
+      var name = $('fName').value.trim(), email = $('fEmail').value.trim(), phone = $('fPhone').value.trim(), dni = $('fDni').value.replace(/[\s.\-]/g, '').toUpperCase();
       if (name.length < 3) { $('fName').focus(); return fail(t('tk_v_name')); }
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) { $('fEmail').focus(); return fail(t('tk_v_email')); }
       if (phone.replace(/\D/g, '').length < 9) { $('fPhone').focus(); return fail(t('tk_v_phone')); }
+      if (!/^[A-Z0-9]{5,20}$/.test(dni) || (/^\d{8}[A-Z]$/.test(dni) && 'TRWAGMYFPDXBNJZSQVHLCKE'.charAt(parseInt(dni, 10) % 23) !== dni.charAt(8))) { $('fDni').focus(); return fail(t('tk_v_dni')); }
       var invOn = ev.price_cents > 0 && $('fInv').checked;
       if (invOn && ($('fInvName').value.trim().length < 2 || $('fInvAddr').value.trim().length < 5 || !/^[A-Za-z0-9.\-\s]{6,20}$/.test($('fInvTax').value.trim()))) { $('fInvName').focus(); return fail(t('tk_v_invoice')); }
       if (ev.env === 'night' && !$('fAge').checked) return fail(t('tk_v_age'));
@@ -455,7 +457,7 @@
       state.order = {
         ref: newRef(), event: ev.id, qty: state.qty, lang: lang(),
         total_cents: ev.price_cents * state.qty,
-        name: name, email: email, phone: phone, notes: $('fNotes').value.trim(), marketing: $('fMarketing').checked,
+        name: name, email: email, phone: phone, dni: dni, notes: $('fNotes').value.trim(), marketing: $('fMarketing').checked,
         invoiceName: invOn ? $('fInvName').value.trim() : '', invoiceTaxId: invOn ? $('fInvTax').value.trim() : '', invoiceAddress: invOn ? $('fInvAddr').value.trim() : ''
       };
       show(3, true);
