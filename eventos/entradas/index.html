@@ -191,7 +191,8 @@
   <section data-step="3" id="step3" hidden>
     <h2 class="tk-h" data-i18n="tk_review_title">Revisa tu reserva</h2>
     <div id="review"></div>
-    <p class="tk-policy" data-i18n="tk_policy">Si no puedes venir, avísanos en reservas@roce.es para liberar tu plaza.</p>
+    <p class="tk-policy" id="policyFree" data-i18n="tk_policy">Si no puedes venir, avísanos en reservas@roce.es para liberar tu plaza.</p>
+    <p class="tk-policy" id="policyPaid" data-i18n="tk_norefund" hidden>Las entradas no se devuelven ni se cambian. Solo si el evento se cancela o se aplaza te devolvemos el importe.</p>
     <p class="tk-policy" id="payNote" data-i18n="tk_pay_note" hidden>Al continuar te llevamos al banco para pagar con tarjeta de forma segura. Tu plaza queda retenida durante 30 minutos.</p>
     <p class="tk-policy" id="payWait" role="status" hidden></p>
     <p class="tk-error" id="payError" role="alert" hidden></p>
@@ -235,7 +236,7 @@
   </div>
 </div>
 <script src="/cookies.js?v=4"></script>
-<script src="/i18n.js?v=79"></script>
+<script src="/i18n.js?v=81"></script>
 <script>
   window.ROCE_EVENTS_READY.then(function () {
     var U = window.ROCE_EVENT_UTIL;
@@ -405,6 +406,7 @@
     function paintConfirm() {
       var pay = !!needsPayment(), btn = $('confirmBtn');
       $('payNote').hidden = !pay;
+      $('policyPaid').hidden = ev.price_cents <= 0; $('policyFree').hidden = ev.price_cents > 0;
       btn.setAttribute('data-i18n', pay ? 'tk_pay' : 'tk_confirm');
       if (!btn.disabled) btn.textContent = pay ? t('tk_pay').replace('{total}', U.money(state.order.total_cents, lang())) : t('tk_confirm');
     }
