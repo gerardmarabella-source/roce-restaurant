@@ -117,6 +117,11 @@
   }
   .home-statement .line { display: block; }
   .home-statement .l1, .home-statement .l3 { text-align: left; }
+  /* La última palabra es el logo de ROCE: casi el ancho de la palabra que sustituye, pegado a la derecha. */
+  /* margin-top: el hueco visible (0,055 em bajo la línea base + 0,054 em) iguala al de las demás líneas (0,109 em). */
+  .home-logo { display: block; margin: 0.054em 0 0 auto; height: 1.02em; width: auto; }
+  html[data-mode="night"] .home-logo-black, html:not([data-mode="night"]) .home-logo-white { display: none; }
+  .visually-hidden { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
   .home-statement .l2, .home-statement .l4 { text-align: right; }
 
   .home-squares { display: grid; grid-template-columns: var(--sw); justify-content: center; gap: var(--gap); }
@@ -396,7 +401,11 @@
       <span class="line l1"><span data-i18n="home_w1">Todo</span></span>
       <span class="line l2"><span data-i18n="home_w2">empieza</span></span>
       <span class="line l3"><span data-i18n="home_w3">con</span> <span data-i18n="home_w4">un</span></span>
-      <span class="line l4"><span data-i18n="home_w5">roce</span></span>
+      <span class="line l4">
+        <span class="visually-hidden" data-i18n="home_w5">roce</span>
+        <img class="home-logo home-logo-black" src="/assets/logo/roce-horizontal-black.png" alt="" aria-hidden="true">
+        <img class="home-logo home-logo-white" src="/assets/logo/roce-horizontal-white.png" alt="" aria-hidden="true">
+      </span>
     </h1>
 
     <div class="home-squares">
@@ -474,7 +483,7 @@
   </div>
 </div>
 <script src="/cookies.js?v=4"></script>
-<script src="/i18n.js?v=71"></script>
+<script src="/i18n.js?v=74"></script>
 <script src="/eventos/config.js?v=2"></script>
 <script src="/eventos/events.js?v=8"></script>
 

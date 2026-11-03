@@ -110,6 +110,18 @@ y los datos reales del contrato se cobra de verdad: antes de pasar a `live`, haz
 - Las **devoluciones** se hacen desde el portal de Redsys; de momento el panel no las gestiona (ni las facturas rectificativas).
 - Redsys pide mostrar en la web las condiciones de venta y la política de cancelación/devolución. Revisa `terminos.html` con la gestoría.
 
+## 8. Listas de invitados
+Para invitar a alguien (RR. PP., un amigo, un artista) a apuntar a su gente sin pasar por la pasarela:
+1. En el panel, pestaña **Listas → + Nueva lista**: eliges evento, nombre de la lista, **máximo de personas** y **fecha de cierre**
+   (por defecto, la hora de inicio del evento). Opcional: un mensaje para quien la rellena.
+2. Copias el enlace (`roce.es/lista/?t=…`) o lo mandas por WhatsApp desde el propio panel. El enlace es secreto: quien lo tiene puede rellenarla.
+3. Esa persona pone su nombre y contacto y **un nombre por invitado**. Hasta el cierre puede volver al mismo enlace para añadir o quitar.
+4. Los invitados **entran gratis**, **cuentan en el aforo** (si se llena el evento, la lista no deja apuntar más) y salen en **Asistencia**, marcados como "Lista", para tacharlos en la puerta.
+- Después del cierre solo se puede cambiar desde el panel (Ver nombres → añadir / quitar). Se puede cerrar o reabrir a mano.
+- Un evento con listas no se puede borrar hasta borrar sus listas (o despublicarlo).
+- Las tablas `guest_lists` y `guest_list_entries` solo las lee el panel; el público solo puede usar su propio enlace.
+- Quien rellena la lista confirma con una casilla que sus invitados le han autorizado a dar su nombre (RGPD).
+
 ## Dónde se guardan los datos
 - Reservas: tabla `bookings` de Supabase (nombre, email, teléfono, comentarios, entradas, estado).
 - Contactos de marketing: Brevo (solo email y, si se configura, nombre).
