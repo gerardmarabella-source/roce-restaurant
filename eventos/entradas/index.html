@@ -174,7 +174,7 @@
         </div>
         <p class="tk-inv-note" data-i18n="tk_inv_note">La factura (simplificada, o completa si la pides) te llega por email cuando se confirma el pago.</p>
       </div>
-      <label class="tk-check is-age" id="ageRow" hidden><input type="checkbox" id="fAge"><span data-i18n="tk_age">Confirmo que todos los asistentes son mayores de 16 años.</span></label>
+      <label class="tk-check is-age" id="ageRow" hidden><input type="checkbox" id="fAge"><span data-i18n="tk_age">Confirmo que todos los asistentes son mayores de 18 años.</span></label>
       <label class="tk-check"><input type="checkbox" id="fConsent"><span data-i18n-html="tk_consent">He leído y acepto la <a href="/privacidad.html" target="_blank" rel="noopener">política de privacidad</a>. ROCE tratará mis datos para gestionar mi reserva y enviarme información sobre el evento.</span></label>
       <label class="tk-check"><input type="checkbox" id="fMarketing"><span data-i18n="tk_marketing">Quiero recibir novedades y eventos de ROCE por email (opcional).</span></label>
       <input type="checkbox" class="tk-botcheck" id="fBot" tabindex="-1" autocomplete="off" aria-hidden="true">
@@ -234,7 +234,7 @@
   </div>
 </div>
 <script src="/cookies.js?v=4"></script>
-<script src="/i18n.js?v=76"></script>
+<script src="/i18n.js?v=77"></script>
 <script>
   window.ROCE_EVENTS_READY.then(function () {
     var U = window.ROCE_EVENT_UTIL;
@@ -302,7 +302,7 @@
         botcheck: '',
         referencia: order.ref,
         evento: ev.title.es,
-        ambiente: ev.env === 'night' ? 'Night (+16)' : 'Day',
+        ambiente: ev.env === 'night' ? 'Night (+18)' : 'Day',
         fecha: ev.date + ' ' + ev.time,
         lugar: ev.place.es,
         entradas: order.qty,
@@ -342,7 +342,7 @@
 
     var MAX = Math.max(0, Math.min(ev.max_per_order || 6, ev.left));
     var state = { qty: 1, step: 1, order: null };
-    var AGE = '<svg class="age-badge" viewBox="0 0 100 100" role="img" aria-label="+16"><circle cx="50" cy="50" r="44" fill="#ffffff" stroke="#e5453a" stroke-width="9"/><text x="44" y="65" text-anchor="middle" font-family="\'Helvetica Neue Web\',\'Helvetica Neue\',Arial,sans-serif" font-weight="700" font-size="46" letter-spacing="-3" fill="#0a0a0a">16</text><text x="77" y="52" text-anchor="middle" font-family="\'Helvetica Neue Web\',\'Helvetica Neue\',Arial,sans-serif" font-weight="700" font-size="30" fill="#0a0a0a">+</text></svg>';
+    var AGE = '<svg class="age-badge" viewBox="0 0 100 100" role="img" aria-label="+18"><circle cx="50" cy="50" r="44" fill="#ffffff" stroke="#e5453a" stroke-width="9"/><text x="44" y="65" text-anchor="middle" font-family="\'Helvetica Neue Web\',\'Helvetica Neue\',Arial,sans-serif" font-weight="700" font-size="46" letter-spacing="-3" fill="#0a0a0a">18</text><text x="77" y="52" text-anchor="middle" font-family="\'Helvetica Neue Web\',\'Helvetica Neue\',Arial,sans-serif" font-weight="700" font-size="30" fill="#0a0a0a">+</text></svg>';
 
     $('tkPoster').addEventListener('click', function () { U.poster(ev.image); });
 
