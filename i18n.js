@@ -389,8 +389,8 @@
     },
     terms_h2: { es: '2. Reservas', en: '2. Bookings' },
     terms_p2: {
-      es: 'Las reservas realizadas a través del formulario del sitio web son solicitudes, no confirmaciones automáticas: ROCE las revisa y las confirma por email o teléfono en cuanto sea posible. ROCE se reserva el derecho de proponer un cambio de fecha, hora o número de comensales según disponibilidad.',
-      en: "Bookings made through the website form are requests, not automatic confirmations: ROCE reviews them and confirms by email or phone as soon as possible. ROCE reserves the right to propose a different date, time or number of guests based on availability.",
+      es: 'Las reservas de mesa realizadas a través del sistema de reservas del sitio web quedan sujetas a disponibilidad: ROCE las confirma por email o teléfono en cuanto sea posible y se reserva el derecho de proponer un cambio de fecha, hora o número de comensales. Las entradas para eventos se confirman en el momento de completar la compra (y el pago, si el evento es de pago): recibirás un email de confirmación con la referencia de tu compra.',
+      en: 'Table bookings made through the website\'s booking system are subject to availability: ROCE confirms them by email or phone as soon as possible and reserves the right to propose a different date, time or number of guests. Event tickets are confirmed when the purchase is completed (and paid, if the event is paid): you will receive a confirmation email with your purchase reference.',
     },
     terms_h3: { es: '3. Modificaciones y cancelaciones', en: '3. Changes and cancellations' },
     terms_p3: {
