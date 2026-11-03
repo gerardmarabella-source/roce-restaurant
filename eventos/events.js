@@ -102,6 +102,35 @@
     fmt: function (e, lang, opts) { return new Intl.DateTimeFormat(lang, Object.assign({ timeZone: TZ }, opts)).format(this.day(e)); },
     money: money,
 
+    // Texto que no cabe: se desplaza de un lado a otro (con pausa en los extremos)
+    // para poder leerlo entero. Si cabe, queda quieto. Respeta "reducir movimiento".
+    setMarquee: function (box, text) {
+      if (!document.getElementById('roceMarqueeCss')) {
+        var st = document.createElement('style'); st.id = 'roceMarqueeCss';
+        st.textContent = '.mq{display:inline-block;white-space:nowrap}.mq-on{text-overflow:clip!important}.mq-on .mq{animation:mqScroll var(--mq-dur,8s) ease-in-out infinite alternate}@keyframes mqScroll{0%,14%{transform:translateX(0)}86%,100%{transform:translateX(calc(-1*var(--mq-shift)))}}';
+        document.head.appendChild(st);
+      }
+      var inner = box.querySelector('.mq');
+      if (!inner) { inner = document.createElement('span'); inner.className = 'mq'; box.textContent = ''; box.appendChild(inner); }
+      inner.textContent = text;
+      function measure() {
+        box.classList.remove('mq-on'); inner.style.removeProperty('--mq-shift');
+        var over = inner.offsetWidth - box.clientWidth;
+        if (over > 4 && !(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches)) {
+          inner.style.setProperty('--mq-shift', over + 'px');
+          inner.style.setProperty('--mq-dur', Math.max(6, over / 28 + 4).toFixed(1) + 's');
+          box.classList.add('mq-on');
+        }
+      }
+      box.__mqMeasure = measure;
+      requestAnimationFrame(measure);
+      if (!window.__mqResize) {
+        window.__mqResize = true;
+        window.addEventListener('resize', function () { document.querySelectorAll('.mq-on, [data-mq]').forEach(function (b) { if (b.__mqMeasure) b.__mqMeasure(); }); });
+      }
+      box.setAttribute('data-mq', '');
+    },
+
     // Cartel del evento a pantalla completa (se cierra tocando o con Esc).
     poster: function (src) {
       if (!src) return;

@@ -476,7 +476,7 @@
 <script src="/cookies.js?v=3"></script>
 <script src="/i18n.js?v=70"></script>
 <script src="/eventos/config.js?v=2"></script>
-<script src="/eventos/events.js?v=6"></script>
+<script src="/eventos/events.js?v=7"></script>
 
 <script>
   // Se marca "Ahora" en lo que está abierto según la hora de Valencia (Day de
@@ -514,7 +514,7 @@
         var e = U && EVENTS.filter(function (x) { return x.env === c[0] && U.isLive(x); })[0];
         if (!e) { el.hidden = true; return; }
         var b = U.bounds(e);
-        el.querySelector('.home-live-title').textContent = e.title[l] || e.title.es;
+        U.setMarquee(el.querySelector('.home-live-title'), e.title[l] || e.title.es);
         el.querySelector('.home-live-time').textContent = hm(b[0]) + ' – ' + hm(b[1]);
         el.hidden = false; n++;
       });
