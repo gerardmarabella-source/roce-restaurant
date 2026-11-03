@@ -65,6 +65,37 @@
   .ad-bar-cap { height: 6px; background: var(--line); margin-top: 0.5rem; }
   .ad-bar-cap i { display: block; height: 100%; background: var(--fg); }
 
+  /* Asistencia (puerta del evento) */
+  .ck-sum { margin: 0 0 0.75rem; }
+  .ck-sum b { font-family: var(--display); font-size: 2.2rem; font-weight: 400; line-height: 1; }
+  .ck-sum span { font-size: 0.9rem; opacity: 0.7; margin-left: 0.4rem; }
+  .ck-bar { height: 8px; background: var(--line); margin-top: 0.5rem; }
+  .ck-bar i { display: block; height: 100%; background: var(--ok); transition: width 0.25s ease; }
+  .ck-filters { display: flex; gap: 0.5rem; margin: 0 0 1rem; flex-wrap: wrap; }
+  .ck-chip { padding: 0.5rem 0.9rem; border: 1px solid var(--fg); background: none; color: var(--fg); font-family: var(--display); font-size: 0.8rem; letter-spacing: 0.05em; text-transform: uppercase; cursor: pointer; }
+  .ck-chip[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
+  .ck-row { display: grid; grid-template-columns: 1fr auto; gap: 0.5rem 1rem; align-items: center; padding: 0.9rem 1rem; border: 1px solid var(--fg); }
+  .ck-row.is-in { border-color: var(--ok); background: rgba(31, 138, 76, 0.08); }
+  .ck-row.is-late { opacity: 0.55; }
+  .ck-name { font-family: var(--display); font-size: 1.25rem; text-transform: uppercase; line-height: 1.1; }
+  .ck-meta { margin-top: 0.25rem; font-size: 0.82rem; opacity: 0.7; }
+  .ck-controls { display: flex; align-items: center; gap: 0.4rem; }
+  .ck-step { width: 2.75rem; height: 2.75rem; border: 1px solid var(--fg); background: none; color: var(--fg); font-size: 1.4rem; line-height: 1; cursor: pointer; }
+  .ck-step:disabled { opacity: 0.25; cursor: default; }
+  .ck-count { min-width: 3.2rem; text-align: center; font-family: var(--display); font-size: 1.3rem; }
+  .ck-main { min-width: 7.5rem; height: 2.75rem; padding: 0 1rem; border: 2px solid var(--fg); background: var(--fg); color: var(--bg); font-family: var(--display); font-size: 0.95rem; letter-spacing: 0.04em; text-transform: uppercase; cursor: pointer; }
+  .ck-main.is-done { background: var(--ok); border-color: var(--ok); color: #fff; }
+
+  @media (max-width: 560px) {
+    .ad-tabs { flex-wrap: wrap; gap: 0.2rem 1.2rem; }
+    .ad-tab { font-size: 1.3rem; }
+    .ck-row { grid-template-columns: 1fr; }
+    .ck-controls { width: 100%; }
+    .ck-controls .ck-main { flex: 1; }
+    .ck-step { width: 3.2rem; height: 3.2rem; }
+    .ck-main { height: 3.2rem; }
+  }
+
   /* Equipo */
   .ad-sub { font-family: var(--display); font-weight: 400; font-size: 1.2rem; text-transform: uppercase; margin: 2rem 0 0.6rem; }
   .ad-steps { margin: 0 0 1rem 1.2rem; font-size: 0.92rem; line-height: 1.5; }
@@ -114,6 +145,7 @@
     <div class="ad-tabs">
       <button class="ad-tab" data-tab="events" aria-pressed="true" type="button">Eventos</button>
       <button class="ad-tab" data-tab="bookings" aria-pressed="false" type="button">Reservas</button>
+      <button class="ad-tab" data-tab="checkin" aria-pressed="false" type="button">Asistencia</button>
       <button class="ad-tab" data-tab="team" id="teamTab" aria-pressed="false" type="button">Equipo</button>
     </div>
     <p class="ad-msg" id="appMsg" hidden></p>
@@ -137,6 +169,21 @@
         <th>Ref.</th><th>Evento</th><th>Nombre</th><th>Contacto</th><th>Entradas</th><th>Estado</th><th>Pago</th><th></th>
       </tr></thead><tbody id="bkBody"></tbody></table></div>
       <p class="ad-empty" id="bkEmpty" hidden>No hay reservas.</p>
+    </section>
+
+    <section id="tabCheckin" hidden>
+      <div class="ad-bar">
+        <select id="ckEvent"></select>
+        <input type="search" id="ckSearch" placeholder="Buscar nombre o ref.">
+      </div>
+      <div class="ck-sum" id="ckSummary" aria-live="polite"></div>
+      <div class="ck-filters" role="group" aria-label="Filtro">
+        <button type="button" class="ck-chip" data-f="all" aria-pressed="true">Todos</button>
+        <button type="button" class="ck-chip" data-f="missing" aria-pressed="false">Faltan</button>
+        <button type="button" class="ck-chip" data-f="in" aria-pressed="false">Han venido</button>
+      </div>
+      <ul class="ad-list" id="ckList"></ul>
+      <p class="ad-empty" id="ckEmpty" hidden>No hay reservas para este evento.</p>
     </section>
 
     <section id="tabTeam" hidden>
@@ -312,7 +359,8 @@
   document.querySelectorAll('.ad-tab').forEach(function (t) {
     t.addEventListener('click', function () {
       document.querySelectorAll('.ad-tab').forEach(function (x) { x.setAttribute('aria-pressed', x === t ? 'true' : 'false'); });
-      $('tabEvents').hidden = t.dataset.tab !== 'events'; $('tabBookings').hidden = t.dataset.tab !== 'bookings'; $('tabTeam').hidden = t.dataset.tab !== 'team';
+      $('tabEvents').hidden = t.dataset.tab !== 'events'; $('tabBookings').hidden = t.dataset.tab !== 'bookings'; $('tabTeam').hidden = t.dataset.tab !== 'team'; $('tabCheckin').hidden = t.dataset.tab !== 'checkin';
+      if (t.dataset.tab === 'checkin') openCheckin();
       if (t.dataset.tab === 'team' && myRole === 'admin') loadTeam();
     });
   });
@@ -455,13 +503,111 @@
     api('bookings?id=eq.' + b.id, { method: 'PATCH', body: patch }).then(function () { Object.assign(b, patch); renderBookings(); renderEvents(); flash('Reserva actualizada.', 'ok'); }).catch(function (x) { flash(x.message, 'error'); });
   });
   $('bkCsv').addEventListener('click', function () {
-    var rows = [['Ref', 'Evento', 'Fecha evento', 'Nombre', 'Email', 'Teléfono', 'Entradas', 'Total €', 'Estado', 'Pago', 'Novedades', 'Comentarios', 'Reservado', 'Factura']].concat(filteredBookings().map(function (b) {
+    var rows = [['Ref', 'Evento', 'Fecha evento', 'Nombre', 'Email', 'Teléfono', 'Entradas', 'Total €', 'Estado', 'Pago', 'Novedades', 'Comentarios', 'Reservado', 'Factura', 'Han venido']].concat(filteredBookings().map(function (b) {
       var e = eventById(b.event_id);
-      return [b.ref, e ? e.title_es : b.event_id, e ? fmtDate(e.starts_at, { dateStyle: 'short', timeStyle: 'short' }) : '', b.name, b.email, b.phone, b.qty, (b.total_cents / 100).toFixed(2).replace('.', ','), STATUS[b.status], PAY[b.payment_status], b.marketing_optin ? 'sí' : 'no', b.notes, fmtDate(b.created_at, { dateStyle: 'short', timeStyle: 'short' }), (invoiceOf(b) || {}).number || ''];
+      return [b.ref, e ? e.title_es : b.event_id, e ? fmtDate(e.starts_at, { dateStyle: 'short', timeStyle: 'short' }) : '', b.name, b.email, b.phone, b.qty, (b.total_cents / 100).toFixed(2).replace('.', ','), STATUS[b.status], PAY[b.payment_status], b.marketing_optin ? 'sí' : 'no', b.notes, fmtDate(b.created_at, { dateStyle: 'short', timeStyle: 'short' }), (invoiceOf(b) || {}).number || '', b.status === 'cancelled' ? '' : b.checked_in + '/' + b.qty];
     }));
     var csv = '﻿' + rows.map(function (r) { return r.map(function (c) { return '"' + String(c == null ? '' : c).replace(/"/g, '""') + '"'; }).join(';'); }).join('\r\n');
     var a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' })); a.download = 'reservas-roce.csv';
     document.body.appendChild(a); a.click(); a.remove();
+  });
+
+  // ─── Asistencia: marcar quién ha venido ─────────────────────────────
+  // Pensado para la puerta del evento: lista grande, un toque por reserva.
+  // Se guarda al instante y se refresca solo cada pocos segundos, para que
+  // varias personas puedan marcar a la vez.
+  var ckFilter = 'all', ckTimer = null, ckBusy = {};
+  function ckEvents() {
+    var now = Date.now();
+    return events.filter(function (e) { return bookings.some(function (b) { return b.event_id === e.id; }) || new Date(e.starts_at).getTime() + e.duration_h * 3600000 > now - 86400000; })
+      .sort(function (a, b) { return new Date(b.starts_at) - new Date(a.starts_at); });
+  }
+  function ckDefaultEvent(list) {
+    // El que está en marcha; si no, el próximo; si no, el más reciente.
+    var now = Date.now(), live = null, next = null;
+    list.forEach(function (e) {
+      var st = new Date(e.starts_at).getTime(), en = st + e.duration_h * 3600000;
+      if (now >= st && now < en) live = live || e;
+      else if (st > now && (!next || st < new Date(next.starts_at).getTime())) next = e;
+    });
+    return live || next || list[0];
+  }
+  function openCheckin() {
+    var list = ckEvents(), keep = $('ckEvent').value;
+    $('ckEvent').innerHTML = list.map(function (e) {
+      return '<option value="' + esc(e.id) + '">' + esc(fmtDate(e.starts_at, { day: 'numeric', month: 'short' })) + ' · ' + esc(e.title_es) + '</option>';
+    }).join('');
+    var pick = (keep && list.some(function (e) { return e.id === keep; })) ? keep : (ckDefaultEvent(list) || {}).id;
+    if (pick) $('ckEvent').value = pick;
+    renderCheckin();
+    clearInterval(ckTimer);
+    ckTimer = setInterval(function () { if ($('tabCheckin').hidden) { clearInterval(ckTimer); return; } refreshCheckin(); }, 15000);
+  }
+  function refreshCheckin() {
+    var id = $('ckEvent').value; if (!id) return Promise.resolve();
+    return api('bookings?select=*,invoices(number,kind,drive_url)&event_id=eq.' + encodeURIComponent(id)).then(function (rows) {
+      bookings = bookings.filter(function (b) { return b.event_id !== id; }).concat(rows || []);
+      renderCheckin();
+    }).catch(function () {});
+  }
+  function ckRows() {
+    var id = $('ckEvent').value, q = $('ckSearch').value.trim().toLowerCase();
+    return bookings.filter(function (b) { return b.event_id === id && b.status === 'confirmed' && (!q || (b.name + ' ' + b.ref + ' ' + b.email).toLowerCase().indexOf(q) !== -1); })
+      .sort(function (a, b) { return a.name.localeCompare(b.name, 'es'); });
+  }
+  function renderCheckin() {
+    var id = $('ckEvent').value, ev = eventById(id);
+    var all = bookings.filter(function (b) { return b.event_id === id && b.status === 'confirmed'; });
+    var total = all.reduce(function (n, b) { return n + b.qty; }, 0), came = all.reduce(function (n, b) { return n + b.checked_in; }, 0);
+    var ended = ev && new Date(ev.starts_at).getTime() + ev.duration_h * 3600000 <= Date.now();
+    $('ckSummary').innerHTML = '<b>' + came + ' / ' + total + '</b><span>personas han venido' + (total - came > 0 ? ' · ' + (total - came) + (ended ? ' no han venido' : ' por llegar') : '') + '</span>' +
+      '<div class="ck-bar"><i style="width:' + (total ? Math.round(came * 100 / total) : 0) + '%"></i></div>';
+    var rows = ckRows().filter(function (b) { return ckFilter === 'all' || (ckFilter === 'in' ? b.checked_in > 0 : b.checked_in < b.qty); });
+    $('ckEmpty').textContent = all.length ? 'Nadie coincide con ese filtro.' : 'No hay reservas para este evento.';
+    $('ckEmpty').hidden = rows.length > 0;
+    $('ckList').innerHTML = rows.map(function (b) {
+      var done = b.checked_in === b.qty, some = b.checked_in > 0 && !done;
+      var pay = b.total_cents > 0 ? (b.payment_status === 'paid' ? 'Pagado' : '<b style="color:var(--red)">Por cobrar ' + esc(money(b.total_cents)) + '</b>') : 'Gratis';
+      var state = done ? (b.qty > 1 ? 'Han venido todos' : 'Ha venido') : some ? 'Faltan ' + (b.qty - b.checked_in) : (ended ? 'No ha venido' : 'Sin llegar');
+      var controls = b.qty === 1
+        ? '<button class="ck-main' + (done ? ' is-done' : '') + '" data-id="' + b.id + '" data-act="toggle" type="button">' + (done ? '✓ Ha venido' : 'Ha venido') + '</button>'
+        : '<button class="ck-step" data-id="' + b.id + '" data-act="minus" type="button" aria-label="Uno menos"' + (b.checked_in <= 0 ? ' disabled' : '') + '>−</button>' +
+          '<span class="ck-count">' + b.checked_in + '/' + b.qty + '</span>' +
+          '<button class="ck-step" data-id="' + b.id + '" data-act="plus" type="button" aria-label="Uno más"' + (b.checked_in >= b.qty ? ' disabled' : '') + '>+</button>' +
+          '<button class="ck-main' + (done ? ' is-done' : '') + '" data-id="' + b.id + '" data-act="all" type="button">' + (done ? '✓ Todos' : 'Todos') + '</button>';
+      return '<li class="ck-row' + (done ? ' is-in' : '') + (!done && !some && ended ? ' is-late' : '') + '">' +
+        '<div><div class="ck-name">' + esc(b.name) + '</div><div class="ck-meta">' + esc(b.ref) + ' · ' + b.qty + (b.qty === 1 ? ' entrada' : ' entradas') + ' · ' + pay + ' · ' + esc(state) +
+          (b.notes ? '<br>' + esc(b.notes) : '') + '</div></div>' +
+        '<div class="ck-controls">' + controls + '</div></li>';
+    }).join('');
+  }
+  function ckSet(b, n) {
+    n = Math.max(0, Math.min(b.qty, n));
+    if (ckBusy[b.id] || n === b.checked_in) return;
+    ckBusy[b.id] = true;
+    var prev = { checked_in: b.checked_in, checked_in_at: b.checked_in_at };
+    var patch = { checked_in: n, checked_in_at: n > 0 ? new Date().toISOString() : null };
+    Object.assign(b, patch); renderCheckin();
+    api('bookings?id=eq.' + b.id, { method: 'PATCH', body: patch }).catch(function (x) { Object.assign(b, prev); renderCheckin(); flash('No se ha podido guardar: ' + x.message, 'error'); })
+      .then(function () { delete ckBusy[b.id]; });
+  }
+  $('ckList').addEventListener('click', function (ev) {
+    var btn = ev.target.closest('button[data-act]'); if (!btn) return;
+    var b = bookings.filter(function (x) { return x.id === btn.dataset.id; })[0]; if (!b) return;
+    var act = btn.dataset.act;
+    if (act === 'toggle') ckSet(b, b.checked_in ? 0 : b.qty);
+    else if (act === 'all') ckSet(b, b.checked_in === b.qty ? 0 : b.qty);
+    else if (act === 'plus') ckSet(b, b.checked_in + 1);
+    else if (act === 'minus') ckSet(b, b.checked_in - 1);
+  });
+  $('ckEvent').addEventListener('change', function () { renderCheckin(); refreshCheckin(); });
+  $('ckSearch').addEventListener('input', renderCheckin);
+  document.querySelectorAll('.ck-chip').forEach(function (c) {
+    c.addEventListener('click', function () {
+      ckFilter = c.dataset.f;
+      document.querySelectorAll('.ck-chip').forEach(function (x) { x.setAttribute('aria-pressed', x === c ? 'true' : 'false'); });
+      renderCheckin();
+    });
   });
 
   // ─── Equipo ─────────────────────────────────────────────────────────
