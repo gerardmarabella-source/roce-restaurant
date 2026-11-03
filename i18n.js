@@ -29,6 +29,7 @@
     menu_reservar_title: { es: 'Reservar', en: 'Book' },
     menu_alquiler_link: { es: 'Alquila el espacio', en: 'Rent the space' },
     menu_eventos_title: { es: 'Eventos', en: 'Events' },
+    cta_reservar_mesa: { es: 'Reservar mesa', en: 'Book a table' },
 
     // Newsletter (widget compartido, usado en home)
     newsletter_text: { es: 'Entérate antes que nadie de todo.', en: 'Be the first to know.' },

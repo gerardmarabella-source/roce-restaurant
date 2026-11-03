@@ -95,7 +95,7 @@
   /* Cabecera centrada: logo + leyenda, uno encima del otro. */
   .teaser-top {
     position: absolute;
-    top: 2.25rem;
+    top: 3.6rem;
     left: 0;
     right: 0;
     z-index: 4;
@@ -138,15 +138,7 @@
   }
   .teaser-footer a:hover { text-decoration: underline; }
   .teaser-footer .lang-switch { display: flex; justify-content: center; margin-bottom: 0.4rem; }
-  .teaser-footer .mode-switch {
-    display: inline-block;
-    margin-bottom: 0.6rem;
-    color: var(--cream);
-    font-family: var(--display);
-    font-size: 0.85rem;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-  }
+  .teaser-footer-minor { margin-bottom: 0.35rem; }
 
   .teaser-cta-row {
     width: 100%;
@@ -197,111 +189,29 @@
     color: var(--cream);
   }
 
-  /* Menú de Reservas: al pulsar el botón se abre a pantalla completa con
-     las opciones (reservar, eventos y, más discreto, alquiler del espacio). */
-  .reservas-menu-wrap { position: relative; }
-  .reservas-menu-wrap.is-collapsed .reservas-menu { display: none; }
-  .reservas-menu {
-    position: fixed;
-    inset: 0;
-    margin: 0;
-    background: var(--black);
-    padding: 6rem 1rem 3rem;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-    gap: 0;
-    z-index: 500;
-    animation: reservasFadeIn 0.25s ease both;
-  }
-  .reservas-menu-close {
-    position: fixed;
-    top: 0.6rem;
-    left: 1.25rem;
+  /* Barra superior: flecha para volver a la portada (izquierda) y newsletter
+     pequeña (derecha). */
+  .teaser-nav {
+    position: absolute;
+    top: 0.9rem;
+    left: 0;
+    right: 0;
+    z-index: 5;
     display: flex;
     align-items: center;
-    justify-content: center;
-    background: none;
-    border: none;
-    padding: 0.4rem;
-    color: var(--cream);
-    cursor: pointer;
-    z-index: 501;
-    opacity: 0.9;
-    transition: opacity 0.15s ease;
-    animation: reservasFadeIn 0.3s ease both;
+    justify-content: space-between;
+    padding: 0 1rem;
+    pointer-events: none;
   }
-  .reservas-menu-close svg { width: 2.4rem; height: 2.4rem; }
-  .reservas-menu-close:hover { opacity: 1; }
-  .reservas-menu-item {
-    position: relative;
-    display: block;
-    padding: 1.25rem 3.2rem 1.25rem 0;
-    border-top: 1px solid rgba(236, 231, 221, 0.28);
-    text-decoration: none;
-    color: var(--cream);
-    transition: opacity 0.15s ease;
-    animation: reservasItemIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
-  }
-  .reservas-menu-item:nth-child(2) { animation-delay: 0.05s; }
-  .reservas-menu-item:nth-child(3) { animation-delay: 0.13s; }
-  .reservas-menu-item:nth-child(4) { animation-delay: 0.21s; }
-  /* Flecha a la derecha: señal de que la opción se puede pulsar. */
-  .reservas-menu-item:not(.is-disabled)::after {
-    content: "\2192";
-    position: absolute;
-    right: 0.2rem;
-    top: 1.25rem;
-    font-family: var(--display);
-    font-size: clamp(2.2rem, 10vw, 3.8rem);
-    line-height: 1;
-    transition: transform 0.2s ease;
-  }
-  .reservas-menu-item:not(.is-disabled):hover::after { transform: translateX(6px); }
-  .reservas-menu-minor {
-    margin-top: 0;
-    padding: 1.25rem 0 0;
-    border-top: 1px solid rgba(236, 231, 221, 0.28);
-    align-self: stretch;
-    font-family: var(--display);
-    font-size: 0.9rem;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    text-decoration: none;
-    color: var(--white);
-    transition: opacity 0.15s ease;
-    animation: reservasItemIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.29s both;
-  }
-  .reservas-menu-minor:not(:last-child) { padding-bottom: 1.25rem; }
-  .reservas-menu-minor:hover { opacity: 0.7; }
-  .reservas-menu-minor-arrow { display: inline-block; transition: transform 0.2s ease; }
-  .reservas-menu-minor:hover .reservas-menu-minor-arrow,
-  .reservas-menu-minor:focus-visible .reservas-menu-minor-arrow { transform: translateX(6px); }
-  @keyframes reservasFadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-  }
-  @keyframes reservasItemIn {
-    from { opacity: 0; transform: translateY(28px) scale(0.97); }
-    /* La opacidad final la fija --item-opacity (1 por defecto, 0.55
-       en los deshabilitados) — si aquí pusiéramos 1 a secas, la propia
-       animación pisaría la opacidad reducida al terminar. */
-    to { opacity: var(--item-opacity, 1); transform: translateY(0) scale(1); }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .reservas-menu, .reservas-menu-close, .reservas-menu-item, .reservas-menu-minor { animation: none; }
-  }
-  .reservas-menu-item:not(.is-disabled):hover { opacity: 0.7; }
-  .reservas-menu-item.is-disabled { --item-opacity: 0.55; cursor: default; }
-  .reservas-menu-title {
-    display: block;
-    font-family: var(--display);
-    font-weight: 400;
-    text-transform: uppercase;
-    font-size: clamp(2.6rem, 13vw, 5rem);
-    line-height: 1;
-    letter-spacing: 0.01em;
-  }
+  .teaser-nav > * { pointer-events: auto; }
+  .back-home { display: inline-flex; padding: 0.3rem; margin-left: -0.3rem; color: inherit; line-height: 0; transition: transform 0.2s ease; }
+  .back-home:hover { transform: translateX(-4px); }
+  .back-home svg { width: 2rem; height: 2rem; }
+  .teaser-nav .newsletter-toggle img { height: clamp(0.85rem, 2.6vw, 1.1rem); width: auto; }
+
+  /* Reservar mesa y Eventos: abajo a la izquierda, uno encima del otro. */
+  .teaser-links { display: flex; flex-direction: column; align-items: flex-start; gap: 0.35rem; }
+  .teaser-link { font-size: clamp(2rem, 5.2vw, 3.4rem); }
 
   /* Newsletter: el botón abre un plato encima de la página. */
   .newsletter-widget { position: relative; z-index: 200; color: var(--cream); }
@@ -454,20 +364,7 @@
   }
 
   @media (max-width: 640px) {
-    /* A este ancho, "Reservas" y "Newsletter" no caben lado a lado —
-       se apilan en vertical. Misma altura para las dos (igual que en
-       la imagen de referencia), cada una con su ancho natural — así
-       "Newsletter" (más letras) llega casi al borde y "Reservas"
-       queda proporcionalmente más corta, sin verse desigual. */
-    .teaser-cta-row {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 0.3rem;
-      padding: 0 1rem 0.75rem;
-    }
-    .teaser-cta { font-size: clamp(2.1rem, 12.5vw, 3rem); }
-    .teaser-cta-img img { height: clamp(2.4rem, 11.5vw, 3.2rem); width: auto; }
-    .teaser-cta-text { font-size: clamp(2.5rem, 14.5vw, 3.9rem); }
+    .teaser-link { font-size: clamp(1.9rem, 9.8vw, 3rem); }
     /* Foto propia para móvil (1080x1920, ya compuesta para vertical) y
        sin el zoom de escritorio. */
     .teaser-bg { transform: none; }
@@ -483,69 +380,60 @@
     <img class="teaser-bg" src="/assets/teaser/bg-desktop.jpg?v=3" alt="">
   </picture>
 
+  <nav class="teaser-nav">
+    <a class="back-home" href="/" aria-label="Volver al inicio">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+    </a>
+    <div class="newsletter-widget is-collapsed" id="newsletterWidget" data-nosnippet>
+      <button class="teaser-cta teaser-cta-img newsletter-toggle" id="newsletterToggle" aria-label="Newsletter">
+        <img src="/assets/logo/label-newsletter.png" alt="Newsletter">
+        <svg class="newsletter-strike" viewBox="0 0 200 50" preserveAspectRatio="none" aria-hidden="true">
+          <path d="M6 23 C 40 19, 70 27, 100 22 S 160 18, 194 22" />
+        </svg>
+      </button>
+      <div class="newsletter-body" id="newsletterBody">
+        <button class="newsletter-close" id="newsletterClose" aria-label="Cerrar">&times;</button>
+
+        <div class="newsletter-plate-content" id="newsletterPlateContent">
+          <p class="newsletter-title">Newsletter</p>
+          <p class="newsletter-text" data-i18n="newsletter_text">Entérate antes que nadie de todo.</p>
+          <form class="newsletter-form" id="newsletterForm">
+            <input type="text" name="email_address_check" value="" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute; left:-9999px; width:1px; height:1px; opacity:0;">
+            <input type="email" name="email" class="newsletter-input" placeholder="tu@email.com" data-i18n-placeholder="newsletter_placeholder" required>
+            <button type="submit" class="newsletter-submit" data-i18n="newsletter_submit">Enviar</button>
+          </form>
+        </div>
+
+        <div class="newsletter-confirm-close" id="newsletterConfirmClose" hidden>
+          <p class="newsletter-confirm-text" data-i18n="newsletter_confirm_close">¿Seguro que quieres abandonar?</p>
+          <div class="newsletter-confirm-actions">
+            <button type="button" id="newsletterConfirmStay" data-i18n="newsletter_confirm_stay">No, quedarme</button>
+            <button type="button" id="newsletterConfirmYes" data-i18n="newsletter_confirm_yes">Sí, cerrar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </nav>
+
   <div class="teaser-top">
     <img class="lockup" src="/assets/logo/roce-lockup-cream.png?v=2" alt="ROCE — Restaurant &amp; Cocktails, Marqués del Túria 16, Valencia (Spain)">
   </div>
 
   <div class="teaser-bottom">
     <div class="teaser-cta-row">
-      <div class="reservas-menu-wrap is-collapsed" id="reservasWidget" data-nosnippet>
-        <button class="teaser-cta teaser-cta-img reservas-toggle" id="reservasToggle" aria-label="Reservas" aria-expanded="false">
-          <img class="lang-es-only" src="/assets/logo/label-reservas.png" alt="Reservas">
-          <span class="teaser-cta-text lang-en-only">Bookings</span>
-        </button>
-        <div class="reservas-menu" id="reservasMenu">
-          <button class="reservas-menu-close" id="reservasMenuClose" aria-label="Cerrar">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-          </button>
-          <a class="reservas-menu-item" href="/fuck-who-doesn't-like-this-place/">
-            <span class="reservas-menu-title" data-i18n="menu_reservar_title">Reservar</span>
-          </a>
-          <a class="reservas-menu-item" href="/eventos/?f=night">
-            <span class="reservas-menu-title" data-i18n="menu_eventos_title">Eventos</span>
-          </a>
-          <a class="reservas-menu-minor" href="/fuck-who-doesn't-like-this-place/#alquila-el-espacio"><span data-i18n="menu_alquiler_link">Alquila el espacio</span> <span class="reservas-menu-minor-arrow" aria-hidden="true">→</span></a>
-          <a class="reservas-menu-minor" href="https://www.instagram.com/somosroce" target="_blank" rel="noopener">@somosroce <span class="reservas-menu-minor-arrow" aria-hidden="true">↗</span></a>
-        </div>
-      </div>
-
-      <div class="newsletter-widget is-collapsed" id="newsletterWidget" data-nosnippet>
-        <button class="teaser-cta teaser-cta-img newsletter-toggle" id="newsletterToggle" aria-label="Newsletter">
-          <img src="/assets/logo/label-newsletter.png" alt="Newsletter">
-          <svg class="newsletter-strike" viewBox="0 0 200 50" preserveAspectRatio="none" aria-hidden="true">
-            <path d="M6 23 C 40 19, 70 27, 100 22 S 160 18, 194 22" />
-          </svg>
-        </button>
-        <div class="newsletter-body" id="newsletterBody">
-          <button class="newsletter-close" id="newsletterClose" aria-label="Cerrar">&times;</button>
-
-          <div class="newsletter-plate-content" id="newsletterPlateContent">
-            <p class="newsletter-title">Newsletter</p>
-            <p class="newsletter-text" data-i18n="newsletter_text">Entérate antes que nadie de todo.</p>
-            <form class="newsletter-form" id="newsletterForm">
-              <input type="text" name="email_address_check" value="" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute; left:-9999px; width:1px; height:1px; opacity:0;">
-              <input type="email" name="email" class="newsletter-input" placeholder="tu@email.com" data-i18n-placeholder="newsletter_placeholder" required>
-              <button type="submit" class="newsletter-submit" data-i18n="newsletter_submit">Enviar</button>
-            </form>
-          </div>
-
-          <div class="newsletter-confirm-close" id="newsletterConfirmClose" hidden>
-            <p class="newsletter-confirm-text" data-i18n="newsletter_confirm_close">¿Seguro que quieres abandonar?</p>
-            <div class="newsletter-confirm-actions">
-              <button type="button" id="newsletterConfirmStay" data-i18n="newsletter_confirm_stay">No, quedarme</button>
-              <button type="button" id="newsletterConfirmYes" data-i18n="newsletter_confirm_yes">Sí, cerrar</button>
-            </div>
-          </div>
-        </div>
+      <div class="teaser-links" data-nosnippet>
+        <a class="teaser-cta teaser-link" href="/fuck-who-doesn't-like-this-place/" data-i18n="cta_reservar_mesa">Reservar mesa</a>
+        <a class="teaser-cta teaser-link" href="/eventos/?f=night" data-i18n="menu_eventos_title">Eventos</a>
       </div>
     </div>
 
     <div class="teaser-footer">
-      <a class="mode-switch" href="/day/"><span data-i18n="switch_to_day">Ir a Day</span> <span aria-hidden="true">→</span></a>
       <div class="lang-switch">
         <button type="button" data-lang="es">ES</button>
         <button type="button" data-lang="en">EN</button>
       </div>
+      <div class="teaser-footer-minor"><a href="/fuck-who-doesn't-like-this-place/#alquila-el-espacio" data-i18n="menu_alquiler_link">Alquila el espacio</a> · <a href="https://www.instagram.com/somosroce" target="_blank" rel="noopener">@somosroce</a></div>
       <a href="/aviso-legal.html" data-i18n="footer_legal">Aviso legal</a> · <a href="/terminos.html" data-i18n="footer_terms">Términos y condiciones</a> · <a href="/cookies.html" data-i18n="footer_cookies">Cookies</a> · <a href="/privacidad.html" data-i18n="footer_privacy">Política de privacidad</a>
     </div>
   </div>
@@ -559,7 +447,7 @@
   </div>
 </div>
 <script src="/cookies.js?v=3"></script>
-<script src="/i18n.js?v=63"></script>
+<script src="/i18n.js?v=64"></script>
 
 <script>
   function initNewsletterWidget() {
@@ -690,35 +578,7 @@
     });
   }
 
-  function initReservasMenu() {
-    const widget = document.getElementById('reservasWidget');
-    const toggleBtn = document.getElementById('reservasToggle');
-    const closeBtn = document.getElementById('reservasMenuClose');
-    if (!widget || !toggleBtn) return;
-
-    toggleBtn.addEventListener('click', () => {
-      const willOpen = widget.classList.contains('is-collapsed');
-      widget.classList.toggle('is-collapsed');
-      toggleBtn.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
-    });
-
-    if (closeBtn) {
-      closeBtn.addEventListener('click', () => {
-        widget.classList.add('is-collapsed');
-        toggleBtn.setAttribute('aria-expanded', 'false');
-      });
-    }
-
-    document.addEventListener('click', (e) => {
-      if (!widget.contains(e.target)) {
-        widget.classList.add('is-collapsed');
-        toggleBtn.setAttribute('aria-expanded', 'false');
-      }
-    });
-  }
-
   initNewsletterWidget();
-  initReservasMenu();
 </script>
 
 </body>
