@@ -48,12 +48,29 @@
     return;
   }
 
+  // Estructura: [título] [texto] [botones] dentro de una tarjeta. Se monta aquí para no
+  // repetir el marcado en cada página.
+  if (!banner.querySelector('.cookie-card')) {
+    var card = document.createElement('div'); card.className = 'cookie-card';
+    var title = document.createElement('p'); title.className = 'cookie-title';
+    title.setAttribute('data-i18n', 'cookie_title'); title.textContent = 'Tu privacidad';
+    card.appendChild(title);
+    while (banner.firstChild) card.appendChild(banner.firstChild);
+    banner.appendChild(card);
+    card.insertBefore(title, card.firstChild);
+  }
+  // En las páginas legales no se bloquea la pantalla, para poder leer la política.
+  if (/\/(cookies|privacidad|aviso-legal|terminos)(\.html)?\/?$/.test(location.pathname)) banner.classList.add('is-compact');
+  else document.documentElement.classList.add('cookie-open');
+  banner.setAttribute('role', 'dialog'); banner.setAttribute('aria-modal', banner.classList.contains('is-compact') ? 'false' : 'true');
+
   var acceptBtn = document.getElementById('cookieAccept');
   var rejectBtn = document.getElementById('cookieReject');
 
   function setConsent(value) {
     localStorage.setItem(KEY, value);
     banner.classList.add('is-hidden');
+    document.documentElement.classList.remove('cookie-open');
     if (value === 'accepted') { loadMetaPixel(); loadGoogleTagManager(); }
   }
 
