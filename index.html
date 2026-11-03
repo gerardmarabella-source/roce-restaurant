@@ -5,14 +5,20 @@
 <meta name="facebook-domain-verification" content="97fpm62p3em57kqqspxh7niyrgvcj8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="format-detection" content="telephone=no, address=no, email=no, date=no">
-<title>ROCE — Restaurant &amp; Cocktails, Valencia</title>
-<meta name="description" content="ROCE en Valencia (Marqués del Túria 16): Day, brunch y cafetería de 10:00 a 20:00 sin reserva, y Night, cenas y noche de 20:00 a 02:00.">
+<title>ROCE</title>
+<meta name="description" content="ROCE en Valencia (Gran Vía Marqués del Túria 16). De día, Coffee, Bakery &amp; Kitchen, de 10:00 a 20:00. De noche, Restaurant &amp; Cocktails, de miércoles a sábado, de 20:00 a 02:00.">
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link rel="icon" type="image/png" href="/assets/meta/favicon-32.png" sizes="32x32">
 <link rel="apple-touch-icon" href="/assets/meta/apple-touch-icon.png">
 <meta property="og:type" content="website">
-<meta property="og:title" content="ROCE — Restaurant &amp; Cocktails, Valencia">
-<meta property="og:description" content="ROCE en Valencia (Marqués del Túria 16): Day, brunch y cafetería de 10:00 a 20:00 sin reserva, y Night, cenas y noche de 20:00 a 02:00.">
+<link rel="canonical" href="https://roce.es/">
+<meta property="og:site_name" content="ROCE">
+<meta property="og:locale" content="es_ES">
+<meta property="og:locale:alternate" content="en_GB">
+<meta name="twitter:title" content="ROCE">
+<meta name="twitter:description" content="ROCE en Valencia (Gran Vía Marqués del Túria 16). De día, Coffee, Bakery &amp; Kitchen, de 10:00 a 20:00. De noche, Restaurant &amp; Cocktails, de miércoles a sábado, de 20:00 a 02:00.">
+<meta property="og:title" content="ROCE">
+<meta property="og:description" content="ROCE en Valencia (Gran Vía Marqués del Túria 16). De día, Coffee, Bakery &amp; Kitchen, de 10:00 a 20:00. De noche, Restaurant &amp; Cocktails, de miércoles a sábado, de 20:00 a 02:00.">
 <meta property="og:image" content="https://roce.es/assets/meta/og-image.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -23,23 +29,75 @@
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
-  "@type": "Restaurant",
-  "name": "ROCE",
-  "image": "https://roce.es/assets/meta/og-image.png",
-  "url": "https://roce.es/",
-  "telephone": "+34614073163",
-  "email": "reservas@roce.es",
-  "address": {
-    "@type": "PostalAddress",
-    "streetAddress": "Gran Vía Marqués del Túria, 16, Bajo, Dcha",
-    "addressLocality": "Valencia",
-    "postalCode": "46005",
-    "addressCountry": "ES"
-  },
-  "sameAs": [
-    "https://www.instagram.com/somosroce"
-  ],
-  "acceptsReservations": "https://roce.es/fuck-who-doesn't-like-this-place"
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "@id": "https://roce.es/#website",
+      "url": "https://roce.es/",
+      "name": "ROCE",
+      "alternateName": [
+        "ROCE Valencia",
+        "somosroce"
+      ],
+      "inLanguage": [
+        "es",
+        "en"
+      ],
+      "publisher": {
+        "@id": "https://roce.es/#org"
+      }
+    },
+    {
+      "@type": "Organization",
+      "@id": "https://roce.es/#org",
+      "name": "ROCE",
+      "legalName": "BRUNCH DINNER ETC. SL",
+      "url": "https://roce.es/",
+      "logo": "https://roce.es/assets/meta/apple-touch-icon.png",
+      "image": "https://roce.es/assets/meta/og-image.png",
+      "email": "reservas@roce.es",
+      "telephone": "+34614073163",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "Gran Vía Marqués del Túria, 16, Bajo, Dcha",
+        "addressLocality": "Valencia",
+        "postalCode": "46005",
+        "addressRegion": "Valencia",
+        "addressCountry": "ES"
+      },
+      "sameAs": [
+        "https://www.instagram.com/somosroce"
+      ],
+      "subOrganization": [
+        {
+          "@id": "https://roce.es/day/#place"
+        },
+        {
+          "@id": "https://roce.es/night/#place"
+        }
+      ]
+    },
+    {
+      "@type": "CafeOrCoffeeShop",
+      "@id": "https://roce.es/day/#place",
+      "name": "ROCE - Coffee, Bakery & Kitchen",
+      "alternateName": "ROCE Day",
+      "url": "https://roce.es/day/",
+      "parentOrganization": {
+        "@id": "https://roce.es/#org"
+      }
+    },
+    {
+      "@type": "Restaurant",
+      "@id": "https://roce.es/night/#place",
+      "name": "ROCE - Restaurant & Cocktails",
+      "alternateName": "ROCE Night",
+      "url": "https://roce.es/night/",
+      "parentOrganization": {
+        "@id": "https://roce.es/#org"
+      }
+    }
+  ]
 }
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
