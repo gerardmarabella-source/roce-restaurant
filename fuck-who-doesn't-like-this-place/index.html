@@ -276,6 +276,18 @@
 </style>
 </head>
 <body>
+<script>
+  // Fondo desde el primer pintado: #day claro, #night oscuro y, en el motor mixto
+  // (sin elegir), claro de 08:00 a 20:00 y oscuro el resto, igual que la portada.
+  (function () {
+    var h = location.hash, light = h === '#day';
+    if (h !== '#day' && h !== '#night') {
+      var x = Number(new Intl.DateTimeFormat('en-GB', { hour: '2-digit', hourCycle: 'h23', timeZone: 'Europe/Madrid' }).format(new Date()));
+      light = x >= 8 && x < 20;
+    }
+    if (light) document.body.classList.add('zone-day');
+  })();
+</script>
 
 <header class="topbar">
   <a href="/" aria-label="ROCE — inicio"><img class="nav-logo" id="navLogo" src="/assets/logo/roce-horizontal-white.png" alt="ROCE"></a>
@@ -424,22 +436,27 @@
   // abren ese ambiente; sin ellos se ve el motor conjunto.
   const zoneTabs = document.querySelectorAll('.reserve-zone');
   const backLink = document.querySelector('.reserve-back');
+  function isDayTime() {
+    const h = Number(new Intl.DateTimeFormat('en-GB', { hour: '2-digit', hourCycle: 'h23', timeZone: 'Europe/Madrid' }).format(new Date()));
+    return h >= 8 && h < 20;
+  }
   function setZone(next) {
     zone = next;
     zoneTabs.forEach((b) => b.setAttribute('aria-pressed', b.dataset.zone === zone ? 'true' : 'false'));
     backLink.setAttribute('href', zone === 'all' ? '/' : '/' + zone + '/');
-    document.body.classList.toggle('zone-day', zone === 'day');
-    document.getElementById('nightNotice').hidden = zone === 'day';
-    document.getElementById('reserveHours').hidden = zone !== 'day'; // solo se muestra el horario de Day
+    // Claro: Day, o el motor mixto de día (08:00-20:00). Oscuro: Night, o el mixto de noche.
     const day = zone === 'day';
+    const light = day || (zone === 'all' && isDayTime());
+    document.body.classList.toggle('zone-day', light);
+    document.getElementById('nightNotice').hidden = day;
+    document.getElementById('reserveHours').hidden = !day; // solo se muestra el horario de Day
     document.querySelector('.footer-headline').textContent = day ? 'Coffee, Bakery & Kitchen' : 'Restaurant & Cocktails';
-    document.getElementById('footerLogo').setAttribute('src', '/assets/logo/roce-tilted-' + (day ? 'black' : 'white') + '.png');
-    document.getElementById('navLogo').setAttribute('src', '/assets/logo/roce-horizontal-' + (day ? 'black' : 'white') + '.png');
+    document.getElementById('footerLogo').setAttribute('src', '/assets/logo/roce-tilted-' + (light ? 'black' : 'white') + '.png');
+    document.getElementById('navLogo').setAttribute('src', '/assets/logo/roce-horizontal-' + (light ? 'black' : 'white') + '.png');
     syncCoverManagerLang();
   }
   zoneTabs.forEach((b) => b.addEventListener('click', () => setZone(b.dataset.zone)));
-  if (location.hash === '#day') setZone('day');
-  else if (location.hash === '#night') setZone('night');
+  setZone(location.hash === '#day' ? 'day' : location.hash === '#night' ? 'night' : 'all');
 
   const alquilerDetails = document.getElementById('alquilerDetails');
   function openAlquilerIfTargeted() {
