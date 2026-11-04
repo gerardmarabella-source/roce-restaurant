@@ -163,7 +163,6 @@
     evd_ig_done: { es: 'Imagen descargada y enlace copiado: súbela a tu historia de Instagram.', en: 'Image downloaded and link copied: upload it to your Instagram story.' },
     evd_ig_err: { es: 'No se ha podido crear la imagen.', en: 'Could not create the image.' },
     evd_copied: { es: 'Enlace copiado', en: 'Link copied' },
-    ev_upcoming: { es: 'Próximos eventos', en: 'Upcoming events' },
     ev_cta: { es: 'Comprar entrada', en: 'Get tickets' },
     ev_empty: { es: 'Muy pronto publicaremos aquí los próximos eventos.', en: 'We will soon publish the upcoming events here.' },
     // Compra de entradas / reserva de plaza (/eventos/entradas/)
