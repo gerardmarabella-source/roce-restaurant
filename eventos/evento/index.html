@@ -88,13 +88,6 @@
   .evd-linkrow input { flex: 1; min-width: 0; padding: 0.55rem 0.4rem; border: 0; background: transparent; color: inherit; font: inherit; font-size: 0.9rem; }
   .evd-copy { flex-shrink: 0; padding: 0.55rem 1.1rem; border: 0; background: var(--fg); color: var(--bg); font-family: var(--display); font-size: 0.95rem; letter-spacing: 0.04em; text-transform: uppercase; cursor: pointer; }
   @media (min-width: 640px) { .evd-modal { align-items: center; padding: 1rem; } }
-  .evd-story { position: fixed; inset: 0; z-index: 90; display: flex; align-items: center; justify-content: center; background: rgba(0, 0, 0, 0.92); padding: 1rem; overflow-y: auto; }
-  .evd-story-in { position: relative; width: 100%; max-width: 22rem; text-align: center; color: #ffffff; }
-  .evd-story-in .evd-x { position: absolute; top: -0.4rem; right: -0.2rem; color: #ffffff; z-index: 2; }
-  .evd-story-in img { display: block; width: 100%; max-height: 66vh; object-fit: contain; margin: 1.6rem 0 0.9rem; -webkit-touch-callout: default; }
-  .evd-story-in p { font-size: 0.9rem; line-height: 1.45; opacity: 0.85; }
-  .evd-story-btns { display: flex; gap: 0.6rem; margin-top: 0.9rem; }
-  .evd-story-btns .evd-copy { flex: 1; padding: 0.9rem 0.6rem; background: #ffffff; color: #0a0a0a; text-decoration: none; }
   .evd-toast { position: fixed; left: 50%; bottom: 6.5rem; transform: translateX(-50%); z-index: 50; padding: 0.6rem 1rem; background: var(--fg); color: var(--bg); font-size: 0.9rem; opacity: 0; pointer-events: none; transition: opacity 0.2s ease; }
   .evd-toast.is-on { opacity: 1; }
   .ev-foot { padding: 1.5rem 1rem 2rem; text-align: center; font-size: 0.68rem; line-height: 1.35; letter-spacing: 0.03em; opacity: 0.6; }
@@ -151,7 +144,7 @@
   <div class="evd-sheet" role="dialog" aria-modal="true" aria-labelledby="evdShareTitle">
     <div class="evd-sheet-head"><h2 id="evdShareTitle" data-i18n="evd_share">Compartir</h2><button type="button" class="evd-x" id="evdShareClose" aria-label="Cerrar">×</button></div>
     <div class="evd-share-grid" id="evdShareGrid"></div>
-    <p class="evd-hint" data-i18n="evd_ig_hint">Instagram crea una imagen del evento para tu historia: en el móvil eliges Instagram → Historias; en ordenador se descarga y la subes desde el móvil.</p>
+    <p class="evd-hint" data-i18n="evd_ig_hint">Instagram: elige «Historias» y se abre con la imagen del evento lista.</p>
     <div class="evd-linkrow"><input type="text" id="evdShareUrl" readonly aria-label="Enlace"><button type="button" class="evd-copy" id="evdShareCopy" data-i18n="evd_copy">Copiar</button></div>
   </div>
 </div>
@@ -174,7 +167,7 @@
   </div>
 </div>
 <script src="/cookies.js?v=4"></script>
-<script src="/i18n.js?v=94"></script>
+<script src="/i18n.js?v=95"></script>
 <script>
   window.ROCE_EVENTS_READY.then(function () {
     var U = window.ROCE_EVENT_UTIL, id = new URLSearchParams(location.search).get('e'), e = U.find(id);
@@ -289,7 +282,6 @@
       });
     }
     function copyLink() { var u = shareUrl(); if (navigator.clipboard) navigator.clipboard.writeText(u).catch(function () {}); }
-    function isMobile() { return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || (navigator.maxTouchPoints > 1 && /Mac/.test(navigator.platform)); }
     // La imagen se prepara al abrir "Compartir": así, al pulsar Instagram, el menú del móvil se abre al instante
     // (si se generase después del toque, el navegador ya no deja abrirlo).
     var story = { file: null, lang: '', busy: false };
@@ -300,20 +292,10 @@
         .catch(function () {}).then(function () { story.busy = false; });
     }
     function downloadFile(file) { var a = document.createElement('a'); a.href = URL.createObjectURL(file); a.download = file.name; document.body.appendChild(a); a.click(); a.remove(); }
-    // Plan B en móvil: la imagen a pantalla completa para guardarla y un botón que abre la cámara de historias de Instagram.
-    function showStory(file) {
-      var url = URL.createObjectURL(file), box = document.createElement('div'); box.className = 'evd-story';
-      box.innerHTML = '<div class="evd-story-in"><button type="button" class="evd-x" aria-label="' + esc(t('evd_close', 'Cerrar')) + '">×</button>' +
-        '<img src="' + url + '" alt="">' +
-        '<p>' + esc(t('evd_ig_steps', 'Mantén pulsada la imagen y elige «Guardar imagen». Después abre Instagram y súbela a tu historia.')) + '</p>' +
-        '<div class="evd-story-btns"><a class="evd-copy" href="' + url + '" download="' + esc(file.name) + '">' + esc(t('evd_ig_save', 'Guardar')) + '</a>' +
-        '<a class="evd-copy" href="instagram://story-camera">' + esc(t('evd_ig_open', 'Abrir Instagram')) + '</a></div></div>';
-      box.addEventListener('click', function (ev) { if (ev.target === box || ev.target.closest('.evd-x')) box.remove(); });
-      closeShare(); document.body.appendChild(box); copyLink();
-    }
     function igStory() {
       var file = story.file;
-      function fallback(f) { if (isMobile()) showStory(f); else { downloadFile(f); copyLink(); toast(t('evd_ig_done', 'Imagen descargada y enlace copiado: súbela a tu historia de Instagram desde el móvil.')); } }
+      // Si el navegador no puede compartir archivos, se descarga la imagen y se copia el enlace.
+      function fallback(f) { downloadFile(f); copyLink(); toast(t('evd_ig_done', 'Imagen descargada y enlace copiado: súbela a tu historia de Instagram.')); }
       if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
         navigator.share({ files: [file], title: e.title[lang()] + ' — ROCE', text: shareUrl() })
           .catch(function (err) { if (!err || err.name !== 'AbortError') fallback(file); });
