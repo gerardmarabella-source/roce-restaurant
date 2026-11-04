@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="format-detection" content="telephone=no, address=no, email=no, date=no">
+<!-- Sin indexar hasta decidir que la agenda sale en buscadores. -->
+<meta name="robots" content="noindex">
+<title>Evento — ROCE Valencia</title>
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" href="/assets/meta/favicon-32.png" sizes="32x32">
+<link rel="apple-touch-icon" href="/assets/meta/apple-touch-icon.png">
+<script src="/eventos/config.js?v=2"></script>
+<script src="/eventos/events.js?v=12"></script>
+<script>
+  // El color de la página es el del ambiente del evento: Day claro, Night oscuro.
+  window.ROCE_EVENTS_READY.then(function () {
+    var e = window.ROCE_EVENT_UTIL.find(new URLSearchParams(location.search).get('e'));
+    if (!e) { location.replace('/eventos/'); return; }
+    document.documentElement.setAttribute('data-env', e.env);
+  });
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/styles.css?v=69">
+<style>
+  html { --bg: var(--white); --fg: var(--black); --line: rgba(10, 10, 10, 0.2); --pad: 1.25rem; --accent: #7a6240; }
+  html[data-env="night"] { --bg: var(--black); --fg: var(--white); --line: rgba(255, 255, 255, 0.25); --accent: #c9ab7a; }
+  html, body { background: var(--bg); color: var(--fg); }
+  html:not([data-env]) body { visibility: hidden; }
+  body { min-height: 100vh; display: flex; flex-direction: column; font-family: var(--body); padding-bottom: 6.5rem; }
+
+  .evd-top { display: flex; align-items: center; height: 64px; padding: 0 var(--pad); }
+  .evd-back { font-family: var(--display); font-size: 1rem; letter-spacing: 0.04em; text-transform: uppercase; color: inherit; text-decoration: none; }
+  .evd-back:hover { opacity: 0.7; }
+
+  .evd-wrap { width: 100%; max-width: 1000px; margin: 0 auto; padding: 0.5rem var(--pad) 2rem; flex: 1; display: grid; grid-template-columns: minmax(0, 1fr); gap: 1.5rem 3rem; align-items: start; }
+  .evd-media { position: relative; }
+  .evd-poster { display: block; width: 100%; padding: 0; border: 1px solid var(--line); background: none; color: inherit; cursor: zoom-in; }
+  .evd-poster img { display: block; width: 100%; height: auto; }
+  .evd-nopic { aspect-ratio: 4 / 5; display: flex; flex-direction: column; justify-content: flex-end; padding: 1.25rem; border: 1px solid var(--fg); font-family: var(--display); text-transform: uppercase; line-height: 0.9; }
+  .evd-nopic b { font-weight: 400; font-size: clamp(6rem, 30vw, 9rem); letter-spacing: -0.03em; }
+  .evd-nopic span { font-size: 1.4rem; letter-spacing: 0.08em; opacity: 0.7; }
+
+  .evd-tag { display: inline-flex; align-items: center; gap: 0.5rem; font-family: var(--display); font-size: 0.85rem; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.8; }
+  .evd-tag .age-badge { width: 1.7rem; height: 1.7rem; }
+  .evd-title { margin: 0.5rem 0 0.7rem; font-family: var(--display); font-weight: 400; font-size: clamp(2.3rem, 9vw, 3.8rem); line-height: 0.95; letter-spacing: -0.01em; text-transform: uppercase; }
+  .evd-when { font-size: 1.15rem; line-height: 1.4; color: var(--accent); font-weight: 600; }
+  .evd-place { margin-top: 0.5rem; font-size: 1.02rem; line-height: 1.45; }
+  .evd-place small { display: block; margin-top: 0.15rem; opacity: 0.6; font-size: 0.9rem; }
+
+  .evd-actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin: 1.5rem 0 0.5rem; padding: 0.4rem 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+  .evd-act { display: flex; flex-direction: column; align-items: center; gap: 0.35rem; padding: 0.8rem 0.25rem; border: 0; background: none; color: inherit; font: inherit; font-size: 0.9rem; text-decoration: none; cursor: pointer; }
+  .evd-act svg { width: 1.6rem; height: 1.6rem; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+  .evd-act:hover { opacity: 0.7; }
+
+  .evd-h { margin: 2rem 0 0.9rem; font-family: var(--display); font-weight: 400; font-size: 1.5rem; line-height: 1; text-transform: uppercase; }
+  .evd-desc { font-size: 1.02rem; line-height: 1.6; opacity: 0.9; white-space: pre-line; }
+  .evd-facts { list-style: none; display: grid; gap: 0.9rem; margin-top: 1.2rem; }
+  .evd-facts li { display: grid; grid-template-columns: 1.4rem 1fr; gap: 0.8rem; font-size: 0.98rem; line-height: 1.5; opacity: 0.85; }
+  .evd-facts svg { width: 1.3rem; height: 1.3rem; margin-top: 0.1rem; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+  .evd-map { display: inline-block; margin-top: 0.6rem; color: inherit; font-size: 0.95rem; }
+
+  .evd-bar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; background: var(--bg); border-top: 1px solid var(--line); }
+  .evd-bar-in { max-width: 1000px; margin: 0 auto; padding: 0.85rem var(--pad) calc(0.85rem + env(safe-area-inset-bottom)); display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+  .evd-price { min-width: 0; font-family: var(--display); font-size: 1.2rem; line-height: 1.1; text-transform: uppercase; }
+  @media (max-width: 480px) { .evd-price { font-size: 0.98rem; } .evd-buy { padding: 0.95rem 1.2rem; font-size: 1rem; } }
+  .evd-price small { display: block; margin-top: 0.15rem; font-family: var(--body); font-size: 0.8rem; text-transform: none; opacity: 0.65; }
+  .evd-buy { flex-shrink: 0; padding: 1rem 1.6rem; border: 2px solid var(--fg); background: var(--fg); color: var(--bg); font-family: var(--display); font-size: 1.05rem; letter-spacing: 0.04em; text-transform: uppercase; text-decoration: none; text-align: center; }
+  .evd-buy:hover { opacity: 0.85; }
+  .evd-buy.is-soldout { opacity: 0.35; pointer-events: none; }
+  .evd-toast { position: fixed; left: 50%; bottom: 6.5rem; transform: translateX(-50%); z-index: 50; padding: 0.6rem 1rem; background: var(--fg); color: var(--bg); font-size: 0.9rem; opacity: 0; pointer-events: none; transition: opacity 0.2s ease; }
+  .evd-toast.is-on { opacity: 1; }
+  .ev-foot { padding: 1.5rem 1rem 2rem; text-align: center; font-size: 0.68rem; line-height: 1.35; letter-spacing: 0.03em; opacity: 0.6; }
+  .ev-foot a { color: inherit; text-decoration: none; }
+  .ev-foot a:hover { text-decoration: underline; }
+  .ev-foot .lang-switch { display: flex; justify-content: center; margin-bottom: 0.4rem; }
+  [hidden] { display: none !important; }
+
+  /* Escritorio: cartel a la izquierda (fijo al hacer scroll) y la información a la derecha. */
+  @media (min-width: 900px) {
+    .evd-wrap { grid-template-columns: minmax(0, 24rem) minmax(0, 1fr); padding-top: 1.5rem; }
+    .evd-media { position: sticky; top: 1.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<header class="evd-top"><a class="evd-back" href="/eventos/" data-i18n="evd_back">← Eventos</a></header>
+
+<main class="evd-wrap" id="evd" hidden>
+  <div class="evd-media" id="evdMedia"></div>
+  <div class="evd-main">
+    <span class="evd-tag" id="evdTag"></span>
+    <h1 class="evd-title" id="evdTitle"></h1>
+    <p class="evd-when" id="evdWhen"></p>
+    <p class="evd-place" id="evdPlace"></p>
+
+    <div class="evd-actions">
+      <button type="button" class="evd-act" id="evdShare"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4M7 9l5-5 5 5M5 14v5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-5"/></svg><span data-i18n="evd_share">Compartir</span></button>
+      <button type="button" class="evd-act" id="evdCal"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="1"/><path d="M4 10h16M9 3v4M15 3v4"/></svg><span data-i18n="evd_cal">Calendario</span></button>
+      <a class="evd-act" id="evdMap" href="#" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg><span data-i18n="evd_map">Cómo llegar</span></a>
+    </div>
+
+    <h2 class="evd-h" data-i18n="evd_info">Información del evento</h2>
+    <p class="evd-desc" id="evdDesc"></p>
+    <ul class="evd-facts" id="evdFacts"></ul>
+
+    <h2 class="evd-h" data-i18n="evd_place">Lugar</h2>
+    <ul class="evd-facts" id="evdVenue"></ul>
+  </div>
+</main>
+
+<div class="evd-bar" id="evdBar" hidden>
+  <div class="evd-bar-in">
+    <div class="evd-price" id="evdPrice"></div>
+    <a class="evd-buy" id="evdBuy" href="#" data-i18n="ev_cta">Comprar entrada</a>
+  </div>
+</div>
+<div class="evd-toast" id="evdToast" role="status"></div>
+
+<footer class="ev-foot">
+  <div class="lang-switch">
+    <button type="button" data-lang="es">ES</button>
+    <button type="button" data-lang="en">EN</button>
+  </div>
+  <div>
+    <a href="/aviso-legal.html" data-i18n="footer_legal">Aviso legal</a> · <a href="/terminos.html" data-i18n="footer_terms">Términos y condiciones</a> · <a href="/cookies.html" data-i18n="footer_cookies">Cookies</a> · <a href="/privacidad.html" data-i18n="footer_privacy">Política de privacidad</a>
+  </div>
+</footer>
+
+<div class="cookie-banner" id="cookieBanner">
+  <p class="cookie-text"><span data-i18n="cookie_text">Usamos una cookie técnica propia para recordar tu elección. Si aceptas, también activamos el Píxel de Meta (Facebook e Instagram) y Google Tag Manager para medir y mejorar nuestra publicidad y nuestra web. El sistema de reservas es de un tercero (CoverManager) y puede usar las suyas.</span> <a href="/cookies.html" data-i18n="cookie_more_info">Más información</a>.</p>
+  <div class="cookie-actions">
+    <button class="cookie-reject" id="cookieReject" data-i18n="cookie_reject">Rechazar</button>
+    <button class="cookie-accept" id="cookieAccept" data-i18n="cookie_accept">Aceptar</button>
+  </div>
+</div>
+<script src="/cookies.js?v=4"></script>
+<script src="/i18n.js?v=91"></script>
+<script>
+  window.ROCE_EVENTS_READY.then(function () {
+    var U = window.ROCE_EVENT_UTIL, id = new URLSearchParams(location.search).get('e'), e = U.find(id);
+    if (!e) return; // la cabecera ya redirige a la agenda
+    if (e.date < U.today() && !U.isLive(e)) { location.replace('/eventos/'); return; }
+    var AGE = '<svg class="age-badge" viewBox="0 0 100 100" role="img" aria-label="+18"><circle cx="50" cy="50" r="44" fill="#ffffff" stroke="#e5453a" stroke-width="9"/><text x="44" y="65" text-anchor="middle" font-family="\'Helvetica Neue Web\',\'Helvetica Neue\',Arial,sans-serif" font-weight="700" font-size="46" letter-spacing="-3" fill="#0a0a0a">18</text><text x="77" y="52" text-anchor="middle" font-family="\'Helvetica Neue Web\',\'Helvetica Neue\',Arial,sans-serif" font-weight="700" font-size="30" fill="#0a0a0a">+</text></svg>';
+    function $(x) { return document.getElementById(x); }
+    function lang() { return window.ROCE_I18N.getLang(); }
+    function t(k, d) { var v = window.ROCE_I18N.t(k); return v && v !== k ? v : d; }
+    function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+    var ICON = {
+      info: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>',
+      card: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="1.5"/><path d="M3 10h18"/></svg>',
+      qr: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h2v2h-2zM18 14h2v2h-2zM14 18h2v2h-2zM18 18h2v2h-2z"/></svg>',
+      door: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 21V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v17M4 21h16M14 12h.01"/></svg>',
+      pin: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>'
+    };
+    var MAPS = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent('ROCE Marqués del Túria 16 Valencia');
+
+    function paint() {
+      var l = lang(), title = e.title[l], when = U.fmt(e, l, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) + ' · ' + U.range(e), floor = U.floor(e, l);
+      document.title = title + ' — ROCE Valencia';
+      $('evdTag').innerHTML = (e.env === 'night' ? 'Night ' + AGE : 'Day') + ' · ROCE';
+      $('evdTitle').textContent = title;
+      $('evdWhen').textContent = when;
+      $('evdPlace').innerHTML = esc(t('tk_address', 'ROCE · Marqués del Túria 16, Valencia')) + (floor ? '<small>' + esc(floor) + '</small>' : '');
+      $('evdMedia').innerHTML = e.image
+        ? '<button type="button" class="evd-poster" aria-label="' + esc(t('evd_poster', 'Ver el cartel')) + '"><img src="' + esc(e.image) + '" alt="' + esc(title) + '"></button>'
+        : '<div class="evd-nopic"><b>' + esc(U.fmt(e, l, { day: 'numeric' })) + '</b><span>' + esc(U.fmt(e, l, { month: 'long' })) + '</span></div>';
+      $('evdDesc').textContent = e.desc[l] || '';
+      $('evdDesc').hidden = !e.desc[l];
+      var facts = [];
+      if (e.env === 'night') facts.push([ICON.info, t('evd_age', 'Evento solo para mayores de 18 años.')]);
+      facts.push([ICON.qr, t('evd_qr', 'Recibirás tu entrada con QR por email al comprar. Es personal: enséñala en la puerta.')]);
+      if (e.price_cents > 0) facts.push([ICON.card, t('evd_refund', 'Las entradas no se devuelven ni se cambian. Solo si el evento se cancela o se aplaza te devolvemos el importe.')]);
+      $('evdFacts').innerHTML = facts.map(function (f) { return '<li>' + f[0] + '<span>' + esc(f[1]) + '</span></li>'; }).join('');
+      $('evdVenue').innerHTML =
+        '<li>' + ICON.door + '<span>' + esc(t('evd_starts', 'Empieza a las {h}').replace('{h}', e.time)) + '</span></li>' +
+        '<li>' + ICON.pin + '<span>' + esc(t('tk_address', 'ROCE · Marqués del Túria 16, Valencia')) + (floor ? ' · ' + esc(floor) : '') + '</span></li>';
+      $('evdMap').href = MAPS;
+      var sold = e.left <= 0;
+      $('evdPrice').innerHTML = esc(e.price[l]);
+      var buy = $('evdBuy'); buy.textContent = sold ? t('tk_soldout', 'Agotado') : t('ev_cta', 'Comprar entrada');
+      buy.classList.toggle('is-soldout', sold); buy.href = sold ? '#' : '/eventos/entradas/?e=' + encodeURIComponent(e.id);
+      $('evd').hidden = false; $('evdBar').hidden = false;
+    }
+
+    function toast(msg) { var x = $('evdToast'); x.textContent = msg; x.classList.add('is-on'); clearTimeout(toast.t); toast.t = setTimeout(function () { x.classList.remove('is-on'); }, 2200); }
+    $('evdMedia').addEventListener('click', function (ev) { if (ev.target.closest('.evd-poster')) U.poster(e.image); });
+    $('evdShare').addEventListener('click', function () {
+      var data = { title: e.title[lang()] + ' — ROCE', url: location.href };
+      if (navigator.share) { navigator.share(data).catch(function () {}); return; }
+      if (navigator.clipboard) navigator.clipboard.writeText(location.href).then(function () { toast(t('evd_copied', 'Enlace copiado')); }, function () { toast(location.href); });
+      else toast(location.href);
+    });
+    // Calendario (.ics) en hora de Valencia
+    $('evdCal').addEventListener('click', function () {
+      var b = U.bounds(e), f = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Madrid', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      var loc = function (ms) { return f.format(new Date(ms)).replace(/[-: ]/g, '').replace(/^(\d{8})(\d{6})$/, '$1T$2'); };
+      var ics = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//ROCE//Eventos//ES', 'BEGIN:VEVENT',
+        'UID:' + e.id + '@roce.es', 'DTSTAMP:' + new Date().toISOString().replace(/[-:]|\.\d{3}/g, ''),
+        'DTSTART;TZID=Europe/Madrid:' + loc(b[0]), 'DTEND;TZID=Europe/Madrid:' + loc(b[1]),
+        'SUMMARY:' + e.title[lang()] + ' (' + (e.env === 'night' ? 'Night' : 'Day') + ')',
+        'LOCATION:ROCE\\, Marqués del Túria 16\\, Valencia', 'URL:' + location.href, 'END:VEVENT', 'END:VCALENDAR'].join('\r\n');
+      var a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([ics], { type: 'text/calendar;charset=utf-8' }));
+      a.download = 'roce-' + e.id + '.ics'; document.body.appendChild(a); a.click(); a.remove();
+    });
+    document.addEventListener('roce:lang', paint);
+    paint();
+  });
+</script>
+</body>
+</html>

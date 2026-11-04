@@ -77,54 +77,37 @@
   .ev-chip:hover { opacity: 0.6; }
   .ev-chip[aria-pressed="true"] { opacity: 1; }
 
-  /* Lista de eventos en filas (fecha | cartel | texto | compra), agrupadas por mes. */
+  /* Lista de eventos en tarjetas: el cartel ocupa toda la tarjeta y el texto va encima. */
   .ev-count { display: flex; align-items: center; gap: 0.75rem; margin: 0 0 0.25rem; font-family: var(--display); font-weight: 400; font-size: 1.05rem; letter-spacing: 0.06em; text-transform: uppercase; }
   .ev-count::before { content: ""; width: 1.7rem; height: 4px; background: currentColor; }
   .ev-count span { opacity: 0.6; }
-  .ev-list { list-style: none; display: block; }
-  .ev-month { margin: 1.75rem 0 0; padding: 0 0 0.6rem; font-family: var(--display); font-size: 1rem; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.65; border-bottom: 1px solid rgba(128, 128, 128, 0.45); }
-  .ev-row { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "date info buy"; gap: 1rem 1.5rem; align-items: center; padding: 1.25rem 0; border-bottom: 1px solid rgba(128, 128, 128, 0.45); }
-  .ev-row.has-poster { grid-template-columns: auto auto minmax(0, 1fr) auto; grid-template-areas: "date poster info buy"; }
-  .ev-date { grid-area: date; width: 4.75rem; padding: 0.65rem 0.3rem 0.7rem; border: 1px solid; text-align: center; font-family: var(--display); text-transform: uppercase; line-height: 1; }
-  .ev-row[data-env="day"] .ev-date { background: #ffffff; color: #0a0a0a; border-color: #0a0a0a; }
-  .ev-row[data-env="night"] .ev-date { background: #0a0a0a; color: #ffffff; border-color: #ffffff; }
-  .ev-date-mon { display: block; font-size: 0.85rem; letter-spacing: 0.08em; opacity: 0.7; }
-  .ev-date-day { display: block; margin-top: 0.25rem; font-size: 2.5rem; letter-spacing: -0.02em; }
-  .ev-poster { grid-area: poster; width: 5.75rem; height: auto; margin: 0; padding: 0; border: 1px solid rgba(128, 128, 128, 0.6); background: none; color: inherit; cursor: zoom-in; }
-  .ev-poster img { display: block; width: 100%; height: auto; }
-  .ev-info { grid-area: info; min-width: 0; }
-  .ev-env { display: inline-flex; align-items: center; gap: 0.5rem; margin-bottom: 0.4rem; font-family: var(--display); font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.75; }
-  .ev-now { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.1rem 0.55rem; border: 1px solid currentColor; border-radius: 999px; letter-spacing: 0.08em; }
-  .ev-now::before { content: ""; width: 0.5rem; height: 0.5rem; border-radius: 50%; background: #ff1f1f; animation: evLive 1.3s ease-in-out infinite; }
-  @keyframes evLive { 0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(255, 31, 31, 0.6); } 50% { opacity: 0.25; box-shadow: 0 0 0 5px rgba(255, 31, 31, 0); } }
-  @media (prefers-reduced-motion: reduce) { .ev-now::before { animation: none; } }
-  .ev-env .age-badge { width: 1.5rem; height: 1.5rem; flex-shrink: 0; }
-  .ev-when { display: block; font-family: var(--display); font-size: 0.9rem; letter-spacing: 0.06em; text-transform: uppercase; opacity: 0.7; }
-  .ev-name { margin-top: 0.15rem; font-family: var(--display); font-weight: 400; font-size: clamp(1.5rem, 3.6vw, 2.1rem); line-height: 1; letter-spacing: -0.005em; text-transform: uppercase; }
-  .ev-venue { margin-top: 0.45rem; font-size: 0.9rem; opacity: 0.7; }
-  .ev-desc { margin-top: 0.45rem; max-width: 40rem; font-size: 0.92rem; line-height: 1.45; opacity: 0.8; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .ev-list { list-style: none; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 19rem), 1fr)); gap: 1.25rem; align-items: start; }
+  .ev-month { grid-column: 1 / -1; margin-top: 1.25rem; padding-bottom: 0.6rem; font-family: var(--display); font-size: 1rem; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.65; border-bottom: 1px solid rgba(128, 128, 128, 0.45); }
+  .ev-month:first-child { margin-top: 0.5rem; }
 
-  .ev-buy { grid-area: buy; display: flex; flex-direction: column; align-items: flex-end; gap: 0.6rem; text-align: right; }
-  .ev-price { font-family: var(--display); font-size: 1.05rem; letter-spacing: 0.02em; text-transform: uppercase; line-height: 1.1; }
-  .ev-cta {
-    display: inline-block;
-    padding: 0.7rem 1.2rem;
-    border: 2px solid currentColor;
-    border-radius: 0;
-    background: none;
-    color: inherit;
-    font-family: var(--display);
-    font-size: 0.92rem;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    cursor: pointer;
-    text-decoration: none;
-    text-align: center;
-    white-space: nowrap;
-    transition: background 0.15s ease, color 0.15s ease;
-  }
-  .ev-cta.is-soldout { opacity: 0.4; pointer-events: none; }
-  .ev-cta:hover { background: var(--fg); color: var(--bg); }
+  .ev-card { position: relative; display: flex; flex-direction: column; justify-content: flex-end; aspect-ratio: 4 / 5; overflow: hidden; color: #ffffff; text-decoration: none; background: #0a0a0a; border: 1px solid rgba(255, 255, 255, 0.35); isolation: isolate; }
+  .ev-card[data-env="day"].no-img { background: #ffffff; color: #0a0a0a; border-color: #0a0a0a; }
+  .ev-card-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: -2; transition: transform 0.4s ease; }
+  .ev-card.has-img::after { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(to top, rgba(0, 0, 0, 0.92) 0%, rgba(0, 0, 0, 0.62) 34%, rgba(0, 0, 0, 0) 62%); }
+  .ev-card:hover .ev-card-img { transform: scale(1.03); }
+  .ev-card:focus-visible { outline: 3px solid var(--fg); outline-offset: 3px; }
+  .ev-card-top { position: absolute; top: 1rem; left: 1rem; right: 1rem; display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+  .ev-tag { display: inline-flex; align-items: center; gap: 0.45rem; padding: 0.3rem 0.65rem; background: rgba(10, 10, 10, 0.72); color: #ffffff; font-family: var(--display); font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase; }
+  .ev-card[data-env="day"].no-img .ev-tag { background: rgba(10, 10, 10, 0.08); color: #0a0a0a; }
+  .ev-tag .age-badge { width: 1.35rem; height: 1.35rem; flex-shrink: 0; }
+  .ev-now { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.3rem 0.65rem; background: #ffffff; color: #0a0a0a; font-family: var(--display); font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase; }
+  .ev-now::before { content: ""; width: 0.5rem; height: 0.5rem; border-radius: 50%; background: #ff1f1f; animation: evLive 1.3s ease-in-out infinite; }
+  .ev-sold { padding: 0.3rem 0.65rem; background: #ffffff; color: #0a0a0a; font-family: var(--display); font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase; }
+  @keyframes evLive { 0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(255, 31, 31, 0.6); } 50% { opacity: 0.25; box-shadow: 0 0 0 5px rgba(255, 31, 31, 0); } }
+  @media (prefers-reduced-motion: reduce) { .ev-now::before { animation: none; } .ev-card-img { transition: none; } }
+  .ev-card-date { position: absolute; top: 4.2rem; left: 1rem; font-family: var(--display); text-transform: uppercase; line-height: 0.9; }
+  .ev-card-date b { display: block; font-weight: 400; font-size: clamp(5rem, 22vw, 7.5rem); letter-spacing: -0.03em; }
+  .ev-card-date span { display: block; font-size: 1.1rem; letter-spacing: 0.08em; opacity: 0.7; }
+  .ev-card-body { padding: 1.25rem; }
+  .ev-card-kicker { display: block; font-size: 0.78rem; letter-spacing: 0.14em; text-transform: uppercase; opacity: 0.8; }
+  .ev-card-name { margin-top: 0.4rem; font-family: var(--display); font-weight: 400; font-size: clamp(1.7rem, 4.6vw, 2.2rem); line-height: 1; letter-spacing: -0.005em; text-transform: uppercase; }
+  .ev-card-meta { display: block; margin-top: 0.6rem; font-size: 0.95rem; opacity: 0.9; }
+  .ev-card-price { display: block; margin-top: 0.15rem; font-size: 0.95rem; opacity: 0.9; }
 
   .ev-empty { padding: 2rem 0; font-size: 1.05rem; opacity: 0.75; }
 
@@ -132,25 +115,6 @@
   .ev-foot a { color: inherit; text-decoration: none; }
   .ev-foot a:hover { text-decoration: underline; }
   .ev-foot .lang-switch { display: flex; justify-content: center; margin-bottom: 0.4rem; }
-
-  /* Pantallas medianas: la compra baja debajo del texto, en una fila. */
-  @media (max-width: 900px) {
-    .ev-row { grid-template-columns: auto minmax(0, 1fr); grid-template-areas: "date info" "date buy"; align-items: start; }
-    .ev-row.has-poster { grid-template-columns: auto auto minmax(0, 1fr); grid-template-areas: "date poster info" "date poster buy"; }
-    .ev-buy { flex-direction: row; align-items: center; justify-content: space-between; text-align: left; align-self: end; }
-  }
-  /* Móvil: fecha (y cartel debajo) en la columna izquierda; texto a la derecha; compra al final. */
-  @media (max-width: 640px) {
-    .ev-row { grid-template-columns: 4rem minmax(0, 1fr); grid-template-areas: "date info" "buy buy"; gap: 0.9rem 1rem; }
-    .ev-row.has-poster { grid-template-columns: 4rem minmax(0, 1fr); grid-template-areas: "date info" "poster info" "buy buy"; }
-    .ev-date { width: 4rem; }
-    .ev-date-day { font-size: 2.1rem; }
-    .ev-poster { width: 4rem; }
-    .ev-buy { grid-column: 1 / -1; }
-  }
-  @media (max-width: 460px) {
-    .ev-buy { flex-direction: column; align-items: stretch; gap: 0.5rem; }
-  }
 </style>
 </head>
 <body>
@@ -192,7 +156,7 @@
   </div>
 </div>
 <script src="/cookies.js?v=4"></script>
-<script src="/i18n.js?v=90"></script>
+<script src="/i18n.js?v=91"></script>
 <script src="/eventos/config.js?v=2"></script>
 <script src="/eventos/events.js?v=12"></script>
 <script>
@@ -229,23 +193,21 @@
         var mon = U.fmt(e, l, { month: 'short' }).replace('.', '');
         var day = U.fmt(e, l, { day: 'numeric' });
         var monthLabel = U.fmt(e, l, { month: 'long', year: 'numeric' });
-        var env = (e.env === 'night' ? 'Night ' + AGE : 'Day') + (U.isLive(e) ? ' <span class="ev-now">' + esc(t('choose_now', 'Ahora')) + '</span>' : '');
         var sold = e.left <= 0;
-        var cta = sold
-          ? '<span class="ev-cta is-soldout">' + esc(t('tk_soldout', 'Agotado')) + '</span>'
-          : '<a class="ev-cta" href="/eventos/entradas/?e=' + encodeURIComponent(e.id) + '">' + esc(t('ev_cta', 'Comprar entrada')) + '</a>';
+        var tag = '<span class="ev-tag">' + (e.env === 'night' ? 'Night ' + AGE : 'Day') + '</span>';
+        var right = sold ? '<span class="ev-sold">' + esc(t('tk_soldout', 'Agotado')) + '</span>' : (U.isLive(e) ? '<span class="ev-now">' + esc(t('choose_now', 'Ahora')) + '</span>' : '');
         var head = '';
         if (monthLabel !== lastMonth) { lastMonth = monthLabel; head = '<li class="ev-month" role="presentation">' + esc(monthLabel) + '</li>'; }
-        return head + '<li class="ev-row' + (e.image ? ' has-poster' : '') + '" data-env="' + e.env + '">' +
-          '<div class="ev-date"><span class="ev-date-mon">' + esc(mon) + '</span><span class="ev-date-day">' + esc(day) + '</span></div>' +
-          (e.image ? '<button type="button" class="ev-poster" data-src="' + esc(e.image) + '" aria-label="Ver el cartel"><img src="' + esc(e.image) + '" alt="" loading="lazy"></button>' : '') +
-          '<div class="ev-info"><span class="ev-env">' + env + '</span>' +
-            '<span class="ev-when">' + esc(wd) + ' • ' + esc(U.range(e)) + '</span>' +
-            '<h2 class="ev-name">' + esc(e.title[l]) + '</h2>' +
-            '<p class="ev-venue">' + esc(t('tk_address', 'ROCE · Marqués del Túria 16, Valencia')) + (U.floor(e, l) ? ' · ' + esc(U.floor(e, l)) : '') + '</p>' +
-            '<p class="ev-desc">' + esc(e.desc[l]) + '</p></div>' +
-          '<div class="ev-buy"><span class="ev-price">' + esc(e.price[l]) + '</span>' + cta + '</div>' +
-          '</li>';
+        return head + '<li><a class="ev-card ' + (e.image ? 'has-img' : 'no-img') + '" data-env="' + e.env + '" href="/eventos/evento/?e=' + encodeURIComponent(e.id) + '">' +
+          (e.image ? '<img class="ev-card-img" src="' + esc(e.image) + '" alt="" loading="lazy">' : '') +
+          '<span class="ev-card-top">' + tag + right + '</span>' +
+          (e.image ? '' : '<span class="ev-card-date"><b>' + esc(day) + '</b><span>' + esc(mon) + '</span></span>') +
+          '<span class="ev-card-body">' +
+            '<span class="ev-card-kicker">' + esc(wd) + ' • ' + esc(U.range(e)) + '</span>' +
+            '<h2 class="ev-card-name">' + esc(e.title[l]) + '</h2>' +
+            '<span class="ev-card-meta">' + esc(wd + ', ' + day + ' ' + mon) + ' · ROCE' + (U.floor(e, l) ? ' · ' + esc(U.floor(e, l)) : '') + '</span>' +
+            '<span class="ev-card-price">' + esc(e.price[l]) + '</span>' +
+          '</span></a></li>';
       }).join('');
       var cnt = document.getElementById('evCount');
       cnt.hidden = !upcoming.length;
@@ -263,9 +225,6 @@
       });
     });
 
-    list.addEventListener('click', function (ev) {
-      var b = ev.target.closest('.ev-poster'); if (b) U.poster(b.getAttribute('data-src'));
-    });
     document.addEventListener('roce:lang', render);
     setInterval(render, 60000);
     window.ROCE_EVENTS_READY.then(function (list) { EVENTS = list; render(); });
