@@ -38,14 +38,15 @@ const brevoHeaders = { "api-key": BREVO_API_KEY, "content-type": "application/js
 
 const T = {
   es: {
-    subject: (t: string) => `Tu plaza en ${t} · ROCE`,
-    title: "¡Plaza reservada!",
-    intro: "Aquí tienes los datos de tu reserva. Enseña este email o tu número de referencia al llegar.",
+    subject: (t: string) => `Tu entrada para ${t} · ROCE`,
+    title: "¡Entrada comprada!",
+    intro: "Aquí tienes los datos de tu compra. Enseña el QR o tu número de referencia al llegar.",
     ref: "Referencia", event: "Evento", date: "Fecha", place: "Lugar", floor: "Planta", tickets: "Entradas",
     free: "Gratis", total: "Total", unpaid: "Pago pendiente: te indicaremos cómo hacerlo.",
     age: "Evento solo para mayores de 18 años.",
     cancel: "Si no puedes venir, escríbenos a reservas@roce.es para liberar tu plaza.",
     qrHint: "Enseña este QR en la puerta. Una compra, un QR: sirve para entrar todas las personas de la reserva.",
+    noRefund: "Las entradas no se devuelven ni se cambian. Solo si el evento se cancela o se aplaza te devolvemos el importe.",
     qrLink: "Ver mi entrada",
     doc: "Documento",
     privacy: "BRUNCH DINNER ETC. SL (ROCE) trata tus datos para gestionar tu entrada y el acceso al evento. Más información y tus derechos en https://roce.es/privacidad.html o escribiendo a reservas@roce.es.",
@@ -59,14 +60,15 @@ const T = {
     crRefund: "Importe devuelto",
   },
   en: {
-    subject: (t: string) => `Your spot at ${t} · ROCE`,
-    title: "Spot booked!",
-    intro: "Here are your booking details. Show this email or your reference number when you arrive.",
+    subject: (t: string) => `Your ticket for ${t} · ROCE`,
+    title: "Ticket purchased!",
+    intro: "Here are your purchase details. Show the QR or your reference number when you arrive.",
     ref: "Reference", event: "Event", date: "Date", place: "Place", floor: "Floor", tickets: "Tickets",
     free: "Free", total: "Total", unpaid: "Payment pending: we'll let you know how to pay.",
     age: "Guests must be aged 18 or over.",
     cancel: "If you can't make it, write to reservas@roce.es so we can free your spot.",
     qrHint: "Show this QR at the door. One purchase, one QR: it admits everyone on the booking.",
+    noRefund: "Tickets are non-refundable and non-exchangeable. Only if the event is cancelled or postponed will we refund you.",
     qrLink: "View my ticket",
     doc: "ID",
     privacy: "BRUNCH DINNER ETC. SL (ROCE) processes your data to manage your ticket and entry to the event. More information and your rights at https://roce.es/privacidad.html or by writing to reservas@roce.es.",
@@ -140,7 +142,7 @@ async function sendBookingEmail(b: any): Promise<Response> {
   ])}</table></td></tr>
 ${ticketBlock(b, t)}
 <tr><td style="padding:20px 24px 4px;color:#e5453a;font:14px Arial,sans-serif">${b.payment_status === "pending" ? esc(t.unpaid) : ""}${ev.env === "night" ? " " + esc(t.age) : ""}</td></tr>
-<tr><td style="padding:12px 24px 8px;color:#aaa;font:13px/1.5 Arial,sans-serif">${esc(t.cancel)}</td></tr>
+<tr><td style="padding:12px 24px 8px;color:#aaa;font:13px/1.5 Arial,sans-serif">${esc(b.total_cents > 0 ? t.noRefund : t.cancel)}</td></tr>
 <tr><td style="padding:0 24px 32px;color:#777;font:11px/1.5 Arial,sans-serif">${esc(t.privacy)}</td></tr>`);
 
   const res = await fetch("https://api.brevo.com/v3/smtp/email", {
