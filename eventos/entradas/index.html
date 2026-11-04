@@ -11,7 +11,7 @@
 <link rel="icon" type="image/png" href="/assets/meta/favicon-32.png" sizes="32x32">
 <link rel="apple-touch-icon" href="/assets/meta/apple-touch-icon.png">
 <script src="/eventos/config.js?v=2"></script>
-<script src="/eventos/events.js?v=11"></script>
+<script src="/eventos/events.js?v=12"></script>
 <script>
   // El color de la página es el del ambiente del evento: Day claro, Night
   // oscuro. Hasta saber de qué evento se trata la página va oculta.
@@ -102,6 +102,10 @@
   @media (prefers-reduced-motion: reduce) { .tk-check-svg circle, .tk-check-svg path { animation: none; stroke-dashoffset: 0; } }
   .tk-done h1 { margin: 1rem 0 0.5rem; font-family: var(--display); font-weight: 400; font-size: clamp(2.2rem, 9vw, 3.2rem); line-height: 0.95; text-transform: uppercase; }
   .tk-done p { opacity: 0.8; line-height: 1.5; }
+  .tk-qrbox { max-width: 260px; margin: 1.5rem auto 0; }
+  .tk-qrbox a.tk-qr { display: block; background: #fff; padding: 12px; line-height: 0; }
+  .tk-qrbox a.tk-qr svg { width: 100%; height: auto; display: block; }
+  .tk-qrbox p { margin-top: 0.75rem; font-size: 0.85rem; }
   .tk-ref { display: inline-block; margin: 1.5rem 0 0.5rem; padding: 0.9rem 1.4rem; border: 2px dashed currentColor; font-family: var(--display); font-size: 1.8rem; letter-spacing: 0.08em; }
   .tk-ref-label { display: block; margin-top: 1.5rem; font-family: var(--display); font-size: 0.8rem; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.6; }
   .tk-done .tk-actions { flex-direction: column; }
@@ -210,6 +214,11 @@
     <span class="tk-ref-label" data-i18n="tk_ref">Nº de referencia</span>
     <span class="tk-ref" id="doneRef"></span>
     <p id="doneSummary"></p>
+    <div class="tk-qrbox" id="doneQrBox" hidden>
+      <span class="tk-ref-label" data-i18n="tk_done_qr">Tu entrada con QR</span>
+      <a class="tk-qr" id="doneQr" href="#" aria-label="QR"></a>
+      <p data-i18n="tk_done_qr_hint">Enseña este QR en la puerta. También te lo enviamos por email.</p>
+    </div>
     <p class="tk-policy" id="doneNote" hidden></p>
     <div class="tk-actions">
       <button type="button" class="tk-btn" id="calBtn" data-i18n="tk_cal">Añadir al calendario</button>
@@ -236,7 +245,8 @@
   </div>
 </div>
 <script src="/cookies.js?v=4"></script>
-<script src="/i18n.js?v=83"></script>
+<script src="/i18n.js?v=84"></script>
+<script src="/assets/js/qrcode.js?v=1"></script>
 <script>
   window.ROCE_EVENTS_READY.then(function () {
     var U = window.ROCE_EVENT_UTIL;
@@ -326,7 +336,7 @@
     function saveOrder(order) {
       if (!U.backend) return submitOrder(order);
       return U.book(ev, order).then(function (res) {
-        order.ref = res.ref; order.total_cents = res.total_cents; ev.left = res.left;
+        order.ref = res.ref; order.total_cents = res.total_cents; order.token = res.token; ev.left = res.left;
         submitOrder(order).catch(function () {}); // aviso a ROCE: si falla, la reserva ya está guardada
       });
     }
@@ -401,6 +411,14 @@
       var o = state.order;
       $('doneRef').textContent = o.ref;
       $('doneSummary').textContent = ev.title[lang()] + ' · ' + U.fmt(ev, lang(), { weekday: 'short', day: 'numeric', month: 'long' }) + ' · ' + ev.time + ' · ' + tickets(o.qty);
+      // QR de la entrada (solo si la base de datos ha devuelto el código secreto de la compra).
+      var box = $('doneQrBox');
+      if (o.token && /^[a-f0-9]{32}$/.test(o.token) && window.qrcode) {
+        var url = location.origin + '/entrada/?t=' + o.token;
+        var q = window.qrcode(0, 'M'); q.addData(url); q.make();
+        $('doneQr').innerHTML = q.createSvgTag({ cellSize: 8, margin: 0, scalable: true });
+        $('doneQr').href = url; box.hidden = false;
+      } else { box.hidden = true; }
     }
     function needsPayment() { return window.ROCE_PAYMENTS.enabled && state.order && state.order.total_cents > 0; }
     function paintConfirm() {
@@ -474,7 +492,7 @@
       if (needsPayment()) {
         // 1) se guarda la reserva (la plaza queda retenida 30 min); 2) se va al banco.
         run = (o.booked ? Promise.resolve() : U.book(ev, Object.assign({}, o, { online: true })).then(function (res) {
-          o.ref = res.ref; o.total_cents = res.total_cents; o.booked = true; ev.left = res.left;
+          o.ref = res.ref; o.total_cents = res.total_cents; o.token = res.token; o.booked = true; ev.left = res.left;
         })).then(function () {
           try { sessionStorage.setItem('roce_order_draft', JSON.stringify(o)); } catch (x) {}
           btn.textContent = t('tk_redirecting');

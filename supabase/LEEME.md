@@ -136,6 +136,17 @@ En **Reservas**, cada reserva cobrada tiene el botón **Devolver** (solo cuentas
 - **Cambiar email** (botón por reserva): si te equivocas al escribirlo, al corregirlo se reenvía al email bueno la confirmación (y la factura, si está cobrada), el contacto pasa a las mismas listas de Brevo (asistentes y, si lo marcó, newsletter) y se saca de ellas el email equivocado (el contacto en sí no se borra de Brevo).
 - Hay que ejecutar antes `schema.sql` (tabla `refunds`, columnas de `invoices` y función `issue_credit_note`) y volver a desplegar las funciones `redsys` y `booking-email`.
 
+## 10. Entrada con QR y escáner de admisiones
+Cada compra tiene un **código secreto** (`bookings.ticket_token`, 32 caracteres aleatorios; no se puede deducir de la referencia).
+- **Página de la entrada:** `roce.es/entrada/?t=<código>` (no se indexa) muestra el QR, el evento, la planta, el nombre y las entradas, y avisa si la compra está anulada o ya se ha usado. Se llega desde el email de confirmación y desde la pantalla de "Plaza reservada".
+- **Un QR por compra:** vale para todas las personas de la reserva; el escáner permite admitirlas de una en una o todas a la vez.
+- **Email:** la confirmación lleva el QR como imagen (la sirve la función `redsys` con `GET ?qr=<código>`) y un enlace a la página de la entrada.
+- **Escáner:** en el panel, pestaña **Asistencia → Escanear entradas** (abre la cámara; en el móvil, con permiso de cámara). Resultados: *Admitida* (verde), *Ya admitida*, *Entrada anulada* o *Sin pagar* (rojo), *Otro evento* o *Por cobrar* (naranja). Si falta una sola persona por entrar, se admite al escanear; si faltan varias, pregunta cuántas. Si el QR no se lee, hay un cuadro para pegar el código y siempre queda la lista para marcar a mano.
+- **Seguridad:** la admisión la hace la función `scan_ticket` de la base de datos (solo cuentas del panel) en una sola operación con la reserva bloqueada, así que dos escáneres a la vez no pueden admitir dos veces la misma entrada. Cada admisión queda registrada en `admissions` (quién, cuántas, cuándo).
+- Las reservas anteriores a esta función reciben su código al ejecutar `schema.sql`; sus emails antiguos no llevan QR, pero la página de la entrada se puede abrir con el código desde el panel si hiciera falta.
+- Hay que ejecutar antes `schema.sql` y volver a desplegar las funciones `redsys` y `booking-email`.
+- Librerías incluidas en la web (no se cargan de terceros): `qrcode-generator` 1.4.4 (MIT) para dibujar el QR y `jsQR` 1.4.0 (Apache-2.0) para leerlo en navegadores sin detector nativo (iPhone).
+
 ## Dónde se guardan los datos
 - Reservas: tabla `bookings` de Supabase (nombre, email, teléfono, comentarios, entradas, estado).
 - Contactos de marketing: Brevo (solo email y, si se configura, nombre).

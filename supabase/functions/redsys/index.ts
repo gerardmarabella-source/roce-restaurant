@@ -8,6 +8,8 @@
 //     cobro por el servicio REST de Redsys (o, con manual=true, solo registra una devolución ya hecha
 //     en el portal del banco), emite el abono y deja la reserva como "devuelta". Solo responde a
 //     administradores (admins.role = 'admin'), comprobando el token del usuario.
+//   · Los emails piden GET ?qr=<código de la entrada> y reciben el QR (imagen GIF) de la página de esa
+//     entrada. No lee la base de datos: solo dibuja la dirección roce.es/entrada/?t=<código>.
 //   · Redsys le habla con un formulario (URL de notificación): Ds_SignatureVersion,
 //     Ds_MerchantParameters y Ds_Signature. Se comprueba la firma, el importe y el
 //     comercio, y se marca la reserva como cobrada (eso dispara el email y la factura).
@@ -25,6 +27,7 @@
 // la firma de cada notificación.
 import { createClient } from "npm:@supabase/supabase-js@2";
 import forge from "npm:node-forge@1.3.1";
+import qrcode from "npm:qrcode-generator@1.4.4";
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
@@ -166,6 +169,18 @@ async function handleJson(req: Request): Promise<Response> {
   });
 }
 
+// ─── Email → función: imagen del QR de una entrada ──────────────────────
+function handleQr(u: URL): Response {
+  const t = u.searchParams.get("qr") ?? "";
+  if (!/^[a-f0-9]{32}$/.test(t)) return new Response("bad token", { status: 400 });
+  const qr = qrcode(0, "M");
+  qr.addData(`${config().site}/entrada/?t=${t}`);
+  qr.make();
+  const bin = atob(qr.createDataURL(8, 4).split(",")[1]); // GIF en base64
+  const bytes = Uint8Array.from(bin, (c) => c.charCodeAt(0));
+  return new Response(bytes, { headers: { "Content-Type": "image/gif", "Cache-Control": "public, max-age=31536000, immutable", "Access-Control-Allow-Origin": "*" } });
+}
+
 // ─── Panel → función: devolución ─────────────────────────────────────────
 type RefundBody = { booking_id?: string; manual?: boolean; reason?: string };
 
@@ -296,6 +311,10 @@ async function handleNotification(req: Request): Promise<Response> {
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
+  if (req.method === "GET") {
+    const u = new URL(req.url);
+    return u.searchParams.has("qr") ? handleQr(u) : json({ error: "method" }, 405);
+  }
   if (req.method !== "POST") return json({ error: "method" }, 405);
   const type = req.headers.get("content-type") ?? "";
   if (type.includes("application/json")) return await handleJson(req);

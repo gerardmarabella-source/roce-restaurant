@@ -42,6 +42,8 @@ const T = {
     free: "Gratis", total: "Total", unpaid: "Pago pendiente: te indicaremos cómo hacerlo.",
     age: "Evento solo para mayores de 18 años.",
     cancel: "Si no puedes venir, escríbenos a reservas@roce.es para liberar tu plaza.",
+    qrHint: "Enseña este QR en la puerta. Una compra, un QR: sirve para entrar todas las personas de la reserva.",
+    qrLink: "Ver mi entrada",
     locale: "es-ES",
     invSubject: (n: string) => `Tu factura ${n} · ROCE`,
     invTitle: "Pago recibido",
@@ -59,6 +61,8 @@ const T = {
     free: "Free", total: "Total", unpaid: "Payment pending: we'll let you know how to pay.",
     age: "Guests must be aged 18 or over.",
     cancel: "If you can't make it, write to reservas@roce.es so we can free your spot.",
+    qrHint: "Show this QR at the door. One purchase, one QR: it admits everyone on the booking.",
+    qrLink: "View my ticket",
     locale: "en-GB",
     invSubject: (n: string) => `Your invoice ${n} · ROCE`,
     invTitle: "Payment received",
@@ -82,6 +86,20 @@ const rowsHtml = (rows: string[][]) => rows.map(([k, v]) =>
   `<td style="padding:10px 0;border-top:1px solid #333;color:#fff;font:16px Arial,sans-serif;text-align:right">${esc(v)}</td></tr>`).join("");
 
 const serviceClient = () => createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+
+// QR de la entrada: imagen (la sirve la función "redsys") y enlace a la página de la entrada.
+const SITE = (Deno.env.get("SITE_URL") ?? "https://roce.es").replace(/\/+$/, "");
+function ticketBlock(b: any, t: any): string {
+  const tok = String(b.ticket_token ?? "");
+  if (!/^[a-f0-9]{32}$/.test(tok)) return "";
+  const page = `${SITE}/entrada/?t=${tok}`;
+  const img = `${Deno.env.get("SUPABASE_URL")}/functions/v1/redsys?qr=${tok}`;
+  return `<tr><td align="center" style="padding:24px 24px 4px">
+<a href="${page}"><img src="${img}" width="200" height="200" alt="QR" style="display:block;width:200px;height:200px;background:#fff;border:10px solid #fff"></a>
+<p style="margin:12px 0 0;color:#ddd;font:14px/1.5 Arial,sans-serif">${esc(t.qrHint)}</p>
+<p style="margin:12px 0 0"><a href="${page}" style="color:#fff;font:bold 14px Arial,sans-serif;text-transform:uppercase;letter-spacing:1px">${esc(t.qrLink)} →</a></p>
+</td></tr>`;
+}
 
 // ─── INSERT: confirmación de la reserva ──────────────────────────────────
 async function sendBookingEmail(b: any): Promise<Response> {
@@ -110,6 +128,7 @@ async function sendBookingEmail(b: any): Promise<Response> {
 <tr><td style="padding:0 24px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0">${rowsHtml([
     [t.ref, b.ref], [t.event, title], [t.date, when], [t.place, address], ...(floor ? [[t.floor, floor]] : []), [t.tickets, String(b.qty)], [t.total, total],
   ])}</table></td></tr>
+${ticketBlock(b, t)}
 <tr><td style="padding:20px 24px 4px;color:#e5453a;font:14px Arial,sans-serif">${b.payment_status === "pending" ? esc(t.unpaid) : ""}${ev.env === "night" ? " " + esc(t.age) : ""}</td></tr>
 <tr><td style="padding:12px 24px 32px;color:#aaa;font:13px/1.5 Arial,sans-serif">${esc(t.cancel)}</td></tr>`);
 
