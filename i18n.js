@@ -41,7 +41,7 @@
     gl_err_net: { es: 'No se ha podido guardar. Inténtalo de nuevo.', en: 'Could not save. Please try again.' },
     cookie_title: { es: 'Tu privacidad', en: 'Your privacy' },
     age_title: { es: 'Estás entrando en un espacio +18', en: "You're entering an 18+ space" },
-    age_text: { es: 'Night, y sus reservas de noche, son solo para mayores de 18 años. ¿Tienes 18 años o más?', en: 'Night, and its evening bookings, are only for guests aged 18 and over. Are you 18 or older?' },
+    age_text: { es: 'Las reservas de noche son para mayores de 18 años. ¿Tienes 18 años o más?', en: 'Evening bookings are for guests aged 18 and over. Are you 18 or older?' },
     age_yes: { es: 'Sí, tengo 18 o más', en: "Yes, I'm 18 or older" },
     age_no: { es: 'No, ir a Day', en: 'No, take me to Day' },
     cookie_more_info: { es: 'Más información', en: 'More info' },
