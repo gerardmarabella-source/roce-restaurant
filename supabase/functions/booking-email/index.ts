@@ -325,14 +325,32 @@ async function issueAndSendInvoice(b: any, force = false): Promise<Response> {
 // da de alta en las mismas listas de Brevo y se saca de ellas el email equivocado.
 async function moveToNewEmail(o: any, n: any): Promise<Response> {
   const supabase = serviceClient();
-  const sent = await sendBookingEmail(n); // confirmación + contacto en las listas (asistentes y, si lo marcó, newsletter)
-  let invoiceNote = "";
-  if (n.payment_status === "paid") {
-    await supabase.from("invoices").update({ customer_email: n.email }).eq("booking_id", n.id);
-    const inv = await issueAndSendInvoice(n, true);
-    invoiceNote = "; " + (await inv.text());
-  }
-  const lists = [LIST_ATTENDEES, n.marketing_optin ? LIST_NEWSLETTER : 0].filter((id) => id > 0);
+  const live = n.status === "confirmed"; // reserva activa: se reenvían confirmación (y factura, si está cobrada)
+  let note = "";
+  let ok = true, status = 200;
+  if (live) {
+    const sent = await sendBookingEmail(n); // confirmación + contacto en las listas (asistentes y, si lo marcó, newsletter)
+    ok = sent.ok; status = sent.ok ? 200 : sent.status; note = await sent.text();
+    if (n.payment_status === "paid") {
+      await supabase.from("invoices").update({ customer_email: n.email }).eq("booking_id", n.id);
+      const inv = await issueAndSendInvoice(n, true);
+      note += "; " + (await inv.text());
+    }
+  } else if (n.marketing_optin && LIST_NEWSLETTER > 0) {
+    // Reserva cancelada o devuelta: no se reenvía nada, pero el consentimiento de newsletter sigue siendo suyo.
+    const [first, ...rest] = String(n.name).trim().split(/\s+/);
+    const attributes: Record<string, string> = {};
+    const aFirst = Deno.env.get("BREVO_ATTR_FIRSTNAME"), aLast = Deno.env.get("BREVO_ATTR_LASTNAME");
+    if (aFirst) attributes[aFirst] = first;
+    if (aLast && rest.length) attributes[aLast] = rest.join(" ");
+    const c = await fetch("https://api.brevo.com/v3/contacts", {
+      method: "POST", headers: brevoHeaders,
+      body: JSON.stringify({ email: n.email, updateEnabled: true, listIds: [LIST_NEWSLETTER], attributes }),
+    });
+    note = c.ok ? "newsletter contact moved" : "contact error: " + (await c.text());
+  } else note = "no active booking and no newsletter opt-in: nothing to move";
+  // El email anterior sale de las listas de Brevo (el contacto en sí no se borra).
+  const lists = [LIST_ATTENDEES, LIST_NEWSLETTER].filter((id) => id > 0);
   for (const id of lists) {
     await fetch(`https://api.brevo.com/v3/contacts/lists/${id}/contacts/remove`, {
       method: "POST",
@@ -340,7 +358,7 @@ async function moveToNewEmail(o: any, n: any): Promise<Response> {
       body: JSON.stringify({ emails: [o.email] }),
     }).catch(() => {});
   }
-  return new Response(`email moved: ${await sent.text()}${invoiceNote}`, { status: sent.ok ? 200 : sent.status });
+  return new Response(`email moved: ${note}`, { status: ok ? 200 : status });
 }
 
 // ─── Listas de invitados: entrada personal con QR ───────────────────────
@@ -498,7 +516,7 @@ Deno.serve(async (req) => {
   if (payload.type === "UPDATE") {
     const n = payload.record, o = payload.old_record ?? {};
     if (n.payment_status === "refunded" && o.payment_status === "paid") return await issueAndSendCreditNote(n);
-    if (o.email && n.email && String(o.email).toLowerCase() !== String(n.email).toLowerCase() && n.status === "confirmed" && n.payment_status === o.payment_status) {
+    if (o.email && n.email && String(o.email).toLowerCase() !== String(n.email).toLowerCase() && n.status !== "pending" && n.payment_status === o.payment_status) {
       return await moveToNewEmail(o, n);
     }
     if (n.payment_status === "paid" && o.payment_status !== "paid" && n.status !== "cancelled") {
