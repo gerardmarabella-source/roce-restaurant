@@ -247,6 +247,10 @@
   /* Reservar mesa y Eventos: abajo a la izquierda, uno encima del otro. */
   .teaser-links { display: flex; flex-direction: column; align-items: flex-start; gap: 0.35rem; }
   .teaser-link { font-size: clamp(2rem, 5.2vw, 3.4rem); white-space: nowrap; }
+  /* Al pasar el ratón, "Reservar mesa" y "Eventos" se agrandan un poco. */
+  .teaser-link { transform-origin: left center; transition: opacity 0.15s ease, transform 0.2s ease; }
+  @media (hover: hover) { .teaser-link:hover { transform: scale(1.07); } }
+  @media (prefers-reduced-motion: reduce) { .teaser-link { transition: opacity 0.15s ease; } .teaser-link:hover { transform: none; } }
   @media (min-width: 641px) { .teaser-link { font-size: clamp(3rem, 6.2vw, 5.2rem); } }
 
   /* Newsletter: el botón abre un plato encima de la página. */
@@ -400,7 +404,8 @@
   }
 
   @media (max-width: 640px) {
-    .teaser-link { font-size: clamp(1.9rem, 9.8vw, 3rem); }
+    /* Más grande que antes, pero siempre dentro del ancho ("Reservar mesa" mide ~8,1 em). */
+    .teaser-link { font-size: clamp(1.9rem, calc((100vw - 2rem) / 8.4), 3.2rem); }
     /* Instagram en su propia línea, debajo de Reservar mesa y Eventos. */
     .teaser-cta-row { flex-direction: column; align-items: stretch; gap: 0.5rem; }
     .teaser-insta { position: static; align-self: flex-end; padding: 0; }
@@ -492,8 +497,8 @@
   </div>
 </div>
 <script src="/cookies.js?v=4"></script>
-<script src="/i18n.js?v=82"></script>
-<script src="/agegate.js?v=3"></script>
+<script src="/i18n.js?v=83"></script>
+<script src="/agegate.js?v=4"></script>
 <script src="/eventos/config.js?v=2"></script>
 <script src="/eventos/events.js?v=11"></script>
 

@@ -164,7 +164,7 @@
 
   .home-statement {
     font-family: var(--display);
-    font-weight: 400;
+    font-weight: 700; /* Helvetica Neue Bold real */
     font-size: min(19vw, 14rem, calc((var(--avail) - 2 * var(--sh) - var(--gap) - 1.25rem - var(--live-x)) / 3.9));
     width: 100%;
     margin-inline: auto; /* centrada cuando la altura limita el tamaño */
@@ -302,6 +302,8 @@
   .home-foot a.home-insta:hover { text-decoration: none; opacity: 0.7; }
   .home-foot a:hover { text-decoration: underline; }
   .home-foot .lang-switch { display: flex; justify-content: center; margin-bottom: 0.25rem; }
+  /* Solo el selector ES/EN va en negrita real (Helvetica Neue Bold); @somosroce y los enlaces legales, normales. */
+  .home-foot .lang-switch button { font-family: var(--display); font-weight: 700; }
 
   /* Tablet vertical: bloques algo más bajos para que la frase pueda crecer con el ancho. */
   @media (min-width: 600px) and (max-aspect-ratio: 5/4) {
@@ -541,7 +543,7 @@
   </div>
 </div>
 <script src="/cookies.js?v=4"></script>
-<script src="/i18n.js?v=82"></script>
+<script src="/i18n.js?v=83"></script>
 <script src="/eventos/config.js?v=2"></script>
 <script src="/eventos/events.js?v=11"></script>
 
