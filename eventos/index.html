@@ -93,9 +93,9 @@
   /* Cartel: columna propia (no flota dentro del texto) para que el texto no se estreche en pantallas medianas. */
   .ev-date { grid-area: date; } .ev-info { grid-area: info; min-width: 0; } .ev-buy { grid-area: buy; }
   .ev-card { grid-template-areas: "date info buy"; }
-  .ev-card.has-poster { grid-template-columns: auto 1fr auto auto; grid-template-areas: "date info poster buy"; align-items: start; }
-  .ev-card.has-poster .ev-date, .ev-card.has-poster .ev-buy { align-self: center; }
-  .ev-poster { grid-area: poster; width: 7rem; height: auto; margin: 0; padding: 0; border: 1px solid currentColor; background: none; color: inherit; cursor: zoom-in; align-self: start; }
+  /* Con cartel: el cartel va a la izquierda de la ficha, grande, como una entrada. */
+  .ev-card.has-poster { grid-template-columns: auto auto 1fr auto; grid-template-areas: "poster date info buy"; align-items: center; gap: 1rem 1.75rem; }
+  .ev-poster { grid-area: poster; width: 10.5rem; height: auto; margin: 0; padding: 0; border: 1px solid currentColor; background: none; color: inherit; cursor: zoom-in; align-self: center; }
   .ev-poster img { display: block; width: 100%; height: auto; }
   .ev-date { min-width: 4.5rem; text-align: center; font-family: var(--display); text-transform: uppercase; line-height: 1; }
   .ev-date-wd { display: block; font-size: 0.85rem; letter-spacing: 0.06em; opacity: 0.65; }
@@ -142,18 +142,20 @@
   .ev-foot .lang-switch { display: flex; justify-content: center; margin-bottom: 0.4rem; }
 
 
-  /* Pantallas medianas con cartel: fecha | texto | cartel, y la compra debajo en una fila. */
+  /* Pantallas medianas con cartel: cartel a la izquierda (ocupa las dos filas); fecha y texto a su derecha y la compra debajo. */
   @media (max-width: 1000px) {
-    .ev-card.has-poster { grid-template-columns: auto 1fr auto; grid-template-areas: "date info poster" "buy buy buy"; align-items: start; }
-    .ev-card.has-poster .ev-buy { flex-direction: row; align-items: center; justify-content: space-between; text-align: left; align-self: stretch; }
+    .ev-card.has-poster { grid-template-columns: auto auto 1fr; grid-template-areas: "poster date info" "poster buy buy"; align-items: center; }
+    .ev-card.has-poster .ev-poster { width: 9rem; align-self: start; }
+    .ev-card.has-poster .ev-buy { flex-direction: row; align-items: center; justify-content: space-between; text-align: left; align-self: end; }
   }
   @media (max-width: 640px) {
     .ev-card { grid-template-columns: auto 1fr; grid-template-areas: "date info" "buy buy"; --card-pad: 1.1rem; }
-    .ev-buy { grid-column: auto; flex-direction: row; align-items: center; justify-content: space-between; text-align: left; }
-    /* Con cartel: el cartel (columna izquierda) y la compra (derecha) comparten la segunda fila. */
-    .ev-card.has-poster { grid-template-columns: auto 1fr; grid-template-areas: "date info" "poster buy"; column-gap: 1rem; }
-    .ev-card.has-poster .ev-poster { width: 6rem; }
-    .ev-card.has-poster .ev-buy { flex-direction: column; align-items: stretch; justify-content: flex-end; text-align: left; align-self: end; }
+    .ev-buy { grid-column: 1 / -1; flex-direction: row; align-items: center; justify-content: space-between; text-align: left; }
+    /* Con cartel: el cartel arriba y centrado, luego fecha y texto, y la compra al final. */
+    .ev-card.has-poster { grid-template-columns: 4.5rem minmax(0, 1fr); grid-template-areas: "poster poster" "date info" "buy buy"; column-gap: 1rem; align-items: start; }
+    .ev-card.has-poster .ev-poster { width: 11rem; justify-self: center; }
+    .ev-card.has-poster .ev-date { align-self: center; }
+    .ev-card.has-poster .ev-buy { flex-direction: column; align-items: stretch; text-align: left; align-self: stretch; gap: 0.6rem; }
   }
 </style>
 </head>
