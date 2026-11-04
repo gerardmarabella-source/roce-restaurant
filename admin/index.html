@@ -744,13 +744,20 @@
         '<td class="nowrap">' + (b.payment_status === 'paid'
           ? (myRole === 'admin' ? '<button class="ad-btn is-small is-danger" data-id="' + b.id + '" data-act="refund" type="button">Devolver</button>' : '<span class="ad-meta">Devolver: solo admin</span>')
           : (b.status !== 'cancelled' ? '<button class="ad-btn is-small is-danger" data-id="' + b.id + '" data-act="cancel" type="button">Cancelar</button>' : '')) +
-          (b.payment_status === 'pending' && b.status !== 'cancelled' ? ' <button class="ad-btn is-small is-ghost" data-id="' + b.id + '" data-act="paid" type="button">Marcar cobrado</button>' : '') + '</td></tr>';
+          (b.payment_status === 'pending' && b.status !== 'cancelled' ? ' <button class="ad-btn is-small is-ghost" data-id="' + b.id + '" data-act="paid" type="button">Marcar cobrado</button>' : '') +
+          (b.payment_status !== 'refunded' ? ' <button class="ad-btn is-small is-ghost" data-id="' + b.id + '" data-act="email" type="button">Cambiar email</button>' : '') + '</td></tr>';
     }).join('');
   }
   $('bkBody').addEventListener('click', function (ev) {
     var btn = ev.target.closest('button[data-act]'); if (!btn) return;
     var b = bookings.filter(function (x) { return x.id === btn.dataset.id; })[0]; if (!b) return;
     if (btn.dataset.act === 'refund') return doRefund(b, false, false);
+    if (btn.dataset.act === 'email') {
+      var ne = (prompt('Email correcto para ' + b.name + ' (' + b.ref + '):\n\nLos avisos y el abono que se envíen a partir de ahora irán a este email.', b.email) || '').trim().toLowerCase();
+      if (!ne || ne === b.email) return;
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(ne)) { flash('Ese email no es válido.', 'error'); return; }
+      return api('bookings?id=eq.' + b.id, { method: 'PATCH', body: { email: ne } }).then(function () { b.email = ne; renderBookings(); flash('Email actualizado a ' + ne + '.', 'ok'); }).catch(function (x) { flash(x.message, 'error'); });
+    }
     var patch;
     if (btn.dataset.act === 'cancel') { if (!confirm('¿Cancelar la reserva ' + b.ref + ' de ' + b.name + '? Se liberan sus plazas.')) return; patch = { status: 'cancelled' }; }
     else { if (!confirm('¿Marcar como cobrada la reserva ' + b.ref + '? Se emitirá la factura y se enviará por email al cliente.')) return; patch = { payment_status: 'paid', status: 'confirmed' }; }
