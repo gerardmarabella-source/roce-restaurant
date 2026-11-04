@@ -232,11 +232,11 @@ const toBase64 = (bytes: Uint8Array) => {
 };
 
 // ─── UPDATE: factura al pasar a cobrada ──────────────────────────────────
-async function issueAndSendInvoice(b: any): Promise<Response> {
+async function issueAndSendInvoice(b: any, force = false): Promise<Response> {
   const supabase = serviceClient();
   const { data: inv, error: invErr } = await supabase.rpc("issue_invoice", { p_booking: b.id });
   if (invErr || !inv) return new Response("invoice error: " + (invErr?.message ?? "no data"), { status: 500 });
-  if (inv.email_sent_at) return new Response("already sent");
+  if (inv.email_sent_at && !force) return new Response("already sent");
 
   const { data: ev } = await supabase.from("events").select("*").eq("id", b.event_id).single();
   const pdf = await buildInvoicePdf(inv, ev, b.ref);
@@ -267,6 +267,7 @@ async function issueAndSendInvoice(b: any): Promise<Response> {
   });
   if (!res.ok) return new Response("brevo error: " + (await res.text()), { status: 502 });
   await supabase.from("invoices").update({ email_sent_at: new Date().toISOString() }).eq("id", inv.id);
+  if (force) return new Response(`invoice ${inv.number} re-sent`);
 
   // 2) Copia en la carpeta de Drive (Apps Script); si no está configurado se omite.
   let driveNote = "drive: not configured";
@@ -285,6 +286,29 @@ async function issueAndSendInvoice(b: any): Promise<Response> {
     } catch (e) { driveNote = "drive error: " + String(e).slice(0, 200); }
   }
   return new Response(`invoice ${inv.number} sent; ${driveNote}`);
+}
+
+// ─── UPDATE: el panel corrige el email de una reserva ────────────────────
+// Se manda al email correcto la confirmación (y la factura, si está cobrada), el contacto se
+// da de alta en las mismas listas de Brevo y se saca de ellas el email equivocado.
+async function moveToNewEmail(o: any, n: any): Promise<Response> {
+  const supabase = serviceClient();
+  const sent = await sendBookingEmail(n); // confirmación + contacto en las listas (asistentes y, si lo marcó, newsletter)
+  let invoiceNote = "";
+  if (n.payment_status === "paid") {
+    await supabase.from("invoices").update({ customer_email: n.email }).eq("booking_id", n.id);
+    const inv = await issueAndSendInvoice(n, true);
+    invoiceNote = "; " + (await inv.text());
+  }
+  const lists = [LIST_ATTENDEES, n.marketing_optin ? LIST_NEWSLETTER : 0].filter((id) => id > 0);
+  for (const id of lists) {
+    await fetch(`https://api.brevo.com/v3/contacts/lists/${id}/contacts/remove`, {
+      method: "POST",
+      headers: brevoHeaders,
+      body: JSON.stringify({ emails: [o.email] }),
+    }).catch(() => {});
+  }
+  return new Response(`email moved: ${await sent.text()}${invoiceNote}`, { status: sent.ok ? 200 : sent.status });
 }
 
 // ─── UPDATE: abono al pasar a devuelta ───────────────────────────────────
@@ -376,6 +400,9 @@ Deno.serve(async (req) => {
   if (payload.type === "UPDATE") {
     const n = payload.record, o = payload.old_record ?? {};
     if (n.payment_status === "refunded" && o.payment_status === "paid") return await issueAndSendCreditNote(n);
+    if (o.email && n.email && String(o.email).toLowerCase() !== String(n.email).toLowerCase() && n.status === "confirmed" && n.payment_status === o.payment_status) {
+      return await moveToNewEmail(o, n);
+    }
     if (n.payment_status === "paid" && o.payment_status !== "paid" && n.status !== "cancelled") {
       // Pasó de "pending" a pagada: es la primera vez que se confirma, así que sale el email de reserva.
       let sent: Response | null = null;

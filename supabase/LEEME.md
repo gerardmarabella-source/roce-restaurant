@@ -133,6 +133,7 @@ En **Reservas**, cada reserva cobrada tiene el botón **Devolver** (solo cuentas
 - Si el banco no acepta la devolución (por ejemplo, porque el terminal no tiene activadas las devoluciones por API), el panel muestra el código del banco y ofrece **registrarla a mano**: se hace la devolución en el portal del banco (Consultas → operación → Devolución) y, ya hecha, se pulsa Aceptar para emitir el abono y enviarlo. Desde el panel no se mueve dinero en ese caso.
 - Las reservas cobradas a mano con *Marcar cobrado* no tienen cobro online: solo se pueden registrar como devueltas a mano.
 - Reservas gratuitas o sin factura: se pueden devolver, pero sin abono.
+- **Cambiar email** (botón por reserva): si te equivocas al escribirlo, al corregirlo se reenvía al email bueno la confirmación (y la factura, si está cobrada), el contacto pasa a las mismas listas de Brevo (asistentes y, si lo marcó, newsletter) y se saca de ellas el email equivocado (el contacto en sí no se borra de Brevo).
 - Hay que ejecutar antes `schema.sql` (tabla `refunds`, columnas de `invoices` y función `issue_credit_note`) y volver a desplegar las funciones `redsys` y `booking-email`.
 
 ## Dónde se guardan los datos
