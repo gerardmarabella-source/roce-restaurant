@@ -182,7 +182,7 @@
   </div>
 </div>
 <script src="/cookies.js?v=4"></script>
-<script src="/i18n.js?v=87"></script>
+<script src="/i18n.js?v=88"></script>
 <script src="/eventos/config.js?v=2"></script>
 <script src="/eventos/events.js?v=12"></script>
 <script>
@@ -221,7 +221,7 @@
         var sold = e.left <= 0;
         var cta = sold
           ? '<span class="ev-cta is-soldout">' + esc(t('tk_soldout', 'Agotado')) + '</span>'
-          : '<a class="ev-cta" href="/eventos/entradas/?e=' + encodeURIComponent(e.id) + '">' + esc(t('ev_cta', 'Reservar plaza')) + '</a>';
+          : '<a class="ev-cta" href="/eventos/entradas/?e=' + encodeURIComponent(e.id) + '">' + esc(t('ev_cta', 'Comprar entrada')) + '</a>';
         return '<li class="ev-card" data-env="' + e.env + '">' +
           '<div class="ev-date"><span class="ev-date-wd">' + esc(wd) + '</span><span class="ev-date-day">' + esc(day) + '</span><span class="ev-date-mon">' + esc(mon) + '</span></div>' +
           '<div class="ev-info">' + (e.image ? '<button type="button" class="ev-poster" data-src="' + esc(e.image) + '" aria-label="Ver el cartel"><img src="' + esc(e.image) + '" alt="" loading="lazy"></button>' : '') + '<span class="ev-env">' + env + '</span>' +

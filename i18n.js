@@ -144,7 +144,7 @@
     events_title: { es: 'Eventos', en: 'Events' },
     ev_back: { es: '← ROCE', en: '← ROCE' },
     ev_all: { es: 'Todos', en: 'All' },
-    ev_cta: { es: 'Reservar plaza', en: 'Get tickets' },
+    ev_cta: { es: 'Comprar entrada', en: 'Get tickets' },
     ev_empty: { es: 'Muy pronto publicaremos aquí los próximos eventos.', en: 'We will soon publish the upcoming events here.' },
     // Compra de entradas / reserva de plaza (/eventos/entradas/)
     tk_back_events: { es: '← Eventos', en: '← Events' },
