@@ -77,62 +77,37 @@
   .ev-chip:hover { opacity: 0.6; }
   .ev-chip[aria-pressed="true"] { opacity: 1; }
 
-  .ev-list { list-style: none; display: grid; gap: 1rem; }
-  .ev-card {
-    --card-pad: 1.5rem;
-    display: grid;
-    grid-template-columns: auto 1fr auto;
-    align-items: center;
-    gap: 1rem 1.75rem;
-    padding: var(--card-pad);
-    border: 2px solid var(--black);
-  }
-  .ev-card[data-env="day"] { background: var(--white); color: var(--black); }
-  .ev-card[data-env="night"] { background: var(--black); color: var(--white); border-color: var(--white); }
+  /* Lista de eventos en tarjetas: el cartel ocupa toda la tarjeta y el texto va encima. */
+  .ev-count { display: flex; align-items: center; gap: 0.75rem; margin: 0 0 0.25rem; font-family: var(--display); font-weight: 400; font-size: 1.05rem; letter-spacing: 0.06em; text-transform: uppercase; }
+  .ev-count::before { content: ""; width: 1.7rem; height: 4px; background: currentColor; }
+  .ev-count span { opacity: 0.6; }
+  .ev-list { list-style: none; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 19rem), 1fr)); gap: 1.25rem; align-items: start; }
+  .ev-month { grid-column: 1 / -1; margin-top: 1.25rem; padding-bottom: 0.6rem; font-family: var(--display); font-size: 1rem; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.65; border-bottom: 1px solid rgba(128, 128, 128, 0.45); }
+  .ev-month:first-child { margin-top: 0.5rem; }
 
-  /* Cartel: columna propia (no flota dentro del texto) para que el texto no se estreche en pantallas medianas. */
-  .ev-date { grid-area: date; } .ev-info { grid-area: info; min-width: 0; } .ev-buy { grid-area: buy; }
-  .ev-card { grid-template-areas: "date info buy"; }
-  .ev-card.has-poster { grid-template-columns: auto 1fr auto auto; grid-template-areas: "date info poster buy"; align-items: start; }
-  .ev-card.has-poster .ev-date, .ev-card.has-poster .ev-buy { align-self: center; }
-  .ev-poster { grid-area: poster; width: 7rem; height: auto; margin: 0; padding: 0; border: 1px solid currentColor; background: none; color: inherit; cursor: zoom-in; align-self: start; }
-  .ev-poster img { display: block; width: 100%; height: auto; }
-  .ev-date { min-width: 4.5rem; text-align: center; font-family: var(--display); text-transform: uppercase; line-height: 1; }
-  .ev-date-wd { display: block; font-size: 0.85rem; letter-spacing: 0.06em; opacity: 0.65; }
-  .ev-date-day { display: block; margin: 0.15rem 0; font-size: clamp(3.2rem, 9vw, 4.6rem); letter-spacing: -0.02em; }
-  .ev-date-mon { display: block; font-size: 0.95rem; letter-spacing: 0.06em; }
-
-  .ev-env { display: inline-flex; align-items: center; gap: 0.5rem; margin-bottom: 0.6rem; font-family: var(--display); font-size: 0.8rem; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.75; }
-  .ev-now { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.1rem 0.55rem; border: 1px solid currentColor; border-radius: 999px; letter-spacing: 0.08em; }
+  .ev-card { position: relative; display: flex; flex-direction: column; justify-content: flex-end; aspect-ratio: 4 / 5; overflow: hidden; color: #ffffff; text-decoration: none; background: #0a0a0a; border: 1px solid rgba(255, 255, 255, 0.35); isolation: isolate; }
+  .ev-card[data-env="day"].no-img { background: #ffffff; color: #0a0a0a; border-color: #0a0a0a; }
+  .ev-card-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: -2; transition: transform 0.4s ease; }
+  .ev-card.has-img::after { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(to top, rgba(0, 0, 0, 0.92) 0%, rgba(0, 0, 0, 0.62) 34%, rgba(0, 0, 0, 0) 62%); }
+  .ev-card:hover .ev-card-img { transform: scale(1.03); }
+  .ev-card:focus-visible { outline: 3px solid var(--fg); outline-offset: 3px; }
+  .ev-card-top { position: absolute; top: 1rem; left: 1rem; right: 1rem; display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+  .ev-tag { display: inline-flex; align-items: center; gap: 0.45rem; padding: 0.3rem 0.65rem; background: rgba(10, 10, 10, 0.72); color: #ffffff; font-family: var(--display); font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase; }
+  .ev-card[data-env="day"].no-img .ev-tag { background: rgba(10, 10, 10, 0.08); color: #0a0a0a; }
+  .ev-tag .age-badge { width: 1.35rem; height: 1.35rem; flex-shrink: 0; }
+  .ev-now { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.3rem 0.65rem; background: #ffffff; color: #0a0a0a; font-family: var(--display); font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase; }
   .ev-now::before { content: ""; width: 0.5rem; height: 0.5rem; border-radius: 50%; background: #ff1f1f; animation: evLive 1.3s ease-in-out infinite; }
+  .ev-sold { padding: 0.3rem 0.65rem; background: #ffffff; color: #0a0a0a; font-family: var(--display); font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase; }
   @keyframes evLive { 0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(255, 31, 31, 0.6); } 50% { opacity: 0.25; box-shadow: 0 0 0 5px rgba(255, 31, 31, 0); } }
-  @media (prefers-reduced-motion: reduce) { .ev-now::before { animation: none; } }
-  .ev-env .age-badge { width: 1.7rem; height: 1.7rem; flex-shrink: 0; }
-  .ev-name { font-family: var(--display); font-weight: 400; font-size: clamp(1.6rem, 5vw, 2.4rem); line-height: 1; letter-spacing: -0.005em; text-transform: uppercase; }
-  .ev-meta { margin-top: 0.5rem; font-size: 0.9rem; opacity: 0.7; }
-  .ev-desc { margin-top: 0.6rem; max-width: 38rem; font-size: 0.98rem; line-height: 1.5; opacity: 0.85; }
-
-  .ev-buy { display: flex; flex-direction: column; align-items: flex-end; gap: 0.75rem; text-align: right; }
-  .ev-price { font-family: var(--display); font-size: 1.15rem; letter-spacing: 0.02em; text-transform: uppercase; line-height: 1.1; }
-  .ev-cta {
-    display: inline-block;
-    padding: 0.75rem 1.25rem;
-    border: 2px solid currentColor;
-    border-radius: 0;
-    background: none;
-    color: inherit;
-    font-family: var(--display);
-    font-size: 0.95rem;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    cursor: pointer;
-    text-decoration: none;
-    text-align: center;
-    transition: background 0.15s ease, color 0.15s ease;
-  }
-  .ev-cta.is-soldout { opacity: 0.4; pointer-events: none; }
-  .ev-card[data-env="day"] .ev-cta:hover { background: var(--black); color: var(--white); }
-  .ev-card[data-env="night"] .ev-cta:hover { background: var(--white); color: var(--black); }
+  @media (prefers-reduced-motion: reduce) { .ev-now::before { animation: none; } .ev-card-img { transition: none; } }
+  .ev-card-date { position: absolute; top: 4.2rem; left: 1rem; font-family: var(--display); text-transform: uppercase; line-height: 0.9; }
+  .ev-card-date b { display: block; font-weight: 400; font-size: clamp(5rem, 22vw, 7.5rem); letter-spacing: -0.03em; }
+  .ev-card-date span { display: block; font-size: 1.1rem; letter-spacing: 0.08em; opacity: 0.7; }
+  .ev-card-body { padding: 1.25rem; }
+  .ev-card-kicker { display: block; font-size: 0.78rem; letter-spacing: 0.14em; text-transform: uppercase; opacity: 0.8; }
+  .ev-card-name { margin-top: 0.4rem; font-family: var(--display); font-weight: 400; font-size: clamp(1.7rem, 4.6vw, 2.2rem); line-height: 1; letter-spacing: -0.005em; text-transform: uppercase; }
+  .ev-card-meta { display: block; margin-top: 0.6rem; font-size: 0.95rem; opacity: 0.9; }
+  .ev-card-price { display: block; margin-top: 0.15rem; font-size: 0.95rem; opacity: 0.9; }
 
   .ev-empty { padding: 2rem 0; font-size: 1.05rem; opacity: 0.75; }
 
@@ -140,21 +115,6 @@
   .ev-foot a { color: inherit; text-decoration: none; }
   .ev-foot a:hover { text-decoration: underline; }
   .ev-foot .lang-switch { display: flex; justify-content: center; margin-bottom: 0.4rem; }
-
-
-  /* Pantallas medianas con cartel: fecha | texto | cartel, y la compra debajo en una fila. */
-  @media (max-width: 1000px) {
-    .ev-card.has-poster { grid-template-columns: auto 1fr auto; grid-template-areas: "date info poster" "buy buy buy"; align-items: start; }
-    .ev-card.has-poster .ev-buy { flex-direction: row; align-items: center; justify-content: space-between; text-align: left; align-self: stretch; }
-  }
-  @media (max-width: 640px) {
-    .ev-card { grid-template-columns: auto 1fr; grid-template-areas: "date info" "buy buy"; --card-pad: 1.1rem; }
-    .ev-buy { grid-column: auto; flex-direction: row; align-items: center; justify-content: space-between; text-align: left; }
-    /* Con cartel: el cartel (columna izquierda) y la compra (derecha) comparten la segunda fila. */
-    .ev-card.has-poster { grid-template-columns: auto 1fr; grid-template-areas: "date info" "poster buy"; column-gap: 1rem; }
-    .ev-card.has-poster .ev-poster { width: 6rem; }
-    .ev-card.has-poster .ev-buy { flex-direction: column; align-items: stretch; justify-content: flex-end; text-align: left; align-self: end; }
-  }
 </style>
 </head>
 <body>
@@ -173,6 +133,7 @@
     <button type="button" class="ev-chip" data-filter="night" aria-pressed="false">Night</button>
   </div>
 
+  <h2 class="ev-count" id="evCount" hidden></h2>
   <ol class="ev-list" id="evList"></ol>
   <p class="ev-empty" id="evEmpty" data-i18n="ev_empty" hidden>Muy pronto publicaremos aquí los próximos eventos.</p>
 </main>
@@ -195,7 +156,7 @@
   </div>
 </div>
 <script src="/cookies.js?v=4"></script>
-<script src="/i18n.js?v=89"></script>
+<script src="/i18n.js?v=93"></script>
 <script src="/eventos/config.js?v=2"></script>
 <script src="/eventos/events.js?v=12"></script>
 <script>
@@ -226,25 +187,31 @@
         return (e.date >= U.today() || U.isLive(e)) && (filter === 'all' || e.env === filter);
       }).sort(function (a, b) { return (a.date + a.time).localeCompare(b.date + b.time); });
 
+      var lastMonth = '';
       list.innerHTML = upcoming.map(function (e) {
         var wd = U.fmt(e, l, { weekday: 'short' }).replace('.', '');
         var mon = U.fmt(e, l, { month: 'short' }).replace('.', '');
         var day = U.fmt(e, l, { day: 'numeric' });
-        var env = (e.env === 'night' ? 'Night ' + AGE : 'Day') + (U.isLive(e) ? ' <span class="ev-now">' + esc(t('choose_now', 'Ahora')) + '</span>' : '');
+        var monthLabel = U.fmt(e, l, { month: 'long', year: 'numeric' });
         var sold = e.left <= 0;
-        var cta = sold
-          ? '<span class="ev-cta is-soldout">' + esc(t('tk_soldout', 'Agotado')) + '</span>'
-          : '<a class="ev-cta" href="/eventos/entradas/?e=' + encodeURIComponent(e.id) + '">' + esc(t('ev_cta', 'Comprar entrada')) + '</a>';
-        return '<li class="ev-card' + (e.image ? ' has-poster' : '') + '" data-env="' + e.env + '">' +
-          '<div class="ev-date"><span class="ev-date-wd">' + esc(wd) + '</span><span class="ev-date-day">' + esc(day) + '</span><span class="ev-date-mon">' + esc(mon) + '</span></div>' +
-          '<div class="ev-info"><span class="ev-env">' + env + '</span>' +
-            '<h2 class="ev-name">' + esc(e.title[l]) + '</h2>' +
-            '<p class="ev-meta">' + esc(U.range(e)) + (U.floor(e, l) ? ' · ' + esc(U.floor(e, l)) : '') + '</p>' +
-            '<p class="ev-desc">' + esc(e.desc[l]) + '</p></div>' +
-          (e.image ? '<button type="button" class="ev-poster" data-src="' + esc(e.image) + '" aria-label="Ver el cartel"><img src="' + esc(e.image) + '" alt="" loading="lazy"></button>' : '') +
-          '<div class="ev-buy"><span class="ev-price">' + esc(e.price[l]) + '</span>' + cta + '</div>' +
-          '</li>';
+        var tag = '<span class="ev-tag">' + (e.env === 'night' ? 'Night ' + AGE : 'Day') + '</span>';
+        var right = sold ? '<span class="ev-sold">' + esc(t('tk_soldout', 'Agotado')) + '</span>' : (U.isLive(e) ? '<span class="ev-now">' + esc(t('choose_now', 'Ahora')) + '</span>' : '');
+        var head = '';
+        if (monthLabel !== lastMonth) { lastMonth = monthLabel; head = '<li class="ev-month" role="presentation">' + esc(monthLabel) + '</li>'; }
+        return head + '<li><a class="ev-card ' + (e.image ? 'has-img' : 'no-img') + '" data-env="' + e.env + '" href="/eventos/evento/?e=' + encodeURIComponent(e.id) + '">' +
+          (e.image ? '<img class="ev-card-img" src="' + esc(e.image) + '" alt="" loading="lazy">' : '') +
+          '<span class="ev-card-top">' + tag + right + '</span>' +
+          (e.image ? '' : '<span class="ev-card-date"><b>' + esc(day) + '</b><span>' + esc(mon) + '</span></span>') +
+          '<span class="ev-card-body">' +
+            '<span class="ev-card-kicker">' + esc(wd) + ' • ' + esc(U.range(e)) + '</span>' +
+            '<h2 class="ev-card-name">' + esc(e.title[l]) + '</h2>' +
+            '<span class="ev-card-meta">' + esc(wd + ', ' + day + ' ' + mon) + ' · ROCE' + (U.floor(e, l) ? ' · ' + esc(U.floor(e, l)) : '') + '</span>' +
+            '<span class="ev-card-price">' + esc(e.price[l]) + '</span>' +
+          '</span></a></li>';
       }).join('');
+      var cnt = document.getElementById('evCount');
+      cnt.hidden = !upcoming.length;
+      cnt.innerHTML = esc(t('ev_upcoming', 'Próximos eventos')) + ' <span>· ' + upcoming.length + '</span>';
       empty.hidden = upcoming.length > 0;
     }
 
@@ -258,9 +225,6 @@
       });
     });
 
-    list.addEventListener('click', function (ev) {
-      var b = ev.target.closest('.ev-poster'); if (b) U.poster(b.getAttribute('data-src'));
-    });
     document.addEventListener('roce:lang', render);
     setInterval(render, 60000);
     window.ROCE_EVENTS_READY.then(function (list) { EVENTS = list; render(); });
