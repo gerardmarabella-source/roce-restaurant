@@ -1,6 +1,8 @@
 // Edge Function de Supabase de ROCE: emails de reservas y facturas (vía Brevo).
 // La llama el Database Webhook `booking_email` sobre la tabla `bookings`:
 //   · INSERT  → email de confirmación + contacto en las listas de Brevo.
+//   · UPDATE  → si payment_status pasa a "refunded": emite el abono (factura rectificativa
+//               de la serie A, importes en negativo), la envía adjunta al cliente y la sube a Drive.
 //   · UPDATE  → si payment_status pasa a "paid": emite la factura (numeración
 //               correlativa en la base de datos), la genera en PDF, la envía
 //               adjunta por email y la sube a la carpeta de Drive (Apps Script).
@@ -44,6 +46,10 @@ const T = {
     invSubject: (n: string) => `Tu factura ${n} · ROCE`,
     invTitle: "Pago recibido",
     invIntro: "Gracias. Adjuntamos la factura de tu compra en formato PDF.",
+    crSubject: (n: string) => `Devolución y abono ${n} · ROCE`,
+    crTitle: "Devolución realizada",
+    crIntro: "Te hemos devuelto el importe de tu compra a la tarjeta con la que pagaste. Según tu banco, puede tardar unos días en verse reflejado. Adjuntamos el abono (factura rectificativa) en PDF.",
+    crRefund: "Importe devuelto",
   },
   en: {
     subject: (t: string) => `Your spot at ${t} · ROCE`,
@@ -57,6 +63,10 @@ const T = {
     invSubject: (n: string) => `Your invoice ${n} · ROCE`,
     invTitle: "Payment received",
     invIntro: "Thank you. Your invoice is attached as a PDF.",
+    crSubject: (n: string) => `Refund and credit note ${n} · ROCE`,
+    crTitle: "Refund issued",
+    crIntro: "We have refunded your purchase to the card you paid with. Depending on your bank, it can take a few days to show up. The credit note (corrective invoice) is attached as a PDF.",
+    crRefund: "Amount refunded",
   },
 };
 
@@ -141,7 +151,7 @@ async function sendBookingEmail(b: any): Promise<Response> {
 const pdfText = (s: string) => String(s ?? "").replace(/[^\x20-\x7E -ÿ€–—‘’“”•]/g, "?");
 const eur = (c: number) => (c / 100).toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";
 
-async function buildInvoicePdf(inv: any, ev: any, bookingRef: string): Promise<Uint8Array> {
+async function buildInvoicePdf(inv: any, ev: any, bookingRef: string, orig?: any): Promise<Uint8Array> {
   const pdf = await PDFDocument.create();
   const page = pdf.addPage([595.28, 841.89]); // A4
   const reg = await pdf.embedFont(StandardFonts.Helvetica);
@@ -164,11 +174,13 @@ async function buildInvoicePdf(inv: any, ev: any, bookingRef: string): Promise<U
 
   // Título y datos
   const full = inv.kind === "full";
-  right(full ? "FACTURA" : "FACTURA SIMPLIFICADA", M + W, 780, 16, bold);
+  const credit = inv.doc_type === "credit";
+  right(credit ? (full ? "FACTURA RECTIFICATIVA (ABONO)" : "FACTURA SIMPLIFICADA RECTIFICATIVA (ABONO)") : (full ? "FACTURA" : "FACTURA SIMPLIFICADA"), M + W, 780, credit && !full ? 11 : 16, bold);
   right("Nº " + inv.number, M + W, 758, 12, bold);
   right("Fecha de expedición: " + dateEs(new Date(inv.issued_at)), M + W, 742, 9, reg, grey);
   right("Fecha del evento: " + dateEs(new Date(ev.starts_at)), M + W, 729, 9, reg, grey);
   right("Ref. de reserva: " + bookingRef, M + W, 716, 9, reg, grey);
+  if (credit && orig) right("Rectifica la factura Nº " + orig.number + " de fecha " + dateEs(new Date(orig.issued_at)), M + W, 703, 9, bold, ink);
 
   rule(694);
 
@@ -179,6 +191,7 @@ async function buildInvoicePdf(inv: any, ev: any, bookingRef: string): Promise<U
   if (inv.customer_tax_id) { draw("NIF/CIF: " + inv.customer_tax_id, M, y, 10); y -= 13; }
   if (inv.customer_address) { draw(inv.customer_address, M, y, 10); y -= 13; }
   draw(inv.customer_email, M, y, 9, reg, grey);
+  if (credit) { y -= 18; draw("Motivo de la rectificación: " + (inv.reason || "Devolución del importe de la entrada"), M, y, 9.5, reg, ink); }
 
   // Tabla
   let ty = 590;
@@ -201,12 +214,13 @@ async function buildInvoicePdf(inv: any, ev: any, bookingRef: string): Promise<U
   draw("Base imponible", M + W - 230, sy, 10, reg, grey); right(eur(inv.base_cents), M + W, sy, 10); sy -= 16;
   draw("IVA (" + vat + " %)", M + W - 230, sy, 10, reg, grey); right(eur(inv.vat_cents), M + W, sy, 10); sy -= 10;
   page.drawLine({ start: { x: M + W - 230, y: sy }, end: { x: M + W, y: sy }, thickness: 0.7, color: line }); sy -= 18;
-  draw("TOTAL", M + W - 230, sy, 13, bold); right(eur(inv.total_cents), M + W, sy, 13, bold);
+  draw(credit ? "TOTAL A DEVOLVER" : "TOTAL", M + W - 230, sy, 13, bold); right(eur(inv.total_cents), M + W, sy, 13, bold);
 
   // Pie
   draw("Impuestos incluidos en el precio. Servicio: entrada al evento indicado, prestado en Valencia (España).", M, 84, 8, reg, grey);
   draw(ISSUER.name + " · NIF " + ISSUER.taxId + " · " + ISSUER.address, M, 72, 8, reg, grey);
-  if (!full) draw("Factura simplificada. Si necesitas factura completa con tus datos fiscales, escríbenos a " + ISSUER.email + ".", M, 60, 8, reg, grey);
+  if (credit) draw("Abono por devolución: importes en negativo. Rectifica la factura indicada arriba, que queda sin efecto por el importe devuelto.", M, 60, 8, reg, grey);
+  else if (!full) draw("Factura simplificada. Si necesitas factura completa con tus datos fiscales, escríbenos a " + ISSUER.email + ".", M, 60, 8, reg, grey);
 
   return await pdf.save();
 }
@@ -273,6 +287,62 @@ async function issueAndSendInvoice(b: any): Promise<Response> {
   return new Response(`invoice ${inv.number} sent; ${driveNote}`);
 }
 
+// ─── UPDATE: abono al pasar a devuelta ───────────────────────────────────
+async function issueAndSendCreditNote(b: any): Promise<Response> {
+  const supabase = serviceClient();
+  const { data: cn, error: cnErr } = await supabase.rpc("issue_credit_note", { p_booking: b.id, p_reason: "" });
+  if (cnErr || !cn) return new Response("credit note: " + (cnErr?.message ?? "no data"), { status: cnErr?.message?.includes("no_invoice") ? 200 : 500 });
+  if (cn.email_sent_at) return new Response("already sent");
+
+  const { data: ev } = await supabase.from("events").select("*").eq("id", b.event_id).single();
+  const { data: orig } = await supabase.from("invoices").select("number, issued_at").eq("id", cn.credit_of).single();
+  const pdf = await buildInvoicePdf(cn, ev, b.ref, orig);
+  const b64 = toBase64(pdf);
+  const fileName = `Abono-${cn.number}.pdf`;
+
+  const l = b.lang === "en" ? "en" : "es";
+  const t = T[l];
+  const html = mailShell(`
+<tr><td style="padding:28px 24px 8px;color:#fff;font:32px Arial,sans-serif;text-transform:uppercase">${esc(t.crTitle)}</td></tr>
+<tr><td style="padding:0 24px 20px;color:#ddd;font:16px/1.5 Arial,sans-serif">${esc(t.crIntro)}</td></tr>
+<tr><td style="padding:0 24px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0">${rowsHtml([
+    [t.ref, b.ref], ["Nº", cn.number], [t.crRefund, ((-cn.total_cents) / 100).toLocaleString(t.locale, { style: "currency", currency: "EUR" })],
+  ])}</table></td></tr>
+<tr><td style="padding:24px 24px 32px;color:#aaa;font:13px/1.5 Arial,sans-serif">reservas@roce.es</td></tr>`);
+  const res = await fetch("https://api.brevo.com/v3/smtp/email", {
+    method: "POST",
+    headers: brevoHeaders,
+    body: JSON.stringify({
+      sender: { name: "ROCE", email: FROM },
+      replyTo: { email: REPLY_TO, name: "ROCE" },
+      to: [{ email: b.email, name: b.name }],
+      bcc: [{ email: REPLY_TO }], // copia a ROCE: queda constancia del abono enviado
+      subject: t.crSubject(cn.number),
+      htmlContent: html,
+      attachment: [{ name: fileName, content: b64 }],
+    }),
+  });
+  if (!res.ok) return new Response("brevo error: " + (await res.text()), { status: 502 });
+  await supabase.from("invoices").update({ email_sent_at: new Date().toISOString() }).eq("id", cn.id);
+
+  let driveNote = "drive: not configured";
+  if (DRIVE_SCRIPT_URL && DRIVE_SCRIPT_TOKEN) {
+    try {
+      const up = await fetch(DRIVE_SCRIPT_URL, {
+        method: "POST",
+        headers: { "content-type": "text/plain" },
+        body: JSON.stringify({ token: DRIVE_SCRIPT_TOKEN, name: fileName, mime: "application/pdf", data: b64 }),
+      });
+      const out = await up.json().catch(() => ({}));
+      if (out.ok && out.url) {
+        await supabase.from("invoices").update({ drive_url: out.url }).eq("id", cn.id);
+        driveNote = "drive: ok";
+      } else driveNote = "drive error: " + JSON.stringify(out).slice(0, 200);
+    } catch (e) { driveNote = "drive error: " + String(e).slice(0, 200); }
+  }
+  return new Response(`credit note ${cn.number} sent; ${driveNote}`);
+}
+
 // Aviso interno a ROCE cuando entra una reserva pagada con tarjeta (las gratuitas y las
 // de pago manual siguen avisando desde la web).
 async function notifyStaff(b: any): Promise<void> {
@@ -305,6 +375,7 @@ Deno.serve(async (req) => {
   }
   if (payload.type === "UPDATE") {
     const n = payload.record, o = payload.old_record ?? {};
+    if (n.payment_status === "refunded" && o.payment_status === "paid") return await issueAndSendCreditNote(n);
     if (n.payment_status === "paid" && o.payment_status !== "paid" && n.status !== "cancelled") {
       // Pasó de "pending" a pagada: es la primera vez que se confirma, así que sale el email de reserva.
       let sent: Response | null = null;

@@ -449,6 +449,15 @@ drop policy if exists invoices_admin_read on public.invoices;
 create policy invoices_admin_read on public.invoices for select to authenticated using (public.is_admin());
 -- Las facturas no se editan ni se borran desde el panel: sin políticas de escritura.
 
+-- Abonos (facturas rectificativas por devolución): serie A, mismo contador sin saltos.
+-- Una reserva tiene como mucho una factura y un abono (importes en negativo).
+alter table public.invoices drop constraint if exists invoices_booking_id_key;
+alter table public.invoices add column if not exists doc_type  text not null default 'invoice' check (doc_type in ('invoice', 'credit'));
+alter table public.invoices add column if not exists credit_of uuid references public.invoices(id) on delete restrict;
+alter table public.invoices add column if not exists reason    text not null default '';
+create unique index if not exists invoices_one_invoice_per_booking on public.invoices (booking_id) where doc_type = 'invoice';
+create unique index if not exists invoices_one_credit_per_booking  on public.invoices (booking_id) where doc_type = 'credit';
+
 -- Emite (o devuelve, si ya existe) la factura de una reserva cobrada.
 -- Solo la usa la función de Supabase con la clave de servicio.
 create or replace function public.issue_invoice(p_booking uuid) returns public.invoices
@@ -462,7 +471,7 @@ declare
   v_seq    integer;
   v_base   integer;
 begin
-  select * into inv from public.invoices where booking_id = p_booking;
+  select * into inv from public.invoices where booking_id = p_booking and doc_type = 'invoice';
   if found then return inv; end if;
 
   select * into b from public.bookings where id = p_booking for update;
@@ -493,3 +502,57 @@ $$;
 
 revoke all on function public.issue_invoice(uuid) from public, anon, authenticated;
 grant execute on function public.issue_invoice(uuid) to service_role;
+
+-- Emite (o devuelve, si ya existe) el abono de una reserva devuelta: copia la factura con importes en negativo.
+create or replace function public.issue_credit_note(p_booking uuid, p_reason text default '') returns public.invoices
+language plpgsql security definer set search_path = public as $$
+declare
+  orig     public.invoices;
+  cn       public.invoices;
+  v_series text := 'A';
+  v_year   integer;
+  v_seq    integer;
+begin
+  select * into cn from public.invoices where booking_id = p_booking and doc_type = 'credit';
+  if found then return cn; end if;
+  select * into orig from public.invoices where booking_id = p_booking and doc_type = 'invoice';
+  if not found then raise exception 'no_invoice'; end if;
+
+  v_year := extract(year from (now() at time zone 'Europe/Madrid'))::integer;
+  insert into public.invoice_counters (series, year, last_seq) values (v_series, v_year, 0) on conflict do nothing;
+  update public.invoice_counters set last_seq = last_seq + 1
+    where series = v_series and year = v_year returning last_seq into v_seq;
+
+  insert into public.invoices (
+    number, series, year, seq, booking_id, kind, doc_type, credit_of, reason,
+    customer_name, customer_tax_id, customer_address, customer_email,
+    description, qty, unit_cents, total_cents, vat_percent, base_cents, vat_cents
+  ) values (
+    v_series || '-' || v_year || '-' || lpad(v_seq::text, 4, '0'), v_series, v_year, v_seq, p_booking, orig.kind, 'credit', orig.id,
+    left(coalesce(nullif(trim(p_reason), ''), 'Devolución del importe de la entrada'), 200),
+    orig.customer_name, orig.customer_tax_id, orig.customer_address, orig.customer_email,
+    orig.description, orig.qty, -orig.unit_cents, -orig.total_cents, orig.vat_percent, -orig.base_cents, -orig.vat_cents
+  ) returning * into cn;
+  return cn;
+end;
+$$;
+revoke all on function public.issue_credit_note(uuid, text) from public, anon, authenticated;
+grant execute on function public.issue_credit_note(uuid, text) to service_role;
+
+-- Devoluciones: una por reserva (el candado evita devolver dos veces con un doble clic).
+-- Solo las escribe la función "redsys" con la clave de servicio.
+create table if not exists public.refunds (
+  id            uuid primary key default gen_random_uuid(),
+  booking_id    uuid not null unique references public.bookings(id) on delete restrict,
+  order_id      text,                                    -- pedido de Redsys del cobro original
+  amount_cents  integer not null,
+  method        text not null check (method in ('redsys', 'manual')),
+  status        text not null default 'started' check (status in ('started', 'done', 'failed')),
+  response_code text,
+  requested_by  text not null default '',
+  created_at    timestamptz not null default now(),
+  updated_at    timestamptz not null default now()
+);
+alter table public.refunds enable row level security;
+drop policy if exists refunds_admin_read on public.refunds;
+create policy refunds_admin_read on public.refunds for select to authenticated using (public.is_admin());

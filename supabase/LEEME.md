@@ -107,7 +107,7 @@ y los datos reales del contrato se cobra de verdad: antes de pasar a `live`, haz
 - Sin los secretos, la función responde “disabled” y la web sigue como antes (reserva sin cobro online).
 - Una reserva pendiente que no paga en 30 minutos deja de ocupar plaza (sigue apareciendo como “Pendiente de pago” en el panel).
 - Si el banco cobra una reserva ya cancelada, el pago queda registrado en `payments` y hay que devolverlo desde el portal de Redsys.
-- Las **devoluciones** se hacen desde el portal de Redsys; de momento el panel no las gestiona (ni las facturas rectificativas).
+- Las **devoluciones** se hacen desde el panel (ver sección 9): botón **Devolver** en Reservas.
 - Redsys pide mostrar en la web las condiciones de venta y la política de cancelación/devolución. Revisa `terminos.html` con la gestoría.
 
 ## 8. Listas de invitados
@@ -121,6 +121,19 @@ Para invitar a alguien (RR. PP., un amigo, un artista) a apuntar a su gente sin 
 - Un evento con listas no se puede borrar hasta borrar sus listas (o despublicarlo).
 - Las tablas `guest_lists` y `guest_list_entries` solo las lee el panel; el público solo puede usar su propio enlace.
 - Quien rellena la lista confirma con una casilla que sus invitados le han autorizado a dar su nombre (RGPD).
+
+## 9. Devoluciones y abonos
+En **Reservas**, cada reserva cobrada tiene el botón **Devolver** (solo cuentas con rol *Admin*). Al pulsarlo y confirmar:
+1. La función `redsys` pide al banco la **devolución total** del cobro (servicio REST de Redsys, operación tipo 3, con el mismo pedido del cobro).
+2. Se emite el **abono** (factura rectificativa, serie **A**, importes en negativo, con referencia a la factura original y el motivo) y se numera sin saltos (`A-2026-0001`…).
+3. La reserva queda **Cancelada / Devuelto** y la plaza se libera.
+4. La función `booking-email` manda el abono en PDF al cliente (con copia a reservas@roce.es) y lo sube a Drive.
+
+- Una devolución por reserva: un candado en la tabla `refunds` evita devolver dos veces con un doble clic.
+- Si el banco no acepta la devolución (por ejemplo, porque el terminal no tiene activadas las devoluciones por API), el panel muestra el código del banco y ofrece **registrarla a mano**: se hace la devolución en el portal del banco (Consultas → operación → Devolución) y, ya hecha, se pulsa Aceptar para emitir el abono y enviarlo. Desde el panel no se mueve dinero en ese caso.
+- Las reservas cobradas a mano con *Marcar cobrado* no tienen cobro online: solo se pueden registrar como devueltas a mano.
+- Reservas gratuitas o sin factura: se pueden devolver, pero sin abono.
+- Hay que ejecutar antes `schema.sql` (tabla `refunds`, columnas de `invoices` y función `issue_credit_note`) y volver a desplegar las funciones `redsys` y `booking-email`.
 
 ## Dónde se guardan los datos
 - Reservas: tabla `bookings` de Supabase (nombre, email, teléfono, comentarios, entradas, estado).
