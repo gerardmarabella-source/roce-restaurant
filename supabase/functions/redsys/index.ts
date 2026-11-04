@@ -4,6 +4,10 @@
 //   · La web le habla en JSON:  {action: "status"}  o  {action: "pay", ref, lang, return_base}
 //     "pay" devuelve los datos firmados que la web envía al banco; la clave secreta
 //     nunca sale de aquí.
+//   · El panel de administración le pide {action: "refund", booking_id, manual?}: devuelve el
+//     cobro por el servicio REST de Redsys (o, con manual=true, solo registra una devolución ya hecha
+//     en el portal del banco), emite el abono y deja la reserva como "devuelta". Solo responde a
+//     administradores (admins.role = 'admin'), comprobando el token del usuario.
 //   · Redsys le habla con un formulario (URL de notificación): Ds_SignatureVersion,
 //     Ds_MerchantParameters y Ds_Signature. Se comprueba la firma, el importe y el
 //     comercio, y se marca la reserva como cobrada (eso dispara el email y la factura).
@@ -33,6 +37,10 @@ const json = (body: unknown, status = 200) =>
 const URLS = {
   test: "https://sis-t.redsys.es:25443/sis/realizarPago",
   live: "https://sis.redsys.es/sis/realizarPago",
+};
+const REST_URLS = {
+  test: "https://sis-t.redsys.es:25443/sis/rest/trataPeticionREST",
+  live: "https://sis.redsys.es/sis/rest/trataPeticionREST",
 };
 const HOLD_MS = 30 * 60 * 1000; // la plaza queda retenida 30 min mientras se paga
 
@@ -104,10 +112,11 @@ function newOrder(): string {
 // ─── Web → función ──────────────────────────────────────────────────────
 async function handleJson(req: Request): Promise<Response> {
   const cfg = config();
-  let body: { action?: string; ref?: string; lang?: string; return_base?: string };
+  let body: { action?: string; ref?: string; lang?: string; return_base?: string; booking_id?: string; manual?: boolean; reason?: string };
   try { body = await req.json(); } catch { return json({ error: "bad_request" }, 400); }
 
   if (body.action === "status") return json({ enabled: cfg.enabled, env: cfg.env });
+  if (body.action === "refund") return await handleRefund(req, body as RefundBody);
   if (body.action !== "pay") return json({ error: "bad_action" }, 400);
   if (!cfg.enabled) return json({ error: "disabled" }, 503);
 
@@ -155,6 +164,95 @@ async function handleJson(req: Request): Promise<Response> {
     Ds_MerchantParameters: merchantParameters,
     Ds_Signature: await sign(cfg.key, order, merchantParameters),
   });
+}
+
+// ─── Panel → función: devolución ─────────────────────────────────────────
+type RefundBody = { booking_id?: string; manual?: boolean; reason?: string };
+
+async function handleRefund(req: Request, body: RefundBody): Promise<Response> {
+  const url = Deno.env.get("SUPABASE_URL")!;
+  const caller = createClient(url, Deno.env.get("SUPABASE_ANON_KEY")!, {
+    global: { headers: { Authorization: req.headers.get("Authorization") ?? "" } },
+    auth: { persistSession: false },
+  });
+  const { data: isAdmin } = await caller.rpc("can_manage_team");
+  if (isAdmin !== true) return json({ error: "forbidden" }, 403);
+  const { data: me } = await caller.auth.getUser();
+  const who = (me.user?.email ?? "").toLowerCase();
+
+  const sb = createClient(url, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
+  const { data: b } = await sb.from("bookings").select("id, ref, status, payment_status, total_cents").eq("id", String(body.booking_id ?? "")).maybeSingle();
+  if (!b) return json({ error: "not_found" }, 404);
+  if (b.payment_status === "refunded") return json({ error: "already_refunded" }, 409);
+  if (b.payment_status !== "paid" || b.total_cents <= 0) return json({ error: "not_paid" }, 409);
+
+  const { data: pay } = await sb.from("payments").select("order_id, amount_cents")
+    .eq("booking_id", b.id).eq("status", "paid").order("updated_at", { ascending: false }).limit(1).maybeSingle();
+  const manual = body.manual === true;
+  // Cobrada a mano en el panel (sin pago online): no hay nada que devolver por Redsys.
+  if (!manual && !pay) return json({ error: "no_online_payment" }, 409);
+
+  // Candado: una devolución por reserva. Si una anterior falló, se puede reintentar.
+  const row = { booking_id: b.id, order_id: pay?.order_id ?? null, amount_cents: b.total_cents, method: manual ? "manual" : "redsys", status: "started", requested_by: who };
+  const ins = await sb.from("refunds").insert(row);
+  if (ins.error) {
+    const { data: prev } = await sb.from("refunds").select("status").eq("booking_id", b.id).maybeSingle();
+    if (!prev || prev.status !== "failed") return json({ error: prev?.status === "done" ? "already_refunded" : "refund_in_progress" }, 409);
+    await sb.from("refunds").update({ ...row, response_code: null, updated_at: new Date().toISOString() }).eq("booking_id", b.id);
+  }
+  const fail = async (code: string, detail: string, status = 502) => {
+    await sb.from("refunds").update({ status: "failed", response_code: code.slice(0, 10), updated_at: new Date().toISOString() }).eq("booking_id", b.id);
+    return json({ error: "bank_refused", code, detail }, status);
+  };
+
+  if (!manual) {
+    const cfg = config();
+    if (!cfg.enabled) return await fail("CONFIG", "Pasarela sin configurar", 503);
+    const params = {
+      DS_MERCHANT_AMOUNT: String(pay!.amount_cents),
+      DS_MERCHANT_ORDER: pay!.order_id,
+      DS_MERCHANT_MERCHANTCODE: cfg.merchant,
+      DS_MERCHANT_CURRENCY: "978",
+      DS_MERCHANT_TRANSACTIONTYPE: "3", // devolución
+      DS_MERCHANT_TERMINAL: cfg.terminal,
+    };
+    const merchantParameters = toB64(JSON.stringify(params));
+    let out: Record<string, unknown>;
+    try {
+      const r = await fetch(REST_URLS[cfg.env], {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          Ds_SignatureVersion: "HMAC_SHA256_V1",
+          Ds_MerchantParameters: merchantParameters,
+          Ds_Signature: await sign(cfg.key, pay!.order_id, merchantParameters),
+        }),
+        signal: AbortSignal.timeout(25000),
+      });
+      out = await r.json();
+    } catch (e) {
+      return await fail("NETWORK", "No se pudo contactar con el banco: " + String(e).slice(0, 120));
+    }
+    if (out.errorCode) return await fail(String(out.errorCode), "El banco ha rechazado la petición");
+    let resp: Record<string, unknown>;
+    try { resp = fromB64Json(String(out.Ds_MerchantParameters ?? "")); } catch { return await fail("RESPONSE", "Respuesta del banco ilegible"); }
+    const get = (name: string) => { const k = Object.keys(resp).find((x) => x.toLowerCase() === name.toLowerCase()); return k ? String(resp[k]) : ""; };
+    const expected = await sign(cfg.key, get("Ds_Order") || pay!.order_id, String(out.Ds_MerchantParameters));
+    if (!safeEqual(canon(expected), canon(String(out.Ds_Signature ?? "")))) return await fail("SIGNATURE", "Firma de la respuesta no válida: compruébalo en el portal del banco");
+    const code = get("Ds_Response");
+    if (code !== "0900") return await fail(code || "UNKNOWN", "El banco no ha aceptado la devolución (código " + (code || "?") + ")");
+    await sb.from("refunds").update({ status: "done", response_code: code, updated_at: new Date().toISOString() }).eq("booking_id", b.id);
+  } else {
+    await sb.from("refunds").update({ status: "done", response_code: "MANUAL", updated_at: new Date().toISOString() }).eq("booking_id", b.id);
+  }
+
+  // Abono (si hubo factura) y reserva devuelta y cancelada: esto dispara el email con el abono.
+  let creditNumber = "";
+  const cn = await sb.rpc("issue_credit_note", { p_booking: b.id, p_reason: String(body.reason ?? "").slice(0, 200) });
+  if (!cn.error && cn.data) creditNumber = (cn.data as { number: string }).number;
+  const up = await sb.from("bookings").update({ payment_status: "refunded", status: "cancelled" }).eq("id", b.id);
+  if (up.error) return json({ error: "refund_done_but_not_saved", detail: up.error.message, credit_note: creditNumber }, 500);
+  return json({ ok: true, method: manual ? "manual" : "redsys", credit_note: creditNumber });
 }
 
 // ─── Redsys → función (notificación del cobro) ──────────────────────────

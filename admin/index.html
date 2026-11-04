@@ -442,7 +442,7 @@
   function loadAll() {
     return Promise.all([
       api('events?select=*&order=starts_at.desc'),
-      api('bookings?select=*,invoices(number,kind,drive_url)&order=created_at.desc'),
+      api('bookings?select=*,invoices(number,kind,doc_type,drive_url)&order=created_at.desc'),
       api('guest_lists?select=*,guest_list_entries(*)&order=created_at.desc')
     ]).then(function (r) { events = r[0] || []; bookings = r[1] || []; lists = r[2] || []; renderEvents(); renderBookingFilter(); renderBookings(); })
       .catch(function (e) { flash('No se han podido cargar los datos: ' + e.message, 'error'); });
@@ -714,11 +714,16 @@
     var id = $('bkEvent').value, q = $('bkSearch').value.trim().toLowerCase();
     return bookings.filter(function (b) { return (!id || b.event_id === id) && (!q || (b.name + ' ' + b.email + ' ' + b.ref + ' ' + b.phone + ' ' + (b.dni || '')).toLowerCase().indexOf(q) !== -1); });
   }
-  function invoiceOf(b) { var i = b.invoices; return Array.isArray(i) ? i[0] : i; }
+  function docsOf(b) { var i = b.invoices; return Array.isArray(i) ? i : (i ? [i] : []); }
+  function invoiceOf(b) { return docsOf(b).filter(function (d) { return d.doc_type !== 'credit'; })[0]; }
+  function creditOf(b) { return docsOf(b).filter(function (d) { return d.doc_type === 'credit'; })[0]; }
+  function docTag(d, label, cls) { return '<br><span class="ad-tag ' + cls + '">' + label + esc(d.number) + '</span>' + (d.drive_url ? ' <a href="' + esc(d.drive_url) + '" target="_blank" rel="noopener">Drive</a>' : ''); }
   function invoiceCell(b) {
-    var i = invoiceOf(b);
-    if (i) return '<br><span class="ad-tag is-green">' + esc(i.number) + '</span>' + (i.drive_url ? ' <a href="' + esc(i.drive_url) + '" target="_blank" rel="noopener">Drive</a>' : '');
-    return b.invoice_tax_id ? '<br><span class="ad-meta">Pide factura completa</span>' : '';
+    var i = invoiceOf(b), c = creditOf(b), h = '';
+    if (i) h += docTag(i, '', 'is-green');
+    if (c) h += docTag(c, 'Abono ', 'is-red');
+    if (!i && !c && b.invoice_tax_id) h += '<br><span class="ad-meta">Pide factura completa</span>';
+    return h;
   }
   var STATUS = { confirmed: 'Confirmada', pending: 'Pendiente de pago', cancelled: 'Cancelada' };
   var PAY = { free: 'Gratis', pending: 'Por cobrar', paid: 'Cobrado', refunded: 'Devuelto', failed: 'Fallido' };
@@ -736,22 +741,68 @@
         '<td>' + esc(b.email) + '<br>' + esc(b.phone) + (b.marketing_optin ? '<br><span class="ad-tag is-green">Quiere novedades</span>' : '') + '</td>' +
         '<td>' + b.qty + '<br><span class="ad-meta">' + esc(money(b.total_cents)) + '</span></td>' +
         '<td>' + esc(STATUS[b.status]) + '</td><td>' + esc(PAY[b.payment_status]) + invoiceCell(b) + '</td>' +
-        '<td class="nowrap">' + (b.status !== 'cancelled' ? '<button class="ad-btn is-small is-danger" data-id="' + b.id + '" data-act="cancel" type="button">Cancelar</button>' : '') +
-          (b.payment_status === 'pending' && b.status !== 'cancelled' ? ' <button class="ad-btn is-small is-ghost" data-id="' + b.id + '" data-act="paid" type="button">Marcar cobrado</button>' : '') + '</td></tr>';
+        '<td class="nowrap">' + (b.payment_status === 'paid'
+          ? (myRole === 'admin' ? '<button class="ad-btn is-small is-danger" data-id="' + b.id + '" data-act="refund" type="button">Devolver</button>' : '<span class="ad-meta">Devolver: solo admin</span>')
+          : (b.status !== 'cancelled' ? '<button class="ad-btn is-small is-danger" data-id="' + b.id + '" data-act="cancel" type="button">Cancelar</button>' : '')) +
+          (b.payment_status === 'pending' && b.status !== 'cancelled' ? ' <button class="ad-btn is-small is-ghost" data-id="' + b.id + '" data-act="paid" type="button">Marcar cobrado</button>' : '') +
+          (b.payment_status !== 'refunded' ? ' <button class="ad-btn is-small is-ghost" data-id="' + b.id + '" data-act="email" type="button">Cambiar email</button>' : '') + '</td></tr>';
     }).join('');
   }
   $('bkBody').addEventListener('click', function (ev) {
     var btn = ev.target.closest('button[data-act]'); if (!btn) return;
     var b = bookings.filter(function (x) { return x.id === btn.dataset.id; })[0]; if (!b) return;
+    if (btn.dataset.act === 'refund') return doRefund(b, false, false);
+    if (btn.dataset.act === 'email') {
+      var ne = (prompt('Email correcto para ' + b.name + ' (' + b.ref + '):\n\nLos avisos y el abono que se envíen a partir de ahora irán a este email.', b.email) || '').trim().toLowerCase();
+      if (!ne || ne === b.email) return;
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(ne)) { flash('Ese email no es válido.', 'error'); return; }
+      return api('bookings?id=eq.' + b.id, { method: 'PATCH', body: { email: ne } }).then(function () { b.email = ne; renderBookings(); flash('Email actualizado a ' + ne + '.', 'ok'); }).catch(function (x) { flash(x.message, 'error'); });
+    }
     var patch;
     if (btn.dataset.act === 'cancel') { if (!confirm('¿Cancelar la reserva ' + b.ref + ' de ' + b.name + '? Se liberan sus plazas.')) return; patch = { status: 'cancelled' }; }
     else { if (!confirm('¿Marcar como cobrada la reserva ' + b.ref + '? Se emitirá la factura y se enviará por email al cliente.')) return; patch = { payment_status: 'paid', status: 'confirmed' }; }
     api('bookings?id=eq.' + b.id, { method: 'PATCH', body: patch }).then(function () { Object.assign(b, patch); renderBookings(); renderEvents(); flash('Reserva actualizada.', 'ok'); }).catch(function (x) { flash(x.message, 'error'); });
   });
+  // Devolución: la hace la función "redsys" (servidor) con el banco, emite el abono y lo envía por email.
+  var REFUND_ERR = {
+    forbidden: 'No tienes permiso: solo los administradores pueden hacer devoluciones.',
+    already_refunded: 'Esa reserva ya está devuelta.',
+    not_paid: 'Esa reserva no figura como cobrada.',
+    refund_in_progress: 'Ya hay una devolución en curso para esa reserva. Espera un minuto y recarga.',
+    refund_done_but_not_saved: 'El banco ha hecho la devolución, pero no se ha podido actualizar la reserva. No la repitas: avisa para revisarlo.'
+  };
+  function refundCall(id, manual) {
+    var pre = session && session.expires_at < Date.now() ? refresh() : Promise.resolve();
+    return pre.then(function () {
+      return fetch(cfg.url + '/functions/v1/redsys', { method: 'POST', headers: { apikey: cfg.anonKey, Authorization: 'Bearer ' + session.access_token, 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'refund', booking_id: id, manual: !!manual }) });
+    }).then(function (r) { return r.json().catch(function () { return {}; }).then(function (d) { if (!r.ok) { var e = new Error(d.detail || d.error || ('Error ' + r.status)); e.code = d.error; throw e; } return d; }); });
+  }
+  function doRefund(b, manual, skipConfirm) {
+    if (!skipConfirm) {
+      var msg = '¿Devolver ' + money(b.total_cents) + ' a ' + b.name + ' (' + b.ref + ')?\n\n' +
+        '• Se devuelve el importe a su tarjeta a través de Redsys.\n' +
+        '• La reserva se cancela y la plaza queda libre.\n' +
+        '• Se emite el abono y se envía por email a ' + b.email + '.\n\n' +
+        'No se puede deshacer.';
+      if (!confirm(msg)) return;
+    }
+    flash(manual ? 'Registrando la devolución…' : 'Haciendo la devolución con el banco…');
+    return refundCall(b.id, manual).then(function (d) {
+      return loadAll().then(function () { flash('Devolución hecha' + (d.credit_note ? ' · abono ' + d.credit_note + ' enviado a ' + b.email : ' · esta reserva no tenía factura, así que no hay abono') + '.', 'ok'); });
+    }).catch(function (x) {
+      if (!manual && (x.code === 'bank_refused' || x.code === 'no_online_payment')) {
+        var why = x.code === 'no_online_payment' ? 'Esta reserva no se cobró online, así que no se puede devolver por Redsys.' : 'El banco no ha hecho la devolución: ' + x.message;
+        flash(why, 'error');
+        if (confirm(why + '\n\nHaz la devolución a mano en el portal del banco y, cuando esté hecha, pulsa Aceptar para registrarla: se emitirá el abono y se enviará por email a ' + b.email + '. No se mueve dinero desde aquí.\n\n¿Ya la has hecho en el banco?')) return doRefund(b, true, true);
+        return;
+      }
+      flash(REFUND_ERR[x.code] || x.message, 'error');
+    });
+  }
   $('bkCsv').addEventListener('click', function () {
-    var rows = [['Ref', 'Evento', 'Fecha evento', 'Nombre', 'Email', 'Teléfono', 'DNI', 'Entradas', 'Total €', 'Estado', 'Pago', 'Novedades', 'Comentarios', 'Reservado', 'Factura', 'Han venido']].concat(filteredBookings().map(function (b) {
+    var rows = [['Ref', 'Evento', 'Fecha evento', 'Nombre', 'Email', 'Teléfono', 'DNI', 'Entradas', 'Total €', 'Estado', 'Pago', 'Novedades', 'Comentarios', 'Reservado', 'Factura', 'Abono', 'Han venido']].concat(filteredBookings().map(function (b) {
       var e = eventById(b.event_id);
-      return [b.ref, e ? e.title_es : b.event_id, e ? fmtDate(e.starts_at, { dateStyle: 'short', timeStyle: 'short' }) : '', b.name, b.email, b.phone, b.dni || '', b.qty, (b.total_cents / 100).toFixed(2).replace('.', ','), STATUS[b.status], PAY[b.payment_status], b.marketing_optin ? 'sí' : 'no', b.notes, fmtDate(b.created_at, { dateStyle: 'short', timeStyle: 'short' }), (invoiceOf(b) || {}).number || '', b.status === 'cancelled' ? '' : b.checked_in + '/' + b.qty];
+      return [b.ref, e ? e.title_es : b.event_id, e ? fmtDate(e.starts_at, { dateStyle: 'short', timeStyle: 'short' }) : '', b.name, b.email, b.phone, b.dni || '', b.qty, (b.total_cents / 100).toFixed(2).replace('.', ','), STATUS[b.status], PAY[b.payment_status], b.marketing_optin ? 'sí' : 'no', b.notes, fmtDate(b.created_at, { dateStyle: 'short', timeStyle: 'short' }), (invoiceOf(b) || {}).number || '', (creditOf(b) || {}).number || '', b.status === 'cancelled' ? '' : b.checked_in + '/' + b.qty];
     }));
     var csv = '﻿' + rows.map(function (r) { return r.map(function (c) { return '"' + String(c == null ? '' : c).replace(/"/g, '""') + '"'; }).join(';'); }).join('\r\n');
     var a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' })); a.download = 'reservas-roce.csv';
@@ -928,7 +979,7 @@
   function refreshCheckin() {
     var id = $('ckEvent').value; if (!id) return Promise.resolve();
     return Promise.all([
-      api('bookings?select=*,invoices(number,kind,drive_url)&event_id=eq.' + encodeURIComponent(id)),
+      api('bookings?select=*,invoices(number,kind,doc_type,drive_url)&event_id=eq.' + encodeURIComponent(id)),
       api('guest_lists?select=*,guest_list_entries(*)&event_id=eq.' + encodeURIComponent(id))
     ]).then(function (r) {
       bookings = bookings.filter(function (b) { return b.event_id !== id; }).concat(r[0] || []);
