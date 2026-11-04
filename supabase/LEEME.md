@@ -147,6 +147,19 @@ Cada compra tiene un **código secreto** (`bookings.ticket_token`, 32 caracteres
 - Hay que ejecutar antes `schema.sql` y volver a desplegar las funciones `redsys` y `booking-email`.
 - Librerías incluidas en la web (no se cargan de terceros): `qrcode-generator` 1.4.4 (MIT) para dibujar el QR y `jsQR` 1.4.0 (Apache-2.0) para leerlo en navegadores sin detector nativo (iPhone).
 
+## 11. Listas con entrada QR por invitado y permisos por pestaña
+**Listas:** quien rellena el enlace de una lista apunta, por cada invitado, **nombre, email y DNI/NIE/pasaporte**.
+- Cada invitado tiene su **QR personal** (`guest_list_entries.ticket_token`) y su página `roce.es/entrada/?t=…`.
+- Su entrada **se envía por email cuando la lista se cierra**: a la hora marcada, al pulsar **Cerrar** en el panel o cuando el propietario pulsa **Confirmar lista y enviar entradas** (la lista se cierra en ese momento y salen los emails).
+- El envío lo hace la función `booking-email` (`{"action":"list_sweep"}`): la llama la propia página al confirmar y un programador cada 5 minutos (`supabase/cron_listas.sql`, se ejecuta una vez; usa `pg_cron` y `pg_net`). Cada invitado recibe un único email.
+- El invitado entra en la puerta con el **escáner** (el mismo de las compras): *Admitida* / *Ya admitida*. En Asistencia salen con su DNI.
+- Los invitados añadidos a mano desde el panel (Listas → Ver nombres) pueden llevar email y DNI (`Nombre, email, DNI`); sin email no reciben QR, pero se pueden marcar a mano.
+
+**Permisos por pestaña (Equipo):** a cada persona de nivel *Equipo* se le marcan las pestañas que ve: **Eventos, Reservas, Asistencia, Listas**. Los administradores lo ven todo. Quien tiene `tabs = NULL` (cuentas anteriores) ve las cuatro.
+- Se aplica también en la base de datos (RLS, función `has_tab`): sin la pestaña Eventos no se pueden editar eventos ni imágenes; para leer o tocar reservas hace falta Reservas **o** Asistencia (la puerta necesita ver y marcar llegadas); para listas, Listas **o** Asistencia; facturas y pagos, Reservas. Escanear entradas exige Asistencia.
+- Limitación: quien solo tiene Asistencia ve los datos de las reservas que necesita la puerta (nombre, DNI, referencia).
+- Ejecuta `schema.sql` y, una vez, `cron_listas.sql`; vuelve a desplegar `booking-email`.
+
 ## Dónde se guardan los datos
 - Reservas: tabla `bookings` de Supabase (nombre, email, teléfono, comentarios, entradas, estado).
 - Contactos de marketing: Brevo (solo email y, si se configura, nombre).

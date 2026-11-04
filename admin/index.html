@@ -127,6 +127,10 @@
   .sc-manual { padding: 0.5rem 1rem 1rem; font-size: 0.85rem; opacity: 0.9; }
   .sc-manual summary { cursor: pointer; padding: 0.4rem 0; }
   .sc-manual input { width: 100%; margin: 0.4rem 0; padding: 0.7rem; border: 1px solid #fff; background: #111; color: #fff; font: inherit; }
+  .ad-tab[hidden], .ad-perms[hidden] { display: none !important; }
+  .ad-perms { display: flex; flex-wrap: wrap; gap: 0.35rem 1rem; margin-top: 0.45rem; font-size: 0.85rem; }
+  .ad-perms label { display: inline-flex; align-items: center; gap: 0.35rem; cursor: pointer; }
+  .ad-perms input { width: auto; margin: 0; }
   .ck-chip { padding: 0.5rem 0.9rem; border: 1px solid var(--fg); background: none; color: var(--fg); font-family: var(--display); font-size: 0.8rem; letter-spacing: 0.05em; text-transform: uppercase; cursor: pointer; }
   .ck-chip[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
   .ck-row { display: grid; grid-template-columns: 1fr auto; gap: 0.5rem 1rem; align-items: center; padding: 0.9rem 1rem; border: 1px solid var(--fg); }
@@ -253,7 +257,7 @@
 
     <section id="tabTeam" hidden>
       <div id="teamAdmin">
-      <p class="ad-meta" style="margin-bottom:1rem"><b>Administrador</b>: gestiona el equipo (crea cuentas, cambia contraseñas, quita accesos). <b>Equipo</b>: eventos, reservas y facturas, pero no puede tocar el equipo. Ambos pueden cambiar su propia contraseña.</p>
+      <p class="ad-meta" style="margin-bottom:1rem"><b>Administrador</b>: gestiona el equipo (crea cuentas, cambia contraseñas, quita accesos). <b>Equipo</b>: solo ve las pestañas que le marques abajo (Eventos, Reservas, Asistencia, Listas) y no puede tocar el equipo. Ambos pueden cambiar su propia contraseña.</p>
       <ul class="ad-list" id="teamList"></ul>
       <form class="ad-sheet-inline" id="teamForm" autocomplete="off">
         <h2 class="ad-sub">Añadir a alguien</h2>
@@ -262,6 +266,7 @@
           <input type="email" id="teamEmail" placeholder="persona@roce.es" required style="flex:1 1 14rem">
           <input type="text" id="teamPass" placeholder="Contraseña (mín. 10)" required minlength="10" style="flex:1 1 12rem" spellcheck="false">
           <select id="teamRole" aria-label="Nivel"><option value="staff">Equipo</option><option value="admin">Administrador</option></select>
+          <span class="ad-perms" id="teamNewTabs" aria-label="Pestañas que podrá ver"><label><input type="checkbox" data-tab="events"> Eventos</label><label><input type="checkbox" data-tab="bookings"> Reservas</label><label><input type="checkbox" data-tab="checkin" checked> Asistencia</label><label><input type="checkbox" data-tab="lists"> Listas</label></span>
           <button class="ad-btn is-ghost" type="button" id="teamGen">Generar</button>
           <button class="ad-btn" type="submit" id="teamAdd">Crear y dar acceso</button>
         </div>
@@ -457,15 +462,26 @@
   });
   $('logout').addEventListener('click', function () { saveSession(null); showLogin(''); });
 
+  // Pestañas que puede usar esta cuenta (las define un administrador en Equipo). Equipo/"Mi cuenta" siempre se ve.
+  var ALL_TABS = ['events', 'bookings', 'checkin', 'lists'], myTabs = ALL_TABS.slice();
+  function applyTabs() {
+    document.querySelectorAll('.ad-tab[data-tab]').forEach(function (b) {
+      var t = b.dataset.tab; b.hidden = t !== 'team' && myTabs.indexOf(t) === -1;
+    });
+    var first = ALL_TABS.filter(function (t) { return myTabs.indexOf(t) !== -1; })[0] || 'team';
+    var btn = document.querySelector('.ad-tab[data-tab="' + first + '"]'); if (btn) btn.click();
+  }
   function start() {
-    return api('admins?select=email,role').then(function (rows) {
+    return api('admins?select=email,role,tabs').then(function (rows) {
       if (!rows || !rows.length) { saveSession(null); showLogin('Esta cuenta no tiene permiso para usar el panel.'); return; }
       var mine = rows.filter(function (r) { return String(r.email).toLowerCase() === String(session.email).toLowerCase(); })[0];
       myRole = mine && mine.role === 'admin' ? 'admin' : 'staff';
+      myTabs = myRole === 'admin' ? ALL_TABS.slice() : (mine && Array.isArray(mine.tabs) ? mine.tabs.slice() : ALL_TABS.slice());
       $('teamAdmin').hidden = myRole !== 'admin';
       $('teamTab').textContent = myRole === 'admin' ? 'Equipo' : 'Mi cuenta';
       $('whoami').textContent = session.email;
       $('loginView').hidden = true; $('appView').hidden = false;
+      applyTabs();
       return loadAll();
     }).catch(function () { saveSession(null); showLogin('La sesión ha caducado. Entra de nuevo.'); });
   }
@@ -848,7 +864,7 @@
   var lsOpen = {}, lsEditing = null, lsCloseTouched = false;
   function listClosed(l) {
     var e = eventById(l.event_id);
-    return l.closed || new Date(l.closes_at).getTime() <= Date.now() || (e && new Date(e.starts_at).getTime() + e.duration_h * 3600000 <= Date.now());
+    return l.closed || !!l.validated_at || new Date(l.closes_at).getTime() <= Date.now() || (e && new Date(e.starts_at).getTime() + e.duration_h * 3600000 <= Date.now());
   }
   function listLink(l) { return location.origin + '/lista/?t=' + l.token; }
   function lsEvents() {
@@ -875,7 +891,7 @@
         '<div class="ad-name">' + esc(l.label) + '</div>' +
         '<div class="ad-meta"><span class="ad-tag ' + (e && e.env === 'night' ? 'night' : 'day') + '">' + (e && e.env === 'night' ? 'Night' : 'Day') + '</span>' + esc(e ? e.title_es + ' · ' + fmtDate(e.starts_at, { day: 'numeric', month: 'short' }) : l.event_id) + '</div>' +
         '<div class="ad-meta"><b>' + names.length + ' / ' + l.max_people + '</b> personas' + (full ? ' · <span class="ad-tag is-red">Llena</span>' : '') + (came ? ' · ' + came + ' han venido' : '') + ' · ' +
-          (closed ? '<span class="ad-tag is-red">Cerrada</span>' : 'cierra el ' + esc(fmtDate(l.closes_at, { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }))) + '</div>' +
+          (l.validated_at ? '<span class="ad-tag is-green">Confirmada por quien la rellena</span>' : closed ? '<span class="ad-tag is-red">Cerrada</span>' : 'cierra el ' + esc(fmtDate(l.closes_at, { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }))) + '</div>' +
         (l.host_name ? '<div class="ad-meta">Apuntada por <b>' + esc(l.host_name) + '</b> · ' + esc(l.host_contact) + '</div>' : '<div class="ad-meta">Aún nadie ha abierto el enlace y la ha rellenado.</div>') +
         '<div class="ls-link"><input readonly value="' + esc(listLink(l)) + '" aria-label="Enlace de la lista"><button class="ad-btn is-small" data-act="copy" type="button">Copiar enlace</button></div>' +
         '<div class="ad-actions">' +
@@ -886,9 +902,10 @@
           '<button class="ad-btn is-small is-danger" data-act="del" type="button">Borrar</button>' +
         '</div>' +
         (lsOpen[l.id] ? '<div class="ls-names"><ul>' + (names.length ? names.map(function (n) {
-          return '<li><span>' + esc(n.name) + (n.checked_in ? ' <span class="ck-tag">✓ ha venido</span>' : '') + '</span><button class="ls-rm" data-act="rm" data-eid="' + n.id + '" type="button" aria-label="Quitar a ' + esc(n.name) + '">×</button></li>';
+          return '<li><span>' + esc(n.name) + (n.checked_in ? ' <span class="ck-tag">✓ ha venido</span>' : '') +
+            '<br><span class="ad-meta">' + (n.email ? esc(n.email) : '<i>sin email: no recibe QR</i>') + (n.dni ? ' · DNI ' + esc(n.dni) : '') + (n.emailed_at ? ' · ✉ entrada enviada' : (n.email ? ' · entrada por enviar al cerrar' : '')) + '</span></span><button class="ls-rm" data-act="rm" data-eid="' + n.id + '" type="button" aria-label="Quitar a ' + esc(n.name) + '">×</button></li>';
         }).join('') : '<li><span class="ad-meta">Sin nombres todavía.</span></li>') + '</ul>' +
-          '<div class="ls-add"><input type="text" maxlength="80" placeholder="Añadir un nombre a mano"><button class="ad-btn is-small" data-act="add" type="button">Añadir</button></div></div>' : '') +
+          '<div class="ls-add"><input type="text" maxlength="200" placeholder="Nombre, email, DNI (el email y el DNI son opcionales)"><button class="ad-btn is-small" data-act="add" type="button">Añadir</button></div></div>' : '') +
       '</li>';
     }).join('');
   }
@@ -970,10 +987,12 @@
       api('guest_list_entries?id=eq.' + en.id, { method: 'DELETE' }).then(function () { l.guest_list_entries = l.guest_list_entries.filter(function (x) { return x.id !== en.id; }); renderLists(); }).catch(function (x) { flash(x.message, 'error'); });
     }
     else if (act === 'add') {
-      var inp = li.querySelector('.ls-add input'), name = inp.value.trim();
+      var inp = li.querySelector('.ls-add input'), parts = inp.value.split(',').map(function (x) { return x.trim(); }), name = parts[0] || '', gmail = (parts[1] || '').toLowerCase(), gdni = (parts[2] || '').replace(/[\s.\-]/g, '').toUpperCase();
       if (name.length < 2) { flash('Escribe el nombre.', 'error'); return; }
+      if (gmail && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(gmail)) { flash('Ese email no es válido.', 'error'); return; }
+      if (gdni && !/^[A-Z0-9]{5,20}$/.test(gdni)) { flash('Ese DNI no es válido.', 'error'); return; }
       if ((l.guest_list_entries || []).length >= l.max_people) { flash('La lista ya está llena (' + l.max_people + '). Sube el máximo en Editar.', 'error'); return; }
-      api('guest_list_entries', { method: 'POST', body: { list_id: l.id, name: name }, prefer: 'return=representation' }).then(function (rows) { (l.guest_list_entries = l.guest_list_entries || []).push(rows[0]); renderLists(); }).catch(function (x) { flash(x.message, 'error'); });
+      api('guest_list_entries', { method: 'POST', body: { list_id: l.id, name: name, email: gmail, dni: gdni }, prefer: 'return=representation' }).then(function (rows) { (l.guest_list_entries = l.guest_list_entries || []).push(rows[0]); renderLists(); }).catch(function (x) { flash(x.message, 'error'); });
     }
   });
   $('lsList').addEventListener('keydown', function (ev) { if (ev.key === 'Enter' && ev.target.matches('.ls-add input')) { ev.preventDefault(); ev.target.parentNode.querySelector('button').click(); } });
@@ -1051,7 +1070,7 @@
       if (r.kind === 'e') {
         var inn = r.en.checked_in;
         return '<li class="ck-row' + (inn ? ' is-in' : '') + (!inn && ended ? ' is-late' : '') + '">' +
-          '<div><div class="ck-name">' + esc(r.en.name) + '</div><div class="ck-meta"><span class="ck-tag">Lista</span>' + esc(r.list.label) + (r.list.host_name ? ' · ' + esc(r.list.host_name) : '') + ' · ' + (inn ? 'Ha venido' : (ended ? 'No ha venido' : 'Sin llegar')) + '</div></div>' +
+          '<div><div class="ck-name">' + esc(r.en.name) + '</div><div class="ck-meta"><span class="ck-tag">Lista</span>' + esc(r.list.label) + (r.list.host_name ? ' · ' + esc(r.list.host_name) : '') + (r.en.dni ? ' · DNI ' + esc(r.en.dni) : '') + ' · ' + (inn ? 'Ha venido' : (ended ? 'No ha venido' : 'Sin llegar')) + '</div></div>' +
           '<div class="ck-controls"><button class="ck-main' + (inn ? ' is-done' : '') + '" data-eid="' + r.en.id + '" data-act="etoggle" type="button">' + (inn ? '✓ Ha venido' : 'Ha venido') + '</button></div></li>';
       }
       var b = r.b;
@@ -1258,6 +1277,23 @@
     crypto.getRandomValues(a); for (var i = 0; i < a.length; i++) o += chars[a[i] % chars.length];
     return o;
   }
+  var TAB_LABEL = [['events', 'Eventos'], ['bookings', 'Reservas'], ['checkin', 'Asistencia'], ['lists', 'Listas']];
+  function permsHtml(p) {
+    if (p.role === 'admin') return '<div class="ad-meta">Acceso a todo, incluido Equipo.</div>';
+    var cur = Array.isArray(p.tabs) ? p.tabs : ALL_TABS;
+    return '<div class="ad-perms" data-email="' + esc(p.email) + '" aria-label="Pestañas de ' + esc(p.email) + '">' + TAB_LABEL.map(function (t) {
+      return '<label><input type="checkbox" data-tab="' + t[0] + '"' + (cur.indexOf(t[0]) !== -1 ? ' checked' : '') + '> ' + t[1] + '</label>';
+    }).join('') + '</div>';
+  }
+  $('teamList').addEventListener('change', function (ev) {
+    var box = ev.target.closest('.ad-perms input'); if (!box) return;
+    var wrap = box.closest('.ad-perms'), email = wrap.dataset.email;
+    var tabs = Array.prototype.map.call(wrap.querySelectorAll('input:checked'), function (i) { return i.dataset.tab; });
+    api('admins?email=eq.' + encodeURIComponent(email), { method: 'PATCH', body: { tabs: tabs } })
+      .then(function () { flash(tabs.length ? 'Pestañas de ' + email + ': ' + tabs.map(function (t) { return TAB_LABEL.filter(function (x) { return x[0] === t; })[0][1]; }).join(', ') + '.' : email + ' ya no ve ninguna pestaña (solo su cuenta).', 'ok'); })
+      .catch(function (x) { box.checked = !box.checked; flash('No se ha podido guardar: ' + x.message, 'error'); });
+  });
+  $('teamRole').addEventListener('change', function () { $('teamNewTabs').hidden = $('teamRole').value === 'admin'; });
   function loadTeam() {
     return api('rpc/admin_team', { method: 'POST', body: {} }).then(function (rows) {
       var me = String(session.email).toLowerCase();
@@ -1266,7 +1302,7 @@
         return '<li class="ad-person"><div><b>' + esc(p.email) + '</b>' + (mine ? ' <span class="ad-tag">Tú</span>' : '') + ' <span class="ad-tag' + (p.role === 'admin' ? ' is-green' : '') + '">' + (p.role === 'admin' ? 'Administrador' : 'Equipo') + '</span>' +
           '<div class="ad-meta">' + (p.has_account
             ? (p.last_sign_in ? 'Último acceso: ' + esc(fmtDate(p.last_sign_in, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })) : 'Cuenta creada, aún no ha entrado')
-            : '<span class="ad-tag is-red">Sin cuenta</span> Créala con “Nueva contraseña”') + '</div></div>' +
+            : '<span class="ad-tag is-red">Sin cuenta</span> Créala con “Nueva contraseña”') + '</div>' + permsHtml(p) + '</div>' +
           '<div class="ad-actions" style="grid-column:auto">' + (mine ? '' : '<button class="ad-btn is-small is-ghost" data-act="pw" data-email="' + esc(p.email) + '" type="button">' + (p.has_account ? 'Nueva contraseña' : 'Crear cuenta') + '</button> <button class="ad-btn is-small is-ghost" data-act="role" data-role="' + (p.role === 'admin' ? 'staff' : 'admin') + '" data-email="' + esc(p.email) + '" type="button">' + (p.role === 'admin' ? 'Pasar a Equipo' : 'Hacer administrador') + '</button> <button class="ad-btn is-small is-danger" data-act="rm" data-email="' + esc(p.email) + '" type="button">Quitar</button>') + '</div></li>';
       }).join('');
     }).catch(function (e) { flash('No se ha podido cargar el equipo: ' + e.message, 'error'); });
@@ -1280,8 +1316,12 @@
     e.preventDefault();
     var email = $('teamEmail').value.trim().toLowerCase(), pass = $('teamPass').value;
     $('teamAdd').disabled = true;
-    teamCall('create', email, pass, $('teamRole').value).then(function (d) {
+    var newTabs = Array.prototype.map.call($('teamNewTabs').querySelectorAll('input:checked'), function (i) { return i.dataset.tab; });
+    var asRole = $('teamRole').value;
+    teamCall('create', email, pass, asRole).then(function (d) {
       $('teamEmail').value = ''; $('teamPass').value = '';
+      return (asRole === 'admin' || d.existed ? Promise.resolve() : api('admins?email=eq.' + encodeURIComponent(email), { method: 'PATCH', body: { tabs: newTabs } })).then(function () { return d; });
+    }).then(function (d) {
       if (d.existed) flash('Esa persona ya tenía cuenta: ahora tiene acceso al panel con su contraseña de siempre.', 'ok'); else showCreds(email, pass, 'Cuenta creada para');
       return loadTeam();
     }).catch(function (x) { flash(TEAM_ERR[x.code] || ('No se ha podido añadir: ' + x.message), 'error'); })

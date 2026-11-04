@@ -42,10 +42,12 @@
   .gl-field > span { display: block; margin-bottom: 0.3rem; font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; opacity: 0.7; }
   .gl-field input { width: 100%; padding: 0.8rem 0.85rem; border: 1px solid var(--fg); border-radius: 0; background: transparent; color: inherit; font: inherit; font-size: 1rem; }
   .gl-field input:focus { outline: 2px solid var(--fg); outline-offset: 1px; }
-  .gl-guest { display: flex; gap: 0.5rem; margin-bottom: 0.6rem; }
-  .gl-guest input { flex: 1; min-width: 0; padding: 0.8rem 0.85rem; border: 1px solid var(--fg); border-radius: 0; background: transparent; color: inherit; font: inherit; font-size: 1rem; }
+  .gl-guest { display: grid; grid-template-columns: 1fr 1fr 3rem; gap: 0.5rem; margin-bottom: 0.9rem; padding-bottom: 0.9rem; border-bottom: 1px solid var(--line); }
+  .gl-guest .gl-n { grid-column: 1 / 3; }
+  .gl-guest input { min-width: 0; padding: 0.8rem 0.85rem; border: 1px solid var(--fg); border-radius: 0; background: transparent; color: inherit; font: inherit; font-size: 1rem; }
   .gl-guest input:focus { outline: 2px solid var(--fg); outline-offset: 1px; }
-  .gl-guest button { flex-shrink: 0; width: 3rem; border: 1px solid var(--fg); background: none; color: inherit; font-size: 1.2rem; cursor: pointer; }
+  .gl-guest button { width: 3rem; border: 1px solid var(--fg); background: none; color: inherit; font-size: 1.2rem; cursor: pointer; }
+  .gl-hint { margin: 0 0 1rem; font-size: 0.88rem; line-height: 1.5; opacity: 0.8; }
   .gl-count { margin: 0.4rem 0 0.9rem; font-family: var(--display); font-size: 1rem; letter-spacing: 0.04em; text-transform: uppercase; }
   .gl-btn { display: inline-block; padding: 0.95rem 1.4rem; border: 2px solid var(--fg); background: var(--fg); color: var(--bg); font-family: var(--display); font-size: 1.05rem; letter-spacing: 0.04em; text-transform: uppercase; cursor: pointer; }
   .gl-btn.is-ghost { background: none; color: var(--fg); }
@@ -94,15 +96,19 @@
       <label class="gl-field"><span data-i18n="gl_contact">Tu teléfono o email</span><input id="glContact" type="text" autocomplete="tel" maxlength="120" required></label>
 
       <h2 class="gl-h" data-i18n="gl_guests">Tus invitados</h2>
+      <p class="gl-hint" data-i18n="gl_qr_note">Cada invitado recibe su entrada personal con QR en su email cuando la lista se cierra (a la hora indicada) o cuando tú la confirmas. Por eso necesitamos su email y su DNI, NIE o pasaporte.</p>
       <div id="glGuests"></div>
       <p class="gl-count" id="glCount"></p>
       <button type="button" class="gl-btn is-ghost" id="glAdd" data-i18n="gl_add">+ Añadir invitado</button>
 
-      <label class="gl-check"><input type="checkbox" id="glConsent"><span data-i18n-html="gl_consent">Confirmo que mis invitados me han autorizado a facilitar su nombre a ROCE para esta lista. Más información en la <a href="/privacidad.html" target="_blank" rel="noopener">política de privacidad</a>.</span></label>
+      <label class="gl-check"><input type="checkbox" id="glConsent"><span data-i18n-html="gl_consent">Confirmo que mis invitados me han autorizado a facilitar su nombre, email y DNI a ROCE para esta lista y para enviarles su entrada con QR. Más información en la <a href="/privacidad.html" target="_blank" rel="noopener">política de privacidad</a>.</span></label>
 
       <p class="gl-error" id="glError" role="alert" hidden></p>
       <p class="gl-ok" id="glOk" role="status" hidden></p>
-      <div class="gl-actions"><button type="submit" class="gl-btn" id="glSave" data-i18n="gl_save">Guardar lista</button></div>
+      <div class="gl-actions">
+        <button type="submit" class="gl-btn" id="glSave" data-i18n="gl_save">Guardar lista</button>
+        <button type="button" class="gl-btn is-ghost" id="glValidate" data-i18n="gl_validate" hidden>Confirmar lista y enviar entradas</button>
+      </div>
     </form>
   </div>
 </main>
@@ -123,7 +129,7 @@
   </div>
 </div>
 <script src="/cookies.js?v=4"></script>
-<script src="/i18n.js?v=84"></script>
+<script src="/i18n.js?v=87"></script>
 <script src="/eventos/config.js?v=2"></script>
 <script>
   (function () {
@@ -166,27 +172,41 @@
       paintCount();
       var save = $('glSave'); if (!save.disabled) save.textContent = t(data.names.length ? 'gl_update' : 'gl_save');
     }
-    function paintCount() { $('glCount').textContent = t('gl_count').replace('{n}', guests.filter(function (g) { return g.trim().length >= 2; }).length).replace('{max}', MAX); $('glAdd').hidden = data.closed || guests.length >= MAX; }
+    function paintCount() { $('glCount').textContent = t('gl_count').replace('{n}', guests.filter(function (g) { return g.name.trim().length >= 2; }).length).replace('{max}', MAX); $('glAdd').hidden = data.closed || guests.length >= MAX; }
 
+    function field(cls, type, val, ph, key, i) {
+      var inp = document.createElement('input'); inp.type = type; inp.value = val; inp.autocomplete = 'off'; inp.placeholder = ph; inp.disabled = data.closed; inp.className = cls;
+      inp.maxLength = type === 'email' ? 120 : (key === 'dni' ? 20 : 80);
+      if (type === 'email') { inp.inputMode = 'email'; inp.autocapitalize = 'none'; }
+      if (key === 'dni') { inp.autocapitalize = 'characters'; inp.spellcheck = false; }
+      inp.addEventListener('input', function () { guests[i][key] = inp.value; if (key === 'name') paintCount(); });
+      return inp;
+    }
     function paintGuests() {
       var box = $('glGuests'); box.innerHTML = '';
       guests.forEach(function (g, i) {
         var row = document.createElement('div'); row.className = 'gl-guest';
-        var inp = document.createElement('input'); inp.type = 'text'; inp.maxLength = 80; inp.value = g; inp.autocomplete = 'off'; inp.placeholder = t('gl_guest_n').replace('{n}', i + 1); inp.disabled = data.closed;
-        inp.addEventListener('input', function () { guests[i] = inp.value; paintCount(); });
-        row.appendChild(inp);
+        row.appendChild(field('gl-n', 'text', g.name, t('gl_guest_n').replace('{n}', i + 1), 'name', i));
         if (!data.closed) {
           var rm = document.createElement('button'); rm.type = 'button'; rm.setAttribute('aria-label', t('gl_remove')); rm.textContent = '×';
-          rm.addEventListener('click', function () { guests.splice(i, 1); if (!guests.length) guests.push(''); paintGuests(); });
+          rm.addEventListener('click', function () { guests.splice(i, 1); if (!guests.length) guests.push({ name: '', email: '', dni: '' }); paintGuests(); });
           row.appendChild(rm);
-        }
+        } else { row.appendChild(document.createElement('span')); }
+        row.appendChild(field('gl-m', 'email', g.email, t('gl_email'), 'email', i));
+        row.appendChild(field('gl-d', 'text', g.dni, t('gl_dni'), 'dni', i));
         box.appendChild(row);
       });
       paintCount();
     }
+    function toGuests(d) {
+      var arr = Array.isArray(d.guests) && d.guests.length ? d.guests : (d.names || []).map(function (n) { return { name: n, email: '', dni: '' }; });
+      arr = arr.map(function (g) { return { name: g.name || '', email: g.email || '', dni: g.dni || '' }; });
+      if (!arr.length) arr.push({ name: '', email: '', dni: '' });
+      return arr;
+    }
 
     function show(d) {
-      data = d; MAX = d.max_people; guests = d.names.slice(); if (!guests.length) guests.push('');
+      data = d; MAX = d.max_people; guests = toGuests(d);
       document.documentElement.setAttribute('data-env', d.event.env);
       $('glLoading').hidden = true; $('glApp').hidden = false;
       $('glHost').value = d.host_name; $('glContact').value = d.host_contact;
@@ -194,36 +214,72 @@
       if (d.note) { $('glNote').textContent = d.note; $('glNote').hidden = false; }
       if (d.event.image_url) { $('glPoster').src = d.event.image_url; $('glPoster').hidden = false; }
       $('glClosed').hidden = !d.closed;
-      if (d.closed) { $('glForm').hidden = false; $('glSave').hidden = true; $('glAdd').hidden = true; $('glHost').disabled = true; $('glContact').disabled = true; $('glConsent').closest('label').hidden = true; }
+      if (d.validated) { $('glClosed').textContent = t('gl_validated'); }
+      $('glValidate').hidden = d.closed || !d.names.length;
+      if (d.closed) { $('glForm').hidden = false; $('glSave').hidden = true; $('glValidate').hidden = true; $('glAdd').hidden = true; $('glHost').disabled = true; $('glContact').disabled = true; $('glConsent').closest('label').hidden = true; }
       paintGuests(); paintTexts();
     }
 
-    function fail(key) { var e = $('glError'); e.textContent = t(key); e.hidden = false; $('glOk').hidden = true; e.scrollIntoView({ block: 'nearest' }); }
+    function fail(key) { var e = $('glError'); e.textContent = t(key); e.hidden = false; $('glOk').hidden = true; e.scrollIntoView({ block: 'nearest' }); return null; }
 
-    $('glAdd').addEventListener('click', function () { if (guests.length < MAX) { guests.push(''); paintGuests(); var ins = $('glGuests').querySelectorAll('input'); ins[ins.length - 1].focus(); } });
-    $('glForm').addEventListener('submit', function (e) {
-      e.preventDefault(); $('glError').hidden = true; $('glOk').hidden = true;
-      var names = guests.map(function (g) { return g.trim(); }).filter(function (g) { return g.length >= 2; });
+    $('glAdd').addEventListener('click', function () { if (guests.length < MAX) { guests.push({ name: '', email: '', dni: '' }); paintGuests(); var ins = $('glGuests').querySelectorAll('input'); ins[ins.length - 1].focus(); } });
+    var EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+    function dniOk(raw) {
+      var d = String(raw || '').replace(/[\s.\-]/g, '').toUpperCase();
+      return /^[A-Z0-9]{5,20}$/.test(d) && !(/^\d{8}[A-Z]$/.test(d) && 'TRWAGMYFPDXBNJZSQVHLCKE'.charAt(parseInt(d, 10) % 23) !== d.charAt(8));
+    }
+    // Valida el formulario y devuelve los invitados listos para enviar, o null (con el error ya mostrado).
+    function collect() {
+      $('glError').hidden = true; $('glOk').hidden = true;
+      var rows = guests.filter(function (g) { return g.name.trim() || g.email.trim() || g.dni.trim(); });
       if ($('glHost').value.trim().length < 2) return fail('gl_err_host');
       if ($('glContact').value.trim().length < 5) return fail('gl_err_contact');
-      if (!names.length) return fail('gl_err_none');
+      if (!rows.length) return fail('gl_err_none');
+      for (var i = 0; i < rows.length; i++) {
+        if (rows[i].name.trim().length < 2 || !EMAIL.test(rows[i].email.trim()) || !dniOk(rows[i].dni)) return fail('gl_err_guest');
+      }
       if (!$('glConsent').checked) return fail('gl_err_consent');
+      return rows.map(function (g) { return { name: g.name.trim(), email: g.email.trim(), dni: g.dni.trim() }; });
+    }
+    function refreshAfterSave(r) {
+      // Se vuelve a leer lo guardado (el servidor quita repetidos y recorta espacios).
+      return rpc('guest_list_get', { p_token: TOKEN }).then(function (d) {
+        data.names = d.names; data.guests = d.guests; data.host_name = d.host_name; data.host_contact = d.host_contact;
+        guests = toGuests(d); paintGuests();
+        $('glValidate').hidden = data.closed || !d.names.length;
+        return r;
+      });
+    }
+    function saveList(rows) {
+      return rpc('guest_list_save', { p_token: TOKEN, p_host_name: $('glHost').value, p_host_contact: $('glContact').value, p_guests: rows }).then(refreshAfterSave);
+    }
+    function saveError(x) {
+      var key = { list_closed: 'gl_closed', too_many: 'gl_err_many', sold_out: 'gl_err_sold', bad_data: 'gl_err_data' }[x.message] || 'gl_err_net';
+      if (x.message === 'list_closed') { data.closed = true; return location.reload(); }
+      fail(key);
+    }
+    $('glForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+      var rows = collect(); if (!rows) return;
       var btn = $('glSave'); btn.disabled = true; btn.textContent = t('gl_saving');
-      rpc('guest_list_save', { p_token: TOKEN, p_host_name: $('glHost').value, p_host_contact: $('glContact').value, p_names: names }).then(function (r) {
-        // Se vuelve a leer lo guardado (el servidor quita repetidos y recorta espacios).
-        return rpc('guest_list_get', { p_token: TOKEN }).then(function (d) {
-          data.names = d.names; data.host_name = d.host_name; data.host_contact = d.host_contact;
-          guests = d.names.slice(); if (!guests.length) guests.push(''); paintGuests();
-          $('glOk').textContent = t('gl_saved').replace('{n}', r.count); $('glOk').hidden = false; $('glOk').scrollIntoView({ block: 'nearest' });
-        });
-      }).catch(function (x) {
-        var key = { list_closed: 'gl_closed', too_many: 'gl_err_many', sold_out: 'gl_err_sold', bad_data: 'gl_err_data' }[x.message] || 'gl_err_net';
-        if (x.message === 'list_closed') { data.closed = true; return location.reload(); }
-        fail(key);
-      }).then(function () { btn.disabled = false; btn.textContent = t(data.names.length ? 'gl_update' : 'gl_save'); });
+      saveList(rows).then(function (r) {
+        $('glOk').textContent = t('gl_saved').replace('{n}', r.count); $('glOk').hidden = false; $('glOk').scrollIntoView({ block: 'nearest' });
+      }).catch(saveError).then(function () { btn.disabled = false; btn.textContent = t(data.names.length ? 'gl_update' : 'gl_save'); });
+    });
+    // El propietario confirma: se guarda, se cierra la lista y se envían las entradas con QR.
+    $('glValidate').addEventListener('click', function () {
+      var rows = collect(); if (!rows) return;
+      if (!window.confirm(t('gl_validate_confirm'))) return;
+      var btn = $('glValidate'), sv = $('glSave'); btn.disabled = true; sv.disabled = true; btn.textContent = t('gl_validating');
+      saveList(rows).then(function () { return rpc('guest_list_validate', { p_token: TOKEN }); }).then(function () {
+        // Aviso a la función de email para que envíe ya las entradas (si falla, las enviará el barrido de cada 5 minutos).
+        fetch(cfg.url + '/functions/v1/booking-email', { method: 'POST', headers: { apikey: cfg.anonKey, Authorization: 'Bearer ' + cfg.anonKey, 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'list_sweep' }) }).catch(function () {});
+        return rpc('guest_list_get', { p_token: TOKEN });
+      }).then(function (d) { show(d); $('glOk').textContent = t('gl_validated'); $('glOk').hidden = false; window.scrollTo({ top: 0, behavior: 'smooth' }); })
+        .catch(function (x) { btn.disabled = false; sv.disabled = false; btn.textContent = t('gl_validate'); saveError(x); });
     });
 
-    document.addEventListener('roce:lang', function () { paintTexts(); if (data) paintGuests(); });
+    document.addEventListener('roce:lang', function () { paintTexts(); if (data) paintGuests(); var v = $('glValidate'); if (!v.disabled) v.textContent = t('gl_validate'); });
 
     if (!TOKEN || !cfg.url) { $('glLoading').hidden = true; $('glNotFound').hidden = false; document.documentElement.setAttribute('data-env', 'day'); return; }
     rpc('guest_list_get', { p_token: TOKEN }).then(function (d) {

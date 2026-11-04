@@ -30,6 +30,18 @@ language sql stable security definer set search_path = public as $$
   );
 $$;
 
+-- Pestañas del panel que puede usar cada persona del equipo: events, bookings, checkin, lists.
+-- NULL = las cuatro (como hasta ahora). Los administradores (role = 'admin') lo ven todo.
+alter table public.admins add column if not exists tabs text[];
+create or replace function public.has_tab(t text) returns boolean
+language sql stable security definer set search_path = public as $$
+  select exists (
+    select 1 from public.admins a
+    where lower(a.email) = lower(coalesce(auth.jwt() ->> 'email', ''))
+      and (a.role = 'admin' or coalesce(a.tabs, array['events', 'bookings', 'checkin', 'lists']) @> array[t])
+  );
+$$;
+
 -- ─── Eventos ──────────────────────────────────────────────────────────────
 create table if not exists public.events (
   id             text primary key check (id ~ '^[a-z0-9-]{3,60}$'),
@@ -131,9 +143,9 @@ create policy admins_team_delete on public.admins for delete to authenticated
 -- Lista del equipo con nivel y estado de la cuenta (solo administradores).
 drop function if exists public.admin_team();
 create function public.admin_team()
-returns table (email text, role text, has_account boolean, last_sign_in timestamptz)
+returns table (email text, role text, has_account boolean, last_sign_in timestamptz, tabs text[])
 language sql stable security definer set search_path = public, auth as $$
-  select a.email, a.role, u.id is not null, u.last_sign_in_at
+  select a.email, a.role, u.id is not null, u.last_sign_in_at, a.tabs
   from public.admins a
   left join auth.users u on lower(u.email) = lower(a.email)
   where public.can_manage_team()
@@ -142,13 +154,19 @@ $$;
 revoke all on function public.admin_team() from public, anon;
 grant execute on function public.admin_team() to authenticated;
 
+-- Eventos: los ven todas las cuentas del panel; solo los edita quien tiene la pestaña Eventos.
 drop policy if exists events_admin_all on public.events;
-create policy events_admin_all on public.events for all to authenticated
-  using (public.is_admin()) with check (public.is_admin());
+drop policy if exists events_admin_read on public.events;
+create policy events_admin_read on public.events for select to authenticated using (public.is_admin());
+drop policy if exists events_admin_write on public.events;
+create policy events_admin_write on public.events for all to authenticated
+  using (public.has_tab('events')) with check (public.has_tab('events'));
 
+-- Reservas: quien tiene Reservas o Asistencia (la puerta necesita ver y marcar llegadas).
 drop policy if exists bookings_admin_all on public.bookings;
 create policy bookings_admin_all on public.bookings for all to authenticated
-  using (public.is_admin()) with check (public.is_admin());
+  using (public.has_tab('bookings') or public.has_tab('checkin'))
+  with check (public.has_tab('bookings') or public.has_tab('checkin'));
 
 -- Sin políticas para "anon": el público no lee ni escribe las tablas directamente.
 
@@ -178,13 +196,13 @@ create policy event_images_admin_select on storage.objects for select to authent
   using (bucket_id = 'event-images' and public.is_admin());
 drop policy if exists event_images_admin_insert on storage.objects;
 create policy event_images_admin_insert on storage.objects for insert to authenticated
-  with check (bucket_id = 'event-images' and public.is_admin());
+  with check (bucket_id = 'event-images' and public.has_tab('events'));
 drop policy if exists event_images_admin_update on storage.objects;
 create policy event_images_admin_update on storage.objects for update to authenticated
-  using (bucket_id = 'event-images' and public.is_admin()) with check (bucket_id = 'event-images' and public.is_admin());
+  using (bucket_id = 'event-images' and public.has_tab('events')) with check (bucket_id = 'event-images' and public.has_tab('events'));
 drop policy if exists event_images_admin_delete on storage.objects;
 create policy event_images_admin_delete on storage.objects for delete to authenticated
-  using (bucket_id = 'event-images' and public.is_admin());
+  using (bucket_id = 'event-images' and public.has_tab('events'));
 
 -- ─── Reservar (único camino del público para escribir) ───────────────────
 -- Bloquea el evento mientras comprueba el aforo, así dos personas a la vez
@@ -265,7 +283,7 @@ create table if not exists public.payments (
 );
 alter table public.payments enable row level security;
 drop policy if exists payments_admin_read on public.payments;
-create policy payments_admin_read on public.payments for select to authenticated using (public.is_admin());
+create policy payments_admin_read on public.payments for select to authenticated using (public.has_tab('bookings'));
 
 -- Confirma (o rechaza) un pago con la respuesta del banco. Es atómico y repetible:
 -- si Redsys avisa dos veces, la segunda no hace nada.
@@ -308,67 +326,6 @@ $$;
 revoke all on function public.booking_status(text) from public;
 grant execute on function public.booking_status(text) to anon, authenticated;
 
--- ─── Entrada con QR ─────────────────────────────────────────────────────────
--- Datos mínimos de una entrada para la página roce.es/entrada/ (solo con el código secreto).
-create or replace function public.ticket_get(p_token text)
-returns table (ref text, name text, qty integer, checked_in integer, status text, payment_status text,
-               env text, starts_at timestamptz, duration_h numeric, title_es text, title_en text, place_es text, place_en text)
-language sql stable security definer set search_path = public as $$
-  select b.ref, b.name, b.qty, b.checked_in, b.status, b.payment_status,
-         e.env, e.starts_at, e.duration_h::numeric, e.title_es, e.title_en, e.place_es, e.place_en
-  from public.bookings b join public.events e on e.id = b.event_id
-  where length(coalesce(p_token, '')) = 32 and b.ticket_token = p_token
-  limit 1;
-$$;
-revoke all on function public.ticket_get(text) from public;
-grant execute on function public.ticket_get(text) to anon, authenticated;
-
--- Registro de admisiones hechas con el escáner (quién, cuántas y cuándo).
-create table if not exists public.admissions (
-  id          uuid primary key default gen_random_uuid(),
-  booking_id  uuid not null references public.bookings(id) on delete cascade,
-  qty         integer not null check (qty > 0),
-  admitted_by text not null default '',
-  created_at  timestamptz not null default now()
-);
-alter table public.admissions enable row level security;
-drop policy if exists admissions_admin_read on public.admissions;
-create policy admissions_admin_read on public.admissions for select to authenticated using (public.is_admin());
-
--- Escáner del panel. p_count = 0 solo consulta; p_count > 0 admite esas personas (como mucho las que
--- faltan). Todo en una sola operación con la reserva bloqueada: dos escáneres a la vez no pueden admitir dos veces.
--- result: unknown | cancelled | unpaid | already | valid | topay | admitted
-create or replace function public.scan_ticket(p_token text, p_count integer default 0)
-returns table (result text, ref text, name text, qty integer, checked_in integer, checked_in_at timestamptz,
-               status text, payment_status text, total_cents integer, event_id text, notes text)
-language plpgsql security definer set search_path = public as $$
-declare
-  b        public.bookings;
-  v_result text;
-  n        integer;
-begin
-  if not public.is_admin() then raise exception 'forbidden'; end if;
-  select * into b from public.bookings where length(coalesce(p_token, '')) = 32 and ticket_token = p_token for update;
-  if not found then
-    return query select 'unknown'::text, null::text, null::text, 0, 0, null::timestamptz, null::text, null::text, 0, null::text, null::text;
-    return;
-  end if;
-  if b.status = 'cancelled' then v_result := 'cancelled';
-  elsif b.status = 'pending' then v_result := 'unpaid';
-  elsif b.checked_in >= b.qty then v_result := 'already';
-  elsif coalesce(p_count, 0) > 0 then
-    n := least(p_count, b.qty - b.checked_in);
-    update public.bookings bk set checked_in = bk.checked_in + n, checked_in_at = now() where bk.id = b.id returning bk.* into b;
-    insert into public.admissions (booking_id, qty, admitted_by) values (b.id, n, lower(coalesce(auth.jwt() ->> 'email', '')));
-    v_result := 'admitted';
-  elsif b.payment_status = 'pending' then v_result := 'topay';
-  else v_result := 'valid';
-  end if;
-  return query select v_result, b.ref, b.name, b.qty, b.checked_in, b.checked_in_at, b.status, b.payment_status, b.total_cents, b.event_id, b.notes;
-end;
-$$;
-revoke all on function public.scan_ticket(text, integer) from public, anon;
-grant execute on function public.scan_ticket(text, integer) to authenticated;
 
 -- ─── Listas de invitados (enlace para apuntar gente sin pasar por la pasarela) ─────
 -- Cada lista tiene un enlace secreto (token): quien lo recibe apunta el nombre de
@@ -388,6 +345,8 @@ create table if not exists public.guest_lists (
   host_contact text not null default '',
   created_at   timestamptz not null default now()
 );
+-- El propietario valida la lista: se cierra y se envía a cada invitado su entrada con QR.
+alter table public.guest_lists add column if not exists validated_at timestamptz;
 create table if not exists public.guest_list_entries (
   id            uuid primary key default gen_random_uuid(),
   list_id       uuid not null references public.guest_lists(id) on delete cascade,
@@ -397,13 +356,24 @@ create table if not exists public.guest_list_entries (
   created_at    timestamptz not null default now()
 );
 create index if not exists guest_list_entries_list_idx on public.guest_list_entries(list_id);
+-- Cada invitado tiene su email, su DNI y su propio QR (código secreto), que se le envía al cerrar la lista.
+alter table public.guest_list_entries add column if not exists email text not null default '';
+alter table public.guest_list_entries add column if not exists dni text not null default '';
+alter table public.guest_list_entries add column if not exists ticket_token text;
+alter table public.guest_list_entries add column if not exists emailed_at timestamptz;
+update public.guest_list_entries set ticket_token = replace(gen_random_uuid()::text, '-', '') where ticket_token is null;
+alter table public.guest_list_entries alter column ticket_token set default replace(gen_random_uuid()::text, '-', '');
+alter table public.guest_list_entries alter column ticket_token set not null;
+create unique index if not exists guest_list_entries_token_idx on public.guest_list_entries(ticket_token);
 
 alter table public.guest_lists enable row level security;
 alter table public.guest_list_entries enable row level security;
 drop policy if exists guest_lists_admin_all on public.guest_lists;
-create policy guest_lists_admin_all on public.guest_lists for all to authenticated using (public.is_admin()) with check (public.is_admin());
+create policy guest_lists_admin_all on public.guest_lists for all to authenticated
+  using (public.has_tab('lists') or public.has_tab('checkin')) with check (public.has_tab('lists') or public.has_tab('checkin'));
 drop policy if exists guest_list_entries_admin_all on public.guest_list_entries;
-create policy guest_list_entries_admin_all on public.guest_list_entries for all to authenticated using (public.is_admin()) with check (public.is_admin());
+create policy guest_list_entries_admin_all on public.guest_list_entries for all to authenticated
+  using (public.has_tab('lists') or public.has_tab('checkin')) with check (public.has_tab('lists') or public.has_tab('checkin'));
 
 -- Plazas ocupadas de un evento: reservas confirmadas (o pendientes de pago hace menos
 -- de 30 min) más las personas apuntadas en listas.
@@ -419,63 +389,192 @@ $$;
 -- Lo que ve quien abre el enlace de una lista.
 create or replace function public.guest_list_get(p_token text) returns jsonb
 language plpgsql stable security definer set search_path = public as $$
-declare l public.guest_lists%rowtype; ev public.events%rowtype; names jsonb;
+declare l public.guest_lists%rowtype; ev public.events%rowtype; names jsonb; guests jsonb;
 begin
   select * into l from public.guest_lists where token = p_token;
   if not found then return null; end if;
   select * into ev from public.events where id = l.event_id;
-  select coalesce(jsonb_agg(e.name order by e.created_at), '[]'::jsonb) into names from public.guest_list_entries e where e.list_id = l.id;
+  select coalesce(jsonb_agg(e.name order by e.created_at), '[]'::jsonb),
+         coalesce(jsonb_agg(jsonb_build_object('name', e.name, 'email', e.email, 'dni', e.dni) order by e.created_at), '[]'::jsonb)
+    into names, guests from public.guest_list_entries e where e.list_id = l.id;
   return jsonb_build_object(
     'label', l.label, 'note', l.note, 'max_people', l.max_people, 'closes_at', l.closes_at,
-    'closed', (l.closed or l.closes_at <= now() or ev.starts_at + (ev.duration_h * interval '1 hour') <= now()),
-    'host_name', l.host_name, 'host_contact', l.host_contact, 'names', names,
+    'closed', (l.closed or l.validated_at is not null or l.closes_at <= now() or ev.starts_at + (ev.duration_h * interval '1 hour') <= now()),
+    'validated', (l.validated_at is not null),
+    'host_name', l.host_name, 'host_contact', l.host_contact, 'names', names, 'guests', guests,
     'event', jsonb_build_object('title_es', ev.title_es, 'title_en', ev.title_en, 'env', ev.env, 'starts_at', ev.starts_at,
                                 'duration_h', ev.duration_h, 'place_es', ev.place_es, 'place_en', ev.place_en, 'image_url', ev.image_url));
 end;
 $$;
 
 -- Guarda la lista tal como la deja quien tiene el enlace (sustituye a la anterior).
--- Controla máximo, cierre y aforo con el evento bloqueado. Quien ya entró por la
--- puerta no se borra.
-create or replace function public.guest_list_save(p_token text, p_host_name text, p_host_contact text, p_names text[])
+-- Cada invitado lleva nombre, email y DNI/NIE/pasaporte: recibirá su entrada con QR cuando la lista
+-- se cierre. Controla máximo, cierre y aforo con el evento bloqueado. Quien ya entró no se borra.
+create or replace function public.guest_list_save(p_token text, p_host_name text, p_host_contact text, p_guests jsonb)
 returns jsonb
 language plpgsql security definer set search_path = public as $$
 declare
   l public.guest_lists%rowtype; ev public.events%rowtype;
-  clean text[]; kept integer; added integer; final_n integer;
+  v_names text[]; v_emails text[]; v_dnis text[];
+  kept integer; added integer; final_n integer;
 begin
   select * into l from public.guest_lists where token = p_token for update;
   if not found then raise exception 'list_not_found'; end if;
   select * into ev from public.events where id = l.event_id for update;
-  if l.closed or l.closes_at <= now() or ev.starts_at + (ev.duration_h * interval '1 hour') <= now() then raise exception 'list_closed'; end if;
+  if l.closed or l.validated_at is not null or l.closes_at <= now() or ev.starts_at + (ev.duration_h * interval '1 hour') <= now() then raise exception 'list_closed'; end if;
   if length(trim(coalesce(p_host_name, ''))) < 2 or length(trim(coalesce(p_host_contact, ''))) < 5 then raise exception 'bad_data'; end if;
+  if p_guests is null or jsonb_typeof(p_guests) <> 'array' then raise exception 'bad_data'; end if;
 
-  -- Nombres limpios, sin repetidos (sin distinguir mayúsculas) y en el orden en que llegaron.
-  select coalesce(array_agg(n order by first_pos), '{}') into clean from (
-    select min(left(trim(x.n), 80)) as n, min(x.pos) as first_pos
-    from unnest(coalesce(p_names, '{}')) with ordinality as x(n, pos)
-    where length(trim(x.n)) >= 2
-    group by lower(left(trim(x.n), 80))
-  ) q;
+  -- Invitados limpios, sin repetidos (sin distinguir mayúsculas) y en el orden en que llegaron.
+  select coalesce(array_agg(nm order by pos), '{}'), coalesce(array_agg(em order by pos), '{}'), coalesce(array_agg(dn order by pos), '{}')
+    into v_names, v_emails, v_dnis
+  from (
+    select distinct on (lower(nm)) nm, em, dn, pos from (
+      select left(trim(coalesce(x ->> 'name', '')), 80) as nm,
+             lower(left(trim(coalesce(x ->> 'email', '')), 120)) as em,
+             upper(regexp_replace(coalesce(x ->> 'dni', ''), '[\s.\-]', '', 'g')) as dn,
+             ord as pos
+      from jsonb_array_elements(p_guests) with ordinality as t(x, ord)
+    ) s where length(nm) >= 2
+    order by lower(nm), pos
+  ) d;
+  if exists (select 1 from unnest(v_emails) e where e !~* '^[^@[:space:]]+@[^@[:space:]]+\.[^@[:space:]]{2,}$')
+     or exists (select 1 from unnest(v_dnis) d2 where d2 !~ '^[A-Z0-9]{5,20}$') then raise exception 'bad_data'; end if;
 
-  delete from public.guest_list_entries where list_id = l.id and not checked_in and lower(name) <> all (select lower(c) from unnest(clean) c);
+  delete from public.guest_list_entries where list_id = l.id and not checked_in and lower(name) <> all (select lower(c) from unnest(v_names) c);
   select count(*) into kept from public.guest_list_entries where list_id = l.id;
-  select count(*) into added from unnest(clean) c where lower(c) not in (select lower(name) from public.guest_list_entries where list_id = l.id);
+  select count(*) into added from unnest(v_names) c where lower(c) not in (select lower(name) from public.guest_list_entries where list_id = l.id);
   final_n := kept + added;
   if final_n > l.max_people then raise exception 'too_many'; end if;
-  -- Tras borrar los que sobran, event_taken ya cuenta solo a los que se quedan.
   if added > 0 and public.event_taken(ev.id) + added > ev.capacity then raise exception 'sold_out'; end if;
 
-  insert into public.guest_list_entries (list_id, name)
-  select l.id, c from unnest(clean) c where lower(c) not in (select lower(name) from public.guest_list_entries where list_id = l.id);
+  insert into public.guest_list_entries (list_id, name, email, dni)
+  select l.id, n.nm, n.em, n.dn from unnest(v_names, v_emails, v_dnis) as n(nm, em, dn)
+  where lower(n.nm) not in (select lower(name) from public.guest_list_entries where list_id = l.id);
+  update public.guest_list_entries ge set email = n.em, dni = n.dn
+  from unnest(v_names, v_emails, v_dnis) as n(nm, em, dn)
+  where ge.list_id = l.id and lower(ge.name) = lower(n.nm) and ge.emailed_at is null;
   update public.guest_lists set host_name = left(trim(p_host_name), 80), host_contact = left(trim(p_host_contact), 120) where id = l.id;
   return jsonb_build_object('ok', true, 'count', final_n);
+end;
+$$;
+
+-- El propietario valida su lista: se cierra ya y a cada invitado le llega su entrada con QR.
+-- (La función booking-email hace los envíos; además se barre cada 5 minutos para las listas que
+-- se cierran solas a su hora.)
+create or replace function public.guest_list_validate(p_token text) returns jsonb
+language plpgsql security definer set search_path = public as $$
+declare l public.guest_lists%rowtype; ev public.events%rowtype; n integer;
+begin
+  select * into l from public.guest_lists where token = p_token for update;
+  if not found then raise exception 'list_not_found'; end if;
+  select * into ev from public.events where id = l.event_id;
+  if l.closed or l.validated_at is not null or l.closes_at <= now() or ev.starts_at + (ev.duration_h * interval '1 hour') <= now() then
+    return jsonb_build_object('ok', true, 'already', true);
+  end if;
+  select count(*) into n from public.guest_list_entries where list_id = l.id;
+  if n = 0 or length(trim(l.host_name)) < 2 then raise exception 'bad_data'; end if;
+  update public.guest_lists set validated_at = now() where id = l.id;
+  return jsonb_build_object('ok', true, 'count', n);
 end;
 $$;
 revoke all on function public.guest_list_get(text) from public;
 revoke all on function public.guest_list_save(text, text, text, text[]) from public;
 grant execute on function public.guest_list_get(text) to anon, authenticated;
 grant execute on function public.guest_list_save(text, text, text, text[]) to anon, authenticated;
+revoke all on function public.guest_list_save(text, text, text, jsonb) from public;
+grant execute on function public.guest_list_save(text, text, text, jsonb) to anon, authenticated;
+revoke all on function public.guest_list_validate(text) from public;
+grant execute on function public.guest_list_validate(text) to anon, authenticated;
+
+-- ─── Entrada con QR ─────────────────────────────────────────────────────────
+-- Datos mínimos de una entrada para la página roce.es/entrada/ (solo con el código secreto).
+create or replace function public.ticket_get(p_token text)
+returns table (ref text, name text, qty integer, checked_in integer, status text, payment_status text,
+               env text, starts_at timestamptz, duration_h numeric, title_es text, title_en text, place_es text, place_en text)
+language sql stable security definer set search_path = public as $$
+  select t.* from (
+    select b.ref, b.name, b.qty, b.checked_in, b.status, b.payment_status,
+           e.env, e.starts_at, e.duration_h::numeric as duration_h, e.title_es, e.title_en, e.place_es, e.place_en
+    from public.bookings b join public.events e on e.id = b.event_id
+    where b.ticket_token = p_token
+    union all
+    select 'LISTA'::text, ge.name, 1, case when ge.checked_in then 1 else 0 end, 'confirmed'::text, 'free'::text,
+           e.env, e.starts_at, e.duration_h::numeric, e.title_es, e.title_en, e.place_es, e.place_en
+    from public.guest_list_entries ge join public.guest_lists gl on gl.id = ge.list_id join public.events e on e.id = gl.event_id
+    where ge.ticket_token = p_token
+  ) t
+  where length(coalesce(p_token, '')) = 32
+  limit 1;
+$$;
+revoke all on function public.ticket_get(text) from public;
+grant execute on function public.ticket_get(text) to anon, authenticated;
+
+-- Registro de admisiones hechas con el escáner (quién, cuántas y cuándo).
+create table if not exists public.admissions (
+  id          uuid primary key default gen_random_uuid(),
+  booking_id  uuid references public.bookings(id) on delete cascade,
+  qty         integer not null check (qty > 0),
+  admitted_by text not null default '',
+  created_at  timestamptz not null default now()
+);
+alter table public.admissions alter column booking_id drop not null;
+alter table public.admissions add column if not exists entry_id uuid references public.guest_list_entries(id) on delete cascade;
+alter table public.admissions enable row level security;
+drop policy if exists admissions_admin_read on public.admissions;
+create policy admissions_admin_read on public.admissions for select to authenticated using (public.has_tab('bookings') or public.has_tab('checkin'));
+
+-- Escáner del panel. p_count = 0 solo consulta; p_count > 0 admite esas personas (como mucho las que
+-- faltan). Todo en una sola operación con la reserva bloqueada: dos escáneres a la vez no pueden admitir dos veces.
+-- result: unknown | cancelled | unpaid | already | valid | topay | admitted
+create or replace function public.scan_ticket(p_token text, p_count integer default 0)
+returns table (result text, ref text, name text, qty integer, checked_in integer, checked_in_at timestamptz,
+               status text, payment_status text, total_cents integer, event_id text, notes text)
+language plpgsql security definer set search_path = public as $$
+declare
+  b        public.bookings;
+  v_result text;
+  n        integer;
+  g        public.guest_list_entries;
+  gl       public.guest_lists;
+begin
+  if not public.has_tab('checkin') then raise exception 'forbidden'; end if;
+  select * into b from public.bookings where length(coalesce(p_token, '')) = 32 and ticket_token = p_token for update;
+  if not found then
+    -- ¿Es un invitado de lista? Un QR por persona.
+    select * into g from public.guest_list_entries where length(coalesce(p_token, '')) = 32 and ticket_token = p_token for update;
+    if found then
+      select * into gl from public.guest_lists where id = g.list_id;
+      if g.checked_in then v_result := 'already';
+      elsif coalesce(p_count, 0) > 0 then
+        update public.guest_list_entries ge set checked_in = true, checked_in_at = now() where ge.id = g.id returning ge.* into g;
+        insert into public.admissions (entry_id, qty, admitted_by) values (g.id, 1, lower(coalesce(auth.jwt() ->> 'email', '')));
+        v_result := 'admitted';
+      else v_result := 'valid';
+      end if;
+      return query select v_result, 'LISTA'::text, g.name, 1, case when g.checked_in then 1 else 0 end, g.checked_in_at,
+        'confirmed'::text, 'free'::text, 0, gl.event_id, (gl.label || case when gl.host_name <> '' then ' · ' || gl.host_name else '' end)::text;
+      return;
+    end if;
+    return query select 'unknown'::text, null::text, null::text, 0, 0, null::timestamptz, null::text, null::text, 0, null::text, null::text;
+    return;
+  end if;
+  if b.status = 'cancelled' then v_result := 'cancelled';
+  elsif b.status = 'pending' then v_result := 'unpaid';
+  elsif b.checked_in >= b.qty then v_result := 'already';
+  elsif coalesce(p_count, 0) > 0 then
+    n := least(p_count, b.qty - b.checked_in);
+    update public.bookings bk set checked_in = bk.checked_in + n, checked_in_at = now() where bk.id = b.id returning bk.* into b;
+    insert into public.admissions (booking_id, qty, admitted_by) values (b.id, n, lower(coalesce(auth.jwt() ->> 'email', '')));
+    v_result := 'admitted';
+  elsif b.payment_status = 'pending' then v_result := 'topay';
+  else v_result := 'valid';
+  end if;
+  return query select v_result, b.ref, b.name, b.qty, b.checked_in, b.checked_in_at, b.status, b.payment_status, b.total_cents, b.event_id, b.notes;
+end;
+$$;
+revoke all on function public.scan_ticket(text, integer) from public, anon;
+grant execute on function public.scan_ticket(text, integer) to authenticated;
 
 -- ─── Facturas ─────────────────────────────────────────────────────────────
 -- Una factura por reserva de pago, que se emite cuando la reserva pasa a "paid".
@@ -516,7 +615,7 @@ create table if not exists public.invoices (
 alter table public.invoice_counters enable row level security;
 alter table public.invoices enable row level security;
 drop policy if exists invoices_admin_read on public.invoices;
-create policy invoices_admin_read on public.invoices for select to authenticated using (public.is_admin());
+create policy invoices_admin_read on public.invoices for select to authenticated using (public.has_tab('bookings'));
 -- Las facturas no se editan ni se borran desde el panel: sin políticas de escritura.
 
 -- Abonos (facturas rectificativas por devolución): serie A, mismo contador sin saltos.
@@ -625,4 +724,4 @@ create table if not exists public.refunds (
 );
 alter table public.refunds enable row level security;
 drop policy if exists refunds_admin_read on public.refunds;
-create policy refunds_admin_read on public.refunds for select to authenticated using (public.is_admin());
+create policy refunds_admin_read on public.refunds for select to authenticated using (public.has_tab('bookings'));

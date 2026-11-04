@@ -6,6 +6,9 @@
 //   · UPDATE  → si payment_status pasa a "paid": emite la factura (numeración
 //               correlativa en la base de datos), la genera en PDF, la envía
 //               adjunta por email y la sube a la carpeta de Drive (Apps Script).
+//   · POST {action:"list_sweep"} (lo llaman la página de la lista y un programador cada 5 min): a cada
+//     invitado de una lista ya cerrada o validada le envía su entrada con QR. Es público porque solo
+//     envía lo que ya tocaba enviar y cada invitado recibe un único email.
 // Secretos: BREVO_API_KEY, WEBHOOK_SECRET (= cabecera x-webhook-secret del webhook),
 // BREVO_LIST_ATTENDEES, BREVO_LIST_NEWSLETTER, BREVO_ATTR_FIRSTNAME/LASTNAME,
 // DRIVE_SCRIPT_URL, DRIVE_SCRIPT_TOKEN; opcionales: MAIL_FROM, MAIL_REPLY_TO,
@@ -44,6 +47,8 @@ const T = {
     cancel: "Si no puedes venir, escríbenos a reservas@roce.es para liberar tu plaza.",
     qrHint: "Enseña este QR en la puerta. Una compra, un QR: sirve para entrar todas las personas de la reserva.",
     qrLink: "Ver mi entrada",
+    doc: "Documento",
+    privacy: "BRUNCH DINNER ETC. SL (ROCE) trata tus datos para gestionar tu entrada y el acceso al evento. Más información y tus derechos en https://roce.es/privacidad.html o escribiendo a reservas@roce.es.",
     locale: "es-ES",
     invSubject: (n: string) => `Tu factura ${n} · ROCE`,
     invTitle: "Pago recibido",
@@ -63,6 +68,8 @@ const T = {
     cancel: "If you can't make it, write to reservas@roce.es so we can free your spot.",
     qrHint: "Show this QR at the door. One purchase, one QR: it admits everyone on the booking.",
     qrLink: "View my ticket",
+    doc: "ID",
+    privacy: "BRUNCH DINNER ETC. SL (ROCE) processes your data to manage your ticket and entry to the event. More information and your rights at https://roce.es/privacidad.html or by writing to reservas@roce.es.",
     locale: "en-GB",
     invSubject: (n: string) => `Your invoice ${n} · ROCE`,
     invTitle: "Payment received",
@@ -87,16 +94,19 @@ const rowsHtml = (rows: string[][]) => rows.map(([k, v]) =>
 
 const serviceClient = () => createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
 
+// DNI/NIE/pasaporte tapado salvo los 4 últimos caracteres.
+const maskDni = (d: string) => (d.length <= 4 ? d : "•".repeat(d.length - 4) + d.slice(-4));
+
 // QR de la entrada: imagen (la sirve la función "redsys") y enlace a la página de la entrada.
 const SITE = (Deno.env.get("SITE_URL") ?? "https://roce.es").replace(/\/+$/, "");
-function ticketBlock(b: any, t: any): string {
+function ticketBlock(b: any, t: any, hint?: string): string {
   const tok = String(b.ticket_token ?? "");
   if (!/^[a-f0-9]{32}$/.test(tok)) return "";
   const page = `${SITE}/entrada/?t=${tok}`;
   const img = `${Deno.env.get("SUPABASE_URL")}/functions/v1/redsys?qr=${tok}`;
   return `<tr><td align="center" style="padding:24px 24px 4px">
 <a href="${page}"><img src="${img}" width="200" height="200" alt="QR" style="display:block;width:200px;height:200px;background:#fff;border:10px solid #fff"></a>
-<p style="margin:12px 0 0;color:#ddd;font:14px/1.5 Arial,sans-serif">${esc(t.qrHint)}</p>
+<p style="margin:12px 0 0;color:#ddd;font:14px/1.5 Arial,sans-serif">${esc(hint ?? t.qrHint)}</p>
 <p style="margin:12px 0 0"><a href="${page}" style="color:#fff;font:bold 14px Arial,sans-serif;text-transform:uppercase;letter-spacing:1px">${esc(t.qrLink)} →</a></p>
 </td></tr>`;
 }
@@ -126,11 +136,12 @@ async function sendBookingEmail(b: any): Promise<Response> {
 <tr><td style="padding:28px 24px 8px;color:#fff;font:32px Arial,sans-serif;text-transform:uppercase">${esc(t.title)}</td></tr>
 <tr><td style="padding:0 24px 20px;color:#ddd;font:16px/1.5 Arial,sans-serif">${esc(t.intro)}</td></tr>
 <tr><td style="padding:0 24px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0">${rowsHtml([
-    [t.ref, b.ref], [t.event, title], [t.date, when], [t.place, address], ...(floor ? [[t.floor, floor]] : []), [t.tickets, String(b.qty)], [t.total, total],
+    [t.ref, b.ref], [t.event, title], [t.date, when], [t.place, address], ...(floor ? [[t.floor, floor]] : []), [t.tickets, String(b.qty)], ...(b.dni ? [[t.doc, maskDni(String(b.dni))]] : []), [t.total, total],
   ])}</table></td></tr>
 ${ticketBlock(b, t)}
 <tr><td style="padding:20px 24px 4px;color:#e5453a;font:14px Arial,sans-serif">${b.payment_status === "pending" ? esc(t.unpaid) : ""}${ev.env === "night" ? " " + esc(t.age) : ""}</td></tr>
-<tr><td style="padding:12px 24px 32px;color:#aaa;font:13px/1.5 Arial,sans-serif">${esc(t.cancel)}</td></tr>`);
+<tr><td style="padding:12px 24px 8px;color:#aaa;font:13px/1.5 Arial,sans-serif">${esc(t.cancel)}</td></tr>
+<tr><td style="padding:0 24px 32px;color:#777;font:11px/1.5 Arial,sans-serif">${esc(t.privacy)}</td></tr>`);
 
   const res = await fetch("https://api.brevo.com/v3/smtp/email", {
     method: "POST",
@@ -330,6 +341,60 @@ async function moveToNewEmail(o: any, n: any): Promise<Response> {
   return new Response(`email moved: ${await sent.text()}${invoiceNote}`, { status: sent.ok ? 200 : sent.status });
 }
 
+// ─── Listas de invitados: entrada personal con QR ───────────────────────
+async function sweepLists(): Promise<Response> {
+  const sb = serviceClient();
+  const { data: rows, error } = await sb.from("guest_list_entries")
+    .select("id, name, email, dni, ticket_token, guest_lists!inner(label, host_name, closes_at, closed, validated_at, event_id)")
+    .is("emailed_at", null).neq("email", "").order("created_at").limit(60);
+  if (error) return new Response("sweep error: " + error.message, { status: 500 });
+  const now = Date.now();
+  const due = (rows ?? []).filter((r: any) => {
+    const l = r.guest_lists;
+    return l && (l.validated_at || l.closed || new Date(l.closes_at).getTime() <= now);
+  });
+  if (!due.length) return new Response("nothing due");
+  const evIds = [...new Set(due.map((r: any) => r.guest_lists.event_id))];
+  const { data: evs } = await sb.from("events").select("*").in("id", evIds);
+  const t = T.es;
+  let sent = 0, failed = 0;
+  for (const r of due as any[]) {
+    const ev = (evs ?? []).find((e: any) => e.id === r.guest_lists.event_id);
+    if (!ev) { failed++; continue; }
+    // Se reserva el envío antes de mandarlo: dos barridos a la vez no repiten el email.
+    const { data: claim } = await sb.from("guest_list_entries").update({ emailed_at: new Date().toISOString() }).eq("id", r.id).is("emailed_at", null).select("id");
+    if (!claim || !claim.length) continue;
+    const when = new Intl.DateTimeFormat(t.locale, { timeZone: "Europe/Madrid", weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" }).format(new Date(ev.starts_at));
+    const floorRaw = ev.place_es || ev.place_en || "";
+    const floor = !floorRaw ? "" : /primera|first|alta|upper/i.test(floorRaw) ? "Primera planta" : "Planta baja";
+    const host = String(r.guest_lists.host_name || "").trim();
+    const html = mailShell(`
+<tr><td style="padding:28px 24px 8px;color:#fff;font:32px Arial,sans-serif;text-transform:uppercase">Estás en la lista</td></tr>
+<tr><td style="padding:0 24px 20px;color:#ddd;font:16px/1.5 Arial,sans-serif">${esc(r.name)}, ${host ? esc(host) + " te ha apuntado" : "te han apuntado"} a ${esc(ev.title_es)}. Esta es tu entrada personal.</td></tr>
+<tr><td style="padding:0 24px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0">${rowsHtml([
+      [t.event, ev.title_es], [t.date, when], [t.place, "ROCE · Marqués del Túria 16, Valencia"], ...(floor ? [[t.floor, floor]] : []),
+      ["Lista", r.guest_lists.label], ...(r.dni ? [["Documento", maskDni(String(r.dni))]] : []),
+    ])}</table></td></tr>
+${ticketBlock({ ticket_token: r.ticket_token }, t, "Enseña este QR en la puerta junto con tu DNI o documento. Es personal: no lo compartas.")}
+<tr><td style="padding:20px 24px 8px;color:#e5453a;font:14px Arial,sans-serif">${ev.env === "night" ? esc(t.age) : ""}</td></tr>
+<tr><td style="padding:0 24px 32px;color:#777;font:11px/1.5 Arial,sans-serif">${esc(host || "Quien te ha apuntado")} nos ha facilitado tu nombre, email y documento para esta lista. ${esc(t.privacy)} Si no quieres estar en la lista, escríbenos a reservas@roce.es.</td></tr>`);
+    const res = await fetch("https://api.brevo.com/v3/smtp/email", {
+      method: "POST",
+      headers: brevoHeaders,
+      body: JSON.stringify({
+        sender: { name: "ROCE", email: FROM },
+        replyTo: { email: REPLY_TO, name: "ROCE" },
+        to: [{ email: r.email, name: r.name }],
+        subject: `Tu entrada · ${ev.title_es} · ROCE`,
+        htmlContent: html,
+      }),
+    });
+    if (res.ok) sent++;
+    else { await sb.from("guest_list_entries").update({ emailed_at: null }).eq("id", r.id); failed++; }
+  }
+  return new Response(`lists: sent ${sent}, failed ${failed}`);
+}
+
 // ─── UPDATE: abono al pasar a devuelta ───────────────────────────────────
 async function issueAndSendCreditNote(b: any): Promise<Response> {
   const supabase = serviceClient();
@@ -405,11 +470,23 @@ async function notifyStaff(b: any): Promise<void> {
   }).catch(() => {});
 }
 
+const CORS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-webhook-secret",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+};
+
 Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
+  let payload: any = {};
+  try { payload = await req.json(); } catch { /* sin cuerpo */ }
+  if (payload.action === "list_sweep") {
+    const r = await sweepLists();
+    return new Response(await r.text(), { status: r.status, headers: CORS });
+  }
   if (!WEBHOOK_SECRET || req.headers.get("x-webhook-secret") !== WEBHOOK_SECRET) {
     return new Response("forbidden", { status: 403 });
   }
-  const payload = await req.json();
   if (payload.table !== "bookings") return new Response("ignored");
   if (payload.type === "INSERT") {
     // Con pago online la reserva nace "pending": el email sale cuando el banco confirma el cobro.
