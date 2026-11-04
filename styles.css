@@ -6,14 +6,6 @@
   font-display: swap;
 }
 @font-face {
-  /* Peso intermedio real (Medium, 500) de la misma Helvetica Neue de marca: entre la normal y la negrita. */
-  font-family: "Helvetica Neue Web";
-  src: url("/assets/fonts/HelveticaNeue-Medium.woff2") format("woff2");
-  font-weight: 500;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
   /* Peso real en negrita: sin esto, cualquier font-weight:700/800
      sobre var(--display) forzaría un negrita sintético (borroso) del
      regular en vez de usar el trazo real de Helvetica Neue Bold. */
