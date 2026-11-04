@@ -407,7 +407,8 @@
   }
 
   @media (max-width: 640px) {
-    .teaser-link { font-size: clamp(1.9rem, 9.8vw, 3rem); }
+    /* Más grande que antes, pero siempre dentro del ancho ("Reservar mesa" mide ~8,1 em). */
+    .teaser-link { font-size: clamp(1.9rem, calc((100vw - 2rem) / 8.4), 3.2rem); }
     /* Instagram en su propia línea, debajo de Reservar mesa y Eventos. */
     .teaser-cta-row { flex-direction: column; align-items: stretch; gap: 0.5rem; }
     .teaser-insta { position: static; align-self: flex-end; padding: 0; }
