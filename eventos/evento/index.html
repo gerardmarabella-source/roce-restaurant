@@ -36,9 +36,9 @@
   .evd-back:hover { opacity: 0.7; }
 
   .evd-wrap { width: 100%; max-width: 1000px; margin: 0 auto; padding: 0.5rem var(--pad) 2rem; flex: 1; display: grid; grid-template-columns: minmax(0, 1fr); gap: 1.5rem 3rem; align-items: start; }
-  .evd-media { position: relative; width: min(100%, 15rem); margin: 0 auto; }
+  .evd-media { position: relative; }
   .evd-poster { display: block; width: 100%; padding: 0; border: 1px solid var(--line); background: none; color: inherit; cursor: zoom-in; }
-  .evd-poster img { display: block; width: 100%; height: auto; max-height: 58vh; object-fit: contain; -webkit-user-drag: none; user-select: none; -webkit-user-select: none; pointer-events: none; }
+  .evd-poster img { display: block; width: 100%; height: auto; -webkit-user-drag: none; user-select: none; -webkit-user-select: none; pointer-events: none; }
   .evd-nopic { aspect-ratio: 4 / 5; display: flex; flex-direction: column; justify-content: flex-end; padding: 1.25rem; border: 1px solid var(--fg); font-family: var(--display); text-transform: uppercase; line-height: 0.9; }
   .evd-nopic b { font-weight: 400; font-size: clamp(6rem, 30vw, 9rem); letter-spacing: -0.03em; }
   .evd-nopic span { font-size: 1.4rem; letter-spacing: 0.08em; opacity: 0.7; }
@@ -73,16 +73,17 @@
   .evd-buy:hover { opacity: 0.85; }
   .evd-buy.is-soldout { opacity: 0.35; pointer-events: none; }
   .evd-modal { position: fixed; inset: 0; z-index: 80; display: flex; align-items: flex-end; justify-content: center; background: rgba(0, 0, 0, 0.6); padding: 0; }
-  .evd-sheet { width: 100%; max-width: 30rem; background: var(--bg); color: var(--fg); border: 1px solid var(--line); padding: 1.1rem 1.25rem calc(1.25rem + env(safe-area-inset-bottom)); }
+  .evd-sheet { width: 100%; max-width: 31rem; background: var(--bg); color: var(--fg); border: 1px solid var(--line); padding: 1.1rem 1.25rem calc(1.25rem + env(safe-area-inset-bottom)); }
   .evd-sheet-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
   .evd-sheet-head h2 { font-family: var(--display); font-weight: 400; font-size: 1.4rem; text-transform: uppercase; }
   .evd-x { width: 2.4rem; height: 2.4rem; border: 0; background: none; color: inherit; font-size: 1.8rem; line-height: 1; cursor: pointer; }
-  .evd-share-grid { display: flex; gap: 0.9rem; overflow-x: auto; padding: 0.3rem 0 1rem; scrollbar-width: none; }
-  .evd-share-grid::-webkit-scrollbar { display: none; }
-  .evd-opt { flex: 0 0 auto; width: 4.6rem; display: flex; flex-direction: column; align-items: center; gap: 0.45rem; border: 0; background: none; color: inherit; font: inherit; font-size: 0.78rem; text-decoration: none; cursor: pointer; }
-  .evd-opt i { width: 3.4rem; height: 3.4rem; display: flex; align-items: center; justify-content: center; border: 1px solid var(--fg); border-radius: 50%; font-style: normal; font-family: var(--display); font-size: 1.25rem; }
-  .evd-opt i svg { width: 1.4rem; height: 1.4rem; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
-  .evd-opt:hover i { background: var(--fg); color: var(--bg); }
+  .evd-share-grid { display: flex; flex-wrap: wrap; gap: 1rem 0.7rem; padding: 0.3rem 0 1rem; }
+  .evd-opt { flex: 0 0 auto; width: 4.3rem; display: flex; flex-direction: column; align-items: center; gap: 0.45rem; border: 0; background: none; color: inherit; font: inherit; font-size: 0.78rem; text-decoration: none; cursor: pointer; }
+  .evd-opt i { width: 3.4rem; height: 3.4rem; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-style: normal; font-family: var(--display); font-size: 1.3rem; background: var(--c, var(--fg)); color: var(--ic, #ffffff); transition: transform 0.15s ease; }
+  .evd-opt i svg { width: 1.6rem; height: 1.6rem; fill: currentColor; }
+  .evd-opt i svg.line { fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+  .evd-opt:hover i { transform: scale(1.08); }
+  .evd-hint { margin: -0.3rem 0 0.9rem; font-size: 0.8rem; line-height: 1.4; opacity: 0.65; }
   .evd-linkrow { display: flex; gap: 0.5rem; padding: 0.5rem; border: 1px solid var(--line); }
   .evd-linkrow input { flex: 1; min-width: 0; padding: 0.55rem 0.4rem; border: 0; background: transparent; color: inherit; font: inherit; font-size: 0.9rem; }
   .evd-copy { flex-shrink: 0; padding: 0.55rem 1.1rem; border: 0; background: var(--fg); color: var(--bg); font-family: var(--display); font-size: 0.95rem; letter-spacing: 0.04em; text-transform: uppercase; cursor: pointer; }
@@ -97,9 +98,9 @@
 
   /* Escritorio: cartel a la izquierda (fijo al hacer scroll) y la información a la derecha. */
   /* Cartel fijo a la izquierda: no se mueve al bajar por la información. */
-  @media (min-width: 760px) {
-    .evd-wrap { grid-template-columns: 17rem minmax(0, 1fr); padding-top: 1.5rem; }
-    .evd-media { position: sticky; top: 1.5rem; width: 100%; margin: 0; align-self: start; }
+  @media (min-width: 900px) {
+    .evd-wrap { grid-template-columns: minmax(0, 24rem) minmax(0, 1fr); padding-top: 1.5rem; }
+    .evd-media { position: sticky; top: 1.5rem; align-self: start; }
   }
 </style>
 </head>
@@ -143,6 +144,7 @@
   <div class="evd-sheet" role="dialog" aria-modal="true" aria-labelledby="evdShareTitle">
     <div class="evd-sheet-head"><h2 id="evdShareTitle" data-i18n="evd_share">Compartir</h2><button type="button" class="evd-x" id="evdShareClose" aria-label="Cerrar">×</button></div>
     <div class="evd-share-grid" id="evdShareGrid"></div>
+    <p class="evd-hint" data-i18n="evd_ig_hint">Instagram crea una imagen del evento para tu historia: en el móvil eliges Instagram → Historias; en ordenador se descarga y la subes desde el móvil.</p>
     <div class="evd-linkrow"><input type="text" id="evdShareUrl" readonly aria-label="Enlace"><button type="button" class="evd-copy" id="evdShareCopy" data-i18n="evd_copy">Copiar</button></div>
   </div>
 </div>
@@ -165,7 +167,7 @@
   </div>
 </div>
 <script src="/cookies.js?v=4"></script>
-<script src="/i18n.js?v=92"></script>
+<script src="/i18n.js?v=93"></script>
 <script>
   window.ROCE_EVENTS_READY.then(function () {
     var U = window.ROCE_EVENT_UTIL, id = new URLSearchParams(location.search).get('e'), e = U.find(id);
@@ -221,19 +223,77 @@
     function shareUrl() { return location.origin + '/eventos/evento/?e=' + encodeURIComponent(e.id); }
     function openShare() {
       var url = shareUrl(), title = e.title[lang()] + ' — ROCE', text = title + '\n' + url, q = encodeURIComponent;
+      var I = function (d) { return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="' + d + '"/></svg>'; };
       var opts = [
-        ['WhatsApp', 'W', 'https://wa.me/?text=' + q(text)],
-        ['Telegram', 'T', 'https://t.me/share/url?url=' + q(url) + '&text=' + q(title)],
-        ['Facebook', 'f', 'https://www.facebook.com/sharer/sharer.php?u=' + q(url)],
-        ['X', 'X', 'https://twitter.com/intent/tweet?url=' + q(url) + '&text=' + q(title)],
-        ['Email', '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="1.5"/><path d="M3 7l9 6 9-6"/></svg>', 'mailto:?subject=' + q(title) + '&body=' + q(text)]
+        ['WhatsApp', I('M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z'), 'https://wa.me/?text=' + q(text), '#25D366'],
+        ['Telegram', I('M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z'), 'https://t.me/share/url?url=' + q(url) + '&text=' + q(title), '#26A5E4'],
+        ['Facebook', I('M9.101 23.691v-7.98H6.627v-3.667h2.474v-1.58c0-4.085 1.848-5.978 5.858-5.978.401 0 .955.042 1.468.103a8.68 8.68 0 0 1 1.141.195v3.325a8.623 8.623 0 0 0-.653-.036 26.805 26.805 0 0 0-.733-.009c-.707 0-1.259.096-1.675.309a1.686 1.686 0 0 0-.679.622c-.258.42-.374.995-.374 1.752v1.297h3.919l-.386 2.103-.287 1.564h-3.246v8.245C19.396 23.238 24 18.179 24 12.044c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.628 3.874 10.35 9.101 11.647Z'), 'https://www.facebook.com/sharer/sharer.php?u=' + q(url), '#1877F2'],
+        ['X', I('M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z'), 'https://twitter.com/intent/tweet?url=' + q(url) + '&text=' + q(title), 'var(--fg)', 'var(--bg)'],
+        ['Instagram', I('M7.0301.084c-1.2768.0602-2.1487.264-2.911.5634-.7888.3075-1.4575.72-2.1228 1.3877-.6652.6677-1.075 1.3368-1.3802 2.127-.2954.7638-.4956 1.6365-.552 2.914-.0564 1.2775-.0689 1.6882-.0626 4.947.0062 3.2586.0206 3.6671.0825 4.9473.061 1.2765.264 2.1482.5635 2.9107.308.7889.72 1.4573 1.388 2.1228.6679.6655 1.3365 1.0743 2.1285 1.38.7632.295 1.6361.4961 2.9134.552 1.2773.056 1.6884.069 4.9462.0627 3.2578-.0062 3.668-.0207 4.9478-.0814 1.28-.0607 2.147-.2652 2.9098-.5633.7889-.3086 1.4578-.72 2.1228-1.3881.665-.6682 1.0745-1.3378 1.3795-2.1284.2957-.7632.4966-1.636.552-2.9124.056-1.2809.0692-1.6898.063-4.948-.0063-3.2583-.021-3.6668-.0817-4.9465-.0607-1.2797-.264-2.1487-.5633-2.9117-.3084-.7889-.72-1.4568-1.3876-2.1228C21.2982 1.33 20.628.9208 19.8378.6165 19.074.321 18.2017.1197 16.9244.0645 15.6471.0093 15.236-.005 11.977.0014 8.718.0076 8.31.0215 7.0301.0839m.1402 21.6932c-1.17-.0509-1.8053-.2453-2.2287-.408-.5606-.216-.96-.4771-1.3819-.895-.422-.4178-.6811-.8186-.9-1.378-.1644-.4234-.3624-1.058-.4171-2.228-.0595-1.2645-.072-1.6442-.079-4.848-.007-3.2037.0053-3.583.0607-4.848.05-1.169.2456-1.805.408-2.2282.216-.5613.4762-.96.895-1.3816.4188-.4217.8184-.6814 1.3783-.9003.423-.1651 1.0575-.3614 2.227-.4171 1.2655-.06 1.6447-.072 4.848-.079 3.2033-.007 3.5835.005 4.8495.0608 1.169.0508 1.8053.2445 2.228.408.5608.216.96.4754 1.3816.895.4217.4194.6816.8176.9005 1.3787.1653.4217.3617 1.056.4169 2.2263.0602 1.2655.0739 1.645.0796 4.848.0058 3.203-.0055 3.5834-.061 4.848-.051 1.17-.245 1.8055-.408 2.2294-.216.5604-.4763.96-.8954 1.3814-.419.4215-.8181.6811-1.3783.9-.4224.1649-1.0577.3617-2.2262.4174-1.2656.0595-1.6448.072-4.8493.079-3.2045.007-3.5825-.006-4.848-.0608M16.953 5.5864A1.44 1.44 0 1 0 18.39 4.144a1.44 1.44 0 0 0-1.437 1.4424M5.8385 12.012c.0067 3.4032 2.7706 6.1557 6.173 6.1493 3.4026-.0065 6.157-2.7701 6.1506-6.1733-.0065-3.4032-2.771-6.1565-6.174-6.1498-3.403.0067-6.156 2.771-6.1496 6.1738M8 12.0077a4 4 0 1 1 4.008 3.9921A3.9996 3.9996 0 0 1 8 12.0077'), '#story', 'linear-gradient(45deg,#f9a03c,#e4405f 55%,#8a3ab9)'],
+        ['Email', '<svg class="line" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="1.5"/><path d="M3 7l9 6 9-6"/></svg>', 'mailto:?subject=' + q(title) + '&body=' + q(text), '#6b6b6b']
       ];
       $('evdShareGrid').innerHTML = opts.map(function (o) {
-        return '<a class="evd-opt" href="' + o[2] + '" target="_blank" rel="noopener"><i>' + o[1] + '</i><span>' + esc(o[0]) + '</span></a>';
-      }).join('') + (navigator.share ? '<button type="button" class="evd-opt" id="evdMore"><i>···</i><span>' + esc(t('evd_more', 'Más')) + '</span></button>' : '');
+        var st = '--c:' + o[3] + (o[4] ? ';--ic:' + o[4] : '');
+        return o[2] === '#story'
+          ? '<button type="button" class="evd-opt" id="evdIg"><i style="' + st + '">' + o[1] + '</i><span>' + esc(o[0]) + '</span></button>'
+          : '<a class="evd-opt" href="' + o[2] + '" target="_blank" rel="noopener"><i style="' + st + '">' + o[1] + '</i><span>' + esc(o[0]) + '</span></a>';
+      }).join('') + (navigator.share ? '<button type="button" class="evd-opt" id="evdMore"><i style="--c:#3a3a3a">···</i><span>' + esc(t('evd_more', 'Más')) + '</span></button>' : '');
       if ($('evdMore')) $('evdMore').addEventListener('click', function () { navigator.share({ title: title, url: url }).catch(function () {}); });
+      $('evdIg').addEventListener('click', igStory);
       $('evdShareUrl').value = url;
       $('evdShareModal').hidden = false;
+    }
+    // Historia de Instagram: Instagram no tiene enlace para publicar desde una web, así que se crea una
+    // imagen 9:16 del evento. En el móvil se abre el menú nativo (Instagram → Historias); en ordenador se descarga.
+    function storyBlob() {
+      return Promise.all([document.fonts.load('400 80px "Helvetica Neue Web"'), document.fonts.load('700 40px "Helvetica Neue Web"')].map(function (p) { return p.catch(function () {}); })).then(function () {
+        return new Promise(function (resolve, reject) {
+          var W = 1080, H = 1920, c = document.createElement('canvas'); c.width = W; c.height = H; var x = c.getContext('2d');
+          var night = e.env === 'night', bg = night ? '#0a0a0a' : '#ffffff', fg = night ? '#ffffff' : '#0a0a0a', l = lang(), FF = '"Helvetica Neue Web","Helvetica Neue",Arial,sans-serif';
+          x.fillStyle = bg; x.fillRect(0, 0, W, H);
+          function wrap(text, maxW, lines) {
+            var words = text.split(' '), out = [], cur = '';
+            words.forEach(function (w) { var tryl = cur ? cur + ' ' + w : w; if (x.measureText(tryl).width > maxW && cur) { out.push(cur); cur = w; } else cur = tryl; });
+            if (cur) out.push(cur); return out.slice(0, lines);
+          }
+          function text(img) {
+            var top = 330, bottom = top;
+            if (img) {
+              var pw = 720, ph = Math.round(pw * img.naturalHeight / img.naturalWidth); if (ph > 940) { ph = 940; pw = Math.round(ph * img.naturalWidth / img.naturalHeight); }
+              var px = Math.round((W - pw) / 2); x.drawImage(img, px, top, pw, ph); x.strokeStyle = fg; x.globalAlpha = 0.35; x.lineWidth = 2; x.strokeRect(px, top, pw, ph); x.globalAlpha = 1; bottom = top + ph;
+            } else {
+              x.fillStyle = fg; x.font = '400 360px ' + FF; x.textAlign = 'center'; x.fillText(U.fmt(e, l, { day: 'numeric' }), W / 2, top + 330);
+              x.font = '400 70px ' + FF; x.globalAlpha = 0.7; x.fillText(U.fmt(e, l, { month: 'long' }).toUpperCase(), W / 2, top + 440); x.globalAlpha = 1; bottom = top + 500;
+            }
+            x.textAlign = 'center'; x.fillStyle = fg;
+            x.font = '400 44px ' + FF; x.globalAlpha = 0.75; x.fillText((e.env === 'night' ? 'NIGHT · +18' : 'DAY') + ' · ROCE', W / 2, 235); x.globalAlpha = 1;
+            x.font = '400 92px ' + FF; var ty = bottom + 130;
+            wrap(e.title[l].toUpperCase(), 900, 2).forEach(function (ln, i) { x.fillText(ln, W / 2, ty + i * 92); });
+            ty += 92 * Math.min(2, wrap(e.title[l].toUpperCase(), 900, 2).length) + 30;
+            x.font = '700 46px ' + FF; x.fillStyle = night ? '#c9ab7a' : '#7a6240';
+            x.fillText(U.fmt(e, l, { weekday: 'long', day: 'numeric', month: 'long' }).toUpperCase() + ' · ' + e.time, W / 2, ty);
+            x.font = '400 40px ' + FF; x.fillStyle = fg; x.globalAlpha = 0.75; x.fillText('roce.es/eventos', W / 2, ty + 70); x.globalAlpha = 1;
+            c.toBlob(function (b) { b ? resolve(b) : reject(new Error('blob')); }, 'image/png');
+          }
+          if (!e.image) return text(null);
+          var im = new Image(); im.crossOrigin = 'anonymous'; im.onload = function () { text(im); }; im.onerror = function () { text(null); }; im.src = e.image;
+        });
+      });
+    }
+    function copyLink() { var u = shareUrl(); if (navigator.clipboard) navigator.clipboard.writeText(u).catch(function () {}); }
+    function igStory() {
+      toast(t('evd_ig_making', 'Preparando la imagen…'));
+      storyBlob().then(function (blob) {
+        var file = new File([blob], 'roce-' + e.id + '-historia.png', { type: 'image/png' });
+        function download() {
+          var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = file.name; document.body.appendChild(a); a.click(); a.remove();
+          copyLink(); toast(t('evd_ig_done', 'Imagen descargada y enlace copiado: súbela a tu historia de Instagram desde el móvil.'));
+        }
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          return navigator.share({ files: [file], title: e.title[lang()] + ' — ROCE', text: shareUrl() }).catch(function (err) { if (err && err.name === 'NotAllowedError') download(); });
+        }
+        download();
+      }).catch(function () { toast(t('evd_ig_err', 'No se ha podido crear la imagen.')); });
     }
     function closeShare() { $('evdShareModal').hidden = true; }
     $('evdShare').addEventListener('click', openShare);
