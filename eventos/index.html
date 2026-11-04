@@ -78,9 +78,6 @@
   .ev-chip[aria-pressed="true"] { opacity: 1; }
 
   /* Lista de eventos en tarjetas: el cartel ocupa toda la tarjeta y el texto va encima. */
-  .ev-count { display: flex; align-items: center; gap: 0.75rem; margin: 0 0 0.25rem; font-family: var(--display); font-weight: 400; font-size: 1.05rem; letter-spacing: 0.06em; text-transform: uppercase; }
-  .ev-count::before { content: ""; width: 1.7rem; height: 4px; background: currentColor; }
-  .ev-count span { opacity: 0.6; }
   .ev-list { list-style: none; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 19rem), 1fr)); gap: 1.25rem; align-items: start; }
   .ev-month { grid-column: 1 / -1; margin-top: 1.25rem; padding-bottom: 0.6rem; font-family: var(--display); font-size: 1rem; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.65; border-bottom: 1px solid rgba(128, 128, 128, 0.45); }
   .ev-month:first-child { margin-top: 0.5rem; }
@@ -133,7 +130,6 @@
     <button type="button" class="ev-chip" data-filter="night" aria-pressed="false">Night</button>
   </div>
 
-  <h2 class="ev-count" id="evCount" hidden></h2>
   <ol class="ev-list" id="evList"></ol>
   <p class="ev-empty" id="evEmpty" data-i18n="ev_empty" hidden>Muy pronto publicaremos aquí los próximos eventos.</p>
 </main>
@@ -156,7 +152,7 @@
   </div>
 </div>
 <script src="/cookies.js?v=4"></script>
-<script src="/i18n.js?v=95"></script>
+<script src="/i18n.js?v=96"></script>
 <script src="/eventos/config.js?v=2"></script>
 <script src="/eventos/events.js?v=12"></script>
 <script>
@@ -209,9 +205,6 @@
             '<span class="ev-card-price">' + esc(e.price[l]) + '</span>' +
           '</span></a></li>';
       }).join('');
-      var cnt = document.getElementById('evCount');
-      cnt.hidden = !upcoming.length;
-      cnt.innerHTML = esc(t('ev_upcoming', 'Próximos eventos')) + ' <span>· ' + upcoming.length + '</span>';
       empty.hidden = upcoming.length > 0;
     }
 
