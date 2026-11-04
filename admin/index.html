@@ -107,6 +107,26 @@
   .ck-bar { height: 8px; background: var(--line); margin-top: 0.5rem; }
   .ck-bar i { display: block; height: 100%; background: var(--ok); transition: width 0.25s ease; }
   .ck-filters { display: flex; gap: 0.5rem; margin: 0 0 1rem; flex-wrap: wrap; }
+  /* Escáner de entradas */
+  .sc-modal { position: fixed; inset: 0; z-index: 200; background: #000; color: #fff; display: flex; flex-direction: column; }
+  .sc-modal[hidden] { display: none; }
+  .sc-head { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; padding: 0.7rem 1rem; font-size: 0.95rem; }
+  .sc-head b { font-family: var(--display); font-weight: 400; text-transform: uppercase; letter-spacing: 0.03em; }
+  .sc-head span { opacity: 0.7; font-size: 0.85rem; margin-left: 0.5rem; }
+  .sc-cam { position: relative; flex: 1 1 40%; min-height: 200px; background: #111; overflow: hidden; }
+  .sc-cam video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .sc-frame { position: absolute; left: 50%; top: 50%; width: min(62vw, 260px); aspect-ratio: 1; transform: translate(-50%, -50%); border: 3px solid rgba(255, 255, 255, 0.85); border-radius: 14px; box-shadow: 0 0 0 100vmax rgba(0, 0, 0, 0.35); }
+  .sc-result { padding: 1.1rem 1rem; text-align: center; background: #222; min-height: 7.5rem; display: flex; flex-direction: column; justify-content: center; gap: 0.3rem; }
+  .sc-result .sc-t { font-family: var(--display); font-size: clamp(1.6rem, 7vw, 2.4rem); text-transform: uppercase; line-height: 1; }
+  .sc-result .sc-s { font-size: 1rem; opacity: 0.9; }
+  .sc-result.is-ok { background: #1f8a4c; } .sc-result.is-bad { background: #c0392b; } .sc-result.is-warn { background: #b9770e; }
+  .sc-actions { display: flex; gap: 0.6rem; padding: 0.7rem 1rem; flex-wrap: wrap; }
+  .sc-actions:empty { display: none; }
+  .sc-actions button { flex: 1; min-height: 3.2rem; border: 2px solid #fff; background: #fff; color: #000; font-family: var(--display); font-size: 1.1rem; text-transform: uppercase; cursor: pointer; }
+  .sc-actions button.is-ghost { background: none; color: #fff; }
+  .sc-manual { padding: 0.5rem 1rem 1rem; font-size: 0.85rem; opacity: 0.9; }
+  .sc-manual summary { cursor: pointer; padding: 0.4rem 0; }
+  .sc-manual input { width: 100%; margin: 0.4rem 0; padding: 0.7rem; border: 1px solid #fff; background: #111; color: #fff; font: inherit; }
   .ck-chip { padding: 0.5rem 0.9rem; border: 1px solid var(--fg); background: none; color: var(--fg); font-family: var(--display); font-size: 0.8rem; letter-spacing: 0.05em; text-transform: uppercase; cursor: pointer; }
   .ck-chip[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
   .ck-row { display: grid; grid-template-columns: 1fr auto; gap: 0.5rem 1rem; align-items: center; padding: 0.9rem 1rem; border: 1px solid var(--fg); }
@@ -209,6 +229,7 @@
       <div class="ad-bar">
         <select id="ckEvent"></select>
         <input type="search" id="ckSearch" placeholder="Buscar nombre o ref.">
+        <button class="ad-btn" id="ckScan" type="button">Escanear entradas</button>
       </div>
       <div class="ck-sum" id="ckSummary" aria-live="polite"></div>
       <div class="ck-filters" role="group" aria-label="Filtro">
@@ -279,6 +300,18 @@
 </div>
 
 <!-- Editor de encuadre del cartel -->
+<div class="sc-modal" id="scModal" hidden role="dialog" aria-modal="true" aria-label="Escáner de entradas">
+  <div class="sc-head"><div><b id="scEvent"></b><span id="scCount"></span></div><button class="ad-btn is-small is-ghost" id="scClose" type="button" style="color:#fff;border-color:#fff">Cerrar</button></div>
+  <div class="sc-cam"><video id="scVideo" playsinline muted></video><div class="sc-frame"></div></div>
+  <div class="sc-result" id="scResult" aria-live="assertive"><div class="sc-t">Apunta al QR</div><div class="sc-s">Coloca el QR de la entrada dentro del cuadro</div></div>
+  <div class="sc-actions" id="scActions"></div>
+  <details class="sc-manual"><summary>¿No se lee el QR?</summary>
+    <input id="scCode" type="text" placeholder="Pega aquí el código o el enlace de la entrada" autocomplete="off">
+    <button class="ad-btn is-small" id="scGo" type="button">Comprobar</button>
+    <p style="margin-top:0.5rem">También puedes cerrar el escáner y buscar por nombre o referencia en la lista.</p>
+  </details>
+</div>
+
 <div class="ad-modal ie-modal" id="ieModal" hidden>
   <div class="ad-sheet ie-sheet" role="dialog" aria-modal="true" aria-label="Encuadrar cartel">
     <h2>Encuadrar cartel</h2>
@@ -1079,6 +1112,136 @@
       renderCheckin();
     });
   });
+
+  // ─── Escáner de entradas (QR) ───────────────────────────────────────
+  // Lee el QR con la cámara (BarcodeDetector si el navegador lo tiene; si no, jsQR) y llama a la
+  // función scan_ticket de la base de datos, que consulta y admite de forma atómica.
+  var sc = { stream: null, timer: 0, det: null, canvas: null, busy: false, lastCode: '', lastAt: 0, audio: null };
+  function scBeep(ok) {
+    try { if (navigator.vibrate) navigator.vibrate(ok ? 90 : [140, 60, 140]); } catch (e) {}
+    try {
+      sc.audio = sc.audio || new (window.AudioContext || window.webkitAudioContext)();
+      var t0 = sc.audio.currentTime;
+      (ok ? [880, 1320] : [200, 160]).forEach(function (f, i) {
+        var o = sc.audio.createOscillator(), g = sc.audio.createGain();
+        o.frequency.value = f; g.gain.value = 0.18; o.connect(g); g.connect(sc.audio.destination);
+        o.start(t0 + i * 0.13); o.stop(t0 + i * 0.13 + 0.11);
+      });
+    } catch (e) {}
+  }
+  function scShow(kind, title, sub, buttons) {
+    var r = $('scResult'); r.className = 'sc-result' + (kind ? ' is-' + kind : '');
+    r.innerHTML = '<div class="sc-t">' + esc(title) + '</div>' + (sub ? '<div class="sc-s">' + sub + '</div>' : '');
+    var a = $('scActions'); a.innerHTML = '';
+    (buttons || []).forEach(function (b) {
+      var el = document.createElement('button'); el.type = 'button'; el.textContent = b.label; if (b.ghost) el.className = 'is-ghost';
+      el.addEventListener('click', b.fn); a.appendChild(el);
+    });
+    if (kind === 'ok') scBeep(true); else if (kind === 'bad' || kind === 'warn') scBeep(false);
+  }
+  function scToken(raw) {
+    raw = String(raw || '').trim();
+    var m = raw.match(/[?&]t=([a-f0-9]{32})/i); if (m) return m[1].toLowerCase();
+    return /^[a-f0-9]{32}$/i.test(raw) ? raw.toLowerCase() : '';
+  }
+  function scCall(token, n) {
+    return api('rpc/scan_ticket', { method: 'POST', body: { p_token: token, p_count: n } }).then(function (r) { return Array.isArray(r) ? r[0] : r; });
+  }
+  function scResume(ms) { setTimeout(function () { sc.busy = false; }, ms || 1200); }
+  function scCounter() { var b = $('ckSummary').querySelector('b'); $('scCount').textContent = b ? ' · ' + b.textContent + ' han venido' : ''; }
+  function scAdmit(tok, n) {
+    scShow('', 'Admitiendo…', '');
+    return scCall(tok, n).then(function (r) {
+      if (r.result === 'admitted') {
+        scShow('ok', 'Admitida', esc(r.name) + ' · ' + n + (n === 1 ? ' persona' : ' personas') + (r.qty > 1 ? ' (' + r.checked_in + ' de ' + r.qty + ')' : ''));
+        refreshCheckin().then(scCounter);
+      } else if (r.result === 'already') scShow('bad', 'Ya admitida', esc(r.name) + ' · ya han entrado todos');
+      else scShow('bad', 'No se ha podido admitir', esc(r.result));
+      scResume(1500);
+    }).catch(function (x) { scShow('bad', 'Error', esc(x.message)); scResume(1500); });
+  }
+  function scHandle(raw) {
+    if (sc.busy) return;
+    var now = Date.now();
+    if (raw === sc.lastCode && now - sc.lastAt < 4000) return;
+    sc.lastCode = raw; sc.lastAt = now;
+    var tok = scToken(raw);
+    if (!tok) { scShow('bad', 'QR no válido', 'Este QR no es una entrada de ROCE.'); scResume(1500); return; }
+    sc.busy = true; scShow('', 'Comprobando…', '');
+    scCall(tok, 0).then(function (r) {
+      if (!r || r.result === 'unknown') { scShow('bad', 'QR desconocido', 'No existe ninguna entrada con este código.'); return scResume(1800); }
+      var who = esc(r.name) + ' · ' + esc(r.ref);
+      if (r.result === 'cancelled') { scShow('bad', 'Entrada anulada', who + '<br>Reserva cancelada o devuelta.'); return scResume(2000); }
+      if (r.result === 'unpaid') { scShow('bad', 'Sin pagar', who + '<br>El pago online no se ha completado.'); return scResume(2000); }
+      var sel = $('ckEvent').value;
+      if (r.event_id !== sel) {
+        var oe = eventById(r.event_id);
+        scShow('warn', 'Otro evento', who + '<br>Es para «' + esc(oe ? oe.title_es : r.event_id) + '», no para el evento seleccionado. No se admite.');
+        return scResume(2200);
+      }
+      if (r.result === 'already') {
+        var when = r.checked_in_at ? ' a las ' + new Date(r.checked_in_at).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Madrid' }) : '';
+        scShow('bad', 'Ya admitida', who + '<br>Ya han entrado ' + r.checked_in + ' de ' + r.qty + when + '.');
+        return scResume(2200);
+      }
+      var left = r.qty - r.checked_in, toPay = r.result === 'topay';
+      if (left === 1 && !toPay) return scAdmit(tok, 1);
+      var btns = [];
+      if (left > 1) btns.push({ label: 'Admitir 1', fn: function () { scAdmit(tok, 1); } });
+      btns.push({ label: left > 1 ? 'Admitir ' + left : 'Admitir', fn: function () { scAdmit(tok, left); } });
+      btns.push({ label: 'No admitir', ghost: true, fn: function () { scShow('', 'Apunta al QR', 'Coloca el QR de la entrada dentro del cuadro'); sc.busy = false; } });
+      scShow(toPay ? 'warn' : '', toPay ? 'Por cobrar ' + money(r.total_cents) : 'Entrada válida', who + '<br>' + left + (left === 1 ? ' persona por entrar' : ' personas por entrar') + (r.qty > 1 ? ' (de ' + r.qty + ')' : ''), btns);
+    }).catch(function (x) { scShow('bad', 'Error', esc(x.message)); scResume(1800); });
+  }
+  function scLoadJsQR() {
+    if (window.jsQR) return Promise.resolve();
+    return new Promise(function (res, rej) { var el = document.createElement('script'); el.src = '/assets/js/jsQR.js?v=1'; el.onload = res; el.onerror = rej; document.head.appendChild(el); });
+  }
+  function scTick() {
+    if (!sc.stream) return;
+    var v = $('scVideo');
+    function next() { sc.timer = setTimeout(scTick, 140); }
+    if (v.readyState < 2 || !v.videoWidth) return next();
+    if (sc.det) { sc.det.detect(v).then(function (codes) { if (codes && codes[0]) scHandle(codes[0].rawValue); }).catch(function () {}).then(next); return; }
+    var w = 480, h = Math.max(1, Math.round(v.videoHeight * w / v.videoWidth));
+    sc.canvas = sc.canvas || document.createElement('canvas'); sc.canvas.width = w; sc.canvas.height = h;
+    var cx = sc.canvas.getContext('2d', { willReadFrequently: true }); cx.drawImage(v, 0, 0, w, h);
+    var c = window.jsQR(cx.getImageData(0, 0, w, h).data, w, h, { inversionAttempts: 'dontInvert' });
+    if (c && c.data) scHandle(c.data);
+    next();
+  }
+  function scStop() {
+    clearTimeout(sc.timer); sc.timer = 0;
+    if (sc.stream) sc.stream.getTracks().forEach(function (t) { t.stop(); });
+    sc.stream = null; $('scVideo').srcObject = null;
+  }
+  function scOpen() {
+    var ev = eventById($('ckEvent').value);
+    if (!ev) { flash('Elige primero un evento.', 'error'); return; }
+    $('scEvent').textContent = ev.title_es; scCounter();
+    scShow('', 'Apunta al QR', 'Coloca el QR de la entrada dentro del cuadro');
+    sc.busy = false; sc.lastCode = ''; $('scModal').hidden = false; document.documentElement.style.overflow = 'hidden';
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { scShow('warn', 'Sin cámara', 'Este navegador no permite usar la cámara. Usa el cuadro de abajo o la lista.'); $('scModal').querySelector('details').open = true; return; }
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' } }, audio: false }).then(function (stream) {
+      sc.stream = stream; var v = $('scVideo'); v.srcObject = stream;
+      return v.play().catch(function () {});
+    }).then(function () {
+      var useNative = window.BarcodeDetector && (!BarcodeDetector.getSupportedFormats ? true : BarcodeDetector.getSupportedFormats().then(function (f) { return f.indexOf('qr_code') !== -1; }));
+      return Promise.resolve(useNative).then(function (ok) {
+        if (ok) { try { sc.det = new BarcodeDetector({ formats: ['qr_code'] }); return; } catch (e) {} }
+        sc.det = null; return scLoadJsQR();
+      });
+    }).then(function () { if (sc.stream) scTick(); })
+      .catch(function (x) {
+        scShow('warn', 'No se puede usar la cámara', (x && x.name === 'NotAllowedError' ? 'Has bloqueado el permiso de cámara. Actívalo en los ajustes del navegador para roce.es.' : 'Prueba con el cuadro de abajo.'));
+        $('scModal').querySelector('details').open = true;
+      });
+  }
+  function scClose() { scStop(); $('scModal').hidden = true; document.documentElement.style.overflow = ''; refreshCheckin(); }
+  $('ckScan').addEventListener('click', scOpen);
+  $('scClose').addEventListener('click', scClose);
+  $('scGo').addEventListener('click', function () { var v = $('scCode').value; $('scCode').value = ''; sc.lastCode = ''; if (v.trim()) scHandle(v); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !$('scModal').hidden) scClose(); });
 
   // ─── Equipo ─────────────────────────────────────────────────────────
   // Crear cuentas y cambiar contraseñas ajenas lo hace la función admin-team (servidor).

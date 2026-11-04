@@ -91,6 +91,12 @@ alter table public.bookings add column if not exists invoice_tax_id text not nul
 alter table public.bookings add column if not exists invoice_address text not null default '';
 -- DNI / NIE / pasaporte de quien compra (se pide en el formulario de entradas).
 alter table public.bookings add column if not exists dni text not null default '';
+-- Código secreto de la entrada (va en el QR): largo y aleatorio, no se puede adivinar a partir de la referencia.
+alter table public.bookings add column if not exists ticket_token text;
+update public.bookings set ticket_token = replace(gen_random_uuid()::text, '-', '') where ticket_token is null;
+alter table public.bookings alter column ticket_token set default replace(gen_random_uuid()::text, '-', '');
+alter table public.bookings alter column ticket_token set not null;
+create unique index if not exists bookings_ticket_token_idx on public.bookings(ticket_token);
 create index if not exists bookings_event_idx on public.bookings(event_id);
 
 -- ─── Seguridad por filas (RLS) ────────────────────────────────────────────
@@ -186,14 +192,16 @@ create policy event_images_admin_delete on storage.objects for delete to authent
 drop function if exists public.book_event(text, integer, text, text, text, text, text, boolean);
 drop function if exists public.book_event(text, integer, text, text, text, text, text, boolean, text, text, text);
 drop function if exists public.book_event(text, integer, text, text, text, text, text, boolean, text, text, text, boolean);
+drop function if exists public.book_event(text, integer, text, text, text, text, text, boolean, text, text, text, boolean, text);
 create or replace function public.book_event(
   p_event text, p_qty integer, p_name text, p_email text, p_phone text,
   p_notes text default '', p_lang text default 'es', p_marketing boolean default false,
   p_invoice_name text default '', p_invoice_tax_id text default '', p_invoice_address text default '',
   p_online boolean default false, p_dni text default null
-) returns table (o_ref text, o_spots_left integer, o_total_cents integer)
+) returns table (o_ref text, o_spots_left integer, o_total_cents integer, o_token text)
 language plpgsql security definer set search_path = public as $$
 declare
+  v_token text;
   ev     public.events%rowtype;
   taken  integer;
   v_ref  text;
@@ -233,9 +241,9 @@ begin
     -- Con pago online la plaza queda retenida (30 min) hasta que el banco confirma el cobro.
     case when p_online and ev.price_cents > 0 then 'pending' else 'confirmed' end,
     case when ev.price_cents = 0 then 'free' else 'pending' end
-  );
+  ) returning ticket_token into v_token;
 
-  return query select v_ref, (ev.capacity - taken - p_qty)::integer, ev.price_cents * p_qty;
+  return query select v_ref, (ev.capacity - taken - p_qty)::integer, ev.price_cents * p_qty, v_token;
 end;
 $$;
 
@@ -299,6 +307,68 @@ language sql stable security definer set search_path = public as $$
 $$;
 revoke all on function public.booking_status(text) from public;
 grant execute on function public.booking_status(text) to anon, authenticated;
+
+-- ─── Entrada con QR ─────────────────────────────────────────────────────────
+-- Datos mínimos de una entrada para la página roce.es/entrada/ (solo con el código secreto).
+create or replace function public.ticket_get(p_token text)
+returns table (ref text, name text, qty integer, checked_in integer, status text, payment_status text,
+               env text, starts_at timestamptz, duration_h numeric, title_es text, title_en text, place_es text, place_en text)
+language sql stable security definer set search_path = public as $$
+  select b.ref, b.name, b.qty, b.checked_in, b.status, b.payment_status,
+         e.env, e.starts_at, e.duration_h::numeric, e.title_es, e.title_en, e.place_es, e.place_en
+  from public.bookings b join public.events e on e.id = b.event_id
+  where length(coalesce(p_token, '')) = 32 and b.ticket_token = p_token
+  limit 1;
+$$;
+revoke all on function public.ticket_get(text) from public;
+grant execute on function public.ticket_get(text) to anon, authenticated;
+
+-- Registro de admisiones hechas con el escáner (quién, cuántas y cuándo).
+create table if not exists public.admissions (
+  id          uuid primary key default gen_random_uuid(),
+  booking_id  uuid not null references public.bookings(id) on delete cascade,
+  qty         integer not null check (qty > 0),
+  admitted_by text not null default '',
+  created_at  timestamptz not null default now()
+);
+alter table public.admissions enable row level security;
+drop policy if exists admissions_admin_read on public.admissions;
+create policy admissions_admin_read on public.admissions for select to authenticated using (public.is_admin());
+
+-- Escáner del panel. p_count = 0 solo consulta; p_count > 0 admite esas personas (como mucho las que
+-- faltan). Todo en una sola operación con la reserva bloqueada: dos escáneres a la vez no pueden admitir dos veces.
+-- result: unknown | cancelled | unpaid | already | valid | topay | admitted
+create or replace function public.scan_ticket(p_token text, p_count integer default 0)
+returns table (result text, ref text, name text, qty integer, checked_in integer, checked_in_at timestamptz,
+               status text, payment_status text, total_cents integer, event_id text, notes text)
+language plpgsql security definer set search_path = public as $$
+declare
+  b        public.bookings;
+  v_result text;
+  n        integer;
+begin
+  if not public.is_admin() then raise exception 'forbidden'; end if;
+  select * into b from public.bookings where length(coalesce(p_token, '')) = 32 and ticket_token = p_token for update;
+  if not found then
+    return query select 'unknown'::text, null::text, null::text, 0, 0, null::timestamptz, null::text, null::text, 0, null::text, null::text;
+    return;
+  end if;
+  if b.status = 'cancelled' then v_result := 'cancelled';
+  elsif b.status = 'pending' then v_result := 'unpaid';
+  elsif b.checked_in >= b.qty then v_result := 'already';
+  elsif coalesce(p_count, 0) > 0 then
+    n := least(p_count, b.qty - b.checked_in);
+    update public.bookings bk set checked_in = bk.checked_in + n, checked_in_at = now() where bk.id = b.id returning bk.* into b;
+    insert into public.admissions (booking_id, qty, admitted_by) values (b.id, n, lower(coalesce(auth.jwt() ->> 'email', '')));
+    v_result := 'admitted';
+  elsif b.payment_status = 'pending' then v_result := 'topay';
+  else v_result := 'valid';
+  end if;
+  return query select v_result, b.ref, b.name, b.qty, b.checked_in, b.checked_in_at, b.status, b.payment_status, b.total_cents, b.event_id, b.notes;
+end;
+$$;
+revoke all on function public.scan_ticket(text, integer) from public, anon;
+grant execute on function public.scan_ticket(text, integer) to authenticated;
 
 -- ─── Listas de invitados (enlace para apuntar gente sin pasar por la pasarela) ─────
 -- Cada lista tiene un enlace secreto (token): quien lo recibe apunta el nombre de

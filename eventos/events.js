@@ -164,7 +164,7 @@
             throw new Error(code || 'network');
           }
           var row = Array.isArray(body) ? body[0] : body;
-          return { ref: row.o_ref, left: row.o_spots_left, total_cents: row.o_total_cents };
+          return { ref: row.o_ref, left: row.o_spots_left, total_cents: row.o_total_cents, token: row.o_token || '' };
         });
       }, function () { throw new Error('network'); });
     }
