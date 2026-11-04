@@ -68,8 +68,8 @@
   .ad-bar-cap i { display: block; height: 100%; background: var(--fg); }
 
   /* Imagen del evento */
-  .ad-img { width: 12rem; aspect-ratio: 1; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 1px solid var(--fg); background: var(--line); }
-  .ad-img img { width: 100%; height: 100%; object-fit: cover; }
+  .ad-img { width: 10rem; aspect-ratio: 4 / 5; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 1px solid var(--fg); background: var(--line); }
+  .ad-img img { width: 100%; height: 100%; object-fit: contain; }
   .ad-img em { font-size: 0.85rem; opacity: 0.6; }
   .ad-img-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.5rem; }
   .ad-img-actions label { cursor: pointer; }
@@ -78,7 +78,7 @@
   .ad-modal.ie-modal { z-index: 150; align-items: center; }
   .ie-sheet { max-width: 28rem; padding: 1rem; }
   .ie-sheet h2 { font-size: 1.4rem; margin-bottom: 0.7rem; }
-  .ie-stage { position: relative; width: min(100%, 24rem, 52vh); margin: 0 auto; aspect-ratio: 1; border: 1px solid var(--fg); background: repeating-conic-gradient(#ddd 0 25%, #fff 0 50%) 50% / 16px 16px; touch-action: none; cursor: grab; overflow: hidden; }
+  .ie-stage { position: relative; width: min(100%, 22rem, 42vh); margin: 0 auto; aspect-ratio: 4 / 5; border: 1px solid var(--fg); background: repeating-conic-gradient(#ddd 0 25%, #fff 0 50%) 50% / 16px 16px; touch-action: none; cursor: grab; overflow: hidden; }
   .ie-stage.is-drag { cursor: grabbing; }
   .ie-stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
   .ie-zoom { display: flex; align-items: center; gap: 0.75rem; margin: 0.9rem 0 0.6rem; font-size: 0.78rem; letter-spacing: 0.06em; text-transform: uppercase; }
@@ -576,21 +576,21 @@
     $('imgEdit').hidden = !src;
   }
   // ─── Editor de encuadre ─────────────────────────────────────────────
-  // Se mueve y se hace zoom a la imagen dentro de un cuadrado; al aplicar se
-  // exporta a 1200×1200 en JPG (comprimido sola, pese lo que pese el original).
-  var ie = { img: null, S: 0, s: 1, ox: 0, oy: 0, fit: 1, fill: 1, max: 4, bg: '#ffffff', pts: {}, pinch: 0 };
+  // Se mueve y se hace zoom a la imagen dentro de un rectángulo vertical 4:5 (formato cartel); al aplicar
+  // se exporta a 1080×1350 en JPG (comprimido solo, pese lo que pese el original).
+  var ie = { img: null, W: 0, H: 0, s: 1, ox: 0, oy: 0, fit: 1, fill: 1, max: 4, bg: '#ffffff', pts: {}, pinch: 0 };
   function ieClamp() {
     var w = ie.img.naturalWidth * ie.s, h = ie.img.naturalHeight * ie.s;
-    ie.ox = w <= ie.S ? (ie.S - w) / 2 : Math.min(0, Math.max(ie.S - w, ie.ox));
-    ie.oy = h <= ie.S ? (ie.S - h) / 2 : Math.min(0, Math.max(ie.S - h, ie.oy));
+    ie.ox = w <= ie.W ? (ie.W - w) / 2 : Math.min(0, Math.max(ie.W - w, ie.ox));
+    ie.oy = h <= ie.H ? (ie.H - h) / 2 : Math.min(0, Math.max(ie.H - h, ie.oy));
   }
   function ieDraw(ctx, f) {
-    ctx.fillStyle = ie.bg; ctx.fillRect(0, 0, ie.S * f, ie.S * f);
+    ctx.fillStyle = ie.bg; ctx.fillRect(0, 0, ie.W * f, ie.H * f);
     ctx.drawImage(ie.img, ie.ox * f, ie.oy * f, ie.img.naturalWidth * ie.s * f, ie.img.naturalHeight * ie.s * f);
   }
   function iePaint() {
-    var c = $('ieCanvas'), r = window.devicePixelRatio || 1; ie.S = $('ieStage').clientWidth;
-    c.width = Math.round(ie.S * r); c.height = Math.round(ie.S * r);
+    var c = $('ieCanvas'), r = window.devicePixelRatio || 1; ie.W = $('ieStage').clientWidth; ie.H = $('ieStage').clientHeight;
+    c.width = Math.round(ie.W * r); c.height = Math.round(ie.H * r);
     ieClamp(); ieDraw(c.getContext('2d'), r);
     $('ieZoom').value = Math.round(100 * Math.log(ie.s / ie.fit) / Math.log(ie.max / ie.fit));
   }
@@ -598,7 +598,7 @@
     s = Math.min(ie.max, Math.max(ie.fit, s));
     var k = s / ie.s; ie.ox = cx - (cx - ie.ox) * k; ie.oy = cy - (cy - ie.oy) * k; ie.s = s; iePaint();
   }
-  function ieSetScale(s) { ie.s = s; ie.ox = (ie.S - ie.img.naturalWidth * s) / 2; ie.oy = (ie.S - ie.img.naturalHeight * s) / 2; iePaint(); }
+  function ieSetScale(s) { ie.s = s; ie.ox = (ie.W - ie.img.naturalWidth * s) / 2; ie.oy = (ie.H - ie.img.naturalHeight * s) / 2; iePaint(); }
   function ieCornerColor() {
     var t = document.createElement('canvas'); t.width = t.height = 1; var g = t.getContext('2d');
     g.drawImage(ie.img, 0, 0, 1, 1, 0, 0, 1, 1); var d = g.getImageData(0, 0, 1, 1).data;
@@ -609,18 +609,18 @@
     img.crossOrigin = 'anonymous';
     img.onload = function () {
       if (typeof src !== 'string') URL.revokeObjectURL(url);
-      ie.img = img; $('ieModal').hidden = false; ie.S = $('ieStage').clientWidth;
-      ie.fit = Math.min(ie.S / img.naturalWidth, ie.S / img.naturalHeight);
-      ie.fill = Math.max(ie.S / img.naturalWidth, ie.S / img.naturalHeight);
+      ie.img = img; $('ieModal').hidden = false; ie.W = $('ieStage').clientWidth; ie.H = $('ieStage').clientHeight;
+      ie.fit = Math.min(ie.W / img.naturalWidth, ie.H / img.naturalHeight);
+      ie.fill = Math.max(ie.W / img.naturalWidth, ie.H / img.naturalHeight);
       ie.max = Math.max(ie.fill * 4, ie.fit * 2);
       try { ie.bg = ieCornerColor(); } catch (e) { ie.bg = '#ffffff'; }
-      $('ieBg').value = ie.bg; ieSetScale(ie.fill); // empieza rellenando el cuadrado
+      $('ieBg').value = ie.bg; ieSetScale(ie.fill); // empieza rellenando el cartel
     };
     img.onerror = function () { $('evFormMsg').textContent = 'No se ha podido abrir la imagen.'; $('evFormMsg').hidden = false; };
     img.src = url;
   }
   function ieExport() {
-    var size = 1200, f = size / ie.S, c = document.createElement('canvas'); c.width = c.height = size;
+    var f = 1080 / ie.W, c = document.createElement('canvas'); c.width = 1080; c.height = Math.round(ie.H * f);
     ieDraw(c.getContext('2d'), f);
     return new Promise(function (resolve, reject) {
       (function encode(q) {
@@ -633,7 +633,7 @@
     });
   }
   $('ieZoom').addEventListener('input', function () {
-    var t = Number(this.value) / 100; ieZoomTo(ie.fit * Math.pow(ie.max / ie.fit, t), ie.S / 2, ie.S / 2);
+    var t = Number(this.value) / 100; ieZoomTo(ie.fit * Math.pow(ie.max / ie.fit, t), ie.W / 2, ie.H / 2);
   });
   $('ieFit').addEventListener('click', function () { ieSetScale(ie.fit); });
   $('ieFill').addEventListener('click', function () { ieSetScale(ie.fill); });
@@ -667,7 +667,7 @@
     }).catch(function (x) { $('evFormMsg').textContent = x.message; $('evFormMsg').hidden = false; })
       .then(function () { $('ieApply').disabled = false; });
   });
-  window.addEventListener('resize', function () { if (!$('ieModal').hidden && ie.img) { var k = $('ieStage').clientWidth / ie.S; if (k && isFinite(k)) { ie.fit *= k; ie.fill *= k; ie.max *= k; ie.s *= k; ie.ox *= k; ie.oy *= k; } iePaint(); } });
+  window.addEventListener('resize', function () { if (!$('ieModal').hidden && ie.img) { var k = $('ieStage').clientWidth / ie.W; if (k && isFinite(k)) { ie.fit *= k; ie.fill *= k; ie.max *= k; ie.s *= k; ie.ox *= k; ie.oy *= k; } iePaint(); } });
 
   $('fImgFile').addEventListener('change', function () {
     var f = this.files && this.files[0]; if (!f) return;
