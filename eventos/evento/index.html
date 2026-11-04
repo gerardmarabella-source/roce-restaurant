@@ -88,6 +88,13 @@
   .evd-linkrow input { flex: 1; min-width: 0; padding: 0.55rem 0.4rem; border: 0; background: transparent; color: inherit; font: inherit; font-size: 0.9rem; }
   .evd-copy { flex-shrink: 0; padding: 0.55rem 1.1rem; border: 0; background: var(--fg); color: var(--bg); font-family: var(--display); font-size: 0.95rem; letter-spacing: 0.04em; text-transform: uppercase; cursor: pointer; }
   @media (min-width: 640px) { .evd-modal { align-items: center; padding: 1rem; } }
+  .evd-story { position: fixed; inset: 0; z-index: 90; display: flex; align-items: center; justify-content: center; background: rgba(0, 0, 0, 0.92); padding: 1rem; overflow-y: auto; }
+  .evd-story-in { position: relative; width: 100%; max-width: 22rem; text-align: center; color: #ffffff; }
+  .evd-story-in .evd-x { position: absolute; top: -0.4rem; right: -0.2rem; color: #ffffff; z-index: 2; }
+  .evd-story-in img { display: block; width: 100%; max-height: 66vh; object-fit: contain; margin: 1.6rem 0 0.9rem; -webkit-touch-callout: default; }
+  .evd-story-in p { font-size: 0.9rem; line-height: 1.45; opacity: 0.85; }
+  .evd-story-btns { display: flex; gap: 0.6rem; margin-top: 0.9rem; }
+  .evd-story-btns .evd-copy { flex: 1; padding: 0.9rem 0.6rem; background: #ffffff; color: #0a0a0a; text-decoration: none; }
   .evd-toast { position: fixed; left: 50%; bottom: 6.5rem; transform: translateX(-50%); z-index: 50; padding: 0.6rem 1rem; background: var(--fg); color: var(--bg); font-size: 0.9rem; opacity: 0; pointer-events: none; transition: opacity 0.2s ease; }
   .evd-toast.is-on { opacity: 1; }
   .ev-foot { padding: 1.5rem 1rem 2rem; text-align: center; font-size: 0.68rem; line-height: 1.35; letter-spacing: 0.03em; opacity: 0.6; }
@@ -167,7 +174,7 @@
   </div>
 </div>
 <script src="/cookies.js?v=4"></script>
-<script src="/i18n.js?v=93"></script>
+<script src="/i18n.js?v=94"></script>
 <script>
   window.ROCE_EVENTS_READY.then(function () {
     var U = window.ROCE_EVENT_UTIL, id = new URLSearchParams(location.search).get('e'), e = U.find(id);
@@ -242,6 +249,7 @@
       $('evdIg').addEventListener('click', igStory);
       $('evdShareUrl').value = url;
       $('evdShareModal').hidden = false;
+      prepareStory();
     }
     // Historia de Instagram: Instagram no tiene enlace para publicar desde una web, así que se crea una
     // imagen 9:16 del evento. En el móvil se abre el menú nativo (Instagram → Historias); en ordenador se descarga.
@@ -281,19 +289,40 @@
       });
     }
     function copyLink() { var u = shareUrl(); if (navigator.clipboard) navigator.clipboard.writeText(u).catch(function () {}); }
+    function isMobile() { return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || (navigator.maxTouchPoints > 1 && /Mac/.test(navigator.platform)); }
+    // La imagen se prepara al abrir "Compartir": así, al pulsar Instagram, el menú del móvil se abre al instante
+    // (si se generase después del toque, el navegador ya no deja abrirlo).
+    var story = { file: null, lang: '', busy: false };
+    function prepareStory() {
+      var lg = lang(); if (story.busy || (story.file && story.lang === lg)) return;
+      story.busy = true; story.file = null; story.lang = lg;
+      storyBlob().then(function (blob) { story.file = new File([blob], 'roce-' + e.id + '-historia.png', { type: 'image/png' }); })
+        .catch(function () {}).then(function () { story.busy = false; });
+    }
+    function downloadFile(file) { var a = document.createElement('a'); a.href = URL.createObjectURL(file); a.download = file.name; document.body.appendChild(a); a.click(); a.remove(); }
+    // Plan B en móvil: la imagen a pantalla completa para guardarla y un botón que abre la cámara de historias de Instagram.
+    function showStory(file) {
+      var url = URL.createObjectURL(file), box = document.createElement('div'); box.className = 'evd-story';
+      box.innerHTML = '<div class="evd-story-in"><button type="button" class="evd-x" aria-label="' + esc(t('evd_close', 'Cerrar')) + '">×</button>' +
+        '<img src="' + url + '" alt="">' +
+        '<p>' + esc(t('evd_ig_steps', 'Mantén pulsada la imagen y elige «Guardar imagen». Después abre Instagram y súbela a tu historia.')) + '</p>' +
+        '<div class="evd-story-btns"><a class="evd-copy" href="' + url + '" download="' + esc(file.name) + '">' + esc(t('evd_ig_save', 'Guardar')) + '</a>' +
+        '<a class="evd-copy" href="instagram://story-camera">' + esc(t('evd_ig_open', 'Abrir Instagram')) + '</a></div></div>';
+      box.addEventListener('click', function (ev) { if (ev.target === box || ev.target.closest('.evd-x')) box.remove(); });
+      closeShare(); document.body.appendChild(box); copyLink();
+    }
     function igStory() {
+      var file = story.file;
+      function fallback(f) { if (isMobile()) showStory(f); else { downloadFile(f); copyLink(); toast(t('evd_ig_done', 'Imagen descargada y enlace copiado: súbela a tu historia de Instagram desde el móvil.')); } }
+      if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
+        navigator.share({ files: [file], title: e.title[lang()] + ' — ROCE', text: shareUrl() })
+          .catch(function (err) { if (!err || err.name !== 'AbortError') fallback(file); });
+        return;
+      }
+      if (file) { fallback(file); return; }
       toast(t('evd_ig_making', 'Preparando la imagen…'));
-      storyBlob().then(function (blob) {
-        var file = new File([blob], 'roce-' + e.id + '-historia.png', { type: 'image/png' });
-        function download() {
-          var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = file.name; document.body.appendChild(a); a.click(); a.remove();
-          copyLink(); toast(t('evd_ig_done', 'Imagen descargada y enlace copiado: súbela a tu historia de Instagram desde el móvil.'));
-        }
-        if (navigator.canShare && navigator.canShare({ files: [file] })) {
-          return navigator.share({ files: [file], title: e.title[lang()] + ' — ROCE', text: shareUrl() }).catch(function (err) { if (err && err.name === 'NotAllowedError') download(); });
-        }
-        download();
-      }).catch(function () { toast(t('evd_ig_err', 'No se ha podido crear la imagen.')); });
+      storyBlob().then(function (blob) { story.file = new File([blob], 'roce-' + e.id + '-historia.png', { type: 'image/png' }); story.lang = lang(); fallback(story.file); })
+        .catch(function () { toast(t('evd_ig_err', 'No se ha podido crear la imagen.')); });
     }
     function closeShare() { $('evdShareModal').hidden = true; }
     $('evdShare').addEventListener('click', openShare);
@@ -318,7 +347,7 @@
       var a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([ics], { type: 'text/calendar;charset=utf-8' }));
       a.download = 'roce-' + e.id + '.ics'; document.body.appendChild(a); a.click(); a.remove();
     });
-    document.addEventListener('roce:lang', paint);
+    document.addEventListener('roce:lang', function () { paint(); story.file = null; if (!$('evdShareModal').hidden) openShare(); });
     paint();
   });
 </script>
