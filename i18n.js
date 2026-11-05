@@ -51,6 +51,8 @@
     age_title: { es: 'Estás entrando en un espacio +18', en: "You're entering an 18+ space" },
     age_text: { es: 'Las reservas de noche son para mayores de 18 años. ¿Tienes 18 años o más?', en: 'Evening bookings are for guests aged 18 and over. Are you 18 or older?' },
     age_yes: { es: 'Sí, tengo 18 o más', en: "Yes, I'm 18 or older" },
+    ev_day: { es: 'Día', en: 'Day' },
+    ev_night: { es: 'Noche', en: 'Night' },
     floor_ground: { es: 'Planta baja', en: 'Ground floor' },
     floor_first: { es: 'Primera planta', en: 'First floor' },
     home_events_none: { es: 'Próximos eventos', en: 'Upcoming events' },

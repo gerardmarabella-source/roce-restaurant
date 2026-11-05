@@ -245,7 +245,7 @@
   </div>
 </div>
 <script src="/cookies.js?v=4"></script>
-<script src="/i18n.js?v=100"></script>
+<script src="/i18n.js?v=101"></script>
 <script src="/assets/js/qrcode.js?v=1"></script>
 <script>
   window.ROCE_EVENTS_READY.then(function () {
@@ -314,7 +314,7 @@
         botcheck: '',
         referencia: order.ref,
         evento: ev.title.es,
-        ambiente: ev.env === 'night' ? 'Restaurant & Cocktails (+18)' : 'Coffee, Bakery & Kitchen',
+        ambiente: ev.env === 'night' ? 'Noche (+18)' : 'Día',
         fecha: ev.date + ' ' + ev.time,
         lugar: ev.place.es,
         entradas: order.qty,
@@ -360,7 +360,7 @@
 
     // ─── Pintado ────────────────────────────────────────────────────────
     function paintEvent() {
-      $('tkEnv').innerHTML = ev.env === 'night' ? 'Restaurant &amp; Cocktails ' + AGE : 'Coffee, Bakery &amp; Kitchen';
+      $('tkEnv').innerHTML = ev.env === 'night' ? t('ev_night') + ' ' + AGE : t('ev_day');
       $('tkTitle').textContent = ev.title[lang()];
       if (ev.image) { $('tkPoster').querySelector('img').src = ev.image; $('tkPoster').hidden = false; }
       $('tkWhen').textContent = whenText();
@@ -519,7 +519,7 @@
       var ics = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//ROCE//Eventos//ES', 'BEGIN:VEVENT',
         'UID:' + state.order.ref + '@roce.es', 'DTSTAMP:' + new Date().toISOString().replace(/[-:]|\.\d{3}/g, ''),
         'DTSTART;TZID=Europe/Madrid:' + fmtLocal(start), 'DTEND;TZID=Europe/Madrid:' + fmtLocal(end),
-        'SUMMARY:' + ev.title[lang()] + ' (' + (ev.env === 'night' ? 'Restaurant & Cocktails' : 'Coffee, Bakery & Kitchen') + ')',
+        'SUMMARY:' + ev.title[lang()] + ' (' + (ev.env === 'night' ? (lang() === 'en' ? 'Night' : 'Noche') : (lang() === 'en' ? 'Day' : 'Día')) + ')',
         'LOCATION:ROCE\\, Marqués del Túria 16\\, Valencia', 'DESCRIPTION:Ref. ' + state.order.ref, 'END:VEVENT', 'END:VCALENDAR'].join('\r\n');
       var a = document.createElement('a');
       a.href = URL.createObjectURL(new Blob([ics], { type: 'text/calendar;charset=utf-8' }));
