@@ -229,10 +229,10 @@ begin
   v_min := round(extract(epoch from (p_starts - (v_date::timestamp at time zone 'Europe/Madrid'))) / 60)::integer;
   if public.dining_closed(v_date, s.id, z.id) or public.dining_closed(v_date, s.id, z.id, v_min) then raise exception 'closed'; end if;
 
-  -- Freno contra reservas falsas: como mucho 3 reservas futuras activas por email.
+  -- Freno contra reservas falsas: como mucho 10 reservas futuras activas por email.
   if (select count(*) from public.table_bookings b
       where lower(b.email) = lower(trim(p_email)) and b.starts_at > now()
-        and public.dining_holds(b.status, b.hold_until)) >= 3 then raise exception 'too_many'; end if;
+        and public.dining_holds(b.status, b.hold_until)) >= 10 then raise exception 'too_many'; end if;
 
   v_end := p_starts + make_interval(mins => s.duration_min);
   v_tables := public.dining_assign(p_starts, v_end, p_party, z.id);

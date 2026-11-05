@@ -319,7 +319,7 @@ begin
   -- Freno contra reservas falsas: como mucho 3 reservas futuras activas por email.
   if (select count(*) from public.table_bookings b
       where lower(b.email) = lower(trim(p_email)) and b.starts_at > now()
-        and public.dining_holds(b.status, b.hold_until)) >= 3 then raise exception 'too_many'; end if;
+        and public.dining_holds(b.status, b.hold_until)) >= 10 then raise exception 'too_many'; end if;
 
   v_end := p_starts + make_interval(mins => s.duration_min);
   v_tables := public.dining_assign(p_starts, v_end, p_party, z.id);
