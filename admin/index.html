@@ -49,6 +49,7 @@
   .ad-login { max-width: 380px; margin: 12vh auto 0; padding: 0 1.25rem; }
   .ad-login h1 { font-family: var(--display); font-weight: 400; font-size: 2.6rem; text-transform: uppercase; line-height: 0.95; margin-bottom: 1.5rem; }
   .ad-field { display: block; margin-bottom: 1rem; }
+  .ad-field[hidden] { display: none; }
   .ad-field > span { display: block; margin-bottom: 0.3rem; font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; opacity: 0.65; }
   .ad-field input, .ad-field select, .ad-field textarea { width: 100%; padding: 0.6rem 0.7rem; border: 1px solid var(--fg); border-radius: 0; background: transparent; }
   .ad-field textarea { min-height: 4.5rem; resize: vertical; }
@@ -183,7 +184,7 @@
   .ad-hint { font-size: 0.78rem; opacity: 0.6; margin-top: 0.25rem; }
   @media (max-width: 560px) { .ad-grid { grid-template-columns: 1fr; } .ad-table { font-size: 0.8rem; } }
 </style>
-<link rel="stylesheet" href="/admin/mesas.css?v=8">
+<link rel="stylesheet" href="/admin/mesas.css?v=9">
 </head>
 <body>
 
@@ -275,14 +276,16 @@
       <form class="ad-sheet-inline" id="teamForm" autocomplete="off">
         <h2 class="ad-sub">Añadir a alguien</h2>
         <p class="ad-meta" style="margin-bottom:0.8rem">Se crea su cuenta y entra al instante. Apunta la contraseña y pásasela: solo se muestra una vez, y cada persona puede cambiarla abajo.</p>
-        <div class="ad-bar" style="justify-content:flex-start">
-          <input type="email" id="teamEmail" placeholder="persona@roce.es" required style="flex:1 1 14rem">
-          <input type="text" id="teamPass" placeholder="Contraseña (mín. 10)" required minlength="10" style="flex:1 1 12rem" spellcheck="false">
-          <select id="teamRole" aria-label="Nivel"><option value="staff">Equipo</option><option value="admin">Administrador</option></select>
-          <span class="ad-perms" id="teamNewTabs" aria-label="Pestañas que podrá ver"><label><input type="checkbox" data-tab="events"> Eventos</label><label><input type="checkbox" data-tab="bookings"> Reservas</label><label><input type="checkbox" data-tab="checkin" checked> Asistencia</label><label><input type="checkbox" data-tab="lists"> Listas</label><label><input type="checkbox" data-tab="tables"> RoceCover</label></span>
-          <button class="ad-btn is-ghost" type="button" id="teamGen">Generar</button>
-          <button class="ad-btn" type="submit" id="teamAdd">Crear y dar acceso</button>
+        <div class="ad-grid">
+          <label class="ad-field"><span>Nombre</span><input type="text" id="teamFirst" maxlength="60" autocomplete="off" placeholder="p. ej. Laura" required></label>
+          <label class="ad-field"><span>Apellidos</span><input type="text" id="teamLast" maxlength="80" autocomplete="off" placeholder="p. ej. García Pérez"></label>
+          <label class="ad-field"><span>Email</span><input type="email" id="teamEmail" placeholder="persona@roce.es" required></label>
+          <label class="ad-field"><span>Nivel</span><select id="teamRole" aria-label="Nivel"><option value="staff">Equipo</option><option value="admin">Administrador</option></select></label>
+          <label class="ad-field"><span>Contraseña (mín. 10)</span><input type="text" id="teamPass" placeholder="Contraseña" required minlength="10" spellcheck="false"></label>
+          <div class="ad-field"><span>&nbsp;</span><button class="ad-btn is-ghost" type="button" id="teamGen">Generar contraseña</button></div>
+          <div class="ad-field full"><span>Pestañas que podrá ver</span><div class="ad-perms" id="teamNewTabs" aria-label="Pestañas que podrá ver"><label><input type="checkbox" data-tab="events"> Eventos</label><label><input type="checkbox" data-tab="bookings"> Reservas</label><label><input type="checkbox" data-tab="checkin" checked> Asistencia</label><label><input type="checkbox" data-tab="lists"> Listas</label><label><input type="checkbox" data-tab="tables"> RoceCover</label></div></div>
         </div>
+        <button class="ad-btn" type="submit" id="teamAdd">Crear y dar acceso</button>
       </form>
       </div>
       <form class="ad-sheet-inline" id="pwForm" autocomplete="off">
@@ -1330,17 +1333,18 @@
       .then(function () { flash(tabs.length ? 'Pestañas de ' + email + ': ' + tabs.map(function (t) { return TAB_LABEL.filter(function (x) { return x[0] === t; })[0][1]; }).join(', ') + '.' : email + ' ya no ve ninguna pestaña (solo su cuenta).', 'ok'); })
       .catch(function (x) { box.checked = !box.checked; flash('No se ha podido guardar: ' + x.message, 'error'); });
   });
-  $('teamRole').addEventListener('change', function () { $('teamNewTabs').hidden = $('teamRole').value === 'admin'; });
+  $('teamRole').addEventListener('change', function () { $('teamNewTabs').closest('.ad-field').hidden = $('teamRole').value === 'admin'; });
   function loadTeam() {
     return api('rpc/admin_team', { method: 'POST', body: {} }).then(function (rows) {
       var me = String(session.email).toLowerCase();
       $('teamList').innerHTML = (rows || []).map(function (p) {
         var mine = p.email.toLowerCase() === me;
-        return '<li class="ad-person"><div><b>' + esc(p.email) + '</b>' + (mine ? ' <span class="ad-tag">Tú</span>' : '') + ' <span class="ad-tag' + (p.role === 'admin' ? ' is-green' : '') + '">' + (p.role === 'admin' ? 'Administrador' : 'Equipo') + '</span>' +
+        var full = ((p.first_name || '') + ' ' + (p.last_name || '')).trim();
+        return '<li class="ad-person"><div><b>' + esc(full || p.email) + '</b>' + (full ? ' <span class="ad-meta" style="display:inline">' + esc(p.email) + '</span>' : '') + (mine ? ' <span class="ad-tag">Tú</span>' : '') + ' <span class="ad-tag' + (p.role === 'admin' ? ' is-green' : '') + '">' + (p.role === 'admin' ? 'Administrador' : 'Equipo') + '</span>' +
           '<div class="ad-meta">' + (p.has_account
             ? (p.last_sign_in ? 'Último acceso: ' + esc(fmtDate(p.last_sign_in, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })) : 'Cuenta creada, aún no ha entrado')
             : '<span class="ad-tag is-red">Sin cuenta</span> Créala con “Nueva contraseña”') + '</div>' + permsHtml(p) + '</div>' +
-          '<div class="ad-actions" style="grid-column:auto">' + (mine ? '' : '<button class="ad-btn is-small is-ghost" data-act="pw" data-email="' + esc(p.email) + '" type="button">' + (p.has_account ? 'Nueva contraseña' : 'Crear cuenta') + '</button> <button class="ad-btn is-small is-ghost" data-act="role" data-role="' + (p.role === 'admin' ? 'staff' : 'admin') + '" data-email="' + esc(p.email) + '" type="button">' + (p.role === 'admin' ? 'Pasar a Equipo' : 'Hacer administrador') + '</button> <button class="ad-btn is-small is-danger" data-act="rm" data-email="' + esc(p.email) + '" type="button">Quitar</button>') + '</div></li>';
+          '<div class="ad-actions" style="grid-column:auto">' + (mine ? '' : ' <button class="ad-btn is-small is-ghost" data-act="name" data-email="' + esc(p.email) + '" data-name="' + esc(full) + '" type="button">' + (full ? 'Cambiar nombre' : 'Poner nombre') + '</button> <button class="ad-btn is-small is-ghost" data-act="pw" data-email="' + esc(p.email) + '" type="button">' + (p.has_account ? 'Nueva contraseña' : 'Crear cuenta') + '</button> <button class="ad-btn is-small is-ghost" data-act="role" data-role="' + (p.role === 'admin' ? 'staff' : 'admin') + '" data-email="' + esc(p.email) + '" type="button">' + (p.role === 'admin' ? 'Pasar a Equipo' : 'Hacer administrador') + '</button> <button class="ad-btn is-small is-danger" data-act="rm" data-email="' + esc(p.email) + '" type="button">Quitar</button>') + '</div></li>';
       }).join('');
     }).catch(function (e) { flash('No se ha podido cargar el equipo: ' + e.message, 'error'); });
   }
@@ -1352,12 +1356,14 @@
   $('teamForm').addEventListener('submit', function (e) {
     e.preventDefault();
     var email = $('teamEmail').value.trim().toLowerCase(), pass = $('teamPass').value;
+    var first = $('teamFirst').value.trim(), last = $('teamLast').value.trim();
     $('teamAdd').disabled = true;
     var newTabs = Array.prototype.map.call($('teamNewTabs').querySelectorAll('input:checked'), function (i) { return i.dataset.tab; });
     var asRole = $('teamRole').value;
     teamCall('create', email, pass, asRole).then(function (d) {
-      $('teamEmail').value = ''; $('teamPass').value = '';
-      return (asRole === 'admin' || d.existed ? Promise.resolve() : api('admins?email=eq.' + encodeURIComponent(email), { method: 'PATCH', body: { tabs: newTabs } })).then(function () { return d; });
+      $('teamEmail').value = ''; $('teamPass').value = ''; $('teamFirst').value = ''; $('teamLast').value = '';
+      var extra = {}; if (asRole !== 'admin' && !d.existed) extra.tabs = newTabs; if (first) { extra.first_name = first; extra.last_name = last; }
+      return (Object.keys(extra).length ? api('admins?email=eq.' + encodeURIComponent(email), { method: 'PATCH', body: extra }).catch(function () { flash('Cuenta creada, pero el nombre no se ha guardado: ejecuta primero equipo_nombres.sql en Supabase.', 'error'); }) : Promise.resolve()).then(function () { return d; });
     }).then(function (d) {
       if (d.existed) flash('Esa persona ya tenía cuenta: ahora tiene acceso al panel con su contraseña de siempre.', 'ok'); else showCreds(email, pass, 'Cuenta creada para');
       return loadTeam();
@@ -1367,7 +1373,13 @@
   $('teamList').addEventListener('click', function (ev) {
     var btn = ev.target.closest('button[data-email]'); if (!btn) return;
     var email = btn.dataset.email;
-    if (btn.dataset.act === 'role') {
+    if (btn.dataset.act === 'name') {
+      var nm = prompt('Nombre y apellidos de ' + email + ':', btn.dataset.name || ''); if (nm == null) return;
+      nm = nm.trim().replace(/\s+/g, ' '); var sp = nm.indexOf(' ');
+      api('admins?email=eq.' + encodeURIComponent(email), { method: 'PATCH', body: { first_name: sp < 0 ? nm : nm.slice(0, sp), last_name: sp < 0 ? '' : nm.slice(sp + 1) } })
+        .then(function () { flash('Nombre guardado.', 'ok'); return loadTeam(); })
+        .catch(function () { flash('No se ha podido guardar el nombre: ejecuta primero equipo_nombres.sql en Supabase.', 'error'); });
+    } else if (btn.dataset.act === 'role') {
       var toAdmin = btn.dataset.role === 'admin';
       if (!confirm(toAdmin ? '¿Hacer administrador a ' + email + '? Podrá crear y quitar cuentas, y cambiar contraseñas del equipo.' : '¿Pasar a ' + email + ' a Equipo? Perderá la gestión del equipo.')) return;
       teamCall('set_role', email, '', btn.dataset.role).then(function () { flash('Nivel actualizado para ' + email + '.', 'ok'); return loadTeam(); })
@@ -1399,6 +1411,6 @@
   window.ROCE_ADMIN = { api: api, flash: flash, esc: esc, $: $, madridToISO: madridToISO, toInputValue: toInputValue, fmtDate: fmtDate, money: money, cfg: cfg, TZ: TZ, session: function () { return session; } };
 })();
 </script>
-<script src="/admin/mesas.js?v=15"></script>
+<script src="/admin/mesas.js?v=16"></script>
 </body>
 </html>

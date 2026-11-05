@@ -71,8 +71,9 @@
       api('dining_zones?select=*&order=sort,id'),
       api('dining_tables?select=*&order=zone_id,sort,name'),
       api('dining_services?select=*&order=start_min'),
-      api('dining_prescribers?select=*&order=name').catch(function () { return []; })
-    ]).then(function (r) { S.zones = r[0] || []; S.tables = r[1] || []; S.services = r[2] || []; S.prescribers = r[3] || []; S.loadedCfg = true; });
+      api('dining_prescribers?select=*&order=name').catch(function () { return []; }),
+      api('rpc/dining_team_people', { method: 'POST', body: {} }).catch(function () { return []; })
+    ]).then(function (r) { S.zones = r[0] || []; S.tables = r[1] || []; S.services = r[2] || []; S.prescribers = r[3] || []; S.team = r[4] || []; S.loadedCfg = true; });
   }
   function loadDay() {
     var from = A.madridToISO(S.date + 'T05:00'), to = A.madridToISO(addDays(S.date, 1) + 'T05:00');
@@ -86,6 +87,38 @@
   // Clave del cliente (la misma que usa el CRM): su email o, si no tiene, su teléfono.
   function ckey(b) { var e = String(b.email || '').trim().toLowerCase(); return e || String(b.phone || '').replace(/\D/g, ''); }
   function noteOf(b) { return S.notes[ckey(b)] || null; }
+  function personName(p) { return ((p.first_name || '') + ' ' + (p.last_name || '')).trim() || p.email; }
+  function slugCode(nm) { return nm.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 26); }
+  // Gente del equipo que todavía no es prescriptor.
+  function teamFree() { return (S.team || []).filter(function (m) { return !S.prescribers.some(function (x) { return (x.email || '').toLowerCase() === String(m.email).toLowerCase(); }); }); }
+  // Opciones del desplegable de prescriptor: los de la lista, la gente del equipo y crear uno nuevo a mano.
+  function presOptions(sel) {
+    var h = '<option value="">—</option>' + S.prescribers.filter(function (x) { return x.active || x.code === sel; }).map(function (x) { return '<option value="' + esc(x.code) + '"' + (x.code === sel ? ' selected' : '') + '>' + esc(x.name) + '</option>'; }).join('');
+    var tf = teamFree();
+    if (tf.length) h += '<optgroup label="Equipo ROCE">' + tf.map(function (m) { return '<option value="team:' + esc(m.email) + '">' + esc(personName(m)) + '</option>'; }).join('') + '</optgroup>';
+    return h + '<option value="__new">＋ Crear prescriptor a mano…</option>';
+  }
+  // Crea el prescriptor (del equipo o a mano) y devuelve su código.
+  function addPrescriber(name, email) {
+    var base = slugCode(name); if (base.length < 2) return Promise.reject(new Error('bad_name'));
+    var code = base, n = 2; while (S.prescribers.some(function (x) { return x.code === code; })) code = base + '-' + (n++);
+    var body = { code: code, name: name }; if (email) body.email = email.toLowerCase();
+    return api('dining_prescribers', { method: 'POST', body: body, prefer: 'return=minimal' }).then(function () { return loadConfig(true); }).then(function () { return code; });
+  }
+  document.addEventListener('change', function (e) {
+    var el = e.target; if (!el || (el.id !== 'nwPres' && el.id !== 'edPres')) return;
+    var v = el.value; if (v !== '__new' && v.indexOf('team:') !== 0) return;
+    var job;
+    if (v === '__new') {
+      var nm = prompt('Nombre del prescriptor (persona, hotel, agencia…):'); nm = nm && nm.trim();
+      if (!nm) { el.value = ''; return; }
+      job = addPrescriber(nm, '');
+    } else {
+      var email = v.slice(5), m = (S.team || []).filter(function (x) { return String(x.email).toLowerCase() === email.toLowerCase(); })[0];
+      job = addPrescriber(m ? personName(m) : email, email);
+    }
+    job.then(function (code) { el.innerHTML = presOptions(code); el.value = code; flash('Prescriptor añadido.', 'ok'); }).catch(function () { el.value = ''; flash('No se ha podido crear el prescriptor (¿ya existe?).', 'error'); });
+  });
   function presName(code) { var p = S.prescribers.filter(function (x) { return x.code === code; })[0]; return p ? p.name : code; }
   var AL = { gluten: 'Gluten / celiaquía', lactosa: 'Lactosa', 'frutos-secos': 'Frutos secos', marisco: 'Marisco', pescado: 'Pescado', huevo: 'Huevo', soja: 'Soja', sesamo: 'Sésamo', vegetariano: 'Vegetariano', vegano: 'Vegano', otras: 'Otras alergias' };
   var LB = { transferencia: 'Pago por transferencia' };   // etiquetas que no son alergias
@@ -514,7 +547,7 @@
       '<label class="ad-field"><span>Tipo de reserva</span><select id="nwType"><option value="free">Gratuita (queda confirmada al momento)</option><option value="card">Con tarjeta de garantía (no se cobra; se le envía un email)</option><option value="deposit">Con cobro / fianza (se le envía un email para pagar)</option></select></label>' +
       '<label class="ad-field" id="nwAmtRow"><span>Importe (€)</span><input type="number" id="nwAmt" min="1" step="0.5" value="20"></label>' +
       '<label class="ad-field"><span>Duración de la mesa (min)</span><input type="number" id="nwDur" min="15" max="600" step="5" placeholder="la del turno"></label>' +
-      '<label class="ad-field"><span>Prescriptor</span><select id="nwPres"><option value="">—</option>' + S.prescribers.filter(function (x) { return x.active; }).map(function (x) { return '<option value="' + esc(x.code) + '">' + esc(x.name) + '</option>'; }).join('') + '</select></label></div>' +
+      '<label class="ad-field"><span>Prescriptor</span><select id="nwPres">' + presOptions('') + '</select></label></div>' +
       '<p class="ad-hint" id="nwTypeNote" style="margin:-0.4rem 0 0.8rem"></p>' +
       '<label class="mt-check"><input type="checkbox" id="nwSeated"> Sentar ahora (cliente que ya está aquí)</label>' +
       '<div class="mt-foot"><button type="button" class="ad-btn is-ghost" data-close>Cancelar</button><button type="submit" class="ad-btn" id="nwGo">Crear reserva</button></div></form>';
@@ -600,7 +633,7 @@
       '<label class="ad-field"><span>Teléfono</span><input type="tel" id="edPhone" value="' + esc(b.phone) + '"></label>' +
       '<label class="ad-field"><span>Email</span><input type="email" id="edEmail" value="' + esc(b.email) + '"></label>' +
       '<label class="ad-field"><span>Duración de la mesa (min)</span><input type="number" id="edDur" min="15" max="600" step="5" value="' + Math.round(dur / 60000) + '"></label>' +
-      '<label class="ad-field"><span>Prescriptor</span><select id="edPres"><option value="">—</option>' + S.prescribers.filter(function (x) { return x.active || x.code === b.prescriber; }).map(function (x) { return '<option value="' + esc(x.code) + '"' + (x.code === b.prescriber ? ' selected' : '') + '>' + esc(x.name) + '</option>'; }).join('') + '</select></label>' +
+      '<label class="ad-field"><span>Prescriptor</span><select id="edPres">' + presOptions(b.prescriber) + '</select></label>' +
       '<label class="ad-field"><span>Gasto de la visita (€)</span><input type="number" id="edSpend" min="0" step="0.01" value="' + (b.spend_cents != null ? b.spend_cents / 100 : '') + '" placeholder="se rellenará con el TPV"></label>' +
       '<label class="ad-field full"><span>Notas de la reserva</span><textarea id="edNotes" maxlength="500">' + esc(b.notes) + '</textarea></label></div>' +
       '<div class="ad-field"><span>Alergias, intolerancias y etiquetas de esta reserva</span>' + chips('edAl', b.allergy_tags) + '<label class="mt-check"><input type="checkbox" id="edAlKeep"> Guardarlas también en la ficha del cliente (para próximas reservas)</label></div>' +
@@ -900,9 +933,14 @@
     var pf = document.getElementById('prForm');
     if (pf) pf.addEventListener('submit', function (e) {
       e.preventDefault();
-      var nm = document.getElementById('prName').value.trim(), code = nm.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 30);
-      if (code.length < 2) return flash('Ese nombre no es válido.', 'error');
-      api('dining_prescribers', { method: 'POST', body: { code: code, name: nm }, prefer: 'return=minimal' }).then(function () { return loadConfig(true); }).then(function () { flash('Prescriptor añadido.', 'ok'); render(); }).catch(function () { flash('No se ha podido añadir (¿ya existe?).', 'error'); });
+      addPrescriber(document.getElementById('prName').value.trim(), '').then(function () { flash('Prescriptor añadido.', 'ok'); render(); }).catch(function () { flash('No se ha podido añadir (¿nombre no válido o ya existe?).', 'error'); });
+    });
+    var ptf = document.getElementById('prTeamForm');
+    if (ptf) ptf.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var em = document.getElementById('prTeam').value; if (!em) return;
+      var m = (S.team || []).filter(function (x) { return String(x.email).toLowerCase() === em.toLowerCase(); })[0];
+      addPrescriber(m ? personName(m) : em, em).then(function () { flash('Prescriptor añadido.', 'ok'); render(); }).catch(function () { flash('No se ha podido añadir (¿ya existe?).', 'error'); });
     });
     var cf = document.getElementById('clForm');
     if (cf) cf.addEventListener('submit', function (e) {
@@ -915,10 +953,11 @@
     var base = location.origin + "/fuck-who-doesn't-like-this-place/";
     return '<p class="ad-meta" style="margin-bottom:0.6rem">Un prescriptor es quien trae o recomienda reservas (RR. PP., conserjes, agencias). Cada uno tiene su enlace: las reservas que entren por él quedan marcadas con su nombre.</p><ul class="ad-list">' +
       (S.prescribers.length ? S.prescribers.map(function (p) {
-        return '<li class="ad-card mt-cfg" data-pres-row="' + esc(p.code) + '"><div><div class="ad-name">' + esc(p.name) + (p.active ? '' : ' <span class="ad-tag is-red">inactivo</span>') + '</div><div class="ad-meta">Enlace: <input class="mt-linkin" readonly value="' + esc(base + '?pr=' + p.code) + '" onclick="this.select()"></div></div>' +
+        return '<li class="ad-card mt-cfg" data-pres-row="' + esc(p.code) + '"><div><div class="ad-name">' + esc(p.name) + (p.email ? ' <span class="ad-tag">Equipo</span>' : '') + (p.active ? '' : ' <span class="ad-tag is-red">inactivo</span>') + '</div><div class="ad-meta">Enlace: <input class="mt-linkin" readonly value="' + esc(base + '?pr=' + p.code) + '" onclick="this.select()"></div></div>' +
           '<div class="ad-actions"><button class="ad-btn is-small is-ghost" data-pres-toggle="' + esc(p.code) + '">' + (p.active ? 'Desactivar' : 'Activar') + '</button></div></li>';
       }).join('') : '<li class="ad-empty">Todavía no hay prescriptores.</li>') + '</ul>' +
-      '<form class="ad-sheet-inline" id="prForm"><div class="ad-grid"><label class="ad-field"><span>Nombre del prescriptor</span><input id="prName" maxlength="60" required placeholder="p. ej. Hotel Marqués"></label></div><button class="ad-btn" type="submit">Añadir prescriptor</button></form>';
+      '<form class="ad-sheet-inline" id="prTeamForm"><div class="ad-grid"><label class="ad-field"><span>Añadir a alguien del equipo</span><select id="prTeam"><option value="">' + (teamFree().length ? 'Elige una persona…' : (S.team && S.team.length ? 'Todo el equipo ya está en la lista' : 'Sin equipo (ejecuta equipo_nombres.sql)')) + '</option>' + teamFree().map(function (m) { return '<option value="' + esc(m.email) + '">' + esc(personName(m)) + '</option>'; }).join('') + '</select></label></div><button class="ad-btn" type="submit">Añadir del equipo</button></form>' +
+      '<form class="ad-sheet-inline" id="prForm"><div class="ad-grid"><label class="ad-field"><span>O crear a mano (quien no tiene cuenta)</span><input id="prName" maxlength="60" required placeholder="Nombre y apellidos, o hotel / agencia"></label></div><button class="ad-btn" type="submit">Crear prescriptor</button></form>';
   }
   function closureBody() {
     var v = function (id) { return document.getElementById(id).value; };

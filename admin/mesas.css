@@ -103,3 +103,7 @@
 .mt-ctx.is-round { border-radius: 24px; }
 .mt-ctx.is-col { background: rgba(10, 10, 10, 0.14); border: 1px solid rgba(10, 10, 10, 0.3); border-radius: 3px; }
 .mt-t { z-index: 1; }
+
+/* Elegir mesas / asignar: las opciones van una debajo de otra y el selector no ocupa todo el ancho. */
+.ad-field > .mt-pick { display: flex; margin-bottom: 0.4rem; }
+.mt-pick input[type="radio"], .mt-pick input[type="checkbox"] { width: auto; margin: 0; padding: 0; }
