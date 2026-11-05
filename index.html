@@ -149,7 +149,7 @@
     --sw: calc(100vw - 2 * var(--pad));
     /* Franja del evento bajo los dos cuadrados (--ev-n = 1 si hay evento; lo fija el script). Su alto se descuenta del resto para no hacer scroll. */
     --ev-n: 0;
-    --ev-h: clamp(2.6rem, calc(var(--avail) * 0.075), 3.6rem);
+    --ev-h: clamp(3.2rem, calc(var(--avail) * 0.09), 4.2rem);
     --ev-x: calc(var(--ev-n) * (var(--ev-h) + var(--gap)));
     --sh: min(calc(var(--sw) * 0.55), calc((var(--avail) - var(--ev-x)) * 0.17));
     flex: 1;
@@ -261,18 +261,17 @@
   }
 
   /* Franja del próximo evento (o el que está en marcha), más baja que los cuadrados: fondo blanco si es de día y negro si es de noche. Sin cartel. */
-  .home-square-event { flex-direction: row; align-items: center; justify-content: flex-start; gap: 0.7rem; height: var(--ev-h); padding: 0 calc(var(--ev-h) * 0.32); }
+  .home-square-event { flex-direction: row; align-items: center; justify-content: space-between; gap: 0.7rem; height: var(--ev-h); padding: 0 calc(min(var(--sw), var(--sh)) * 0.09); }
+  .home-square-event .he-text { flex: 1; min-width: 0; }
   .home-square-event[hidden] { display: none; }
   .home-square-event[data-env="day"] { background: var(--white); color: var(--black); border: 2px solid var(--black); }
   .home-square-event[data-env="night"] { background: var(--black); color: var(--white); border: 2px solid var(--black); }
   html[data-mode="night"] .home-square-event[data-env="night"] { border-color: var(--white); }
-  .home-square-event .he-title { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 700; font-size: clamp(0.8rem, min(4.2cqw, calc(var(--ev-h) * 0.34)), 1.3rem); line-height: 1; }
-  .home-square-event .he-kicker { flex-shrink: 0; font-family: var(--display); font-size: clamp(0.65rem, min(3.6cqw, calc(var(--ev-h) * 0.26)), 1rem); opacity: 0.7; white-space: nowrap; }
+  .home-square-event .he-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .home-square-event small { margin-top: 0.15rem; }
+  .home-square-event .he-title .mq, .home-square-event .he-title .mq span { display: inline-block; }
   .home-square-event .he-kicker.is-live::before { content: ""; display: inline-block; width: 0.55em; height: 0.55em; margin-right: 0.45em; border-radius: 50%; background: #ff1f1f; animation: liveDot 1.3s ease-in-out infinite; }
-  .home-square-event .home-square-arrow { font-size: 1.2rem; }
-  @container (max-width: 300px) { .home-square-event .he-kicker { display: none; } }
-  @container (max-width: 150px) { .home-square-event .home-square-arrow { display: none; } }
-  @media (prefers-reduced-motion: reduce) { .home-square-event .he-kicker.is-live::before { animation: none; } }
+    @media (prefers-reduced-motion: reduce) { .home-square-event .he-kicker.is-live::before { animation: none; } }
 
   .home-foot {
     flex-shrink: 0;
@@ -494,8 +493,7 @@
         </div>
       </a>
       <a class="home-square home-square-event" id="homeEvent" href="/eventos/" hidden>
-        <strong class="he-title"></strong>
-        <span class="he-kicker"></span>
+        <div class="he-text"><strong class="home-name he-title"></strong><small class="he-kicker"></small></div>
         <span class="home-square-arrow" aria-hidden="true">→</span>
       </a>
     </div>
@@ -588,7 +586,7 @@
       k.classList.toggle('is-live', live);
       k.textContent = live ? hm(b[0]) + ' – ' + hm(b[1]) :
         new Intl.DateTimeFormat(l === 'en' ? 'en-GB' : 'es-ES', { timeZone: TZ, weekday: 'short', day: 'numeric', month: 'short' }).format(b[0]).replace('.', '') + ' · ' + hm(b[0]);
-      cube.querySelector('.he-title').textContent = e.title[l] || e.title.es;
+      U.setMarquee(cube.querySelector('.he-title'), e.title[l] || e.title.es); // si no cabe, el texto gira en bucle
     }
     var rz; window.addEventListener('resize', function () { clearTimeout(rz); rz = setTimeout(renderLive, 120); });
     if (window.ROCE_EVENTS_READY) window.ROCE_EVENTS_READY.then(function (list) { EVENTS = list; renderLive(); });
