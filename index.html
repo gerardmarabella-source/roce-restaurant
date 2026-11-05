@@ -156,7 +156,7 @@
     min-height: 0;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-start; /* la frase pegada arriba del todo */
     gap: 1.25rem;
     padding: 0 var(--pad);
   }
@@ -176,6 +176,7 @@
     text-transform: uppercase;
   }
   .home-statement .line { display: block; }
+  .home-statement { margin-top: calc(0.5rem - 0.04em); }
   .home-statement .line { text-align: left; }
   .home-statement .l3 > span { display: block; }
   /* La última palabra es el logo de ROCE: casi el ancho de la palabra que sustituye, pegado a la derecha. */
@@ -266,9 +267,17 @@
   .home-square-event[data-env="day"] { background: var(--white); color: var(--black); border: 2px solid var(--black); }
   .home-square-event[data-env="night"] { background: var(--black); color: var(--white); border: 2px solid var(--black); }
   html[data-mode="night"] .home-square-event[data-env="night"] { border-color: var(--white); }
-  .home-square-event .he-title { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .home-square-event small { flex-shrink: 0; margin: 0; white-space: nowrap; }
-  .home-square-event .he-title .mq, .home-square-event .he-title .mq span { display: inline-block; }
+  /* Título y fecha en una sola línea; si no caben, giran juntos en bucle (la flecha se queda quieta). */
+  .home-square-event .he-text { flex: 1; min-width: 0; overflow: hidden; white-space: nowrap; }
+  .home-square-event .mq { display: inline-block; white-space: nowrap; }
+  .home-square-event .he-unit { display: inline-block; padding-right: 2.5rem; }
+  .home-square-event .he-unit:last-child { padding-right: 0; }
+  .home-square-event.mq-on .he-unit:last-child { padding-right: 2.5rem; }
+  .home-square-event .he-unit strong, .home-square-event .he-unit small { display: inline; margin: 0; }
+  .home-square-event .he-unit small { margin-left: 0.8rem; }
+  .home-square-event.mq-on .mq { animation: heLoop var(--mq-dur, 10s) linear infinite; }
+  @keyframes heLoop { from { transform: translateX(0); } to { transform: translateX(calc(-1 * var(--mq-cycle))); } }
+  @media (prefers-reduced-motion: reduce) { .home-square-event.mq-on .mq { animation: none; } }
   
   .home-foot {
     flex-shrink: 0;
@@ -320,7 +329,8 @@
       justify-content: space-between;
       gap: 2rem;
     }
-    .home-top { flex: 1; min-width: 0; width: auto; }
+    /* La frase sube bajo la franja del menú (el menú está a la derecha, no choca). */
+    .home-top { flex: 1; min-width: 0; width: auto; align-self: flex-start; margin-top: calc(-1 * var(--head)); }
     .home-statement {
       font-size: min(14rem, calc(var(--avail) / 4.5), calc((100vw - 2 * var(--pad) - var(--sw) - 2rem) / 4.4));
     }
@@ -490,8 +500,7 @@
         </div>
       </a>
       <a class="home-square home-square-event" id="homeEvent" href="/eventos/" hidden>
-        <strong class="home-name he-title"></strong>
-        <small class="he-kicker"></small>
+        <div class="he-text"><span class="mq"></span></div>
         <span class="home-square-arrow" aria-hidden="true">→</span>
       </a>
     </div>
@@ -570,6 +579,21 @@
       return U && EVENTS.filter(function (x) { return U.bounds(x)[1] > now; }).sort(function (a, b) { return U.bounds(a)[0] - U.bounds(b)[0]; })[0];
     }
     // Cubo del evento más cercano (o en marcha), de día o de noche: blanco o negro según su ambiente, sin cartel.
+    function heMarquee(cube, title, when) {
+      var box = cube.querySelector('.he-text'), inner = box.querySelector('.mq');
+      var unit = function () { var u = document.createElement('span'); u.className = 'he-unit'; var st = document.createElement('strong'); st.className = 'home-name'; st.textContent = title; var sm = document.createElement('small'); sm.textContent = when; u.appendChild(st); u.appendChild(sm); return u; };
+      function measure() {
+        cube.classList.remove('mq-on'); inner.style.removeProperty('--mq-cycle'); inner.textContent = ''; inner.appendChild(unit());
+        var one = inner.firstChild.offsetWidth;
+        if (one <= box.clientWidth + 2 || (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches)) return;
+        cube.classList.add('mq-on');            // con el hueco final, una vuelta exacta = un bloque
+        var first = inner.firstChild, cycle = first.offsetWidth;
+        inner.appendChild(unit());
+        cube.style.setProperty('--mq-cycle', cycle + 'px'); cube.style.setProperty('--mq-dur', Math.max(6, cycle / 38).toFixed(1) + 's');
+      }
+      measure();
+      if (document.fonts && document.fonts.ready) document.fonts.ready.then(measure);
+    }
     function renderLive() {
       var main = document.querySelector('.home-main'), cube = document.getElementById('homeEvent');
       var l = window.ROCE_I18N ? window.ROCE_I18N.getLang() : 'es';
@@ -583,8 +607,7 @@
       var when = live ? hm(b[0]) + ' – ' + hm(b[1]) :
         new Intl.DateTimeFormat(l === 'en' ? 'en-GB' : 'es-ES', { timeZone: TZ, weekday: 'short', day: 'numeric', month: 'short' }).format(b[0]).replace('.', '') + ' · ' + hm(b[0]);
       // Una sola línea: título en grande y fecha pequeña; si el título no cabe, gira en bucle.
-      cube.querySelector('.he-kicker').textContent = when;
-      U.setMarquee(cube.querySelector('.he-title'), e.title[l] || e.title.es);
+      heMarquee(cube, e.title[l] || e.title.es, when);
     }
     var rz; window.addEventListener('resize', function () { clearTimeout(rz); rz = setTimeout(renderLive, 120); });
     if (window.ROCE_EVENTS_READY) window.ROCE_EVENTS_READY.then(function (list) { EVENTS = list; renderLive(); });
