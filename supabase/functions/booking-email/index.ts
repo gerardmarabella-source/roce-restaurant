@@ -393,11 +393,11 @@ async function sweepLists(): Promise<Response> {
 <tr><td style="padding:0 24px 20px;color:#ddd;font:16px/1.5 Arial,sans-serif">${esc(r.name)}, ${host ? esc(host) + " te ha apuntado" : "te han apuntado"} a ${esc(ev.title_es)}. Esta es tu entrada personal.</td></tr>
 <tr><td style="padding:0 24px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0">${rowsHtml([
       [t.event, ev.title_es], [t.date, when], [t.place, "ROCE · Marqués del Túria 16, Valencia"], ...(floor ? [[t.floor, floor]] : []),
-      ["Lista", r.guest_lists.label], ...(r.dni ? [["Documento", maskDni(String(r.dni))]] : []),
+      ["Lista", r.guest_lists.label],
     ])}</table></td></tr>
-${ticketBlock({ ticket_token: r.ticket_token }, t, "Enseña este QR en la puerta junto con tu DNI o documento. Es personal: no lo compartas.")}
+${ticketBlock({ ticket_token: r.ticket_token }, t, "Enseña este QR en la puerta. Es personal: no lo compartas.")}
 <tr><td style="padding:20px 24px 8px;color:#e5453a;font:14px Arial,sans-serif">${ev.env === "night" ? esc(t.age) : ""}</td></tr>
-<tr><td style="padding:0 24px 32px;color:#777;font:11px/1.5 Arial,sans-serif">${esc(host || "Quien te ha apuntado")} nos ha facilitado tu nombre, email y documento para esta lista. ${esc(t.privacy)} Si no quieres estar en la lista, escríbenos a reservas@roce.es.</td></tr>`);
+<tr><td style="padding:0 24px 32px;color:#777;font:11px/1.5 Arial,sans-serif">${esc(host || "Quien te ha apuntado")} nos ha facilitado tu nombre y email para esta lista. ${esc(t.privacy)} Si no quieres estar en la lista, escríbenos a reservas@roce.es.</td></tr>`);
     const res = await fetch("https://api.brevo.com/v3/smtp/email", {
       method: "POST",
       headers: brevoHeaders,
