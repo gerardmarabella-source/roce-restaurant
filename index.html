@@ -152,7 +152,7 @@
     --live-n: 0;
     --live-h: clamp(2.6rem, calc(var(--avail) * 0.075), 3.6rem);
     --live-x: calc(var(--live-n) * (var(--live-h) + var(--gap)));
-    --sh: min(calc(var(--sw) * 0.62), calc((var(--avail) - var(--live-x)) * 0.215));
+    --sh: min(calc(var(--sw) * 0.55), calc((var(--avail) - var(--live-x)) * 0.19));
     flex: 1;
     min-height: 0;
     display: flex;
@@ -338,7 +338,7 @@
       max-width: none;
       flex: 1;
       min-width: 0;
-      font-size: min(10.5rem, calc(var(--avail) / 4.75), calc((100vw - 2 * var(--pad) - var(--sw) - 2rem) / 4.4));
+      font-size: min(14rem, calc(var(--avail) / 4.5), calc((100vw - 2 * var(--pad) - var(--sw) - 2rem) / 4.4));
     }
     /* Cuadrados más anchos: el nombre de cada espacio cabe entero en una línea. */
     .home-square strong.home-name { white-space: nowrap; font-size: clamp(0.8rem, min(5.3cqw, calc(var(--sh) * 0.16)), 2.4rem); }
@@ -493,7 +493,7 @@
           <span class="home-square-arrow" aria-hidden="true">→</span>
         </div>
       </a>
-      <a class="home-live home-live-day" id="liveDay" href="/eventos/?f=day">
+      <a class="home-live home-live-day" id="liveDay" href="/eventos/?f=day" hidden>
         <span class="home-live-title"></span>
         <span class="home-live-time"></span>
         <span class="home-live-arrow" aria-hidden="true">→</span>
@@ -508,7 +508,7 @@
           <span class="home-square-arrow" aria-hidden="true">→</span>
         </div>
       </a>
-      <a class="home-live home-live-night" id="liveNight" href="/eventos/?f=night">
+      <a class="home-live home-live-night" id="liveNight" href="/eventos/?f=night" hidden>
         <span class="home-live-title"></span>
         <span class="home-live-time"></span>
         <span class="home-live-arrow" aria-hidden="true">→</span>
@@ -581,33 +581,31 @@
       renderLive();
     }
 
-    // Franjas de eventos bajo cada cuadrado, siempre visibles, con el próximo evento de ese espacio
-    // (si hay uno en marcha, ese). Sin eventos, lleva a la agenda.
+    // Franja de evento bajo el cuadrado de cada espacio, solo si tiene un próximo evento (o uno en marcha).
+    // Sin eventos no hay franja y el espacio se aprovecha para la frase y los cuadrados.
     var U = window.ROCE_EVENT_UTIL, EVENTS = [];
     var TZ = 'Europe/Madrid';
     function hm(ms) { return new Intl.DateTimeFormat('es-ES', { timeZone: TZ, hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).format(ms); }
     function renderLive() {
-      var l = window.ROCE_I18N ? window.ROCE_I18N.getLang() : 'es';
+      var l = window.ROCE_I18N ? window.ROCE_I18N.getLang() : 'es', n = 0;
       [['day', 'liveDay'], ['night', 'liveNight']].forEach(function (c) {
         var el = document.getElementById(c[1]);
         var now = Date.now();
         var e = U && EVENTS.filter(function (x) { return x.env === c[0] && U.bounds(x)[1] > now; })
           .sort(function (a, b) { return U.bounds(a)[0] - U.bounds(b)[0]; })[0];
-        if (!e) {
-          U && U.setMarquee(el.querySelector('.home-live-title'), (window.ROCE_I18N && window.ROCE_I18N.t('home_events_none')) || 'Próximos eventos');
-          el.querySelector('.home-live-time').textContent = '';
-          return;
-        }
+        if (!e) { el.hidden = true; return; }
+        n++;
+        el.hidden = false;
         var b = U.bounds(e);
         U.setMarquee(el.querySelector('.home-live-title'), e.title[l] || e.title.es);
         el.querySelector('.home-live-time').textContent = U.isLive(e) ? hm(b[0]) + ' – ' + hm(b[1]) :
           new Intl.DateTimeFormat(l === 'en' ? 'en-GB' : 'es-ES', { timeZone: TZ, weekday: 'short', day: 'numeric', month: 'short' }).format(b[0]).replace('.', '') + ' · ' + hm(b[0]);
       });
+      document.querySelector('.home-main').style.setProperty('--live-n', n);
     }
     if (window.ROCE_EVENTS_READY) window.ROCE_EVENTS_READY.then(function (list) { EVENTS = list; renderLive(); });
     document.addEventListener('roce:lang', renderLive);
 
-    document.querySelector('.home-main').style.setProperty('--live-n', 2);
     renderLive();
     sync();
     setInterval(sync, 60000);
