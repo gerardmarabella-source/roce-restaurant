@@ -987,7 +987,7 @@
       api('guest_list_entries?id=eq.' + en.id, { method: 'DELETE' }).then(function () { l.guest_list_entries = l.guest_list_entries.filter(function (x) { return x.id !== en.id; }); renderLists(); }).catch(function (x) { flash(x.message, 'error'); });
     }
     else if (act === 'add') {
-      var inp = li.querySelector('.ls-add input'), parts = inp.value.split(',').map(function (x) { return x.trim(); }), name = parts[0] || '', gmail = (parts[1] || '').toLowerCase(),
+      var inp = li.querySelector('.ls-add input'), parts = inp.value.split(',').map(function (x) { return x.trim(); }), name = parts[0] || '', gmail = (parts[1] || '').toLowerCase();
       if (name.length < 2) { flash('Escribe el nombre.', 'error'); return; }
       if (gmail && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(gmail)) { flash('Ese email no es válido.', 'error'); return; }
       if ((l.guest_list_entries || []).length >= l.max_people) { flash('La lista ya está llena (' + l.max_people + '). Sube el máximo en Editar.', 'error'); return; }
