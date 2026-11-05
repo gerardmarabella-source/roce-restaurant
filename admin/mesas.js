@@ -1066,17 +1066,20 @@
             '<td><input data-f="combine_group" value="' + esc(t.combine_group) + '" placeholder="vacío = no se une"></td><td><input data-f="active" type="checkbox"' + (t.active ? ' checked' : '') + '></td><td><button class="ad-btn is-small is-danger" data-deltable="' + t.id + '">Borrar</button></td></tr>';
         }).join('') + '</tbody></table></div><button class="ad-btn is-small is-ghost" data-addtable="' + z.id + '" style="margin-top:0.5rem">+ Añadir mesa a ' + esc(z.name_es) + '</button>';
     }).join('');
-    var closures = '<p class="ad-meta" style="margin-bottom:0.7rem">Un cierre apaga las reservas de la <b>web</b> para esos días (o solo unas horas); desde aquí seguís pudiendo reservar a mano. Ejemplos: Fallas (todos los días, sin horas) o Nochebuena (solo por la tarde).</p><ul class="ad-list">' + (S.closures.length ? S.closures.map(function (c) {
+    var closures = '<p class="ad-meta" style="margin-bottom:0.7rem">Aquí cierras el restaurante entero o lo marcas <b>completo</b> en la web: el calendario de reservas lo refleja (día tachado = cerrado o completo; punto = algún turno completo). Desde este panel seguís pudiendo reservar a mano.</p><ul class="ad-list">' + (S.closures.length ? S.closures.map(function (c) {
       var hours = c.start_min == null && c.end_min == null ? 'todo el día' : mm(c.start_min || 0) + '–' + mm(c.end_min || 1440);
-      return '<li class="ad-card"><div><div class="ad-name">' + esc(c.date_from === c.date_to ? c.date_from : c.date_from + ' → ' + c.date_to) + ' · ' + esc(hours) + '</div><div class="ad-meta">' + esc(c.service_id ? (S.services.filter(function (s) { return s.id === c.service_id; })[0] || {}).name_es || c.service_id : 'Todos los turnos') + ' · ' + esc(c.zone_id ? zoneName(c.zone_id) : 'Todas las zonas') + (c.note ? ' · ' + esc(c.note) : '') + '</div>' + (c.message_es ? '<div class="ad-meta">Aviso en la web: “' + esc(c.message_es) + '”</div>' : '') + '</div><div class="ad-actions"><button class="ad-btn is-small is-danger" data-delclosure="' + c.id + '">Quitar</button></div></li>';
+      return '<li class="ad-card"><div><div class="ad-name">' + esc(c.date_from === c.date_to ? c.date_from : c.date_from + ' → ' + c.date_to) + ' · ' + esc(hours) + (c.kind === 'full' ? ' <span class="ad-tag">Completo</span>' : ' <span class="ad-tag is-red">Cerrado</span>') + '</div><div class="ad-meta">' + esc(c.service_id ? (S.services.filter(function (s) { return s.id === c.service_id; })[0] || {}).name_es || c.service_id : 'Todos los turnos') + ' · ' + esc(c.zone_id ? zoneName(c.zone_id) : 'Todas las zonas') + (c.note ? ' · ' + esc(c.note) : '') + '</div>' + (c.message_es ? '<div class="ad-meta">Aviso en la web: “' + esc(c.message_es) + '”</div>' : '') + '</div><div class="ad-actions"><button class="ad-btn is-small is-danger" data-delclosure="' + c.id + '">Quitar</button></div></li>';
     }).join('') : '<li class="ad-empty">Sin cierres programados.</li>') + '</ul>' +
-      '<form class="ad-sheet-inline" id="clForm"><h3 class="mt-h3">Nuevo cierre de la web</h3><div class="ad-grid">' +
+      '<form class="ad-sheet-inline" id="clForm"><h3 class="mt-h3">Cerrar el restaurante o marcarlo completo</h3><div class="ad-grid">' +
+      '<label class="ad-field full"><span>Qué quieres hacer</span><select id="clKind"><option value="closed">Cerrar el restaurante entero (no abrimos)</option><option value="full">Marcar como completo (no se admiten más reservas web)</option></select></label>' +
       '<label class="ad-field"><span>Desde el día</span><input type="date" id="clFrom" required></label><label class="ad-field"><span>Hasta el día (incluido)</span><input type="date" id="clTo" required></label>' +
-      '<label class="ad-field"><span>Desde las (opcional)</span><input type="time" id="clT0"></label><label class="ad-field"><span>Hasta las (opcional)</span><input type="time" id="clT1"></label>' +
+      '<label class="ad-field full"><span>Aviso para el público (opcional)</span><input id="clMsg" maxlength="200" placeholder="p. ej. Por Fallas las reservas son solo por WhatsApp: 614 07 31 63"></label>' +
+      '<label class="ad-field full"><span>Motivo interno (opcional)</span><input id="clNote" maxlength="120" placeholder="p. ej. Fallas"></label></div>' +
+      '<details class="mt-more"><summary>Solo un turno, una planta o unas horas (opcional)</summary><div class="ad-grid">' +
       '<label class="ad-field"><span>Turno</span><select id="clSvc"><option value="">Todos</option>' + S.services.map(function (s) { return '<option value="' + s.id + '">' + esc(s.name_es) + '</option>'; }).join('') + '</select></label>' +
       '<label class="ad-field"><span>Zona</span><select id="clZone"><option value="">Todas</option>' + S.zones.map(function (z) { return '<option value="' + z.id + '">' + esc(z.name_es) + '</option>'; }).join('') + '</select></label>' +
-      '<label class="ad-field full"><span>Aviso para el público (opcional)</span><input id="clMsg" maxlength="200" placeholder="p. ej. Por Fallas las reservas son solo por WhatsApp: 614 07 31 63"></label>' +
-      '<label class="ad-field full"><span>Motivo interno (opcional)</span><input id="clNote" maxlength="120" placeholder="p. ej. Fallas"></label></div><button class="ad-btn" type="submit">Cerrar la web esos días</button></form>';
+      '<label class="ad-field"><span>Desde las</span><input type="time" id="clT0"></label><label class="ad-field"><span>Hasta las</span><input type="time" id="clT1"></label></div></details>' +
+      '<button class="ad-btn" type="submit">Aplicar en la web</button></form>';
     body.innerHTML = '<p class="ad-meta" style="margin-bottom:1rem">Cambia lo que necesites y pulsa <b>Guardar cambios</b> (abajo) cuando termines. Afectan solo a reservas nuevas.</p>' +
       '<h2 class="ad-sub">Zonas y fianzas</h2><ul class="ad-list">' + zones + '</ul>' +
       '<h2 class="ad-sub" style="margin-top:1.75rem">Turnos y horarios</h2><ul class="ad-list">' + services + '</ul>' +
@@ -1124,7 +1127,7 @@
     var m0 = t0 ? toMin(t0) : null, m1 = t1 ? toMin(t1, m0 || 0) : null;
     if (m0 != null && m1 == null) m1 = 2880;
     if (m1 != null && m0 == null) m0 = 0;
-    return { date_from: v('clFrom'), date_to: v('clTo'), service_id: v('clSvc') || null, zone_id: v('clZone') || null, start_min: m0, end_min: m1, message_es: v('clMsg').trim(), note: v('clNote').trim() };
+    return Object.assign({ date_from: v('clFrom'), date_to: v('clTo'), service_id: v('clSvc') || null, zone_id: v('clZone') || null, start_min: m0, end_min: m1, message_es: v('clMsg').trim(), note: v('clNote').trim() }, v('clKind') === 'full' ? { kind: 'full' } : {});
   }
   function saved() { flash('Guardado.', 'ok'); }
   // Configuración: los cambios se acumulan y se guardan todos juntos con un botón.
