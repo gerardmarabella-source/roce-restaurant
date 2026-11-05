@@ -262,12 +262,12 @@
 
   /* Franja del próximo evento (o el que está en marcha), más baja que los cuadrados: fondo blanco si es de día y negro si es de noche. Sin cartel. */
   .home-square-event { flex-direction: row; align-items: center; justify-content: space-between; gap: 0.7rem; height: var(--ev-h); padding: 0 calc(min(var(--sw), var(--sh)) * 0.09); }
-  .home-square-event .he-text { flex: 1; min-width: 0; }
   .home-square-event[hidden] { display: none; }
   .home-square-event[data-env="day"] { background: var(--white); color: var(--black); border: 2px solid var(--black); }
   .home-square-event[data-env="night"] { background: var(--black); color: var(--white); border: 2px solid var(--black); }
   html[data-mode="night"] .home-square-event[data-env="night"] { border-color: var(--white); }
-  .home-square-event .he-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .home-square-event .he-title { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .home-square-event small { flex-shrink: 0; margin: 0; white-space: nowrap; }
   .home-square-event .he-title .mq, .home-square-event .he-title .mq span { display: inline-block; }
   
   .home-foot {
@@ -490,7 +490,8 @@
         </div>
       </a>
       <a class="home-square home-square-event" id="homeEvent" href="/eventos/" hidden>
-        <div class="he-text"><strong class="home-name he-title"></strong></div>
+        <strong class="home-name he-title"></strong>
+        <small class="he-kicker"></small>
         <span class="home-square-arrow" aria-hidden="true">→</span>
       </a>
     </div>
@@ -581,8 +582,9 @@
       cube.setAttribute('data-env', e.env === 'night' ? 'night' : 'day');
       var when = live ? hm(b[0]) + ' – ' + hm(b[1]) :
         new Intl.DateTimeFormat(l === 'en' ? 'en-GB' : 'es-ES', { timeZone: TZ, weekday: 'short', day: 'numeric', month: 'short' }).format(b[0]).replace('.', '') + ' · ' + hm(b[0]);
-      // Una sola línea: título y fecha; si no cabe, el texto gira en bucle.
-      U.setMarquee(cube.querySelector('.he-title'), (e.title[l] || e.title.es) + '  ·  ' + when);
+      // Una sola línea: título en grande y fecha pequeña; si el título no cabe, gira en bucle.
+      cube.querySelector('.he-kicker').textContent = when;
+      U.setMarquee(cube.querySelector('.he-title'), e.title[l] || e.title.es);
     }
     var rz; window.addEventListener('resize', function () { clearTimeout(rz); rz = setTimeout(renderLive, 120); });
     if (window.ROCE_EVENTS_READY) window.ROCE_EVENTS_READY.then(function (list) { EVENTS = list; renderLive(); });
