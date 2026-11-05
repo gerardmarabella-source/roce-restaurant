@@ -35,7 +35,11 @@
       e_no_table: 'Esa mesa se acaba de ocupar. Elige otra hora.', e_too_late: 'Esa hora ya no admite reservas. Elige otra.',
       e_closed: 'Ese día no abrimos para reservas.', e_too_many: 'Ya tienes varias reservas activas con este email.',
       e_network: 'No hemos podido completar la reserva. Inténtalo de nuevo.', e_pay: 'No hemos podido abrir el pago. Tu mesa queda retenida unos minutos: vuelve a pulsar el botón.',
-      night_tag: 'Solo mayores de 18 años'
+      night_tag: 'Solo mayores de 18 años',
+      card_h: 'Garantía con tarjeta', card_free: 'No se cobra nada ahora',
+      card_note: 'Para confirmar la reserva te pediremos los datos de una tarjeta como garantía. No se cobra nada ahora. Si no te presentas o anulas con menos de {h} h de antelación, cobraremos {m}.',
+      card_consent: 'Autorizo a ROCE a cobrar {m} a mi tarjeta si no me presento o anulo con menos de {h} h de antelación',
+      go_card: 'Continuar y dar la tarjeta', e_card: 'Debes autorizar la garantía con tarjeta.', day_notice: 'Aviso'
     },
     en: {
       party: 'Guests', date: 'Date', time: 'Time', person: 'guest', people: 'guests',
@@ -58,12 +62,16 @@
       e_no_table: 'That table was just taken. Please choose another time.', e_too_late: 'That time no longer takes bookings. Choose another.',
       e_closed: "We're not taking bookings that day.", e_too_many: 'You already have several active bookings with this email.',
       e_network: "We couldn't complete the booking. Please try again.", e_pay: "We couldn't open the payment. Your table is held for a few minutes: press the button again.",
-      night_tag: 'Over 18s only'
+      night_tag: 'Over 18s only',
+      card_h: 'Card guarantee', card_free: 'Nothing is charged now',
+      card_note: "To confirm the booking we will ask for your card details as a guarantee. Nothing is charged now. If you don't show up or cancel less than {h} h in advance, we will charge {m}.",
+      card_consent: "I authorise ROCE to charge {m} to my card if I don't show up or cancel less than {h} h in advance",
+      go_card: 'Continue and enter card', e_card: 'You must authorise the card guarantee.', day_notice: 'Notice'
     }
   };
   var MAX_PARTY = 8, DAYS_AHEAD = 60;
 
-  var st = { pending: '', party: 2, date: '', month: null, ambience: 'all', slots: null, loading: false, loadErr: false, chosen: null, busy: false, error: '' };
+  var st = { notices: [], pending: '', party: 2, date: '', month: null, ambience: 'all', slots: null, loading: false, loadErr: false, chosen: null, busy: false, error: '' };
 
   function lang() { return window.ROCE_I18N && window.ROCE_I18N.getLang ? window.ROCE_I18N.getLang() : 'es'; }
   function t(k, v) {
@@ -103,6 +111,7 @@
     st.chosen = null; st.error = ''; st.pending = '';
     if (!st.date) { st.slots = null; render(); return; }
     var my = ++seq; st.loading = true; st.loadErr = false; render();
+    rpc('dining_day_notice', { p_date: st.date }).then(function (n) { if (my === seq) { st.notices = n || []; render(); } }).catch(function () { st.notices = []; });
     rpc('dining_slots', { p_date: st.date, p_party: st.party, p_ambience: st.ambience === 'all' ? null : st.ambience })
       .then(function (rows) { if (my !== seq) return; st.slots = rows || []; st.loading = false; render(); })
       .catch(function () { if (my !== seq) return; st.slots = []; st.loading = false; st.loadErr = true; render(); });
@@ -127,6 +136,9 @@
     return h + '</div></div>';
   }
 
+  function noticeHtml() {
+    return (st.notices || []).map(function (n) { return '<p class="mz-notice">' + esc(lang() === 'en' ? n.o_en : n.o_es) + '</p>'; }).join('');
+  }
   function slotsHtml() {
     if (!st.date) return '<p class="mz-hint">' + esc(t('pick_date')) + '</p>';
     if (st.loading) return '<p class="mz-hint">' + esc(t('loading')) + '</p>';
@@ -136,21 +148,21 @@
     st.slots.forEach(function (s) { if (!groups[s.o_ambience]) { groups[s.o_ambience] = []; order.push(s.o_ambience); } groups[s.o_ambience].push(s); });
     var h = '';
     order.forEach(function (a) {
-      var rows = groups[a], dep = rows[0].o_deposit_cents, hrs = rows[0].o_free_hours;
+      var rows = groups[a], dep = rows[0].o_deposit_cents, hrs = rows[0].o_free_hours, mode = rows[0].o_payment_mode;
       h += '<div class="mz-group"><div class="mz-group-h"><span class="mz-group-name">' + esc(t(a)) + '</span>' +
         (a === 'night' ? '<span class="mz-tag">+18</span>' : '') +
-        '<span class="mz-group-note">' + (dep > 0 ? esc(t('deposit_h', { m: money(dep) })) : esc(t('free_h'))) + '</span></div><div class="mz-slots">';
+        '<span class="mz-group-note">' + (dep > 0 && mode === 'card' ? esc(t('card_free')) : dep > 0 ? esc(t('deposit_h', { m: money(dep) })) : esc(t('free_h'))) + '</span></div><div class="mz-slots">';
       rows.forEach(function (s) {
         h += '<button type="button" class="mz-slot' + (st.chosen && st.chosen.o_starts_at === s.o_starts_at ? ' is-on' : '') + '" data-start="' + esc(s.o_starts_at) + '">' + esc(s.o_time) + '</button>';
       });
-      h += '</div>' + (dep > 0 ? '<p class="mz-note">' + esc(t('deposit_free_until', { h: hrs })) + '</p>' : '') + '</div>';
+      h += '</div>' + (dep > 0 && mode === 'card' ? '<p class="mz-note">' + esc(t('card_note', { m: money(dep), h: hrs })) + '</p>' : dep > 0 ? '<p class="mz-note">' + esc(t('deposit_free_until', { h: hrs })) + '</p>' : '') + '</div>';
     });
     return h;
   }
 
   function formHtml() {
     var c = st.chosen; if (!c) return '';
-    var dep = c.o_deposit_cents, hrs = c.o_free_hours;
+    var dep = c.o_deposit_cents, hrs = c.o_free_hours, card = c.o_payment_mode === 'card' && dep > 0;
     var sum = t('summary', { date: dateLabel(st.date), time: c.o_time, party: partyLabel(st.party) });
     var keep = (document.getElementById('mzForm') ? {} : {});
     return '<form class="mz-form" id="mzForm" novalidate><h3 class="mz-h">' + esc(t('form_h')) + '</h3>' +
@@ -159,11 +171,12 @@
       '<input class="mz-input" name="email" type="email" autocomplete="email" inputmode="email" placeholder="' + esc(t('email')) + '" value="' + esc(st.f_email || '') + '" required>' +
       '<input class="mz-input" name="phone" type="tel" autocomplete="tel" inputmode="tel" placeholder="' + esc(t('phone')) + '" value="' + esc(st.f_phone || '') + '" required>' +
       '<textarea class="mz-input" name="notes" rows="1" placeholder="' + esc(t('notes')) + '">' + esc(st.f_notes || '') + '</textarea>' +
-      (dep > 0 ? '<p class="mz-deposit">' + esc(t('deposit_note', { m: money(dep), h: hrs })) + '</p>' : '') +
+      (dep > 0 ? '<p class="mz-deposit">' + esc(card ? t('card_note', { m: money(dep), h: hrs }) : t('deposit_note', { m: money(dep), h: hrs })) + '</p>' : '') +
+      (card ? '<label class="mz-check"><input type="checkbox" name="cardok"' + (st.f_cardok ? ' checked' : '') + '><span>' + esc(t('card_consent', { m: money(dep), h: hrs })) + '</span></label>' : '') +
       '<label class="mz-check"><input type="checkbox" name="consent"' + (st.f_consent ? ' checked' : '') + '><span>' + t('consent') + '</span></label>' +
       '<label class="mz-check"><input type="checkbox" name="marketing"' + (st.f_marketing ? ' checked' : '') + '><span>' + esc(t('marketing')) + '</span></label>' +
       '<p class="mz-error" id="mzError"' + (st.error ? '' : ' hidden') + '>' + esc(st.error) + '</p>' +
-      '<button type="submit" class="mz-go" id="mzGo"' + (st.busy ? ' disabled' : '') + '>' + esc(st.busy ? t('working') : (dep > 0 ? t('go_pay', { m: money(dep) }) : t('go_free'))) + '</button></form>';
+      '<button type="submit" class="mz-go" id="mzGo"' + (st.busy ? ' disabled' : '') + '>' + esc(st.busy ? t('working') : (card ? t('go_card') : dep > 0 ? t('go_pay', { m: money(dep) }) : t('go_free'))) + '</button></form>';
   }
 
   function render() {
@@ -174,14 +187,14 @@
     var keepScroll = window.scrollY;
     root.innerHTML = p +
       '<div class="mz-step"><span class="mz-label">' + esc(t('date')) + '</span>' + calendarHtml() + '</div>' +
-      '<div class="mz-step"><span class="mz-label">' + esc(t('time')) + '</span>' + slotsHtml() + '</div>' + formHtml();
+      '<div class="mz-step"><span class="mz-label">' + esc(t('time')) + '</span>' + (st.date ? noticeHtml() : '') + slotsHtml() + '</div>' + formHtml();
     if (Math.abs(window.scrollY - keepScroll) > 1) window.scrollTo(0, keepScroll);
   }
 
   function keepForm() {
     var f = document.getElementById('mzForm'); if (!f) return;
     st.f_name = f.elements.name.value; st.f_email = f.elements.email.value; st.f_phone = f.elements.phone.value;
-    st.f_notes = f.elements.notes.value; st.f_consent = f.elements.consent.checked; st.f_marketing = f.elements.marketing.checked;
+    st.f_notes = f.elements.notes.value; st.f_consent = f.elements.consent.checked; st.f_marketing = f.elements.marketing.checked; st.f_cardok = !!(f.elements.cardok && f.elements.cardok.checked);
   }
 
   // ─── Eventos ────────────────────────────────────────────────────────
@@ -212,6 +225,7 @@
     var show = function (k) { st.error = t(k); var el = document.getElementById('mzError'); if (el) { el.textContent = st.error; el.hidden = false; } };
     if (st.f_name.trim().length < 3 || !/^[^@\s]+@[^@\s]+\.[^@\s]{2,}$/.test(st.f_email.trim()) || st.f_phone.replace(/\D/g, '').length < 9) return show('e_bad_data');
     if (!st.f_consent) return show('e_consent');
+    if (c.o_payment_mode === 'card' && c.o_deposit_cents > 0 && !st.f_cardok) return show('e_card');
     st.busy = true; st.error = ''; render();
     // Si el pago falló después de crear la reserva, se reintenta el pago de esa misma reserva (no se crea otra).
     var go = st.pending ? Promise.resolve({ o_status: 'pending', o_token: st.pending }) : rpc('book_table', {

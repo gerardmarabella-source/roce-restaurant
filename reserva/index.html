@@ -113,7 +113,14 @@
       yes_cancel: 'Sí, anular', no_cancel: 'No, mantener',
       e_generic: 'No hemos podido completarlo. Inténtalo de nuevo.', e_pay: 'No hemos podido abrir el pago. Inténtalo de nuevo en un momento.',
       ko: 'El pago no se ha completado. Puedes intentarlo otra vez mientras tu mesa siga guardada.', slow: 'El banco tarda en confirmar el pago. Te avisaremos por email en cuanto llegue.',
-      day: 'Day', night: 'Night'
+      day: 'Day', night: 'Night',
+      guarantee: 'Garantía', g_value: '{m} solo si no vienes',
+      hint_card_pending: 'Para confirmar la reserva hay que dar los datos de una tarjeta como garantía. No se cobra nada ahora: solo si no te presentas o anulas con menos de {h} h de antelación cobraremos {m}.',
+      hint_card_ok: 'Tarjeta {b} ····{l} guardada como garantía. No se ha cobrado nada. Si no te presentas o anulas con menos de {h} h de antelación cobraremos {m}.',
+      hint_card_released: 'No se ha cobrado nada y tu tarjeta ya no queda como garantía.', hint_card_late: 'Como has anulado con menos de {h} h de antelación, cobraremos {m} a tu tarjeta.',
+      hint_card_charged: 'Se han cobrado {m} a tu tarjeta por la no presentación o la anulación tardía.',
+      pay_card: 'Añadir tarjeta (no se cobra nada)',
+      sure_card_in: '¿Seguro que quieres anular? No se cobrará nada.', sure_card_late: '¿Seguro que quieres anular? Faltan menos de {h} h, así que cobraremos {m} a tu tarjeta.'
     },
     en: {
       loading: 'Loading your booking…', notfound: 'This link is not valid. Open the booking from the email we sent you.',
@@ -132,7 +139,14 @@
       yes_cancel: 'Yes, cancel', no_cancel: 'No, keep it',
       e_generic: "We couldn't complete it. Please try again.", e_pay: "We couldn't open the payment. Please try again in a moment.",
       ko: "The payment wasn't completed. You can try again while your table is still held.", slow: 'The bank is slow to confirm the payment. We will email you as soon as it arrives.',
-      day: 'Day', night: 'Night'
+      day: 'Day', night: 'Night',
+      guarantee: 'Guarantee', g_value: '{m} only if you do not show up',
+      hint_card_pending: "To confirm the booking you need to give your card details as a guarantee. Nothing is charged now: only if you don't show up or cancel less than {h} h in advance will we charge {m}.",
+      hint_card_ok: "{b} card ····{l} saved as a guarantee. Nothing has been charged. If you don't show up or cancel less than {h} h in advance we will charge {m}.",
+      hint_card_released: 'Nothing has been charged and your card is no longer held as a guarantee.', hint_card_late: 'Since you cancelled less than {h} h in advance, we will charge {m} to your card.',
+      hint_card_charged: '{m} has been charged to your card for the no-show or late cancellation.',
+      pay_card: 'Add card (nothing is charged)',
+      sure_card_in: 'Are you sure you want to cancel? Nothing will be charged.', sure_card_late: 'Are you sure? There are less than {h} h to go, so we will charge {m} to your card.'
     }
   };
   function lang() { return window.ROCE_I18N && window.ROCE_I18N.getLang ? window.ROCE_I18N.getLang() : 'es'; }
@@ -169,17 +183,21 @@
     if (status === 'cancelled' || status === 'no_show' || expired) st.classList.add('is-bad'); else if (status === 'pending' || waiting) st.classList.add('is-wait');
     st.textContent = label;
     var rows = [[t('ref'), data.ref], [t('party'), String(data.party)], [t('zone'), lang() === 'en' ? data.zone_en : data.zone_es]];
-    if (dep > 0) rows.push([t('deposit'), m]);
+    var cardMode = data.payment_mode === 'card';
+    if (dep > 0) rows.push(cardMode ? [t('guarantee'), t('g_value', { m: m })] : [t('deposit'), m]);
     $('rvRows').innerHTML = rows.map(function (r) { return '<div class="tc-row"><span></span><span></span></div>'; }).join('');
     [].forEach.call($('rvRows').children, function (row, i) { row.children[0].textContent = rows[i][0]; row.children[1].textContent = rows[i][1]; });
     var hint = '';
     if (expired) hint = t('hint_expired');
-    else if (status === 'pending') hint = t('hint_pending');
+    else if (status === 'pending') hint = cardMode ? t('hint_card_pending', { m: m, h: h }) : t('hint_pending');
+    else if (ps === 'charged') hint = t('hint_card_charged', { m: m });
+    else if (status === 'cancelled' && cardMode) hint = data.late_cancel && ps === 'guaranteed' ? t('hint_card_late', { m: m, h: h }) : ps === 'released' ? t('hint_card_released') : '';
     else if (status === 'cancelled') hint = ps === 'refunded' ? t('hint_refunded', { m: m }) : data.refund_due ? t('hint_refund_ok', { m: m }) : ps === 'retained' ? t('hint_retained', { m: m, h: h }) : '';
+    else if (ps === 'guaranteed') hint = t('hint_card_ok', { m: m, h: h, b: data.card_brand || 'Tarjeta', l: data.card_last4 || '' });
     else if (ps === 'paid') hint = t('hint_dep_paid', { m: m });
     else if (params.get('new')) hint = t('hint_new');
     $('rvHint').textContent = hint; $('rvHint').hidden = !hint;
-    $('rvPay').hidden = !pendingOk || waiting; $('rvPay').textContent = t('pay', { m: m });
+    $('rvPay').hidden = !pendingOk || waiting; $('rvPay').textContent = cardMode ? t('pay_card') : t('pay', { m: m });
     var live = (status === 'confirmed' || status === 'pending') && !expired;
     $('rvCal').hidden = !live; $('rvCal').textContent = t('cal');
     $('rvMap').hidden = !live; $('rvMap').textContent = t('map'); $('rvMap').href = 'https://maps.google.com/?q=' + encodeURIComponent('ROCE, Gran Vía Marqués del Túria 16, Valencia');
@@ -218,7 +236,8 @@
   $('rvCancel').addEventListener('click', function () {
     var dep = data.deposit_cents, paid = data.payment_status === 'paid', h = data.free_cancel_hours;
     var inTime = Date.parse(data.refundable_until) >= Date.now();
-    $('rvSureText').textContent = !paid || dep <= 0 ? t('sure_free') : inTime ? t('sure_in_time', { h: h, m: money(dep) }) : t('sure_late', { h: h, m: money(dep) });
+    var guaranteed = data.payment_status === 'guaranteed';
+    $('rvSureText').textContent = guaranteed ? (inTime ? t('sure_card_in') : t('sure_card_late', { h: h, m: money(dep) })) : !paid || dep <= 0 ? t('sure_free') : inTime ? t('sure_in_time', { h: h, m: money(dep) }) : t('sure_late', { h: h, m: money(dep) });
     $('rvSureYes').textContent = t('yes_cancel'); $('rvSureNo').textContent = t('no_cancel');
     $('rvSure').hidden = false; this.hidden = true;
   });
@@ -244,9 +263,9 @@
     (function poll() {
       rpc('table_booking_get', { p_token: token }).then(function (d) {
         data = d || data;
-        if ((d && d.payment_status === 'paid') || ++tries >= 15) {
+        if ((d && (d.payment_status === 'paid' || d.payment_status === 'guaranteed')) || ++tries >= 15) {
           waiting = false; paint();
-          if (!d || d.payment_status !== 'paid') { $('rvErr').textContent = t('slow'); $('rvErr').hidden = false; }
+          if (!d || (d.payment_status !== 'paid' && d.payment_status !== 'guaranteed')) { $('rvErr').textContent = t('slow'); $('rvErr').hidden = false; }
         } else setTimeout(poll, 2000);
       }).catch(function () { if (++tries >= 15) { waiting = false; paint(); } else setTimeout(poll, 2000); });
     })();

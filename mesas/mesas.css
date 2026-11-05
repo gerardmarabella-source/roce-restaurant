@@ -49,3 +49,4 @@ body.zone-day #mesasApp { --mz-fg: var(--black); --mz-bg: var(--white); --mz-lin
 .mz-form .mz-error { margin-top: 1.25rem; }
 .mz-go { display: block; width: 100%; margin-top: 1.5rem; min-height: 3.4rem; border: 0; background: var(--mz-fg); color: var(--mz-bg); font-size: 1.05rem; letter-spacing: 0.03em; text-transform: uppercase; cursor: pointer; border-radius: 0; }
 .mz-go:disabled { opacity: 0.55; cursor: default; }
+.mz-notice { margin: 0 0 1rem; padding: 0.8rem 1rem; border: 1px solid var(--mz-fg); font-size: 0.92rem; line-height: 1.45; font-family: var(--body, inherit); }

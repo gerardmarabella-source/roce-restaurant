@@ -22,6 +22,7 @@ const FROM = Deno.env.get("MAIL_FROM") ?? "no-reply@roce.es"; // debe ser un rem
 const REPLY_TO = Deno.env.get("MAIL_REPLY_TO") ?? "reservas@roce.es";
 const LIST_ATTENDEES = Number(Deno.env.get("BREVO_LIST_ATTENDEES") ?? "0");
 const LIST_NEWSLETTER = Number(Deno.env.get("BREVO_LIST_NEWSLETTER") ?? "0");
+const LIST_RESERVAS = Number(Deno.env.get("BREVO_LIST_RESERVAS") ?? "0"); // lista de Brevo con quien reserva mesa
 const DRIVE_SCRIPT_URL = Deno.env.get("DRIVE_SCRIPT_URL") ?? "";
 const DRIVE_SCRIPT_TOKEN = Deno.env.get("DRIVE_SCRIPT_TOKEN") ?? "";
 
@@ -510,6 +511,12 @@ const TT = {
     cxRefund: (m: string) => `Te devolvemos la fianza de ${m} a tu tarjeta; según tu banco puede tardar unos días.`, cxKept: (m: string) => `Como la anulación se hizo con poca antelación, la fianza de ${m} no se devuelve.`,
     rfSubject: "Fianza devuelta · ROCE", rfTitle: "Fianza devuelta", rfIntro: (m: string) => `Hemos devuelto la fianza de ${m} a tu tarjeta. Según tu banco puede tardar unos días en verse reflejada.`,
     privacy: "BRUNCH DINNER ETC. SL (ROCE) trata tus datos para gestionar tu reserva. Más información y tus derechos en https://roce.es/privacidad.html o escribiendo a reservas@roce.es.",
+    guarantee: "Garantía", guaranteeVal: (m: string) => `${m} solo si no vienes`,
+    cardPayIntro: (m: string, until: string, h: number) => `Hemos guardado tu mesa. Para confirmarla, añade una tarjeta como garantía antes del ${until}. No se cobra nada ahora: solo si no vienes o anulas con menos de ${h} h de antelación cobraremos ${m}. Si no la añades, la mesa se liberará.`,
+    cardPayBtn: "Añadir tarjeta (no se cobra nada)",
+    cardTxt: (m: string, h: number) => `No se ha cobrado nada. Si no te presentas o anulas con menos de ${h} h de antelación cobraremos ${m} a la tarjeta que has dado como garantía.`,
+    cxReleased: "No se ha cobrado nada y tu tarjeta ya no queda como garantía.", cxLate: (m: string) => `Como la anulación se hizo con poca antelación, cobraremos ${m} a la tarjeta que dejaste como garantía.`,
+    chSubject: "Cobro por no presentación · ROCE", chTitle: "Penalización cobrada", chIntro: (m: string) => `Hemos cobrado ${m} a tu tarjeta por la no presentación o anulación tardía de tu reserva.`,
   },
   en: {
     locale: "en-GB", ref: "Reference", date: "Day", time: "Time", party: "Guests", zone: "Area", deposit: "Deposit", ambience: { day: "Day", night: "Night" } as Record<string, string>,
@@ -523,18 +530,25 @@ const TT = {
     cxRefund: (m: string) => `We are refunding the ${m} deposit to your card; depending on your bank it can take a few days.`, cxKept: (m: string) => `As the cancellation was made at short notice, the ${m} deposit is not refunded.`,
     rfSubject: "Deposit refunded · ROCE", rfTitle: "Deposit refunded", rfIntro: (m: string) => `We have refunded the ${m} deposit to your card. Depending on your bank it can take a few days to show up.`,
     privacy: "BRUNCH DINNER ETC. SL (ROCE) processes your data to manage your booking. More information and your rights at https://roce.es/privacidad.html or by writing to reservas@roce.es.",
+    guarantee: "Guarantee", guaranteeVal: (m: string) => `${m} only if you do not show up`,
+    cardPayIntro: (m: string, until: string, h: number) => `We are holding your table. To confirm it, add a card as a guarantee before ${until}. Nothing is charged now: only if you don't show up or cancel less than ${h} h in advance will we charge ${m}. If you don't add it, the table will be released.`,
+    cardPayBtn: "Add card (nothing is charged)",
+    cardTxt: (m: string, h: number) => `Nothing has been charged. If you don't show up or cancel less than ${h} h in advance, we will charge ${m} to the card you gave as a guarantee.`,
+    cxReleased: "Nothing has been charged and your card is no longer held as a guarantee.", cxLate: (m: string) => `As the cancellation was made at short notice, we will charge ${m} to the card you left as a guarantee.`,
+    chSubject: "No-show charge · ROCE", chTitle: "Fee charged", chIntro: (m: string) => `We have charged ${m} to your card for the no-show or late cancellation of your booking.`,
   },
 };
 
 const btnHtml = (href: string, label: string) =>
   `<tr><td align="center" style="padding:20px 24px 4px"><a href="${href}" style="display:block;background:#fff;color:#0a0a0a;text-decoration:none;font:bold 15px Arial,sans-serif;text-transform:uppercase;letter-spacing:1px;padding:16px 12px">${esc(label)}</a></td></tr>`;
 
-async function sendTableEmail(kind: "ok" | "pay" | "cancel" | "refund", b: any): Promise<Response> {
+async function sendTableEmail(kind: "ok" | "pay" | "cancel" | "refund" | "charge", b: any): Promise<Response> {
   if (!b.email) return new Response("no email");
   const l = b.lang === "en" ? "en" : "es";
   const t = TT[l];
-  const { data: z } = await serviceClient().from("dining_zones").select("name_es, name_en, free_cancel_hours").eq("id", b.zone_id).maybeSingle();
+  const { data: z } = await serviceClient().from("dining_zones").select("name_es, name_en, free_cancel_hours, payment_mode").eq("id", b.zone_id).maybeSingle();
   const hours = z?.free_cancel_hours ?? 24;
+  const card = z?.payment_mode === "card";
   const zone = z ? (l === "en" && z.name_en ? z.name_en : z.name_es) : "";
   const starts = new Date(b.starts_at);
   const day = new Intl.DateTimeFormat(t.locale, { timeZone: "Europe/Madrid", weekday: "long", day: "numeric", month: "long" }).format(starts);
@@ -546,19 +560,21 @@ async function sendTableEmail(kind: "ok" | "pay" | "cancel" | "refund", b: any):
   const dep = Number(b.deposit_cents ?? 0);
   const until = b.hold_until ? new Intl.DateTimeFormat(t.locale, { timeZone: "Europe/Madrid", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" }).format(new Date(b.hold_until)) : "";
 
-  const rows = [[t.ref, b.ref], [t.date, day], [t.time, hm], [t.party, String(b.party)], ...(zone ? [[t.zone, zone]] : []), ...(dep > 0 ? [[t.deposit, money(dep)]] : [])];
+  const rows = [[t.ref, b.ref], [t.date, day], [t.time, hm], [t.party, String(b.party)], ...(zone ? [[t.zone, zone]] : []), ...(dep > 0 ? [card ? [t.guarantee, t.guaranteeVal(money(dep))] : [t.deposit, money(dep)]] : [])];
   let title = t.okTitle, intro: string = t.okIntro, subject = t.okSubject(amb, when), extra = "", button = btnHtml(page, t.manageBtn);
   if (kind === "pay") {
-    title = t.payTitle; intro = t.payIntro(money(dep), until); subject = t.paySubject(amb, when); button = btnHtml(page, t.payBtn);
+    title = t.payTitle; intro = card ? t.cardPayIntro(money(dep), until, hours) : t.payIntro(money(dep), until); subject = t.paySubject(amb, when); button = btnHtml(page, card ? t.cardPayBtn : t.payBtn);
   } else if (kind === "cancel") {
     title = t.cxTitle; subject = t.cxSubject(when);
-    intro = t.cxIntro + (dep > 0 && b.payment_status === "retained" ? " " + t.cxKept(money(dep)) : b.refund_due ? " " + t.cxRefund(money(dep)) : "");
+    intro = t.cxIntro + (card && b.payment_status === "released" ? " " + t.cxReleased : card && b.late_cancel ? " " + t.cxLate(money(dep)) : dep > 0 && b.payment_status === "retained" ? " " + t.cxKept(money(dep)) : b.refund_due ? " " + t.cxRefund(money(dep)) : "");
     button = "";
   } else if (kind === "refund") {
     title = t.rfTitle; intro = t.rfIntro(money(dep)); subject = t.rfSubject; button = "";
+  } else if (kind === "charge") {
+    title = t.chTitle; intro = t.chIntro(money(Number(b.fee_charged_cents || dep))); subject = t.chSubject; button = "";
   }
   if (kind === "ok" || kind === "pay") {
-    if (dep > 0) extra += `<tr><td style="padding:14px 24px 0;color:#ddd;font:13px/1.5 Arial,sans-serif">${esc(t.depTxt(money(dep), hours))}</td></tr>`;
+    if (dep > 0) extra += `<tr><td style="padding:14px 24px 0;color:#ddd;font:13px/1.5 Arial,sans-serif">${esc(card ? t.cardTxt(money(dep), hours) : t.depTxt(money(dep), hours))}</td></tr>`;
     if (b.ambience === "night") extra += `<tr><td style="padding:10px 24px 0;color:#e5453a;font:14px Arial,sans-serif">${esc(t.age)}</td></tr>`;
     extra += `<tr><td style="padding:10px 24px 0;color:#aaa;font:13px/1.5 Arial,sans-serif">${esc(t.late)}</td></tr>`;
   }
@@ -572,7 +588,7 @@ ${button}${extra}
   const res = await fetch("https://api.brevo.com/v3/smtp/email", {
     method: "POST",
     headers: brevoHeaders,
-    body: JSON.stringify({ sender: { name: "ROCE", email: FROM }, replyTo: { email: REPLY_TO, name: "ROCE" }, to: [{ email: b.email, name: b.name }], subject, htmlContent: html }),
+    body: JSON.stringify({ sender: { name: "ROCE", email: FROM }, replyTo: { email: REPLY_TO, name: "ROCE" }, to: [b.name ? { email: b.email, name: b.name } : { email: b.email }], subject, htmlContent: html }),
   });
   if (!res.ok) return new Response("brevo error: " + (await res.text()), { status: 502 });
 
@@ -586,6 +602,23 @@ ${button}${extra}
     await fetch("https://api.brevo.com/v3/contacts", { method: "POST", headers: brevoHeaders, body: JSON.stringify({ email: b.email, updateEnabled: true, listIds: [LIST_NEWSLETTER], attributes }) }).catch(() => {});
   }
   return new Response("sent");
+}
+
+// Contacto en la lista de Brevo de reservas de mesa (siempre que haya email: es comunicación de servicio sobre su reserva);
+// en la newsletter solo si marcó la casilla de novedades. Si cambia el email, el antiguo sale de la lista.
+async function syncTableContact(n: any, oldEmail?: string): Promise<void> {
+  if (!n.email) return;
+  if (oldEmail && oldEmail.toLowerCase() !== String(n.email).toLowerCase() && LIST_RESERVAS > 0) {
+    await fetch(`https://api.brevo.com/v3/contacts/lists/${LIST_RESERVAS}/contacts/remove`, { method: "POST", headers: brevoHeaders, body: JSON.stringify({ emails: [oldEmail] }) }).catch(() => {});
+  }
+  const listIds = [LIST_RESERVAS, n.marketing_optin ? LIST_NEWSLETTER : 0].filter((x) => x > 0);
+  if (!listIds.length) return;
+  const attributes: Record<string, string> = {};
+  const [first, ...rest] = String(n.name ?? "").trim().split(/\s+/);
+  const aFirst = Deno.env.get("BREVO_ATTR_FIRSTNAME"); const aLast = Deno.env.get("BREVO_ATTR_LASTNAME");
+  if (aFirst && first) attributes[aFirst] = first;
+  if (aLast && rest.length) attributes[aLast] = rest.join(" ");
+  await fetch("https://api.brevo.com/v3/contacts", { method: "POST", headers: brevoHeaders, body: JSON.stringify({ email: n.email, updateEnabled: true, listIds, attributes }) }).catch(() => {});
 }
 
 // Aviso interno de cada reserva de mesa nueva o anulada (para el equipo).
@@ -605,6 +638,8 @@ async function notifyTableStaff(b: any, what: string): Promise<void> {
 
 async function handleTableBooking(p: any): Promise<Response> {
   const n = p.record, o = p.old_record ?? {};
+  if (p.type === "INSERT") await syncTableContact(n);
+  if (p.type === "UPDATE" && String(o.email ?? "").toLowerCase() !== String(n.email ?? "").toLowerCase()) await syncTableContact(n, o.email || undefined);
   if (p.type === "INSERT") {
     if (n.status === "confirmed" || n.status === "seated") {
       if (n.source !== "admin") await notifyTableStaff(n, "Reserva de mesa");
@@ -618,9 +653,17 @@ async function handleTableBooking(p: any): Promise<Response> {
       await notifyTableStaff(n, "Reserva de mesa (fianza pagada)");
       return await sendTableEmail("ok", n);
     }
+    if (n.payment_status === "guaranteed" && o.payment_status !== "guaranteed" && n.status === "confirmed") {
+      await notifyTableStaff(n, "Reserva de mesa (tarjeta de garantía guardada)");
+      return await sendTableEmail("ok", n);
+    }
+    if (n.payment_status === "charged" && o.payment_status !== "charged") {
+      await notifyTableStaff(n, "Penalización cobrada");
+      return await sendTableEmail("charge", n);
+    }
     if (n.status === "cancelled" && o.status !== "cancelled" && ["confirmed", "pending"].includes(o.status)) {
       // Solo se avisa si ya se había confirmado o se había pagado algo: una pendiente que nunca se pagó no merece email.
-      if (o.status === "confirmed" || o.payment_status === "paid") {
+      if (o.status === "confirmed" || o.payment_status === "paid" || o.payment_status === "guaranteed") {
         await notifyTableStaff(n, "Reserva de mesa anulada");
         // Anulada y devuelta a la vez (desde el panel): un solo email, el de la devolución.
         return await sendTableEmail(n.payment_status === "refunded" ? "refund" : "cancel", n);
