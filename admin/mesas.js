@@ -8,11 +8,11 @@
   var api = A.api, flash = A.flash, esc = A.esc, TZ = A.TZ;
 
   var ST = { pending: 'Pendiente de pago', confirmed: 'Confirmada', seated: 'En mesa', completed: 'Completada', cancelled: 'Anulada', no_show: 'No vino' };
-  var SHAPE = { bench: [3.3, 3.6], square: [5, 5], rect: [6.2, 4.6], long: [10, 4.4], bar: [8, 3.2], sofa: [7, 5.2], round: [5.4, 6] };
+  var SHAPE = { bench: [2.1, 2.3], square: [4.4, 4.4], rect: [6.2, 4.4], long: [10, 4.4], bar: [8, 3.2], sofa: [7, 5], round: [5.4, 5.4] };
   var PLAN_RATIO = 1660 / 1175;
   var ZONE_NAME = { baja: 'Planta baja', alta: 'Planta alta', prive: 'Sala privé' };
 
-  var S = { view: 'day', date: '', zone: 'baja', time: '', zones: [], tables: [], services: [], loadedCfg: false, bookings: [], blocks: [], closures: [], busy: false };
+  var S = { view: 'day', date: '', zone: 'baja', time: '', zones: [], tables: [], services: [], loadedCfg: false, bookings: [], blocks: [], closures: [], busy: false, join: false, sel: [], zoom: 1, px: 0, py: 0, justMoved: false };
 
   function today() { return new Intl.DateTimeFormat('en-CA', { timeZone: TZ }).format(new Date()); }
   function addDays(d, n) { var x = new Date(d + 'T12:00:00Z'); x.setUTCDate(x.getUTCDate() + n); return x.toISOString().slice(0, 10); }
@@ -60,7 +60,7 @@
     if (!document.getElementById('mtBody')) shell();
     [].forEach.call(root.querySelectorAll('[data-view]'), function (b) { b.setAttribute('aria-pressed', String(b.dataset.view === S.view)); });
     var body = document.getElementById('mtBody');
-    if (S.view === 'day') renderDay(body); else if (S.view === 'blocks') renderBlocks(body); else renderConfig(body);
+    if (S.view === 'day') { renderDay(body); applyView(); } else if (S.view === 'blocks') renderBlocks(body); else renderConfig(body);
   }
   root.addEventListener('click', function (e) {
     var v = e.target.closest('[data-view]');
@@ -112,13 +112,21 @@
     var deposits = S.bookings.filter(function (b) { return b.payment_status === 'paid'; }).reduce(function (n, b) { return n + b.deposit_cents; }, 0);
 
     var zones = S.zones.filter(function (z) { return S.tables.some(function (t) { return t.zone_id === z.id; }); });
-    var map = '<div class="mt-map-wrap"><div class="mt-map" style="aspect-ratio:' + PLAN_RATIO + '">' +
-      S.tables.filter(function (t) { return t.zone_id === S.zone && t.pos_x != null; }).map(function (t) {
-        var o = occupancy(t, iso), sz = SHAPE[t.shape] || SHAPE.square;
+    // El plano se recorta a donde hay mesas (con un margen) para que se vean grandes.
+    var PW = 1660, PH = 1175, PAD = 45;
+    var zt = S.tables.filter(function (t) { return t.zone_id === S.zone && t.pos_x != null; });
+    var boxes = zt.map(function (t) { var sz = SHAPE[t.shape] || SHAPE.square; return { t: t, cx: t.pos_x / 100 * PW, cy: t.pos_y / 100 * PH, w: sz[0] / 100 * PW, h: sz[1] / 100 * PW }; });
+    var minx = Math.min.apply(null, boxes.map(function (b) { return b.cx - b.w / 2; })), maxx = Math.max.apply(null, boxes.map(function (b) { return b.cx + b.w / 2; }));
+    var miny = Math.min.apply(null, boxes.map(function (b) { return b.cy - b.h / 2; })), maxy = Math.max.apply(null, boxes.map(function (b) { return b.cy + b.h / 2; }));
+    if (!boxes.length) { minx = 0; maxx = PW; miny = 0; maxy = PH; }
+    var bw = maxx - minx + 2 * PAD, bh = Math.max(maxy - miny + 2 * PAD, bw / 2.4), oy = miny - PAD - (bh - (maxy - miny + 2 * PAD)) / 2;
+    var map = '<div class="mt-map-wrap"><div class="mt-viewport" style="aspect-ratio:' + (bw / bh).toFixed(3) + '"><div class="mt-zoom"><button type="button" data-zoom="1" aria-label="Acercar">+</button><button type="button" data-zoom="-1" aria-label="Alejar">−</button><button type="button" data-zoom="0" aria-label="Ver todo">⤢</button></div><div class="mt-map">' +
+      boxes.map(function (b) {
+        var t = b.t, o = occupancy(t, iso);
         var tip = t.name + ' · ' + t.seats_max + ' p.' + (o.booking ? ' · ' + o.booking.name + ' (' + o.booking.party + ')' : o.block ? ' · bloqueada' + (o.block.note ? ': ' + o.block.note : '') : '');
-        return '<button type="button" class="mt-t is-' + o.state + ' sh-' + esc(t.shape) + '" data-table="' + t.id + '" title="' + esc(tip) + '" style="left:' + t.pos_x + '%;top:' + t.pos_y + '%;width:' + sz[0] + '%;height:' + sz[1] * PLAN_RATIO / 1.4 + '%">' +
+        return '<button type="button" class="mt-t is-' + o.state + (S.sel.indexOf(t.id) !== -1 ? ' is-sel' : '') + ' sh-' + esc(t.shape) + '" data-table="' + t.id + '" title="' + esc(tip) + '" style="left:' + ((b.cx - minx + PAD) / bw * 100).toFixed(2) + '%;top:' + ((b.cy - oy) / bh * 100).toFixed(2) + '%;width:' + (b.w / bw * 100).toFixed(2) + '%;height:' + (b.h / bh * 100).toFixed(2) + '%">' +
           '<b>' + esc(t.name) + '</b>' + (o.booking ? '<i>' + esc(o.booking.name.split(' ')[0]) + '</i>' : '') + '</button>';
-      }).join('') + '</div>' +
+      }).join('') + '</div></div>' +
       '<p class="ad-meta mt-legend"><span class="mt-dot is-free"></span>Libre <span class="mt-dot is-booked"></span>Reservada <span class="mt-dot is-pending"></span>Pendiente de pago <span class="mt-dot is-seated"></span>En mesa <span class="mt-dot is-blocked"></span>Bloqueada</p></div>';
 
     var list = S.bookings.length ? S.bookings.map(function (b) {
@@ -147,13 +155,83 @@
       '<button class="ad-btn" id="mtNew" type="button">+ Nueva reserva</button></div>' +
       '<p class="ad-meta mt-sum"><b>' + esc(dayLabel(S.date)) + '</b> · ' + live.length + ' reservas · ' + covers + ' comensales' + (deposits ? ' · fianzas cobradas ' + eur(deposits) : '') + '</p>' +
       '<div class="ad-bar mt-mapbar"><div class="mt-zones" role="group">' + zones.map(function (z) { return '<button type="button" class="ck-chip" data-zone="' + z.id + '" aria-pressed="' + (z.id === S.zone) + '">' + esc(z.name_es) + '</button>'; }).join('') + '</div>' +
-      '<label class="mt-time">Mapa a las <select id="mtTime">' + opts.map(function (t) { return '<option' + (t === S.time ? ' selected' : '') + '>' + t + '</option>'; }).join('') + '</select></label></div>' +
-      map + '<h2 class="ad-sub">Reservas del día</h2><ul class="ad-list" id="mtList">' + list + '</ul>';
+      '<button type="button" class="ad-btn is-small ' + (S.join ? '' : 'is-ghost') + '" id="mtJoin">' + (S.join ? 'Terminar de juntar' : 'Juntar mesas') + '</button>' +
+      '<span class="mt-time"><button type="button" class="ad-btn is-ghost is-small" data-tstep="-1" aria-label="Hora anterior">‹</button><label>Mapa a las <select id="mtTime">' + opts.map(function (t) { return '<option' + (t === S.time ? ' selected' : '') + '>' + t + '</option>'; }).join('') + '</select></label><button type="button" class="ad-btn is-ghost is-small" data-tstep="1" aria-label="Hora siguiente">›</button></span></div>' +
+      (S.join ? joinBar() : '') + map + '<h2 class="ad-sub">Reservas del día</h2><ul class="ad-list" id="mtList">' + list + '</ul>';
   }
 
+  function joinBar() {
+    var ts = S.sel.map(tableById).filter(Boolean), seats = ts.reduce(function (n, t) { return n + t.seats_max; }, 0);
+    return '<div class="mt-joinbar"><span>' + (ts.length ? '<b>' + ts.map(function (t) { return esc(t.name); }).join(' + ') + '</b> · ' + seats + ' plazas' : 'Toca las mesas libres que quieras juntar (pueden ser cualquiera de la misma planta).') + '</span>' +
+      '<button type="button" class="ad-btn is-small" id="mtJoinGo"' + (ts.length < 1 ? ' disabled' : '') + '>Reservar ' + (ts.length > 1 ? 'estas mesas juntas' : 'esta mesa') + '</button>' +
+      (ts.length ? '<button type="button" class="ad-btn is-small is-ghost" id="mtJoinClear">Vaciar</button>' : '') + '</div>';
+  }
   root.addEventListener('change', function (e) {
     if (e.target.id === 'mtDate' && e.target.value) { S.date = e.target.value; S.time = ''; enter(); }
     else if (e.target.id === 'mtTime') { S.time = e.target.value; render(); }
+  });
+
+
+  // ─── Navegar el mapa: acercar, alejar y arrastrar ──────────────────
+  // Rueda con Ctrl/⌘ (o pellizco en el trackpad), botones + − ⤢, arrastrar para moverse y pellizcar en el móvil.
+  function viewport() { return root.querySelector('.mt-viewport'); }
+  function clampView() {
+    var v = viewport(); if (!v) return;
+    var w = v.clientWidth, h = v.clientHeight;
+    S.zoom = Math.min(4, Math.max(1, S.zoom));
+    S.px = Math.min(0, Math.max(w - w * S.zoom, S.px)); S.py = Math.min(0, Math.max(h - h * S.zoom, S.py));
+  }
+  function applyView() {
+    clampView();
+    var m = root.querySelector('.mt-map'); if (m) m.style.transform = 'translate(' + S.px + 'px,' + S.py + 'px) scale(' + S.zoom + ')';
+    var v = viewport(); if (v) v.classList.toggle('is-zoomed', S.zoom > 1.01);
+  }
+  function zoomAt(cx, cy, nz) {
+    var old = S.zoom; nz = Math.min(4, Math.max(1, nz));
+    S.px = cx - (cx - S.px) * nz / old; S.py = cy - (cy - S.py) * nz / old; S.zoom = nz; applyView();
+  }
+  function localPt(v, e) { var r = v.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; }
+  root.addEventListener('wheel', function (e) {
+    var v = e.target.closest && e.target.closest('.mt-viewport'); if (!v || !(e.ctrlKey || e.metaKey)) return;
+    e.preventDefault(); var p = localPt(v, e); zoomAt(p[0], p[1], S.zoom * Math.exp(-e.deltaY * 0.01));
+  }, { passive: false });
+  var pts = {}, drag = null, pinch = null;
+  root.addEventListener('pointerdown', function (e) {
+    var v = e.target.closest && e.target.closest('.mt-viewport'); if (!v || e.target.closest('.mt-zoom')) return;
+    pts[e.pointerId] = [e.clientX, e.clientY];
+    var ids = Object.keys(pts);
+    if (ids.length === 2) { var a = pts[ids[0]], b = pts[ids[1]]; pinch = { d: Math.hypot(a[0] - b[0], a[1] - b[1]), z: S.zoom }; drag = null; }
+    else drag = { x: e.clientX, y: e.clientY, px: S.px, py: S.py, moved: false };
+  });
+  document.addEventListener('pointermove', function (e) {
+    if (!pts[e.pointerId]) return;
+    pts[e.pointerId] = [e.clientX, e.clientY];
+    var v = viewport(); if (!v) return;
+    var ids = Object.keys(pts);
+    if (pinch && ids.length === 2) {
+      var a = pts[ids[0]], b = pts[ids[1]], r = v.getBoundingClientRect();
+      S.justMoved = true; zoomAt((a[0] + b[0]) / 2 - r.left, (a[1] + b[1]) / 2 - r.top, pinch.z * Math.hypot(a[0] - b[0], a[1] - b[1]) / pinch.d);
+    } else if (drag) {
+      var dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+      if (!drag.moved && Math.hypot(dx, dy) > 6) drag.moved = true;
+      if (drag.moved && S.zoom > 1) { S.justMoved = true; S.px = drag.px + dx; S.py = drag.py + dy; applyView(); }
+    }
+  });
+  function endPtr(e) {
+    delete pts[e.pointerId]; if (Object.keys(pts).length < 2) pinch = null; if (!Object.keys(pts).length) drag = null;
+    if (S.justMoved) setTimeout(function () { S.justMoved = false; }, 60);
+  }
+  document.addEventListener('pointerup', endPtr); document.addEventListener('pointercancel', endPtr);
+  root.addEventListener('click', function (e) {
+    var z = e.target.closest('[data-zoom]');
+    if (z) {
+      var v = viewport(), k = +z.dataset.zoom;
+      if (k === 0) { S.zoom = 1; S.px = 0; S.py = 0; applyView(); }
+      else zoomAt(v.clientWidth / 2, v.clientHeight / 2, S.zoom * (k > 0 ? 1.5 : 1 / 1.5));
+      return;
+    }
+    var st = e.target.closest('[data-tstep]');
+    if (st) { var o = timeOptions(), i = o.indexOf(S.time) + (+st.dataset.tstep); if (i >= 0 && i < o.length) { S.time = o[i]; render(); } }
   });
 
   // Acciones sobre las reservas
@@ -168,11 +246,20 @@
 
   root.addEventListener('click', function (e) {
     var t = e.target.closest('button'); if (!t) return;
+    if (S.justMoved && t.dataset.table) return;
     if (t.dataset.dayn != null) { S.date = t.dataset.dayn === '0' ? today() : addDays(S.date, +t.dataset.dayn); S.time = ''; return void enter(); }
-    if (t.dataset.zone) { S.zone = t.dataset.zone; return void render(); }
+    if (t.dataset.zone) { S.zone = t.dataset.zone; S.sel = []; return void render(); }
+    if (t.id === 'mtJoin') { S.join = !S.join; S.sel = []; return void render(); }
+    if (t.id === 'mtJoinClear') { S.sel = []; return void render(); }
+    if (t.id === 'mtJoinGo') { var picked = S.sel.map(tableById).filter(Boolean); S.join = false; S.sel = []; render(); return void openNew({ tables: picked }); }
     if (t.id === 'mtNew') return void openNew({});
     if (t.dataset.table) {
       var tb = tableById(t.dataset.table), o = occupancy(tb, at(S.date, S.time));
+      if (S.join) {
+        if (o.state !== 'free') return void flash('Esa mesa no está libre a esa hora.', 'error');
+        var ix = S.sel.indexOf(tb.id); if (ix === -1) S.sel.push(tb.id); else S.sel.splice(ix, 1);
+        return void render();
+      }
       if (o.state === 'free') return void openNew({ table: tb });
       if (o.booking) { var li = document.querySelector('#mtList .mt-bk [data-id="' + o.booking.id + '"]'); if (li) li.closest('li').scrollIntoView({ behavior: 'smooth', block: 'center' }); }
       return;
@@ -221,13 +308,15 @@
   }
 
   function openNew(pre) {
+    if (pre.tables && pre.tables.length) pre.table = pre.tables[0];
+    var preIds = pre.tables && pre.tables.length ? pre.tables.map(function (t) { return t.id; }) : (pre.table ? [pre.table.id] : []);
     var svc = S.services.filter(function (s) { return s.active; });
     var zone = pre.table ? pre.table.zone_id : S.zone;
     var optsT = timeOptions();
     var html = '<h2>Nueva reserva</h2><p class="ad-msg is-error" id="nwMsg" hidden></p><form id="nwForm"><div class="ad-grid">' +
       '<label class="ad-field"><span>Día</span><input type="date" id="nwDate" value="' + S.date + '" required></label>' +
       '<label class="ad-field"><span>Hora</span><input type="time" id="nwTime" step="300" value="' + esc(S.time || optsT[0] || '13:00') + '" required></label>' +
-      '<label class="ad-field"><span>Personas</span><input type="number" id="nwParty" min="1" max="60" value="' + (pre.table ? Math.min(pre.table.seats_max, 2) : 2) + '" required></label>' +
+      '<label class="ad-field"><span>Personas</span><input type="number" id="nwParty" min="1" max="60" value="' + (pre.tables && pre.tables.length > 1 ? pre.tables.reduce(function (n, t) { return n + t.seats_max; }, 0) : pre.table ? Math.min(pre.table.seats_max, 2) : 2) + '" required></label>' +
       '<label class="ad-field"><span>Zona</span><select id="nwZone">' + S.zones.map(function (z) { return '<option value="' + z.id + '"' + (z.id === zone ? ' selected' : '') + '>' + esc(z.name_es) + (z.deposit_cents ? ' · fianza ' + eur(z.deposit_cents) : '') + '</option>'; }).join('') + '</select></label>' +
       '<label class="ad-field"><span>Turno</span><select id="nwSvc">' + svc.map(function (s) { return '<option value="' + s.id + '">' + esc(s.name_es) + '</option>'; }).join('') + '</select></label>' +
       '<label class="ad-field"><span>Nombre</span><input type="text" id="nwName" required maxlength="80"></label>' +
@@ -254,7 +343,7 @@
         // Ocupadas: según las reservas y bloqueos ya cargados del día (si es otro día, el servidor lo comprueba al crear).
         var busy = S.tables.filter(function (t) { return S.bookings.some(function (b) { return holds(b) && (b.table_booking_tables || []).some(function (x) { return x.table_id === t.id; }) && b.starts_at < ends && b.ends_at > starts; }); }).map(function (t) { return t.id; });
         var keep = [].map.call(q('nwPicks').querySelectorAll('input:checked'), function (i) { return i.value; });
-        if (!keep.length && pre.table) keep = [pre.table.id];
+        if (!keep.length) keep = preIds;
         q('nwPicks').innerHTML = tablesPicker(q('nwZone').value, keep, busy);
       }
       pickSvc(); depRow(); refreshPicks();

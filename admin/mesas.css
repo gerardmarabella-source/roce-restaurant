@@ -5,11 +5,16 @@
 .mt-sum { margin: 0 0 1rem; font-size: 0.95rem; }
 .mt-mapbar { align-items: flex-end; }
 .mt-zones { display: flex; gap: 0.4rem; flex-wrap: wrap; }
-.mt-time { display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; }
+.mt-time { display: flex; align-items: center; gap: 0.4rem; font-size: 0.85rem; }
+.mt-time label { display: flex; align-items: center; gap: 0.5rem; }
 .mt-time select { padding: 0.45rem 0.6rem; border: 1px solid var(--fg); background: transparent; }
 
 .mt-map-wrap { margin-bottom: 1.5rem; }
-.mt-map { position: relative; width: 100%; border: 1px dashed var(--fg); background: repeating-linear-gradient(45deg, transparent 0 14px, rgba(10, 10, 10, 0.03) 14px 15px); overflow: hidden; }
+.mt-viewport { position: relative; width: 100%; overflow: hidden; border: 1px dashed var(--fg); touch-action: pan-y; background: var(--bg); }
+.mt-viewport.is-zoomed { cursor: grab; touch-action: none; }
+.mt-zoom { position: absolute; top: 0.5rem; right: 0.5rem; z-index: 5; display: flex; flex-direction: column; gap: 4px; }
+.mt-zoom button { width: 2.1rem; height: 2.1rem; border: 1px solid var(--fg); background: var(--bg); font-size: 1.1rem; line-height: 1; cursor: pointer; }
+.mt-map { position: absolute; inset: 0; transform-origin: 0 0; border: 0; background: repeating-linear-gradient(45deg, transparent 0 14px, rgba(10, 10, 10, 0.03) 14px 15px); overflow: hidden; }
 .mt-t { position: absolute; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0; border: 1.5px solid var(--fg); background: var(--bg); color: var(--fg); cursor: pointer; overflow: hidden; line-height: 1.05; }
 .mt-t b { font-family: var(--display); font-weight: 400; font-size: clamp(0.5rem, 1.1vw, 0.8rem); }
 .mt-t i { font-style: normal; font-size: clamp(0.45rem, 0.9vw, 0.65rem); opacity: 0.85; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -41,3 +46,5 @@
 .mt-tbl input[type="text"], .mt-tbl input:not([type]), .mt-tbl input[type="number"] { width: 100%; min-width: 3rem; padding: 0.35rem 0.4rem; border: 1px solid var(--line); background: transparent; }
 .mt-tbl input[type="number"] { max-width: 4.5rem; }
 .mt-blockform { margin-bottom: 0.5rem; }
+.mt-t.is-sel { outline: 3px solid var(--fg); outline-offset: 2px; background: #ffd84d; color: #0a0a0a; z-index: 3; }
+.mt-joinbar { display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: center; justify-content: space-between; padding: 0.7rem 0.9rem; margin-bottom: 0.7rem; border: 2px solid var(--fg); background: #fff8d6; font-size: 0.9rem; }
