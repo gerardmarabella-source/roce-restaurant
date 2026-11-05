@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<!-- Copia de seguridad del sistema de reservas anterior (CoverManager). No se enlaza ni se indexa: solo sirve de alternativa si hiciera falta. -->
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="format-detection" content="telephone=no, address=no, email=no, date=no">
+<title>Reserva tu mesa — ROCE</title>
+<meta name="description" content="Reserva tu mesa en ROCE, Valencia: comidas todos los días en Day y cenas de miércoles a sábado en Night. Para grupos de más de 8 personas, escríbenos por WhatsApp.">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" href="/assets/meta/favicon-32.png" sizes="32x32">
+<link rel="apple-touch-icon" href="/assets/meta/apple-touch-icon.png">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Reserva tu mesa — ROCE">
+<meta property="og:description" content="Reserva tu mesa en ROCE, Valencia: comidas todos los días en Day y cenas de miércoles a sábado en Night. Para grupos de más de 8 personas, escríbenos por WhatsApp.">
+<meta property="og:image" content="https://roce.es/assets/meta/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:type" content="image/png">
+<meta property="og:url" content="https://roce.es/fuck-who-doesn%27t-like-this-place/">
+<link rel="canonical" href="https://roce.es/fuck-who-doesn%27t-like-this-place/">
+<meta property="og:site_name" content="ROCE">
+<meta property="og:locale" content="es_ES">
+<meta property="og:locale:alternate" content="en_GB">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://roce.es/assets/meta/og-image.png">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Restaurant",
+      "@id": "https://roce.es/night/#place",
+      "name": "ROCE - Restaurant & Cocktails",
+      "alternateName": "ROCE Night",
+      "url": "https://roce.es/night/",
+      "parentOrganization": {
+        "@id": "https://roce.es/#org"
+      },
+      "description": "Restaurant & Cocktails en Valencia: cenas y copas de miércoles a sábado, de 20:00 a 02:00. Para mayores de 18 años.",
+      "image": "https://roce.es/assets/meta/og-image.png",
+      "telephone": "+34614073163",
+      "email": "reservas@roce.es",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "Gran Vía Marqués del Túria, 16, Bajo, Dcha",
+        "addressLocality": "Valencia",
+        "postalCode": "46005",
+        "addressRegion": "Valencia",
+        "addressCountry": "ES"
+      },
+      "openingHoursSpecification": [
+        {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": [
+            "Wednesday",
+            "Thursday",
+            "Friday",
+            "Saturday"
+          ],
+          "opens": "20:00",
+          "closes": "02:00"
+        }
+      ],
+      "acceptsReservations": "https://roce.es/fuck-who-doesn%27t-like-this-place/#night",
+      "sameAs": [
+        "https://www.instagram.com/somosroce"
+      ]
+    },
+    {
+      "@type": "CafeOrCoffeeShop",
+      "@id": "https://roce.es/day/#place",
+      "name": "ROCE - Coffee, Bakery & Kitchen",
+      "alternateName": "ROCE Day",
+      "url": "https://roce.es/day/",
+      "parentOrganization": {
+        "@id": "https://roce.es/#org"
+      },
+      "description": "Coffee, Bakery & Kitchen en Valencia: brunch, café y cocina todos los días de 10:00 a 20:00.",
+      "image": "https://roce.es/assets/meta/og-image.png",
+      "telephone": "+34614073163",
+      "email": "reservas@roce.es",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "Gran Vía Marqués del Túria, 16, Bajo, Dcha",
+        "addressLocality": "Valencia",
+        "postalCode": "46005",
+        "addressRegion": "Valencia",
+        "addressCountry": "ES"
+      },
+      "openingHoursSpecification": [
+        {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": [
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday",
+            "Saturday",
+            "Sunday"
+          ],
+          "opens": "10:00",
+          "closes": "20:00"
+        }
+      ],
+      "acceptsReservations": "https://roce.es/fuck-who-doesn%27t-like-this-place/#day",
+      "sameAs": [
+        "https://www.instagram.com/somosroce"
+      ]
+    },
+    {
+      "@type": "Organization",
+      "@id": "https://roce.es/#org",
+      "name": "ROCE",
+      "url": "https://roce.es/",
+      "logo": "https://roce.es/assets/meta/apple-touch-icon.png"
+    }
+  ]
+}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/styles.css?v=69">
+<style>
+  .reserve-form-page {
+    min-height: 100vh;
+    background: var(--black);
+    color: var(--white);
+    padding: 8rem 1.5rem 1rem;
+    display: flex;
+    justify-content: center;
+  }
+  .reserve-form-wrap { width: 100%; max-width: 520px; }
+  .reserve-form-wrap h1 {
+    font-family: var(--display);
+    font-weight: 400;
+    font-size: clamp(2.6rem, 8.5vw, 4rem);
+    line-height: 0.95;
+    text-transform: uppercase;
+    margin-bottom: 0.75rem;
+  }
+  /* Título a la izquierda y, al lado, el selector Day / Night. */
+  .reserve-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 1rem; margin-bottom: 0.75rem; }
+  .reserve-head h1 { margin-bottom: 0; }
+  .reserve-zones { display: flex; flex-direction: column; align-items: flex-end; gap: 0.35rem; padding-bottom: 0.2rem; }
+  .reserve-zone {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font-family: var(--display);
+    font-size: clamp(1.5rem, 6vw, 2.1rem);
+    line-height: 1;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    cursor: pointer;
+    opacity: 0.28;
+    transition: opacity 0.2s ease;
+  }
+  .reserve-zone:hover { opacity: 0.6; }
+  .reserve-zone[aria-pressed="true"] { opacity: 1; }
+  /* Day: cabecera y zona de reservas en blanco con letras negras. */
+  .topbar, .reserve-form-page { transition: background 0.3s ease, color 0.3s ease; }
+  body.zone-day .topbar { background: var(--white); }
+  body.zone-day .reserve-form-page { background: var(--white); color: var(--black); }
+  body.zone-day .reserve-back { color: var(--black); }
+  /* ...y lo mismo con "Alquila el espacio" y el pie. */
+  .private-events, .site-footer { transition: background 0.3s ease, color 0.3s ease; }
+  body.zone-day .private-events,
+  body.zone-day .site-footer { background: var(--white); color: var(--black); }
+  body.zone-day .pe-details > summary { border-color: rgba(10, 10, 10, 0.25); }
+  body.zone-day .pe-form input[type="text"],
+  body.zone-day .pe-form input[type="email"],
+  body.zone-day .pe-form input[type="number"],
+  body.zone-day .pe-form select,
+  body.zone-day .pe-form textarea { border-bottom-color: rgba(10, 10, 10, 0.75); color: var(--black); }
+  body.zone-day .pe-form input::placeholder,
+  body.zone-day .pe-form textarea::placeholder { color: rgba(10, 10, 10, 0.55); }
+  body.zone-day .pe-form select:invalid { color: rgba(10, 10, 10, 0.55); }
+  body.zone-day .pe-consent input { accent-color: var(--black); }
+  body.zone-day .pe-send { background: var(--black); color: var(--white); }
+  body.zone-day .pe-note { color: rgba(10, 10, 10, 0.55); }
+  body.zone-day .footer-info p { color: var(--black); }
+  body.zone-day .footer-instagram { background: var(--black); color: var(--white); }
+  .reserve-form-intro { font-size: 0.95rem; opacity: 0.85; margin-bottom: 1.25rem; line-height: 1.5; }
+  .reserve-night { margin-top: 0; color: #e5453a; font-weight: 600; opacity: 1; display: flex; align-items: center; gap: 0.6rem; }
+  .reserve-night[hidden] { display: none; }
+  .reserve-hours { margin: 0 0 1.25rem; font-family: var(--display); font-size: 0.95rem; letter-spacing: 0.04em; text-transform: uppercase; line-height: 1.5; }
+  .reserve-hours { opacity: 0.85; }
+  .reserve-hours[hidden] { display: none; }
+  .age-badge { flex-shrink: 0; width: 2.8rem; height: 2.8rem; }
+
+  /* El widget de CoverManager usa el tema "trans-white" (texto blanco sobre
+     fondo transparente), pensado para webs oscuras: no ponerle fondo claro
+     o el texto se vuelve ilegible. */
+  .cm-widget {
+    background: transparent;
+    min-height: 550px;
+  }
+  .cm-widget iframe { display: block; width: 100%; border: 0; }
+  .group-notice {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.9rem;
+    margin: 0 0 1.25rem;
+    padding: 1rem 1.1rem;
+    background: #ececec;
+    border-radius: 6px;
+    color: var(--black);
+    font-size: 0.95rem;
+    line-height: 1.45;
+  }
+  .group-notice a { color: inherit; text-decoration: underline; }
+  .group-notice svg { width: 1.3rem; height: 1.3rem; flex-shrink: 0; margin-top: 0.1rem; color: var(--black); }
+
+  .reserve-back {
+    display: inline-block;
+    margin-bottom: 2.5rem;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    text-decoration: none;
+    color: var(--white);
+    opacity: 0.85;
+  }
+
+  /* Header negro y logo en blanco en esta página; sin botón de reservar
+     (ya estamos en la página de reservas). */
+  .topbar { background: var(--black); backdrop-filter: none; -webkit-backdrop-filter: none; }
+  .nav-logo { height: 56px; }
+
+  /* Alquiler del espacio: sección plegada al final de la página; todo el
+     detalle se resuelve por WhatsApp con un mensaje ya precompuesto. */
+  .private-events {
+    background: var(--black);
+    color: var(--white);
+    padding: 1rem 1.5rem 1.5rem;
+    display: flex;
+    justify-content: center;
+  }
+  .private-events-wrap { width: 100%; max-width: 520px; }
+  .pe-intro { font-size: 0.95rem; opacity: 0.85; line-height: 1.55; margin-bottom: 2.25rem; }
+
+  .pe-form { display: flex; flex-direction: column; }
+  .pe-form input[type="text"],
+  .pe-form input[type="email"],
+  .pe-form input[type="number"],
+  .pe-form select,
+  .pe-form textarea {
+    width: 100%;
+    background: transparent;
+    border: 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.75);
+    border-radius: 0;
+    padding: 0.85rem 0 0.6rem;
+    font-family: var(--display);
+    font-size: 1.15rem;
+    text-transform: uppercase;
+    color: var(--white);
+    appearance: none;
+    -webkit-appearance: none;
+  }
+  .pe-form input::placeholder,
+  .pe-form textarea::placeholder { color: rgba(255, 255, 255, 0.6); }
+  .pe-form input:focus,
+  .pe-form select:focus,
+  .pe-form textarea:focus { outline: none; border-bottom-color: var(--maroon); }
+  .pe-form select:invalid { color: rgba(255, 255, 255, 0.6); }
+  .pe-form select option { color: var(--black); text-transform: none; }
+  .pe-form textarea { resize: none; min-height: 3.4rem; }
+  .pe-form input[type="number"] { -moz-appearance: textfield; }
+  .pe-form input[type="number"]::-webkit-outer-spin-button,
+  .pe-form input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+  .pe-select-wrap { position: relative; }
+  .pe-select-wrap::after {
+    content: "+";
+    position: absolute;
+    right: 0.1rem;
+    top: 50%;
+    transform: translateY(-40%);
+    font-family: var(--display);
+    font-size: 1.4rem;
+    pointer-events: none;
+  }
+
+  .pe-form-footer {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+  }
+  .pe-consent {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.01em;
+    cursor: pointer;
+  }
+  .pe-consent input { width: 1.1rem; height: 1.1rem; flex-shrink: 0; accent-color: var(--white); }
+  .pe-consent a { color: inherit; text-decoration: underline; }
+  .pe-send {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    background: var(--cream);
+    color: var(--black);
+    border: none;
+    border-radius: 2px;
+    padding: 1rem 1.5rem;
+    font-family: var(--display);
+    font-size: 0.95rem;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    transition: transform 0.15s ease;
+  }
+  .pe-send:hover { transform: translateY(-2px); }
+  .pe-send svg { width: 18px; height: 18px; flex-shrink: 0; }
+
+  /* En esta página el pie queda pegado a la sección de alquiler. */
+  .site-footer { padding-top: 2.5rem; }
+  /* Negrita real (Helvetica Neue Bold) solo en el titular y la dirección del footer. */
+  .site-footer .footer-info p { font-family: var(--display); font-weight: 700; }
+  .pe-details > summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.1rem 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.25);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.25);
+    font-family: var(--display);
+    font-size: 1.35rem;
+    font-weight: 400;
+    letter-spacing: 0.01em;
+    text-transform: uppercase;
+    cursor: pointer;
+    list-style: none;
+  }
+  .pe-details > summary::-webkit-details-marker { display: none; }
+  .pe-details .pe-plus { font-family: var(--display); font-size: 1.6rem; letter-spacing: 0; transition: transform 0.2s ease; }
+  .pe-details[open] .pe-plus { transform: rotate(45deg); }
+  .pe-details > .pe-intro { margin-top: 1.75rem; }
+
+  .pe-note {
+    margin-top: 1rem;
+    font-size: 0.75rem;
+    letter-spacing: 0.02em;
+    color: rgba(236, 231, 221, 0.55);
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <a href="/" aria-label="ROCE — inicio"><img class="nav-logo" id="navLogo" src="/assets/logo/roce-horizontal-white.png" alt="ROCE"></a>
+</header>
+
+<main class="reserve-form-page">
+  <div class="reserve-form-wrap">
+    <a class="reserve-back" href="/night/" data-i18n="back_to_home">&larr; Volver a ROCE</a>
+    <div class="reserve-head">
+      <h1 data-i18n-html="reservar_h1">Reserva<br>tu mesa</h1>
+      <div class="reserve-zones" role="group" aria-label="Day / Night">
+        <button type="button" class="reserve-zone" data-zone="day" aria-pressed="false">Day</button>
+        <button type="button" class="reserve-zone" data-zone="night" aria-pressed="false">Night</button>
+      </div>
+    </div>
+
+    <p class="reserve-hours" id="reserveHours" data-i18n="hours_day" hidden>Day · Todos los días, de 10:00 a 20:00</p>
+
+    <section id="panelBooking">
+    <p class="reserve-form-intro reserve-night" id="nightNotice"><svg class="age-badge" viewBox="0 0 100 100" role="img" aria-label="+18"><circle cx="50" cy="50" r="44" fill="#ffffff" stroke="#e5453a" stroke-width="9"/><text x="44" y="65" text-anchor="middle" font-family="'Helvetica Neue Web','Helvetica Neue',Arial,sans-serif" font-weight="700" font-size="46" letter-spacing="-3" fill="#0a0a0a">18</text><text x="77" y="52" text-anchor="middle" font-family="'Helvetica Neue Web','Helvetica Neue',Arial,sans-serif" font-weight="700" font-size="30" fill="#0a0a0a">+</text></svg> <span data-i18n="reservar_night">Reservas de noche solo para mayores de 18 años</span></p>
+
+    <div class="cm-widget">
+      <div class="group-notice" id="groupNotice">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="currentColor"/><rect x="10.8" y="10.5" width="2.4" height="7" fill="#ececec"/><circle cx="12" cy="7.3" r="1.5" fill="#ececec"/></svg>
+        <span data-i18n-html="group_notice">Para grupos de más de 8 personas, <a data-wa href="#" target="_blank" rel="noopener">escríbenos por WhatsApp</a> o envíanos un correo a <a href="mailto:reservas@roce.es">reservas@roce.es</a>.</span>
+      </div>
+      <iframe id="restaurante-roce-valencia" title="Reservas" allow="payment" frameborder="0" height="550" width="100%"></iframe>
+    </div>
+    </section>
+
+  </div>
+</main>
+
+<section class="private-events" id="alquila-el-espacio">
+  <div class="private-events-wrap">
+    <details class="pe-details" id="alquilerDetails">
+      <summary>
+        <span data-i18n="pe_eyebrow">Alquila el espacio</span>
+        <span class="pe-plus" aria-hidden="true">+</span>
+      </summary>
+      <p class="pe-intro" data-i18n="pe_intro">
+        Cuéntanos tu idea y contactamos contigo.
+      </p>
+      <form class="pe-form" id="peForm" data-wa-intro="wa_intro">
+        <input type="text" name="nombre" autocomplete="name" placeholder="Nombre*" data-i18n-placeholder="pe_ph_name" required>
+        <input type="text" name="empresa" placeholder="Empresa/proyecto" data-i18n-placeholder="pe_ph_company">
+        <input type="email" name="email" autocomplete="email" placeholder="Email" data-i18n-placeholder="pe_ph_email">
+        <div class="pe-select-wrap">
+          <select name="tipo" data-label-key="pe_ph_type" required>
+            <option value="" disabled selected hidden data-i18n="pe_ph_type">Tipo de evento*</option>
+            <option value="Cumpleaños" data-i18n="pe_type_birthday">Cumpleaños</option>
+            <option value="Cena de empresa" data-i18n="pe_type_corporate">Cena de empresa</option>
+            <option value="Despedida" data-i18n="pe_type_farewell">Despedida</option>
+            <option value="Otro" data-i18n="pe_type_other">Otro</option>
+          </select>
+        </div>
+        <input type="number" name="personas" min="1" inputmode="numeric" placeholder="Número de personas previsto (aprox)*" data-i18n-placeholder="pe_ph_guests" required>
+        <input type="text" name="fecha" placeholder="Fecha aproximada*" data-i18n-placeholder="pe_ph_date" required>
+        <textarea name="mensaje" rows="1" placeholder="Mensaje" data-i18n-placeholder="pe_ph_message"></textarea>
+
+        <div class="pe-form-footer">
+          <label class="pe-consent">
+            <input type="checkbox" name="acepta_privacidad" required>
+            <span data-i18n-html="pe_consent">Acepto la <a href="/privacidad.html" target="_blank" rel="noopener">política de privacidad</a></span>
+          </label>
+          <button type="submit" class="pe-send"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.46 1.32 4.96L2 22l5.25-1.38a9.9 9.9 0 0 0 4.79 1.22h.01c5.46 0 9.91-4.45 9.91-9.92C21.96 6.45 17.5 2 12.04 2Zm0 18.15h-.01a8.2 8.2 0 0 1-4.18-1.14l-.3-.18-3.12.82.83-3.04-.2-.31a8.24 8.24 0 0 1-1.26-4.39c0-4.55 3.7-8.25 8.25-8.25 2.2 0 4.27.86 5.83 2.42a8.19 8.19 0 0 1 2.41 5.83c0 4.55-3.7 8.24-8.25 8.24Zm4.52-6.17c-.25-.12-1.47-.72-1.7-.81-.23-.08-.39-.12-.56.13-.17.25-.64.81-.78.97-.14.17-.29.18-.53.06-.25-.12-1.05-.39-2-1.23-.74-.66-1.24-1.48-1.39-1.73-.14-.25-.02-.38.11-.51.11-.11.25-.29.37-.43.12-.14.16-.25.25-.41.08-.17.04-.31-.02-.44-.06-.12-.56-1.34-.76-1.84-.2-.48-.41-.42-.56-.43h-.48c-.17 0-.44.06-.67.31-.23.25-.87.85-.87 2.08s.89 2.42 1.02 2.58c.12.17 1.75 2.67 4.24 3.75.59.26 1.05.41 1.41.52.59.19 1.13.16 1.55.1.47-.07 1.47-.6 1.68-1.18.21-.58.21-1.07.14-1.18-.06-.11-.23-.17-.48-.29Z"/></svg><span data-i18n="pe_send">Enviar por WhatsApp</span></button>
+        </div>
+      </form>
+      <p class="pe-note" data-i18n="pe_note">Te contamos condiciones y consumo mínimo por WhatsApp.</p>
+    </details>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <img class="footer-logo" id="footerLogo" src="/assets/logo/roce-tilted-white.png" alt="ROCE">
+  <div class="footer-info">
+    <p class="footer-headline">Restaurant &amp; Cocktails</p>
+    <p class="footer-line">Marqués del Túria 16</p>
+    <p class="footer-line">Valencia (Spain)</p>
+  </div>
+  <a class="footer-instagram" href="https://www.instagram.com/somosroce" target="_blank" rel="noopener">@somosroce <svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-0.02em"><path d="M7 17L17 7M8 7h9v9"/></svg></a>
+  <div class="footer-bottom">
+    <span class="lang-switch">
+      <button type="button" data-lang="es">ES</button>
+      <button type="button" data-lang="en">EN</button>
+    </span>
+    <div class="footer-legal">
+      <a href="/aviso-legal.html" data-i18n="footer_legal">Aviso legal</a> · <a href="/terminos.html" data-i18n="footer_terms">Términos y condiciones</a> · <a href="/cookies.html" data-i18n="footer_cookies">Cookies</a> · <a href="/privacidad.html" data-i18n="footer_privacy">Política de privacidad</a>
+    </div>
+  </div>
+</footer>
+
+<div class="cookie-banner" id="cookieBanner">
+  <p class="cookie-text"><span data-i18n="cookie_text">Usamos una cookie técnica propia para recordar tu elección. Si aceptas, también activamos el Píxel de Meta (Facebook e Instagram) y Google Tag Manager para medir y mejorar nuestra publicidad y nuestra web. El sistema de reservas es de un tercero (CoverManager) y puede usar las suyas.</span> <a href="/cookies.html" data-i18n="cookie_more_info">Más información</a>.</p>
+  <div class="cookie-actions">
+    <button class="cookie-reject" id="cookieReject" data-i18n="cookie_reject">Rechazar</button>
+    <button class="cookie-accept" id="cookieAccept" data-i18n="cookie_accept">Aceptar</button>
+  </div>
+</div>
+<script src="/cookies.js?v=4"></script>
+<script src="https://www.covermanager.com/js/iframeResizer/iframeResizer.min.js"></script>
+<script src="/i18n.js?v=97"></script>
+<script src="/agegate.js?v=4"></script>
+
+<script>
+  const WHATSAPP_NUMBER = '34614073163';
+  const CM_BASE = 'https://www.covermanager.com/reserve/module_restaurant/restaurante-roce-valencia/';
+  // Tres motores de CoverManager: Day (solo comidas), Night (solo cenas) y el
+  // conjunto (sin filtro), que es el que se ve al entrar sin elegir ambiente.
+  const CM_QUERY = { day: '?only_lunch=1', night: '?only_dinner=1', all: '' };
+  let zone = 'all';
+  const cmFrame = document.getElementById('restaurante-roce-valencia');
+  iFrameResize({ checkOrigin: ['https://www.covermanager.com'] }, '#restaurante-roce-valencia');
+
+  // El widget cambia de paso por dentro, sin recargar la página: si la persona
+  // estaba muy abajo, la página se quedaba ahí y parecía que había desaparecido
+  // el formulario. Se vigila el tamaño del widget y, si cambia estando la
+  // persona bien metida en él, se vuelve al inicio del formulario.
+  let cmLastHeight = 0;
+  let cmReadyAt = Date.now() + 2500;
+  cmFrame.addEventListener('load', () => { cmReadyAt = Date.now() + 2500; });
+  new ResizeObserver(() => {
+    const r = cmFrame.getBoundingClientRect();
+    const was = cmLastHeight;
+    cmLastHeight = r.height;
+    if (!was || Date.now() < cmReadyAt || Math.abs(r.height - was) < 40) return;
+    if (r.top < -250) {
+      window.scrollTo({ top: window.scrollY + r.top - 90, behavior: 'smooth' });
+    }
+  }).observe(cmFrame);
+
+  function syncCoverManagerLang() {
+    const url = CM_BASE + (window.ROCE_I18N.getLang() === 'en' ? 'english' : 'spanish') + CM_QUERY[zone];
+    if (cmFrame.getAttribute('src') !== url) cmFrame.setAttribute('src', url);
+  }
+  document.addEventListener('DOMContentLoaded', syncCoverManagerLang);
+  new MutationObserver(syncCoverManagerLang).observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
+
+  function updateGroupLink() {
+    const wa = document.querySelector('#groupNotice a[data-wa]');
+    if (wa) wa.href = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(window.ROCE_I18N.t('group_wa_msg'))}`;
+  }
+  document.addEventListener('DOMContentLoaded', updateGroupLink);
+  new MutationObserver(updateGroupLink).observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
+
+  // Selector Day / Night: cada ambiente tiene su motor. #day y #night en la URL
+  // abren ese ambiente; sin ellos se ve el motor conjunto.
+  const zoneTabs = document.querySelectorAll('.reserve-zone');
+  const backLink = document.querySelector('.reserve-back');
+  function setZone(next) {
+    zone = next;
+    // Las reservas de noche son +18: se pide confirmarlo una vez; si no, se pasa a Day.
+    if (next === 'night') window.ROCE_AGE.ask(null, () => setZone('day'));
+    zoneTabs.forEach((b) => b.setAttribute('aria-pressed', b.dataset.zone === zone ? 'true' : 'false'));
+    backLink.setAttribute('href', zone === 'all' ? '/' : '/' + zone + '/');
+    document.body.classList.toggle('zone-day', zone === 'day');
+    document.getElementById('nightNotice').hidden = zone === 'day';
+    document.getElementById('reserveHours').hidden = zone !== 'day'; // solo se muestra el horario de Day
+    const day = zone === 'day';
+    document.querySelector('.footer-headline').textContent = day ? 'Coffee, Bakery & Kitchen' : 'Restaurant & Cocktails';
+    document.getElementById('footerLogo').setAttribute('src', '/assets/logo/roce-tilted-' + (day ? 'black' : 'white') + '.png');
+    document.getElementById('navLogo').setAttribute('src', '/assets/logo/roce-horizontal-' + (day ? 'black' : 'white') + '.png');
+    syncCoverManagerLang();
+  }
+  zoneTabs.forEach((b) => b.addEventListener('click', () => setZone(b.dataset.zone)));
+  if (location.hash === '#day') setZone('day');
+  else if (location.hash === '#night') setZone('night');
+
+  const alquilerDetails = document.getElementById('alquilerDetails');
+  function openAlquilerIfTargeted() {
+    if (location.hash === '#alquila-el-espacio') {
+      alquilerDetails.open = true;
+      alquilerDetails.scrollIntoView();
+    }
+  }
+  openAlquilerIfTargeted();
+  window.addEventListener('hashchange', openAlquilerIfTargeted);
+
+  const stripStar = (txt) => txt.replace(/\s*\([^)]*\)/, '').replace(/\*$/, '').trim();
+
+  document.querySelectorAll('.pe-form[data-wa-intro]').forEach((form) => {
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const t = window.ROCE_I18N.t;
+      const lines = [t(form.dataset.waIntro), ''];
+
+      [...form.elements].forEach((el) => {
+        if (!el.name || el.type === 'checkbox') return;
+        const labelKey = el.getAttribute('data-i18n-placeholder') || el.dataset.labelKey;
+        const value = (el.tagName === 'SELECT' ? el.options[el.selectedIndex].text : el.value).trim();
+        if (labelKey && value) lines.push(stripStar(t(labelKey)) + ': ' + value);
+      });
+
+      const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(lines.join('\n'))}`;
+      if (!window.open(url, '_blank', 'noopener')) window.location.href = url;
+    });
+  });
+</script>
+
+</body>
+</html>
