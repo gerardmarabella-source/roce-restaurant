@@ -337,7 +337,9 @@
   /* Horizontal (escritorio, móvil tumbado): frase a la izquierda y los dos
      cuadrados apilados a la derecha. */
   @media (min-aspect-ratio: 5/4) {
-    .home { --pad: 2.5rem; }
+    /* En horizontal el menú ocupa su franja arriba (si no, taparía el cuadrado de la derecha). */
+    .home { --pad: 2.5rem; --head: 56px; }
+    .home-head { position: static; height: var(--head); flex-shrink: 0; }
     .home-main {
       --s: min(calc((var(--avail) - var(--gap) - var(--live-x)) / 2), 30vw);
       --sw: min(calc(var(--s) * 1.9), 42vw);
