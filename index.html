@@ -149,7 +149,7 @@
     --sw: calc(100vw - 2 * var(--pad));
     /* Franja del evento bajo los dos cuadrados (--ev-n = 1 si hay evento; lo fija el script). Su alto se descuenta del resto para no hacer scroll. */
     --ev-n: 0;
-    --ev-h: clamp(3.2rem, calc(var(--avail) * 0.09), 4.2rem);
+    --ev-h: clamp(2.6rem, calc(var(--avail) * 0.075), 3.6rem);
     --ev-x: calc(var(--ev-n) * (var(--ev-h) + var(--gap)));
     --sh: min(calc(var(--sw) * 0.55), calc((var(--avail) - var(--ev-x)) * 0.17));
     flex: 1;
@@ -268,11 +268,8 @@
   .home-square-event[data-env="night"] { background: var(--black); color: var(--white); border: 2px solid var(--black); }
   html[data-mode="night"] .home-square-event[data-env="night"] { border-color: var(--white); }
   .home-square-event .he-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .home-square-event small { margin-top: 0.15rem; }
   .home-square-event .he-title .mq, .home-square-event .he-title .mq span { display: inline-block; }
-  .home-square-event .he-kicker.is-live::before { content: ""; display: inline-block; width: 0.55em; height: 0.55em; margin-right: 0.45em; border-radius: 50%; background: #ff1f1f; animation: liveDot 1.3s ease-in-out infinite; }
-    @media (prefers-reduced-motion: reduce) { .home-square-event .he-kicker.is-live::before { animation: none; } }
-
+  
   .home-foot {
     flex-shrink: 0;
     height: var(--foot);
@@ -493,7 +490,7 @@
         </div>
       </a>
       <a class="home-square home-square-event" id="homeEvent" href="/eventos/" hidden>
-        <div class="he-text"><strong class="home-name he-title"></strong><small class="he-kicker"></small></div>
+        <div class="he-text"><strong class="home-name he-title"></strong></div>
         <span class="home-square-arrow" aria-hidden="true">→</span>
       </a>
     </div>
@@ -582,11 +579,10 @@
       var b = U.bounds(e), live = U.isLive(e);
       cube.href = '/eventos/evento/?e=' + encodeURIComponent(e.id);
       cube.setAttribute('data-env', e.env === 'night' ? 'night' : 'day');
-      var k = cube.querySelector('.he-kicker');
-      k.classList.toggle('is-live', live);
-      k.textContent = live ? hm(b[0]) + ' – ' + hm(b[1]) :
+      var when = live ? hm(b[0]) + ' – ' + hm(b[1]) :
         new Intl.DateTimeFormat(l === 'en' ? 'en-GB' : 'es-ES', { timeZone: TZ, weekday: 'short', day: 'numeric', month: 'short' }).format(b[0]).replace('.', '') + ' · ' + hm(b[0]);
-      U.setMarquee(cube.querySelector('.he-title'), e.title[l] || e.title.es); // si no cabe, el texto gira en bucle
+      // Una sola línea: título y fecha; si no cabe, el texto gira en bucle.
+      U.setMarquee(cube.querySelector('.he-title'), (e.title[l] || e.title.es) + '  ·  ' + when);
     }
     var rz; window.addEventListener('resize', function () { clearTimeout(rz); rz = setTimeout(renderLive, 120); });
     if (window.ROCE_EVENTS_READY) window.ROCE_EVENTS_READY.then(function (list) { EVENTS = list; renderLive(); });
