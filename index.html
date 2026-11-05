@@ -147,9 +147,12 @@
      del otro, a todo el ancho. El alto se reparte para que todo quepa sin scroll. */
   .home-main {
     --sw: calc(100vw - 2 * var(--pad));
-    /* --sq-n = cuántos cuadrados hay (2 espacios + 1 si hay evento; lo fija el script). El alto se reparte entre ellos para no hacer scroll. */
-    --sq-n: 2;
-    --sh: min(calc(var(--sw) * 0.55), calc(var(--avail) * 0.34 / var(--sq-n)));
+    /* Evento en marcha: una franja bajo su cuadrado (--live-n = cuántas hay,
+       lo fija el script). Su alto se descuenta del resto para no hacer scroll. */
+    --live-n: 0;
+    --live-h: clamp(2.6rem, calc(var(--avail) * 0.075), 3.6rem);
+    --live-x: calc(var(--live-n) * (var(--live-h) + var(--gap)));
+    --sh: min(calc(var(--sw) * 0.55), calc((var(--avail) - var(--live-x)) * 0.17));
     flex: 1;
     min-height: 0;
     display: flex;
@@ -159,12 +162,24 @@
     padding: 0 var(--pad);
   }
 
-  /* Frase (el cubo del próximo evento va con los cuadrados). */
+  /* Frase a la izquierda y, si queda hueco a su lado, el próximo evento (lo decide el script según el espacio libre). */
   .home-top { display: flex; align-items: center; gap: 2rem; min-width: 0; width: 100%; }
+  /* Tarjeta del próximo evento: cartel en 4:5 (sin recortes) y debajo la fecha y el título. Fondo blanco si el evento es de día, negro si es de noche. */
+  .home-event { --he-pad: 0.7rem; display: flex; flex-direction: column; gap: 0.6rem; flex: 0 0 auto; align-self: flex-end; margin-inline: auto; padding: var(--he-pad); box-sizing: border-box; text-decoration: none; border: 2px solid var(--black); background: var(--black); color: var(--white); transition: transform 0.25s ease; }
+  .home-event[hidden] { display: none; }
+  .home-event[data-env="day"] { background: var(--white); color: var(--black); }
+  html[data-mode="night"] .home-event[data-env="night"] { border-color: var(--white); }
+  .home-event:hover { transform: translateY(-4px); }
+  .he-media { display: block; width: 100%; aspect-ratio: 4 / 5; background-size: cover; background-position: center; background-repeat: no-repeat; }
+  .home-event.no-img .he-media { display: none; }
+  .he-body { display: flex; flex-direction: column; gap: 0.25rem; }
+  .he-kicker { font-family: var(--display); font-size: clamp(0.62rem, 0.9vw, 0.82rem); letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.75; line-height: 1.1; }
+  .he-title { font-family: var(--display); font-weight: 700; text-transform: uppercase; line-height: 1; letter-spacing: 0.01em; font-size: clamp(0.9rem, 1.5vw, 1.35rem); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
+  .home-event.no-img .he-title { font-size: clamp(1.4rem, 3vw, 2.6rem); -webkit-line-clamp: 4; }
   .home-statement {
     font-family: var(--display);
     font-weight: 400; /* Helvetica Neue tal cual (Regular de marca) */
-    font-size: min(calc((100vw - 2 * var(--pad)) / 4.3), 14rem, calc((var(--avail) - var(--sq-n) * var(--sh) - (var(--sq-n) - 1) * var(--gap) - 1.25rem) / 4.5));
+    font-size: min(calc((100vw - 2 * var(--pad)) / 4.3), 14rem, calc((var(--avail) - 2 * var(--sh) - var(--gap) - 1.25rem - var(--live-x)) / 4.5));
     width: auto;
     flex: 0 0 auto;
     margin: 0;
@@ -258,15 +273,31 @@
     .age-badge { width: 1.5rem; height: 1.5rem; }
   }
 
-  /* Cubo del próximo evento (o el que está en marcha): el mismo cuadrado que los dos espacios, blanco si es de día y negro si es de noche. Sin cartel. */
-  .home-square-event[hidden] { display: none; }
-  .home-square-event[data-env="day"] { background: var(--white); color: var(--black); border: 2px solid var(--black); }
-  .home-square-event[data-env="night"] { background: var(--black); color: var(--white); border: 2px solid var(--black); }
-  html[data-mode="night"] .home-square-event[data-env="night"] { border-color: var(--white); }
-  .home-square-event .he-kicker { display: block; font-family: var(--display); font-size: clamp(0.6rem, min(6.2cqw, calc(var(--sh) * 0.085)), 1.25rem); letter-spacing: 0.06em; text-transform: uppercase; opacity: 0.75; line-height: 1.1; }
-  .home-square-event .he-kicker.is-live::before { content: ""; display: inline-block; width: 0.55em; height: 0.55em; margin-right: 0.45em; border-radius: 50%; background: #ff1f1f; animation: liveDot 1.3s ease-in-out infinite; }
-  .home-square-event .he-title { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; min-width: 0; }
-  @media (prefers-reduced-motion: reduce) { .home-square-event .he-kicker.is-live::before { animation: none; } }
+  /* Evento en marcha: franja bajo el cuadrado de su ambiente, del mismo color. */
+  .home-live {
+    container-type: inline-size;
+    width: var(--sw);
+    height: var(--live-h);
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    padding: 0 calc(var(--live-h) * 0.32);
+    text-decoration: none;
+    overflow: hidden;
+    transition: transform 0.25s ease;
+  }
+  .home-live[hidden] { display: none; }
+  .home-live:hover { transform: translateY(-3px); }
+  .home-live-day { background: var(--white); color: var(--black); border: 2px solid var(--black); }
+  .home-live-night { background: var(--black); color: var(--white); border: 2px solid var(--black); }
+  html[data-mode="night"] .home-live-night { border-color: var(--white); }
+  .home-live-floor { flex-shrink: 0; font-family: var(--display); font-size: clamp(0.5rem, min(3cqw, calc(var(--live-h) * 0.2)), 0.8rem); letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.6; padding-right: 0.7rem; border-right: 1px solid currentColor; line-height: 1.1; }
+  .home-live-title { font-weight: 400; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: var(--display); text-transform: uppercase; letter-spacing: 0.01em; font-size: clamp(0.8rem, min(4.2cqw, calc(var(--live-h) * 0.36)), 1.4rem); }
+  .home-live-time { flex-shrink: 0; font-family: var(--display); font-size: clamp(0.65rem, min(3.6cqw, calc(var(--live-h) * 0.26)), 1rem); opacity: 0.7; white-space: nowrap; }
+  .home-live-arrow { flex-shrink: 0; font-family: var(--display); font-size: 1.2rem; line-height: 1; }
+  @container (max-width: 300px) { .home-live-time { display: none; } }
+  @container (max-width: 270px) { .home-live-floor { display: none; } }
+  @container (max-width: 150px) { .home-live-arrow { display: none; } }
 
   .home-foot {
     flex-shrink: 0;
@@ -300,7 +331,7 @@
 
   /* Tablet vertical: bloques algo más bajos para que la frase pueda crecer con el ancho. */
   @media (min-width: 600px) and (max-aspect-ratio: 5/4) {
-    .home-main { --sh: min(calc(var(--sw) * 0.62), calc(var(--avail) * 0.30 / var(--sq-n))); }
+    .home-main { --sh: min(calc(var(--sw) * 0.62), calc((var(--avail) - var(--live-x)) * 0.15)); }
   }
 
   /* Horizontal (escritorio, móvil tumbado): frase a la izquierda y los dos
@@ -310,7 +341,7 @@
     .home { --pad: 2.5rem; --head: 56px; }
     .home-head { position: static; height: var(--head); flex-shrink: 0; }
     .home-main {
-      --s: min(calc((var(--avail) - (var(--sq-n) - 1) * var(--gap)) / var(--sq-n)), 30vw);
+      --s: min(calc((var(--avail) - var(--gap) - var(--live-x)) / 2), 30vw);
       --sw: min(calc(var(--s) * 1.9), 42vw);
       --sh: var(--s);
       flex-direction: row;
@@ -326,7 +357,7 @@
     .home-square strong.home-name { white-space: nowrap; font-size: clamp(0.8rem, min(5.3cqw, calc(var(--sh) * 0.16)), 2.4rem); }
     .home-name span { display: inline; }
     .home-squares { display: flex; flex-direction: column; justify-content: flex-start; }
-    .home-square-day, .home-square-night, .home-square-event { align-self: flex-end; }
+    .home-square-day, .home-square-night, .home-live { align-self: flex-end; }
   }
 
   /* Menú a pantalla completa: el mismo que el de Reservas de Night
@@ -464,6 +495,10 @@
         <img class="home-logo home-logo-white" src="/assets/logo/roce-horizontal-white.png" alt="" aria-hidden="true">
       </span>
     </h1>
+    <a class="home-event" id="homeEvent" href="/eventos/" hidden>
+      <span class="he-media"></span>
+      <span class="he-body"><span class="he-kicker"></span><span class="he-title"></span></span>
+    </a>
     </div>
 
     <div class="home-squares">
@@ -477,6 +512,11 @@
           <span class="home-square-arrow" aria-hidden="true">→</span>
         </div>
       </a>
+      <a class="home-live home-live-day" id="liveDay" href="/eventos/?f=day" hidden>
+        <span class="home-live-title"></span>
+        <span class="home-live-time"></span>
+        <span class="home-live-arrow" aria-hidden="true">→</span>
+      </a>
       <a class="home-square home-square-night" id="chooseNight" href="/night/">
         <div class="home-square-top"><svg class="age-badge" viewBox="0 0 100 100" role="img" aria-label="+18"><circle cx="50" cy="50" r="44" fill="#ffffff" stroke="#e5453a" stroke-width="9"/><text x="44" y="65" text-anchor="middle" font-family="'Helvetica Neue Web','Helvetica Neue',Arial,sans-serif" font-weight="700" font-size="46" letter-spacing="-3" fill="#0a0a0a">18</text><text x="77" y="52" text-anchor="middle" font-family="'Helvetica Neue Web','Helvetica Neue',Arial,sans-serif" font-weight="700" font-size="30" fill="#0a0a0a">+</text></svg></div>
         <div class="home-square-bottom">
@@ -487,12 +527,10 @@
           <span class="home-square-arrow" aria-hidden="true">→</span>
         </div>
       </a>
-      <a class="home-square home-square-event" id="homeEvent" href="/eventos/" hidden>
-        <div class="home-square-top"><span class="he-kicker"></span></div>
-        <div class="home-square-bottom">
-          <strong class="home-name he-title"></strong>
-          <span class="home-square-arrow" aria-hidden="true">→</span>
-        </div>
+      <a class="home-live home-live-night" id="liveNight" href="/eventos/?f=night" hidden>
+        <span class="home-live-title"></span>
+        <span class="home-live-time"></span>
+        <span class="home-live-arrow" aria-hidden="true">→</span>
       </a>
     </div>
   </main>
@@ -562,29 +600,72 @@
       renderLive();
     }
 
+    // Franja de evento bajo el cuadrado de cada espacio, solo si tiene un próximo evento (o uno en marcha).
+    // Sin eventos no hay franja y el espacio se aprovecha para la frase y los cuadrados.
     var U = window.ROCE_EVENT_UTIL, EVENTS = [];
     var TZ = 'Europe/Madrid';
     function hm(ms) { return new Intl.DateTimeFormat('es-ES', { timeZone: TZ, hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).format(ms); }
+    var CARD_MIN = 150; // ancho mínimo de la tarjeta de evento junto a la frase
     function nextEvent() {
       var now = Date.now();
       return U && EVENTS.filter(function (x) { return U.bounds(x)[1] > now; }).sort(function (a, b) { return U.bounds(a)[0] - U.bounds(b)[0]; })[0];
     }
-    // Cubo del evento más cercano (o en marcha), de día o de noche: blanco o negro según su ambiente, sin cartel.
+    function textWidth() {
+      var w = 0;
+      [].forEach.call(document.querySelectorAll('.home-statement .line'), function (ln) {
+        var r = document.createRange(); r.selectNodeContents(ln);
+        [].forEach.call(r.getClientRects(), function (q) { w = Math.max(w, q.right - document.querySelector('.home-statement').getBoundingClientRect().left); });
+      });
+      var img = document.querySelector('.home-logo:not([style*="none"])');
+      return w;
+    }
+    // Franjas bajo los cuadrados (cuando no cabe la tarjeta junto a la frase): una por espacio con evento.
+    function renderStrips() {
+      var l = window.ROCE_I18N ? window.ROCE_I18N.getLang() : 'es', n = 0;
+      [['day', 'liveDay'], ['night', 'liveNight']].forEach(function (c) {
+        var el = document.getElementById(c[1]);
+        var now = Date.now();
+        var e = U && EVENTS.filter(function (x) { return x.env === c[0] && U.bounds(x)[1] > now; })
+          .sort(function (a, b) { return U.bounds(a)[0] - U.bounds(b)[0]; })[0];
+        if (!e) { el.hidden = true; return; }
+        n++;
+        el.hidden = false;
+        el.href = '/eventos/evento/?e=' + encodeURIComponent(e.id);
+        var b = U.bounds(e);
+        U.setMarquee(el.querySelector('.home-live-title'), e.title[l] || e.title.es);
+        el.querySelector('.home-live-time').textContent = U.isLive(e) ? hm(b[0]) + ' – ' + hm(b[1]) :
+          new Intl.DateTimeFormat(l === 'en' ? 'en-GB' : 'es-ES', { timeZone: TZ, weekday: 'short', day: 'numeric', month: 'short' }).format(b[0]).replace('.', '') + ' · ' + hm(b[0]);
+      });
+      document.querySelector('.home-main').style.setProperty('--live-n', n);
+    }
+    // Con espacio libre junto a la frase se pone ahí el próximo evento; si no, franjas bajo los cuadrados. Nunca hay scroll.
     function renderLive() {
-      var main = document.querySelector('.home-main'), cube = document.getElementById('homeEvent');
+      var main = document.querySelector('.home-main'), card = document.getElementById('homeEvent'), st = document.querySelector('.home-statement');
       var l = window.ROCE_I18N ? window.ROCE_I18N.getLang() : 'es';
+      main.style.setProperty('--live-n', 0);
+      card.hidden = true;
+      ['liveDay', 'liveNight'].forEach(function (id) { document.getElementById(id).hidden = true; });
       var e = nextEvent();
-      cube.hidden = !e;
-      main.style.setProperty('--sq-n', e ? 3 : 2);
       if (!e) return;
-      var b = U.bounds(e), live = U.isLive(e);
-      cube.href = '/eventos/evento/?e=' + encodeURIComponent(e.id);
-      cube.setAttribute('data-env', e.env === 'night' ? 'night' : 'day');
-      var k = cube.querySelector('.he-kicker');
-      k.classList.toggle('is-live', live);
-      k.textContent = live ? hm(b[0]) + ' – ' + hm(b[1]) :
-        new Intl.DateTimeFormat(l === 'en' ? 'en-GB' : 'es-ES', { timeZone: TZ, weekday: 'short', day: 'numeric', month: 'short' }).format(b[0]).replace('.', '') + ' · ' + hm(b[0]);
-      cube.querySelector('.he-title').textContent = e.title[l] || e.title.es;
+      var h = st.getBoundingClientRect().height, free = document.querySelector('.home-top').clientWidth - textWidth() - 40;
+      // El cartel mantiene siempre su proporción 4:5 (sin recortes ni zoom): la tarjeta se ajusta al ancho libre y al alto
+      // disponible (dejando sitio al botón del menú y al texto de debajo).
+      var PAD = 26, BODY = e.image ? 58 : 150;
+      var pw = Math.min(free - PAD, (h - 70 - BODY - PAD) / 1.25), cw = pw + PAD;
+      if (cw >= CARD_MIN && h >= 260) {
+        var b = U.bounds(e);
+        card.hidden = false; card.style.width = Math.floor(cw) + 'px';
+        card.href = '/eventos/evento/?e=' + encodeURIComponent(e.id);
+        card.setAttribute('data-env', e.env);
+        card.classList.toggle('has-img', !!e.image);
+        card.classList.toggle('no-img', !e.image);
+        card.querySelector('.he-media').style.backgroundImage = e.image ? 'url("' + e.image.replace(/"/g, '%22') + '")' : 'none';
+        card.querySelector('.he-kicker').textContent = U.isLive(e) ? hm(b[0]) + ' – ' + hm(b[1]) :
+          new Intl.DateTimeFormat(l === 'en' ? 'en-GB' : 'es-ES', { timeZone: TZ, weekday: 'short', day: 'numeric', month: 'short' }).format(b[0]).replace('.', '') + ' · ' + hm(b[0]);
+        card.querySelector('.he-title').textContent = e.title[l] || e.title.es;
+      } else {
+        renderStrips();
+      }
     }
     var rz; window.addEventListener('resize', function () { clearTimeout(rz); rz = setTimeout(renderLive, 120); });
     if (window.ROCE_EVENTS_READY) window.ROCE_EVENTS_READY.then(function (list) { EVENTS = list; renderLive(); });
