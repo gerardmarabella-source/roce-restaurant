@@ -50,3 +50,26 @@ body.zone-day #mesasApp { --mz-fg: var(--black); --mz-bg: var(--white); --mz-lin
 .mz-go { display: block; width: 100%; margin-top: 1.5rem; min-height: 3.4rem; border: 0; background: var(--mz-fg); color: var(--mz-bg); font-size: 1.05rem; letter-spacing: 0.03em; text-transform: uppercase; cursor: pointer; border-radius: 0; }
 .mz-go:disabled { opacity: 0.55; cursor: default; }
 .mz-notice { margin: 0 0 1rem; padding: 0.8rem 1rem; border: 1px solid var(--mz-fg); font-size: 0.92rem; line-height: 1.45; font-family: var(--body, inherit); }
+.mz-slot.is-full { opacity: 0.55; text-decoration: none; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.1; padding: 0.2rem; border-style: dashed; }
+.mz-slot.is-full span { text-decoration: line-through; }
+.mz-slot.is-full small { font-size: 0.62rem; letter-spacing: 0.05em; text-transform: uppercase; }
+.mz-alt { margin: 0 0 1.2rem; }
+.mz-alt-h { margin: 0 0 0.5rem; font-size: 0.85rem; letter-spacing: 0.05em; text-transform: uppercase; color: var(--mz-soft); }
+.mz-chips { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.mz-chip { padding: 0.65rem 0.9rem; border: 1px solid var(--mz-fg); background: transparent; font-size: 0.92rem; cursor: pointer; border-radius: 0; text-align: left; text-transform: uppercase; letter-spacing: 0.02em; }
+.mz-chip:hover { background: var(--mz-fg); color: var(--mz-bg); }
+.mz-wl-cta { margin: 1.2rem 0 0; }
+.mz-link { padding: 0; border: 0; background: none; color: inherit; font-size: 0.95rem; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; text-align: left; }
+.mz-ok { margin: 1rem 0 0; padding: 0.9rem 1rem; border: 1px solid var(--mz-fg); font-size: 0.95rem; line-height: 1.45; }
+.mz-sel { display: block; margin: 0.6rem 0 0.2rem; font-size: 0.8rem; color: var(--mz-soft); text-transform: uppercase; letter-spacing: 0.05em; }
+.mz-sel select { display: block; width: 100%; margin-top: 0.3rem; padding: 0.7rem 0.4rem; border: 0; border-bottom: 1px solid var(--mz-fg); background: transparent; font-size: 1.1rem; text-transform: uppercase; color: inherit; border-radius: 0; }
+.mz-sel option { color: #0a0a0a; text-transform: none; }
+.mz-wait { margin-top: 1.4rem; }
+.mz-info { margin: 1.25rem 0 0; font-size: 0.88rem; line-height: 1.5; color: var(--mz-soft); font-family: var(--body, inherit); }
+.mz-allergies { margin-top: 1.1rem; }
+.mz-al-list { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.mz-al { display: inline-flex; cursor: pointer; }
+.mz-al input { position: absolute; opacity: 0; pointer-events: none; }
+.mz-al span { padding: 0.45rem 0.7rem; border: 1px solid var(--mz-line); font-size: 0.85rem; }
+.mz-al input:checked + span { background: var(--mz-fg); color: var(--mz-bg); border-color: var(--mz-fg); }
+.mz-al input:focus-visible + span { outline: 2px solid var(--mz-fg); outline-offset: 2px; }

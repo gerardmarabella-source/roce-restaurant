@@ -512,6 +512,7 @@ const TT = {
     rfSubject: "Fianza devuelta · ROCE", rfTitle: "Fianza devuelta", rfIntro: (m: string) => `Hemos devuelto la fianza de ${m} a tu tarjeta. Según tu banco puede tardar unos días en verse reflejada.`,
     privacy: "BRUNCH DINNER ETC. SL (ROCE) trata tus datos para gestionar tu reserva. Más información y tus derechos en https://roce.es/privacidad.html o escribiendo a reservas@roce.es.",
     guarantee: "Garantía", guaranteeVal: (m: string) => `${m} solo si no vienes`,
+    duration: "Duración de la mesa", durTxt: (d: string, g: number) => `Tu mesa estará disponible ${d}. La mantenemos ${g} min desde la hora reservada: pasado ese tiempo la damos por no presentada.`,
     cardPayIntro: (m: string, until: string, h: number) => `Hemos guardado tu mesa. Para confirmarla, añade una tarjeta como garantía antes del ${until}. No se cobra nada ahora: solo si no vienes o anulas con menos de ${h} h de antelación se cobrarán ${m} automáticamente. Si no la añades, la mesa se liberará.`,
     cardPayBtn: "Añadir tarjeta (no se cobra nada)",
     cardTxt: (m: string, h: number) => `No se ha cobrado nada. ATENCIÓN: si no te presentas o anulas con menos de ${h} h de antelación, se cobrarán ${m} automáticamente a la tarjeta que has dado como garantía.`,
@@ -531,6 +532,7 @@ const TT = {
     rfSubject: "Deposit refunded · ROCE", rfTitle: "Deposit refunded", rfIntro: (m: string) => `We have refunded the ${m} deposit to your card. Depending on your bank it can take a few days to show up.`,
     privacy: "BRUNCH DINNER ETC. SL (ROCE) processes your data to manage your booking. More information and your rights at https://roce.es/privacidad.html or by writing to reservas@roce.es.",
     guarantee: "Guarantee", guaranteeVal: (m: string) => `${m} only if you do not show up`,
+    duration: "Table time", durTxt: (d: string, g: number) => `Your table will be available for ${d}. We hold it for ${g} min after the booked time: after that we treat it as a no-show.`,
     cardPayIntro: (m: string, until: string, h: number) => `We are holding your table. To confirm it, add a card as a guarantee before ${until}. Nothing is charged now: only if you don't show up or cancel less than ${h} h in advance will ${m} be charged automatically. If you don't add it, the table will be released.`,
     cardPayBtn: "Add card (nothing is charged)",
     cardTxt: (m: string, h: number) => `Nothing has been charged. WARNING: if you don't show up or cancel less than ${h} h in advance, ${m} will be charged automatically to the card you gave as a guarantee.`,
@@ -546,9 +548,10 @@ async function sendTableEmail(kind: "ok" | "pay" | "cancel" | "refund" | "charge
   if (!b.email) return new Response("no email");
   const l = b.lang === "en" ? "en" : "es";
   const t = TT[l];
+  const { data: sv } = await serviceClient().from("dining_services").select("duration_min, grace_min, end_note_es, end_note_en").eq("id", b.service_id).maybeSingle();
   const { data: z } = await serviceClient().from("dining_zones").select("name_es, name_en, free_cancel_hours, payment_mode").eq("id", b.zone_id).maybeSingle();
   const hours = z?.free_cancel_hours ?? 24;
-  const card = z?.payment_mode === "card";
+  const card = (b.pay_mode || z?.payment_mode) === "card";
   const zone = z ? (l === "en" && z.name_en ? z.name_en : z.name_es) : "";
   const starts = new Date(b.starts_at);
   const day = new Intl.DateTimeFormat(t.locale, { timeZone: "Europe/Madrid", weekday: "long", day: "numeric", month: "long" }).format(starts);
@@ -560,7 +563,9 @@ async function sendTableEmail(kind: "ok" | "pay" | "cancel" | "refund" | "charge
   const dep = Number(b.deposit_cents ?? 0);
   const until = b.hold_until ? new Intl.DateTimeFormat(t.locale, { timeZone: "Europe/Madrid", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" }).format(new Date(b.hold_until)) : "";
 
-  const rows = [[t.ref, b.ref], [t.date, day], [t.time, hm], [t.party, String(b.party)], ...(zone ? [[t.zone, zone]] : []), ...(dep > 0 ? [card ? [t.guarantee, t.guaranteeVal(money(dep))] : [t.deposit, money(dep)]] : [])];
+  const durMin = Math.round((new Date(b.ends_at).getTime() - starts.getTime()) / 60000);
+  const fmtD = (m: number) => { const h = Math.floor(m / 60), r = m % 60; return (h ? `${h} h` : "") + (h && r ? " " : "") + (r ? `${r} min` : ""); };
+  const rows = [[t.ref, b.ref], [t.date, day], [t.time, hm], [t.party, String(b.party)], ...(zone ? [[t.zone, zone]] : []), ...(dep > 0 ? [card ? [t.guarantee, t.guaranteeVal(money(dep))] : [t.deposit, money(dep)]] : []), ...(durMin > 0 ? [[t.duration, fmtD(durMin)]] : [])];
   let title = t.okTitle, intro: string = t.okIntro, subject = t.okSubject(amb, when), extra = "", button = btnHtml(page, t.manageBtn);
   if (kind === "pay") {
     title = t.payTitle; intro = card ? t.cardPayIntro(money(dep), until, hours) : t.payIntro(money(dep), until); subject = t.paySubject(amb, when); button = btnHtml(page, card ? t.cardPayBtn : t.payBtn);
@@ -574,6 +579,7 @@ async function sendTableEmail(kind: "ok" | "pay" | "cancel" | "refund" | "charge
     title = t.chTitle; intro = t.chIntro(money(Number(b.fee_charged_cents || dep))); subject = t.chSubject; button = "";
   }
   if (kind === "ok" || kind === "pay") {
+    if (durMin > 0) extra += `<tr><td style="padding:14px 24px 0;color:#ddd;font:13px/1.5 Arial,sans-serif">${esc(t.durTxt(fmtD(durMin), sv?.grace_min ?? 15) + ((l === "en" ? sv?.end_note_en : sv?.end_note_es) ? " " + (l === "en" ? sv?.end_note_en : sv?.end_note_es) : ""))}</td></tr>`;
     if (dep > 0) extra += `<tr><td style="padding:14px 24px 0;color:#ddd;font:13px/1.5 Arial,sans-serif">${esc(card ? t.cardTxt(money(dep), hours) : t.depTxt(money(dep), hours))}</td></tr>`;
     if (b.ambience === "night") extra += `<tr><td style="padding:10px 24px 0;color:#e5453a;font:14px Arial,sans-serif">${esc(t.age)}</td></tr>`;
     extra += `<tr><td style="padding:10px 24px 0;color:#aaa;font:13px/1.5 Arial,sans-serif">${esc(t.late)}</td></tr>`;
@@ -636,6 +642,74 @@ async function notifyTableStaff(b: any, what: string): Promise<void> {
   }).catch(() => {});
 }
 
+// ─── Lista de espera (tabla dining_waitlist) ─────────────────────────────
+//   INSERT                          → "Estás en la lista de espera"
+//   UPDATE a "notified"             → "Se ha liberado una mesa" con el enlace para reservar
+// Además, cuando se anula una reserva, se avisa a los primeros de la lista de ese día si ya hay sitio para su grupo.
+const TW = {
+  es: {
+    locale: "es-ES", date: "Día", party: "Personas", time: "Hora preferida", any: "Cualquiera",
+    joinSubject: "Estás en la lista de espera · ROCE", joinTitle: "En lista de espera", joinIntro: "Te avisaremos por email en cuanto se libere una mesa para tu grupo. No es una reserva: cuando te escribamos, reserva cuanto antes porque las mesas se ocupan rápido.",
+    freeSubject: "Se ha liberado una mesa · ROCE", freeTitle: "¡Hay mesa!", freeIntro: "Se ha liberado una mesa para tu grupo. Reserva ahora, antes de que se ocupe.", freeBtn: "Reservar mesa",
+    privacy: "BRUNCH DINNER ETC. SL (ROCE) trata tus datos para gestionar tu solicitud de lista de espera. Más información en https://roce.es/privacidad.html o escribiendo a reservas@roce.es.",
+  },
+  en: {
+    locale: "en-GB", date: "Day", party: "Guests", time: "Preferred time", any: "Any",
+    joinSubject: "You're on the waiting list · ROCE", joinTitle: "On the waiting list", joinIntro: "We will email you as soon as a table opens up for your group. This is not a booking: when we write, book quickly because tables go fast.",
+    freeSubject: "A table has opened up · ROCE", freeTitle: "A table is free!", freeIntro: "A table has opened up for your group. Book now before it is taken.", freeBtn: "Book a table",
+    privacy: "BRUNCH DINNER ETC. SL (ROCE) processes your data to manage your waiting list request. More information at https://roce.es/privacidad.html or by writing to reservas@roce.es.",
+  },
+};
+
+async function sendWaitlistEmail(kind: "join" | "free", w: any): Promise<Response> {
+  if (!w.email) return new Response("no email");
+  const t = TW[w.lang === "en" ? "en" : "es"];
+  const day = new Intl.DateTimeFormat(t.locale, { timeZone: "UTC", weekday: "long", day: "numeric", month: "long" }).format(new Date(w.want_date + "T12:00:00Z"));
+  const rows = [[t.date, day], [t.party, String(w.party)], [t.time, w.want_time || t.any]];
+  const link = `${SITE}/fuck-who-doesn%27t-like-this-place/?d=${w.want_date}&p=${w.party}${w.ambience ? "#" + w.ambience : ""}`;
+  const html = mailShell(`
+<tr><td style="padding:28px 24px 8px;color:#fff;font:32px Arial,sans-serif;text-transform:uppercase">${esc(kind === "free" ? t.freeTitle : t.joinTitle)}</td></tr>
+<tr><td style="padding:0 24px 20px;color:#ddd;font:16px/1.5 Arial,sans-serif">${esc(kind === "free" ? t.freeIntro : t.joinIntro)}</td></tr>
+<tr><td style="padding:0 24px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0">${rowsHtml(rows)}</table></td></tr>
+${kind === "free" ? btnHtml(link, t.freeBtn) : ""}
+<tr><td style="padding:24px 24px 32px;color:#777;font:11px/1.5 Arial,sans-serif">${esc(t.privacy)}</td></tr>`);
+  const res = await fetch("https://api.brevo.com/v3/smtp/email", {
+    method: "POST",
+    headers: brevoHeaders,
+    body: JSON.stringify({ sender: { name: "ROCE", email: FROM }, replyTo: { email: REPLY_TO, name: "ROCE" }, to: [w.name ? { email: w.email, name: w.name } : { email: w.email }], subject: kind === "free" ? t.freeSubject : t.joinSubject, htmlContent: html }),
+  });
+  return res.ok ? new Response("sent") : new Response("brevo error: " + (await res.text()), { status: 502 });
+}
+
+async function handleWaitlist(p: any): Promise<Response> {
+  const n = p.record, o = p.old_record ?? {};
+  if (p.type === "INSERT" && n.status === "waiting") return await sendWaitlistEmail("join", n);
+  if (p.type === "UPDATE" && n.status === "notified" && o.status !== "notified") return await sendWaitlistEmail("free", n);
+  return new Response("ignored");
+}
+
+// Al anularse una reserva: avisa a los primeros de la lista de espera de ese día que ya tengan sitio.
+async function notifyWaitlistFor(b: any): Promise<void> {
+  try {
+    const sb = serviceClient();
+    const local = new Date(new Date(b.starts_at).toLocaleString("en-US", { timeZone: "Europe/Madrid" }));
+    if (local.getHours() < 6) local.setDate(local.getDate() - 1); // la madrugada pertenece al día anterior
+    const ymd = `${local.getFullYear()}-${String(local.getMonth() + 1).padStart(2, "0")}-${String(local.getDate()).padStart(2, "0")}`;
+    const { data: list } = await sb.from("dining_waitlist").select("id, party, ambience").eq("want_date", ymd).eq("status", "waiting").order("created_at").limit(8);
+    if (!list || !list.length) return;
+    const anon = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_ANON_KEY")!);
+    let sent = 0;
+    for (const w of list) {
+      if (sent >= 3) break;
+      if (w.ambience && w.ambience !== b.ambience) continue;
+      const { data: slots } = await anon.rpc("dining_slots", { p_date: ymd, p_party: w.party, p_ambience: w.ambience });
+      if (!slots || !slots.length) continue;
+      await sb.from("dining_waitlist").update({ status: "notified", notified_at: new Date().toISOString() }).eq("id", w.id).eq("status", "waiting");
+      sent++;
+    }
+  } catch (e) { console.error("waitlist", String(e)); }
+}
+
 async function handleTableBooking(p: any): Promise<Response> {
   const n = p.record, o = p.old_record ?? {};
   if (p.type === "INSERT") await syncTableContact(n);
@@ -670,6 +744,7 @@ async function handleTableBooking(p: any): Promise<Response> {
         body: JSON.stringify({ action: "table_charge", token: n.token }),
       }).catch(() => {});
     }
+    if ((n.status === "cancelled" || n.status === "no_show") && o.status !== n.status && ["confirmed", "pending"].includes(o.status)) await notifyWaitlistFor(n);
     if (n.status === "cancelled" && o.status !== "cancelled" && ["confirmed", "pending"].includes(o.status)) {
       // Solo se avisa si ya se había confirmado o se había pagado algo: una pendiente que nunca se pagó no merece email.
       if (o.status === "confirmed" || o.payment_status === "paid" || o.payment_status === "guaranteed") {
@@ -702,6 +777,7 @@ Deno.serve(async (req) => {
     return new Response("forbidden", { status: 403 });
   }
   if (payload.table === "table_bookings") return await handleTableBooking(payload);
+  if (payload.table === "dining_waitlist") return await handleWaitlist(payload);
   if (payload.table !== "bookings") return new Response("ignored");
   if (payload.type === "INSERT") {
     // Con pago online la reserva nace "pending": el email sale cuando el banco confirma el cobro.

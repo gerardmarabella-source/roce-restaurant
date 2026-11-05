@@ -283,7 +283,7 @@ async function handlePayTable(body: { token?: string; lang?: string; return_base
   if (!/^[a-f0-9]{32}$/.test(token)) return json({ error: "not_found" }, 404);
   const sb = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
   const { data: b } = await sb.from("table_bookings")
-    .select("id, ref, name, deposit_cents, status, payment_status, hold_until, starts_at, lang, zone_id")
+    .select("id, ref, name, deposit_cents, status, payment_status, hold_until, starts_at, lang, zone_id, pay_mode")
     .eq("token", token).maybeSingle();
   if (!b) return json({ error: "not_found" }, 404);
   if (b.payment_status === "paid") return json({ error: "already_paid" }, 409);
@@ -296,7 +296,8 @@ async function handlePayTable(body: { token?: string; lang?: string; return_base
 
   // Zona con garantía de tarjeta: no se cobra nada, solo se pide la tarjeta y Redsys guarda una referencia.
   const { data: zone } = await sb.from("dining_zones").select("payment_mode").eq("id", b.zone_id).maybeSingle();
-  const guarantee = zone?.payment_mode === "card";
+  // El tipo de garantía es el de la reserva (si se creó desde el panel con uno concreto) o el de la zona.
+  const guarantee = (b.pay_mode || zone?.payment_mode) === "card";
   const guaranteeCents = Math.max(0, Number(Deno.env.get("REDSYS_GUARANTEE_AMOUNT") ?? "0") || 0);
 
   let order = "";

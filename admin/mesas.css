@@ -77,3 +77,21 @@
 .mt-bar.is-noshow { background: repeating-linear-gradient(135deg, transparent 0 4px, rgba(229, 69, 58, 0.18) 4px 8px); border: 1.5px dashed var(--red); color: var(--red); text-decoration: line-through; }
 .mt-bar.is-late { border-color: var(--red); box-shadow: inset 0 0 0 2px var(--red); }
 .mt-bar.is-over span { color: #ff9b94; font-weight: 700; opacity: 1; }
+.mt-cust { padding: 0.8rem; border: 1px dashed var(--fg); margin-top: 0.4rem; }
+.mt-cust textarea, .mt-cust input[type="text"] { width: 100%; padding: 0.55rem 0.65rem; border: 1px solid var(--fg); border-radius: 0; background: transparent; margin-top: 0.4rem; }
+.mt-linkin { width: min(100%, 34rem); padding: 0.3rem 0.4rem; border: 1px solid var(--line); background: transparent; font-size: 0.78rem; }
+.mt-crmstats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; margin: 0.8rem 0 1rem; text-align: center; }
+.mt-crmstats div { padding: 0.6rem 0.3rem; border: 1px solid var(--line); }
+.mt-crmstats b { display: block; font-family: var(--display); font-weight: 400; font-size: 1.5rem; }
+.mt-crmstats span { font-size: 0.7rem; letter-spacing: 0.05em; text-transform: uppercase; opacity: 0.65; }
+.mt-topbtns { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.mt-al-list { display: flex; flex-wrap: wrap; gap: 0.35rem; margin: 0.4rem 0; }
+.mt-al { display: inline-flex; cursor: pointer; }
+.mt-al input { position: absolute; opacity: 0; pointer-events: none; }
+.mt-al span { padding: 0.3rem 0.6rem; border: 1px solid var(--line); font-size: 0.8rem; }
+.mt-al input:checked + span { background: var(--red); color: #fff; border-color: var(--red); }
+.mt-al.is-label span { border-style: dashed; }
+.mt-al.is-label input:checked + span { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+.mt-two { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+.mt-two select, .mt-two input[type="text"], .mt-two input[type="number"] { width: 100%; padding: 0.55rem 0.65rem; border: 1px solid var(--fg); border-radius: 0; background: transparent; margin-top: 0.4rem; }
+@media (max-width: 560px) { .mt-two { grid-template-columns: 1fr; } }

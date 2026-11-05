@@ -12,7 +12,7 @@
   var PLAN_RATIO = 1660 / 1175;
   var ZONE_NAME = { baja: 'Planta baja', alta: 'Planta alta', prive: 'Sala privé' };
 
-  var S = { view: 'day', date: '', zone: 'baja', time: '', zones: [], tables: [], services: [], loadedCfg: false, bookings: [], blocks: [], closures: [], busy: false, join: false, sel: [], zoom: 1, px: 0, py: 0, justMoved: false, mode: 'timeline', joinTime: '' };
+  var S = { view: 'day', date: '', zone: 'baja', time: '', zones: [], tables: [], services: [], loadedCfg: false, bookings: [], blocks: [], closures: [], busy: false, join: false, sel: [], zoom: 1, px: 0, py: 0, justMoved: false, mode: 'timeline', joinTime: '', prescribers: [], notes: {}, waitlist: [], crm: [], crmQ: '', crmSort: 'last', crmType: '' };
 
   function today() { return new Intl.DateTimeFormat('en-CA', { timeZone: TZ }).format(new Date()); }
   function addDays(d, n) { var x = new Date(d + 'T12:00:00Z'); x.setUTCDate(x.getUTCDate() + n); return x.toISOString().slice(0, 10); }
@@ -25,7 +25,7 @@
   function holds(b) { return b.status === 'confirmed' || b.status === 'seated' || (b.status === 'pending' && new Date(b.hold_until).getTime() > Date.now()); }
   function errText(e) {
     var m = String((e && e.message) || e);
-    var map = { table_busy: 'Alguna de esas mesas ya está ocupada a esa hora.', no_table: 'No hay mesa libre para ese grupo a esa hora en esa zona.', bad_data: 'Revisa los datos (nombre y personas).', email_required: 'Para pedir la fianza hace falta el email del cliente.', forbidden: 'No tienes permiso.', zone_not_found: 'Zona no válida.', not_editable: 'Esa reserva ya no se puede editar.', service_not_found: 'Turno no válido.' };
+    var map = { table_busy: 'Alguna de esas mesas ya está ocupada a esa hora.', no_table: 'No hay mesa libre para ese grupo a esa hora en esa zona.', bad_data: 'Revisa los datos (nombre y personas).', email_required: 'Para pedir la fianza hace falta el email del cliente.', forbidden: 'No tienes permiso.', zone_not_found: 'Zona no válida.', not_editable: 'Esa reserva ya no se puede editar.', customer_blocked: 'Este cliente está bloqueado. Quita el bloqueo en Clientes si quieres reservarle.', amount_required: 'Pon el importe a cobrar.', service_not_found: 'Turno no válido.' };
     var k = Object.keys(map).filter(function (x) { return m.indexOf(x) !== -1; })[0];
     return k ? map[k] : m;
   }
@@ -36,17 +36,50 @@
     return Promise.all([
       api('dining_zones?select=*&order=sort,id'),
       api('dining_tables?select=*&order=zone_id,sort,name'),
-      api('dining_services?select=*&order=start_min')
-    ]).then(function (r) { S.zones = r[0] || []; S.tables = r[1] || []; S.services = r[2] || []; S.loadedCfg = true; });
+      api('dining_services?select=*&order=start_min'),
+      api('dining_prescribers?select=*&order=name').catch(function () { return []; })
+    ]).then(function (r) { S.zones = r[0] || []; S.tables = r[1] || []; S.services = r[2] || []; S.prescribers = r[3] || []; S.loadedCfg = true; });
   }
   function loadDay() {
     var from = A.madridToISO(S.date + 'T05:00'), to = A.madridToISO(addDays(S.date, 1) + 'T05:00');
     return Promise.all([
       api('table_bookings?select=*,table_booking_tables(table_id)&starts_at=gte.' + encodeURIComponent(from) + '&starts_at=lt.' + encodeURIComponent(to) + '&order=starts_at'),
-      api('dining_blocks?select=*&starts_at=lt.' + encodeURIComponent(to) + '&ends_at=gt.' + encodeURIComponent(from) + '&order=starts_at')
-    ]).then(function (r) { S.bookings = r[0] || []; S.blocks = r[1] || []; });
+      api('dining_blocks?select=*&starts_at=lt.' + encodeURIComponent(to) + '&ends_at=gt.' + encodeURIComponent(from) + '&order=starts_at'),
+      api('dining_customer_notes?select=*').catch(function () { return []; })
+    ]).then(function (r) { S.bookings = r[0] || []; S.blocks = r[1] || []; S.notes = {}; (r[2] || []).forEach(function (n) { S.notes[n.customer_key] = n; }); });
   }
   function tableById(id) { return S.tables.filter(function (t) { return t.id === id; })[0]; }
+  // Clave del cliente (la misma que usa el CRM): su email o, si no tiene, su teléfono.
+  function ckey(b) { var e = String(b.email || '').trim().toLowerCase(); return e || String(b.phone || '').replace(/\D/g, ''); }
+  function noteOf(b) { return S.notes[ckey(b)] || null; }
+  function presName(code) { var p = S.prescribers.filter(function (x) { return x.code === code; })[0]; return p ? p.name : code; }
+  var AL = { gluten: 'Gluten / celiaquía', lactosa: 'Lactosa', 'frutos-secos': 'Frutos secos', marisco: 'Marisco', pescado: 'Pescado', huevo: 'Huevo', soja: 'Soja', sesamo: 'Sésamo', vegetariano: 'Vegetariano', vegano: 'Vegano', otras: 'Otras alergias' };
+  var LB = { transferencia: 'Pago por transferencia' };   // etiquetas que no son alergias
+  var CT = { particular: 'Particular', empresa: 'Empresa', grupo: 'Grupo empresarial (consumo interno)' };
+  function chips(name, sel) {
+    var one = function (k, txt, cls) { return '<label class="mt-al' + (cls ? ' ' + cls : '') + '"><input type="checkbox" name="' + name + '" value="' + k + '"' + ((sel || []).indexOf(k) !== -1 ? ' checked' : '') + '><span>' + esc(txt) + '</span></label>'; };
+    return '<div class="mt-al-list">' + Object.keys(AL).map(function (k) { return one(k, AL[k]); }).join('') + Object.keys(LB).map(function (k) { return one(k, LB[k], 'is-label'); }).join('') + '</div>';
+  }
+  function picked(root_, name) { return [].map.call(root_.querySelectorAll('input[name="' + name + '"]:checked'), function (i) { return i.value; }); }
+  function tagsOf(b) { var set = {}; (b.allergy_tags || []).concat((noteOf(b) || {}).tags || []).forEach(function (k) { set[k] = 1; }); return Object.keys(set); }
+  function allergiesOf(b) { return tagsOf(b).filter(function (k) { return AL[k]; }); }
+  function labelsOf(b) { return tagsOf(b).filter(function (k) { return LB[k]; }); }
+  function alText(b) { return allergiesOf(b).map(function (k) { return AL[k]; }).join(', '); }
+  function tagHtml(k) { return AL[k] ? '<span class="ad-tag is-red">⚠ ' + esc(AL[k]) + '</span>' : '<span class="ad-tag">' + esc(LB[k] || k) + '</span>'; }
+  function saveCust(key, o) {
+    if (!key) return Promise.resolve();
+    var cur = S.notes[key] || { note: '', blocked: false, blocked_reason: '', tags: [], customer_type: 'particular', company: '', tax_id: '', balance_cents: 0 };
+    var n = Object.assign({}, cur, o, { customer_key: key });
+    if (!n.blocked) n.blocked_reason = '';
+    return api('dining_customer_notes?on_conflict=customer_key', { method: 'POST', prefer: 'resolution=merge-duplicates,return=minimal', body: { customer_key: key, note: n.note || '', blocked: !!n.blocked, blocked_reason: n.blocked_reason || '', tags: n.tags || [], customer_type: n.customer_type || 'particular', company: n.company || '', tax_id: n.tax_id || '', balance_cents: n.balance_cents || 0, updated_by: A.session().email || '', updated_at: new Date().toISOString() } })
+      .then(function () { S.notes[key] = n; });
+  }
+  function saveNote(key, note, blocked, why) { return saveCust(key, { note: note, blocked: blocked, blocked_reason: why }); }
+  function saveNoteOld(key, note, blocked, why) {
+    if (!key) return Promise.resolve();
+    return api('dining_customer_notes?on_conflict=customer_key', { method: 'POST', prefer: 'resolution=merge-duplicates,return=minimal', body: { customer_key: key, note: note || '', blocked: !!blocked, blocked_reason: blocked ? (why || '') : '', updated_by: A.session().email || '', updated_at: new Date().toISOString() } })
+      .then(function () { S.notes[key] = { customer_key: key, note: note || '', blocked: !!blocked, blocked_reason: blocked ? (why || '') : '' }; });
+  }
   function seatsOf(b) { return bookingTables(b).reduce(function (n, t) { return n + t.seats_max; }, 0); }
   function bookingTables(b) { return (b.table_booking_tables || []).map(function (x) { return tableById(x.table_id); }).filter(Boolean); }
 
@@ -54,14 +87,14 @@
   function shell() {
     root.innerHTML =
       '<div class="mt-nav" role="group" aria-label="Mesas">' +
-      [['day', 'Día'], ['blocks', 'Bloqueos'], ['config', 'Configuración']].map(function (v) { return '<button type="button" class="ck-chip" data-view="' + v[0] + '" aria-pressed="' + (S.view === v[0]) + '">' + v[1] + '</button>'; }).join('') +
+      [['day', 'Día'], ['wait', 'Lista de espera'], ['crm', 'Clientes'], ['blocks', 'Bloqueos'], ['config', 'Configuración']].map(function (v) { return '<button type="button" class="ck-chip" data-view="' + v[0] + '" aria-pressed="' + (S.view === v[0]) + '">' + v[1] + '</button>'; }).join('') +
       '</div><div id="mtBody"></div>';
   }
   function render() {
     if (!document.getElementById('mtBody')) shell();
     [].forEach.call(root.querySelectorAll('[data-view]'), function (b) { b.setAttribute('aria-pressed', String(b.dataset.view === S.view)); });
     var body = document.getElementById('mtBody');
-    if (S.view === 'day') { renderDay(body); applyView(); } else if (S.view === 'blocks') renderBlocks(body); else renderConfig(body);
+    if (S.view === 'day') { renderDay(body); applyView(); } else if (S.view === 'wait') renderWait(body); else if (S.view === 'crm') renderCrm(body); else if (S.view === 'blocks') renderBlocks(body); else renderConfig(body);
   }
   root.addEventListener('click', function (e) {
     var v = e.target.closest('[data-view]');
@@ -73,6 +106,8 @@
     var b = document.getElementById('mtBody'); if (b) b.innerHTML = '<p class="ad-empty">Cargando…</p>';
     return loadConfig().then(function () {
       if (S.view === 'day') return loadDay();
+      if (S.view === 'wait') return api('dining_waitlist?select=*&status=in.(waiting,notified)&want_date=gte.' + today() + '&order=want_date,created_at').then(function (r) { S.waitlist = r || []; });
+      if (S.view === 'crm') return A.api('rpc/dining_crm', { method: 'POST', body: {} }).then(function (r) { S.crm = r || []; });
       if (S.view === 'blocks') return api('dining_blocks?select=*&ends_at=gt.' + encodeURIComponent(new Date().toISOString()) + '&order=starts_at').then(function (r) { S.blocks = r || []; });
       return api('dining_closures?select=*&date_to=gte.' + today() + '&order=date_from').then(function (r) { S.closures = r || []; });
     }).then(render).catch(function (e) { flash('No se han podido cargar las mesas: ' + e.message, 'error'); });
@@ -132,8 +167,9 @@
         var many = (b.table_booking_tables || []).length > 1, seats = seatsOf(b), over = b.party > seats;
         var arrived = b.status === 'confirmed' && !!b.arrived_at;
         var late = b.status === 'confirmed' && !b.arrived_at && S.date === today() && Date.now() - Date.parse(b.starts_at) > 15 * 60000;
-        var flags = (arrived ? ' · llegó ' + hm(b.arrived_at) : '') + (b.status === 'seated' && b.dessert_at ? ' · postre' : '') + (late ? ' · ¿llega?' : '') + (b.status === 'no_show' ? ' · no vino' : '');
-        bars += '<button type="button" class="mt-bar is-' + st + (arrived ? ' is-arrived' : '') + (late ? ' is-late' : '') + (over ? ' is-over' : '') + '" data-bid="' + b.id + '" style="left:' + l + 'px;width:' + w + 'px" title="' + esc((b.name || 'Sin nombre') + ' · ' + b.party + ' personas en ' + seats + ' plazas · ' + hm(b.starts_at) + '–' + hm(b.ends_at) + flags + (b.notes ? ' · ' + b.notes : '')) + '"><b>' + esc(b.name || 'Sin nombre') + '</b> <span>' + b.party + '/' + seats + (many ? ' · juntas' : '') + flags + '</span></button>';
+        var al = allergiesOf(b).length ? ' ⚠' : '', lb = labelsOf(b).length ? ' · ' + labelsOf(b).map(function (k) { return LB[k]; }).join(', ') : '';
+        var flags = al + lb + (arrived ? ' · llegó ' + hm(b.arrived_at) : '') + (b.status === 'seated' && b.dessert_at ? ' · postre' : '') + (late ? ' · ¿llega?' : '') + (b.status === 'no_show' ? ' · no vino' : '');
+        bars += '<button type="button" class="mt-bar is-' + st + (arrived ? ' is-arrived' : '') + (late ? ' is-late' : '') + (over ? ' is-over' : '') + '" data-bid="' + b.id + '" style="left:' + l + 'px;width:' + w + 'px" title="' + esc((b.name || 'Sin nombre') + ' · ' + b.party + ' personas en ' + seats + ' plazas · ' + hm(b.starts_at) + '–' + hm(b.ends_at) + flags + (alText(b) ? ' · ALERGIAS: ' + alText(b) : '') + (b.notes ? ' · ' + b.notes : '')) + '"><b>' + esc(b.name || 'Sin nombre') + '</b> <span>' + b.party + '/' + seats + (many ? ' · juntas' : '') + flags + '</span></button>';
       });
       S.blocks.forEach(function (k) {
         if (k.zone_id !== t.zone_id || (k.table_ids && k.table_ids.indexOf(t.id) === -1)) return;
@@ -192,10 +228,10 @@
       if (b.payment_status === 'guaranteed' && (b.status === 'no_show' || b.late_cancel || (b.status === 'confirmed' && new Date(b.starts_at).getTime() < Date.now()))) a.push('<button class="ad-btn is-small is-danger" data-act="charge" data-id="' + b.id + '">Cobrar ' + eur(b.deposit_cents) + ' a la tarjeta</button>');
       if ((b.payment_status === 'paid' || b.payment_status === 'retained' || b.payment_status === 'charged') && b.deposit_cents > 0) a.push('<button class="ad-btn is-small is-ghost" data-act="refund" data-id="' + b.id + '">Devolver fianza</button>');
       return '<li class="ad-card mt-bk' + (cancelled ? ' is-past' : '') + '"><div class="ad-date"><b>' + hm(b.starts_at) + '</b><span>' + b.party + ' p.</span></div>' +
-        '<div><div class="ad-name">' + (b.name ? esc(b.name) : '<i>Sin nombre</i>') + ' <span class="ad-tag ' + (b.status === 'seated' ? 'is-green' : b.status === 'cancelled' || b.status === 'no_show' ? 'is-red' : '') + '">' + esc(ST[b.status] || b.status) + '</span>' + (b.arrived_at && b.status !== 'cancelled' ? '<span class="ad-tag is-green">Llegó ' + hm(b.arrived_at) + '</span>' : '') + (b.dessert_at && b.status === 'seated' ? '<span class="ad-tag">Postre ' + hm(b.dessert_at) + '</span>' : '') + pay + '</div>' +
+        '<div><div class="ad-name">' + (b.name ? esc(b.name) : '<i>Sin nombre</i>') + ' <span class="ad-tag ' + (b.status === 'seated' ? 'is-green' : b.status === 'cancelled' || b.status === 'no_show' ? 'is-red' : '') + '">' + esc(ST[b.status] || b.status) + '</span>' + (b.arrived_at && b.status !== 'cancelled' ? '<span class="ad-tag is-green">Llegó ' + hm(b.arrived_at) + '</span>' : '') + (b.dessert_at && b.status === 'seated' ? '<span class="ad-tag">Postre ' + hm(b.dessert_at) + '</span>' : '') + (b.prescriber ? '<span class="ad-tag">Prescriptor: ' + esc(presName(b.prescriber)) + '</span>' : '') + (b.spend_cents != null ? '<span class="ad-tag">Gasto ' + eur(b.spend_cents) + '</span>' : '') + (noteOf(b) && noteOf(b).blocked ? '<span class="ad-tag is-red">Cliente bloqueado</span>' : '') + (noteOf(b) && noteOf(b).customer_type === 'empresa' ? '<span class="ad-tag">Empresa' + (noteOf(b).company ? ': ' + esc(noteOf(b).company) : '') + (noteOf(b).balance_cents ? ' · saldo ' + eur(noteOf(b).balance_cents) : '') + '</span>' : '') + (noteOf(b) && noteOf(b).customer_type === 'grupo' ? '<span class="ad-tag">Consumo interno</span>' : '') + tagsOf(b).map(tagHtml).join('') + pay + '</div>' +
         '<div class="ad-meta">' + esc(zoneName(b.zone_id)) + (tn ? ' · mesa ' + esc(tn) + ' (' + seatsOf(b) + ' plazas' + (b.party > seatsOf(b) ? ' · faltan ' + (b.party - seatsOf(b)) : '') + ')' : '') + ' · ' + esc(b.ambience === 'night' ? 'Restaurant & Cocktails' : 'Coffee, Bakery & Kitchen') + (b.source === 'admin' ? ' · creada en el panel' : '') + '</div>' +
         '<div class="ad-meta">' + esc(b.phone) + (b.email ? ' · ' + esc(b.email) : '') + ' · ' + esc(b.ref) + '</div>' +
-        (b.notes ? '<div class="ad-meta">“' + esc(b.notes) + '”</div>' : '') + '</div>' +
+        (b.notes ? '<div class="ad-meta">“' + esc(b.notes) + '”</div>' : '') + (noteOf(b) && noteOf(b).note ? '<div class="ad-meta">Nota del cliente: ' + esc(noteOf(b).note) + '</div>' : '') + '</div>' +
         '<div class="ad-actions">' + a.join('') + '</div></li>';
     }).join('') : '<li class="ad-empty">No hay reservas este día.</li>';
 
@@ -203,7 +239,7 @@
       '<div class="ad-bar"><div class="mt-day"><button class="ad-btn is-ghost is-small" data-dayn="-1" aria-label="Día anterior">←</button>' +
       '<input type="date" id="mtDate" value="' + S.date + '"><button class="ad-btn is-ghost is-small" data-dayn="1" aria-label="Día siguiente">→</button>' +
       '<button class="ad-btn is-ghost is-small" data-dayn="0">Hoy</button></div>' +
-      '<button class="ad-btn" id="mtNew" type="button">+ Nueva reserva</button></div>' +
+      '<span class="mt-topbtns"><button class="ad-btn is-ghost" id="mtPrint" type="button">Imprimir día</button><button class="ad-btn" id="mtNew" type="button">+ Nueva reserva</button></span></div>' +
       '<p class="ad-meta mt-sum"><b>' + esc(dayLabel(S.date)) + '</b> · ' + live.length + ' reservas · ' + covers + ' comensales' + (deposits ? ' · fianzas cobradas ' + eur(deposits) : '') + '</p>' +
       '<div class="mt-vtoggle" role="group"><button type="button" class="ck-chip" data-mode="timeline" aria-pressed="' + (S.mode === 'timeline') + '">Línea de tiempo</button><button type="button" class="ck-chip" data-mode="map" aria-pressed="' + (S.mode === 'map') + '">Mapa</button></div>' +
       '<div class="ad-bar mt-mapbar"><div class="mt-zones" role="group">' + zones.map(function (z) { return '<button type="button" class="ck-chip" data-zone="' + z.id + '" aria-pressed="' + (z.id === S.zone) + '">' + esc(z.name_es) + '</button>'; }).join('') + '</div>' +
@@ -340,6 +376,7 @@
     if (t.id === 'mtJoinClear') { S.sel = []; return void render(); }
     if (t.id === 'mtJoinGo') { var picked = S.sel.map(tableById).filter(Boolean), jt = S.joinTime; S.join = false; S.sel = []; S.joinTime = ''; render(); return void openNew({ tables: picked, time: jt }); }
     if (t.id === 'mtNew') return void openNew({});
+    if (t.id === 'mtPrint') return void printDay();
     if (t.dataset.table) {
       var tb = tableById(t.dataset.table), o = occupancy(tb, at(S.date, S.time));
       if (S.join) {
@@ -431,10 +468,16 @@
       '<label class="ad-field"><span>Nombre (opcional)</span><input type="text" id="nwName" maxlength="80" placeholder="Sin nombre"></label>' +
       '<label class="ad-field"><span>Teléfono</span><input type="tel" id="nwPhone"></label>' +
       '<label class="ad-field"><span>Email</span><input type="email" id="nwEmail" placeholder="para enviarle la confirmación"></label>' +
-      '<label class="ad-field full"><span>Notas</span><textarea id="nwNotes" maxlength="500" placeholder="Alergias, ocasión…"></textarea></label></div>' +
+      '<div class="ad-field full"><span>Alergias, intolerancias y etiquetas</span>' + chips('nwAl', []) + '</div>' +
+      '<label class="ad-field full"><span>Notas</span><textarea id="nwNotes" maxlength="500" placeholder="Ocasión, detalles…"></textarea></label></div>' +
       '<div class="ad-field"><span>Mesas</span><label class="mt-pick"><input type="radio" name="nwAuto" value="auto" checked> Asignar automáticamente</label>' +
       '<label class="mt-pick"><input type="radio" name="nwAuto" value="manual"' + (pre.table ? ' checked' : '') + '> Elegir mesas</label><div class="mt-picks" id="nwPicks"></div></div>' +
-      '<label class="mt-check" id="nwPayRow"><input type="checkbox" id="nwPay" checked> <span id="nwPayTxt">Pedir fianza por email (enlace para pagar con tarjeta; la mesa se guarda 24 h)</span></label>' +
+      '<div class="ad-grid">' +
+      '<label class="ad-field"><span>Tipo de reserva</span><select id="nwType"><option value="free">Gratuita (queda confirmada al momento)</option><option value="card">Con tarjeta de garantía (no se cobra; se le envía un email)</option><option value="deposit">Con cobro / fianza (se le envía un email para pagar)</option></select></label>' +
+      '<label class="ad-field" id="nwAmtRow"><span>Importe (€)</span><input type="number" id="nwAmt" min="1" step="0.5" value="20"></label>' +
+      '<label class="ad-field"><span>Duración de la mesa (min)</span><input type="number" id="nwDur" min="15" max="600" step="5" placeholder="la del turno"></label>' +
+      '<label class="ad-field"><span>Prescriptor</span><select id="nwPres"><option value="">—</option>' + S.prescribers.filter(function (x) { return x.active; }).map(function (x) { return '<option value="' + esc(x.code) + '">' + esc(x.name) + '</option>'; }).join('') + '</select></label></div>' +
+      '<p class="ad-hint" id="nwTypeNote" style="margin:-0.4rem 0 0.8rem"></p>' +
       '<label class="mt-check"><input type="checkbox" id="nwSeated"> Sentar ahora (cliente que ya está aquí)</label>' +
       '<div class="mt-foot"><button type="button" class="ad-btn is-ghost" data-close>Cancelar</button><button type="submit" class="ad-btn" id="nwGo">Crear reserva</button></div></form>';
     modal(html, function (m) {
@@ -444,11 +487,20 @@
         var s = svc.filter(function (x) { return x.ambience === want; })[0] || svc[0]; if (s) q('nwSvc').value = s.id;
       }
       function pickZoneFromSvc() { /* la zona se elige a mano */ }
-      function depRow() { var z = S.zones.filter(function (x) { return x.id === q('nwZone').value; })[0]; q('nwPayRow').hidden = !(z && z.deposit_cents > 0 && z.payment_mode !== 'none'); q('nwPayTxt').textContent = z && z.payment_mode === 'card' ? 'Pedir tarjeta de garantía por email (enlace para dar la tarjeta; no se cobra nada; la mesa se guarda 24 h)' : 'Pedir fianza por email (enlace para pagar con tarjeta; la mesa se guarda 24 h)'; }
+      function depRow() {
+        var z = S.zones.filter(function (x) { return x.id === q('nwZone').value; })[0] || {};
+        q('nwType').value = z.payment_mode === 'card' ? 'card' : z.payment_mode === 'deposit' ? 'deposit' : 'free';
+        q('nwAmt').value = z.deposit_cents > 0 ? z.deposit_cents / 100 : 20; typeUi();
+      }
+      function typeUi() {
+        var ty = q('nwType').value; q('nwAmtRow').hidden = ty === 'free';
+        q('nwTypeNote').textContent = ty === 'card' ? 'Se enviará un email al cliente (obligatorio) con un enlace para dar los datos de su tarjeta como garantía. No se cobra nada salvo no show o anulación tardía. La mesa se le guarda 24 h.'
+          : ty === 'deposit' ? 'Se enviará un email al cliente (obligatorio) con un enlace para pagar el importe con tarjeta y confirmar la reserva. La mesa se le guarda 24 h.' : 'Queda confirmada ya; si pones email, se le envía la confirmación.';
+      }
       function refreshPicks() {
         var auto = m.querySelector('input[name="nwAuto"]:checked').value === 'auto';
         q('nwPicks').hidden = auto; if (auto) return;
-        var starts = at(q('nwDate').value, q('nwTime').value), sv = S.services.filter(function (x) { return x.id === q('nwSvc').value; })[0], ends = new Date(new Date(starts).getTime() + (sv ? sv.duration_min : 90) * 60000).toISOString();
+        var starts = at(q('nwDate').value, q('nwTime').value), sv = S.services.filter(function (x) { return x.id === q('nwSvc').value; })[0], ends = new Date(new Date(starts).getTime() + (+q('nwDur').value || (sv ? sv.duration_min : 90)) * 60000).toISOString();
         // Ocupadas: según las reservas y bloqueos ya cargados del día (si es otro día, el servidor lo comprueba al crear).
         var busy = S.tables.filter(function (t) { return S.bookings.some(function (b) { return holds(b) && (b.table_booking_tables || []).some(function (x) { return x.table_id === t.id; }) && b.starts_at < ends && b.ends_at > starts; }); }).map(function (t) { return t.id; });
         var keep = [].map.call(q('nwPicks').querySelectorAll('input:checked'), function (i) { return i.value; });
@@ -456,9 +508,10 @@
         q('nwPicks').innerHTML = tablesPicker(q('nwZone').value, keep, busy);
       }
       pickSvc(); depRow(); refreshPicks();
+      if (pre.prefill) { q('nwName').value = pre.prefill.name || ''; q('nwEmail').value = pre.prefill.email || ''; q('nwPhone').value = pre.prefill.phone || ''; q('nwParty').value = pre.prefill.party || 2; }
       ['nwTime', 'nwDate'].forEach(function (id) { q(id).addEventListener('change', function () { pickSvc(); refreshPicks(); }); });
       q('nwZone').addEventListener('change', function () { depRow(); q('nwPicks').innerHTML = ''; refreshPicks(); });
-      q('nwSvc').addEventListener('change', refreshPicks);
+      q('nwSvc').addEventListener('change', refreshPicks); q('nwType').addEventListener('change', typeUi);
       [].forEach.call(m.querySelectorAll('input[name="nwAuto"]'), function (r) { r.addEventListener('change', refreshPicks); });
       q('nwForm').addEventListener('submit', function (ev) {
         ev.preventDefault();
@@ -467,14 +520,18 @@
         var tables = manual ? [].map.call(q('nwPicks').querySelectorAll('input:checked'), function (i) { return i.value; }) : null;
         var msg = q('nwMsg'); msg.hidden = true;
         if (manual && !tables.length) { msg.textContent = 'Elige al menos una mesa o deja la asignación automática.'; msg.hidden = false; return; }
-        var wantPay = !q('nwPayRow').hidden && q('nwPay').checked;
-        if (wantPay && !q('nwEmail').value.trim()) { msg.textContent = 'Para pedir la tarjeta o la fianza hace falta el email del cliente.'; msg.hidden = false; return; }
+        var ty = q('nwType').value, wantPay = ty !== 'free';
+        if (wantPay && !q('nwEmail').value.trim()) { msg.textContent = 'Para pedir la tarjeta o el cobro hace falta el email del cliente.'; msg.hidden = false; return; }
         q('nwGo').disabled = true;
         api('rpc/dining_admin_create', { method: 'POST', body: {
           p_service: q('nwSvc').value, p_starts: at(q('nwDate').value, q('nwTime').value), p_zone: q('nwZone').value, p_party: +q('nwParty').value,
           p_name: q('nwName').value.trim(), p_email: q('nwEmail').value.trim(), p_phone: q('nwPhone').value.trim(), p_notes: q('nwNotes').value.trim(),
-          p_tables: tables, p_seated: q('nwSeated').checked, p_request_payment: wantPay, p_hold_hours: 24
+          p_tables: tables, p_seated: q('nwSeated').checked, p_request_payment: wantPay, p_hold_hours: 24,
+          p_mode: ty, p_amount_cents: wantPay ? Math.round((+q('nwAmt').value || 0) * 100) : null, p_duration: +q('nwDur').value || null, p_prescriber: q('nwPres').value
         } }).then(function (r) {
+          var als = picked(m, 'nwAl');
+          return als.length ? patch(r.id, { allergy_tags: als }).then(function () { return r; }, function () { return r; }) : r;
+        }).then(function (r) {
           m.remove(); S.date = q('nwDate').value; S.time = '';
           var word = r.status === 'pending' ? 'Reserva creada. Hemos enviado un email a ' + q('nwEmail').value.trim() + ' para que confirme la reserva con su tarjeta (' + eur(r.deposit_cents) + ').' :
             q('nwEmail').value.trim() ? 'Reserva creada y confirmación enviada por email.' : 'Reserva creada.';
@@ -502,7 +559,18 @@
       '<label class="ad-field"><span>Nombre</span><input type="text" id="edName" value="' + esc(b.name) + '" maxlength="80"></label>' +
       '<label class="ad-field"><span>Teléfono</span><input type="tel" id="edPhone" value="' + esc(b.phone) + '"></label>' +
       '<label class="ad-field"><span>Email</span><input type="email" id="edEmail" value="' + esc(b.email) + '"></label>' +
-      '<label class="ad-field full"><span>Notas</span><textarea id="edNotes" maxlength="500">' + esc(b.notes) + '</textarea></label></div>' +
+      '<label class="ad-field"><span>Duración de la mesa (min)</span><input type="number" id="edDur" min="15" max="600" step="5" value="' + Math.round(dur / 60000) + '"></label>' +
+      '<label class="ad-field"><span>Prescriptor</span><select id="edPres"><option value="">—</option>' + S.prescribers.filter(function (x) { return x.active || x.code === b.prescriber; }).map(function (x) { return '<option value="' + esc(x.code) + '"' + (x.code === b.prescriber ? ' selected' : '') + '>' + esc(x.name) + '</option>'; }).join('') + '</select></label>' +
+      '<label class="ad-field"><span>Gasto de la visita (€)</span><input type="number" id="edSpend" min="0" step="0.01" value="' + (b.spend_cents != null ? b.spend_cents / 100 : '') + '" placeholder="se rellenará con el TPV"></label>' +
+      '<label class="ad-field full"><span>Notas de la reserva</span><textarea id="edNotes" maxlength="500">' + esc(b.notes) + '</textarea></label></div>' +
+      '<div class="ad-field"><span>Alergias, intolerancias y etiquetas de esta reserva</span>' + chips('edAl', b.allergy_tags) + '<label class="mt-check"><input type="checkbox" id="edAlKeep"> Guardarlas también en la ficha del cliente (para próximas reservas)</label></div>' +
+      '<div class="ad-field mt-cust"><span>Ficha del cliente' + (ckey(b) ? '' : ' (sin email ni teléfono: no se puede guardar)') + '</span>' +
+      '<div class="mt-two"><select id="edType">' + Object.keys(CT).map(function (k) { return '<option value="' + k + '"' + (((noteOf(b) || {}).customer_type || 'particular') === k ? ' selected' : '') + '>' + esc(CT[k]) + '</option>'; }).join('') + '</select>' +
+      '<input type="text" id="edCompany" maxlength="80" placeholder="Empresa / grupo" value="' + esc((noteOf(b) || {}).company || '') + '"></div>' +
+      '<div class="mt-two"><input type="text" id="edTax" maxlength="20" placeholder="CIF (para facturar)" value="' + esc((noteOf(b) || {}).tax_id || '') + '"><input type="number" id="edBal" step="0.01" placeholder="Saldo pendiente facturado (€)" value="' + (((noteOf(b) || {}).balance_cents || 0) ? (noteOf(b).balance_cents / 100) : '') + '"></div>' +
+      '<textarea id="edCNote" maxlength="500" placeholder="Comentarios sobre este cliente (alergias, trato, preferencias…)">' + esc((noteOf(b) || {}).note || '') + '</textarea>' +
+      '<label class="mt-check"><input type="checkbox" id="edBlock"' + ((noteOf(b) || {}).blocked ? ' checked' : '') + '> Bloquear: que no pueda volver a reservar</label>' +
+      '<input type="text" id="edBlockWhy" maxlength="200" placeholder="Motivo del bloqueo (solo lo ve el equipo)" value="' + esc((noteOf(b) || {}).blocked_reason || '') + '"></div>' +
       '<div class="ad-field"><span>Mesas · <b id="edCap"></b></span><div class="mt-picks" id="edPicks"></div></div>' +
       '<div class="mt-foot"><button type="button" class="ad-btn is-ghost" data-close>Cerrar</button>' +
       '<button type="button" class="ad-btn is-ghost" id="edSave">Guardar</button>' + (canSeat ? '<button type="button" class="ad-btn" id="edSeat">Guardar y sentar</button>' : '') + '</div>',
@@ -530,7 +598,14 @@
           if (!ids.length) { msg.textContent = 'Elige al menos una mesa.'; msg.hidden = false; return; }
           var newStart = starts(), same = new Date(newStart).getTime() === new Date(b.starts_at).getTime();
           [q('edSave'), q('edSeat')].forEach(function (x) { if (x) x.disabled = true; });
-          api('rpc/dining_admin_update', { method: 'POST', body: { p_booking: b.id, p_party: +q('edParty').value, p_starts: same ? null : newStart, p_name: q('edName').value.trim(), p_phone: q('edPhone').value.trim(), p_email: q('edEmail').value.trim(), p_notes: q('edNotes').value.trim(), p_tables: ids } })
+          api('rpc/dining_admin_update', { method: 'POST', body: { p_booking: b.id, p_party: +q('edParty').value, p_starts: same ? null : newStart, p_name: q('edName').value.trim(), p_phone: q('edPhone').value.trim(), p_email: q('edEmail').value.trim(), p_notes: q('edNotes').value.trim(), p_tables: ids, p_duration: +q('edDur').value || null, p_prescriber: q('edPres').value } })
+            .then(function () { var sp = q('edSpend').value; var cents = sp === '' ? null : Math.round(+sp * 100); return cents !== b.spend_cents ? patch(b.id, { spend_cents: cents }) : null; })
+            .then(function () { return patch(b.id, { allergy_tags: picked(m, 'edAl') }); })
+            .then(function () {
+              var key = ckey({ email: q('edEmail').value, phone: q('edPhone').value }), cur = S.notes[key] || {}, tags = (cur.tags || []).slice();
+              if (q('edAlKeep').checked) picked(m, 'edAl').forEach(function (k) { if (tags.indexOf(k) === -1) tags.push(k); });
+              return saveCust(key, { note: q('edCNote').value.trim(), blocked: q('edBlock').checked, blocked_reason: q('edBlockWhy').value.trim(), customer_type: q('edType').value, company: q('edCompany').value.trim(), tax_id: q('edTax').value.trim(), balance_cents: Math.round((+q('edBal').value || 0) * 100), tags: tags });
+            })
             .then(function () { return seat ? patch(b.id, { status: 'seated', hold_until: new Date(Date.now() + 864e5).toISOString() }) : null; })
             .then(function () { m.remove(); S.date = q('edDate').value; return enter().then(function () { flash(seat ? 'Reserva guardada y sentada.' : 'Reserva guardada.', 'ok'); }); })
             .catch(function (x) { [q('edSave'), q('edSeat')].forEach(function (y) { if (y) y.disabled = false; }); msg.textContent = errText(x); msg.hidden = false; });
@@ -561,6 +636,119 @@
         });
       });
   }
+
+
+
+  // ─── Imprimir el día ────────────────────────────────────────────────
+  // Hoja para llevar al servicio: reservas del día por espacio y hora, con mesa, contacto, notas, garantía y una casilla para marcar la llegada.
+  function printDay() {
+    var live = S.bookings.filter(function (b) { return b.status !== 'cancelled'; }).sort(function (a, b) { return new Date(a.starts_at) - new Date(b.starts_at); });
+    var gone = S.bookings.filter(function (b) { return b.status === 'cancelled'; });
+    var amb = { day: 'Coffee, Bakery & Kitchen', night: 'Restaurant & Cocktails' };
+    var payTxt = function (b) {
+      if (b.payment_status === 'guaranteed') return 'Tarjeta ' + (b.card_brand || '') + ' ····' + (b.card_last4 || '') + ' · garantía ' + eur(b.deposit_cents);
+      if (b.payment_status === 'paid') return 'Fianza ' + eur(b.deposit_cents) + ' pagada';
+      if (b.payment_status === 'pending' && b.deposit_cents > 0) return 'PENDIENTE de pago (' + eur(b.deposit_cents) + ')';
+      if (b.payment_status === 'charged') return 'Penalización cobrada ' + eur(b.deposit_cents);
+      return '';
+    };
+    var sections = ['day', 'night'].map(function (a) {
+      var rows = live.filter(function (b) { return b.ambience === a; }); if (!rows.length) return '';
+      var cov = rows.reduce(function (n, b) { return n + b.party; }, 0);
+      return '<h2>' + esc(amb[a]) + ' <small>' + rows.length + ' reservas · ' + cov + ' comensales</small></h2><table><thead><tr><th>Hora</th><th>Mesa</th><th>Pers.</th><th>Nombre</th><th>Teléfono</th><th>Notas / alergias</th><th>Garantía / pago</th><th>Prescriptor</th><th>Llegó</th></tr></thead><tbody>' + rows.map(function (b) {
+        var cn = noteOf(b), tn = bookingTables(b).map(function (t) { return t.name; }).join(' + ');
+        var notes = [alText(b) ? '⚠ ALERGIAS/INTOLERANCIAS: ' + alText(b).toUpperCase() : '', labelsOf(b).map(function (k) { return LB[k]; }).join(', '), b.notes, cn && cn.note ? 'Cliente: ' + cn.note : '', cn && cn.customer_type === 'empresa' ? 'EMPRESA' + (cn.company ? ': ' + cn.company : '') + (cn.balance_cents ? ' (saldo pendiente ' + eur(cn.balance_cents) + ')' : '') : '', cn && cn.customer_type === 'grupo' ? 'CONSUMO INTERNO' : '', cn && cn.blocked ? 'CLIENTE BLOQUEADO' : '', b.status === 'pending' ? 'Reserva pendiente de confirmar' : ''].filter(Boolean).join(' · ');
+        return '<tr><td><b>' + esc(hm(b.starts_at)) + '</b><br><small>hasta ' + esc(hm(b.ends_at)) + '</small></td><td><b>' + esc(tn) + '</b><br><small>' + esc(zoneName(b.zone_id)) + ' · ' + seatsOf(b) + ' plazas</small></td><td class="c"><b>' + b.party + '</b></td><td>' + esc(b.name || '—') + '</td><td>' + esc(b.phone || '') + (b.email ? '<br><small>' + esc(b.email) + '</small>' : '') + '</td><td>' + esc(notes) + '</td><td>' + esc(payTxt(b)) + '</td><td>' + esc(b.prescriber ? presName(b.prescriber) : '') + '</td><td class="c"><span class="box">' + (b.arrived_at || b.status === 'seated' || b.status === 'completed' ? '✓' : '') + '</span></td></tr>';
+      }).join('') + '</tbody></table>';
+    }).join('');
+    var total = live.reduce(function (n, b) { return n + b.party; }, 0);
+    var html = '<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Reservas · ' + esc(dayLabel(S.date)) + '</title><style>' +
+      '@page{size:A4 landscape;margin:10mm}*{box-sizing:border-box}body{font:11px/1.35 Helvetica,Arial,sans-serif;color:#000;margin:0}' +
+      'h1{font-size:18px;margin:0 0 2px;text-transform:uppercase}h1 small{font-size:12px;font-weight:400;text-transform:none;margin-left:8px}h2{font-size:14px;margin:14px 0 6px;text-transform:uppercase}h2 small{font-size:11px;font-weight:400;text-transform:none;margin-left:6px}' +
+      'table{width:100%;border-collapse:collapse}th{text-align:left;font-size:9px;text-transform:uppercase;letter-spacing:.05em;border-bottom:2px solid #000;padding:3px 5px}td{border-bottom:1px solid #999;padding:4px 5px;vertical-align:top}tr{page-break-inside:avoid}td.c,th.c{text-align:center}small{color:#444;font-size:9px}' +
+      '.box{display:inline-block;width:16px;height:16px;border:1.5px solid #000;line-height:13px;text-align:center;font-size:13px}.gone{margin-top:14px;font-size:10px;color:#444}' +
+      '</style></head><body><h1>ROCE · Reservas del día<small>' + esc(dayLabel(S.date)) + ' · ' + live.length + ' reservas · ' + total + ' comensales · impreso ' + esc(fmtShort(new Date().toISOString())) + ' ' + esc(hm(new Date().toISOString())) + '</small></h1>' +
+      (sections || '<p>No hay reservas este día.</p>') +
+      (gone.length ? '<p class="gone"><b>Anuladas:</b> ' + gone.map(function (b) { return esc(hm(b.starts_at) + ' ' + (b.name || 'sin nombre') + ' (' + b.party + ')'); }).join(' · ') + '</p>' : '') + '</body></html>';
+    var w = window.open('', '_blank');
+    if (!w) return flash('El navegador ha bloqueado la ventana de impresión: permítela y vuelve a pulsar.', 'error');
+    w.document.open(); w.document.write(html); w.document.close(); w.focus(); setTimeout(function () { try { w.print(); } catch (x) {} }, 350);
+  }
+
+  // ─── Lista de espera ────────────────────────────────────────────────
+  function renderWait(body) {
+    var rows = S.waitlist;
+    body.innerHTML = '<p class="ad-meta" style="margin-bottom:0.9rem">Personas que han pedido que se les avise si se libera una mesa. Cuando se anula una reserva se avisa solo a las primeras que ya tengan sitio; también puedes avisarlas tú.</p><ul class="ad-list">' + (rows.length ? rows.map(function (w) {
+      var amb = w.ambience === 'night' ? 'Restaurant & Cocktails' : w.ambience === 'day' ? 'Coffee, Bakery & Kitchen' : 'Cualquier espacio';
+      return '<li class="ad-card"><div class="ad-date"><b>' + esc(w.want_date.slice(8, 10)) + '/' + esc(w.want_date.slice(5, 7)) + '</b><span>' + w.party + ' p.</span></div><div><div class="ad-name">' + (w.name ? esc(w.name) : '<i>Sin nombre</i>') + ' <span class="ad-tag ' + (w.status === 'notified' ? 'is-green' : '') + '">' + (w.status === 'notified' ? 'Avisado ' + hm(w.notified_at) : 'En espera') + '</span></div>' +
+        '<div class="ad-meta">' + esc(amb) + ' · ' + (w.want_time ? 'hora preferida ' + esc(w.want_time) : 'cualquier hora') + '</div><div class="ad-meta">' + esc(w.email) + (w.phone ? ' · ' + esc(w.phone) : '') + '</div></div>' +
+        '<div class="ad-actions"><button class="ad-btn is-small" data-wl-book="' + w.id + '">Reservar</button>' + (w.status === 'waiting' ? '<button class="ad-btn is-small is-ghost" data-wl-notify="' + w.id + '">Avisar ya</button>' : '') + '<button class="ad-btn is-small is-ghost" data-wl-done="' + w.id + '">Quitar</button></div></li>';
+    }).join('') : '<li class="ad-empty">No hay nadie en lista de espera.</li>') + '</ul>';
+  }
+  root.addEventListener('click', function (e) {
+    var bt = e.target.closest('[data-wl-book],[data-wl-notify],[data-wl-done]'); if (!bt) return;
+    var id = bt.dataset.wlBook || bt.dataset.wlNotify || bt.dataset.wlDone, w = S.waitlist.filter(function (x) { return x.id === id; })[0]; if (!w) return;
+    var upd = function (body, msg) { return api('dining_waitlist?id=eq.' + id, { method: 'PATCH', body: body, prefer: 'return=minimal' }).then(enter).then(function () { if (msg) flash(msg, 'ok'); }).catch(fail); };
+    if (bt.dataset.wlNotify) { if (confirm('¿Avisar ahora a ' + (w.name || w.email) + ' de que hay mesa?')) upd({ status: 'notified', notified_at: new Date().toISOString() }, 'Aviso enviado por email.'); }
+    else if (bt.dataset.wlDone) { if (confirm('¿Quitar de la lista de espera?')) upd({ status: 'removed' }); }
+    else {
+      S.date = w.want_date; S.view = 'day'; S.time = '';
+      enter().then(function () {
+        openNew({ time: w.want_time || '', prefill: { name: w.name, email: w.email, phone: w.phone, party: w.party } });
+        api('dining_waitlist?id=eq.' + id, { method: 'PATCH', body: { status: 'booked' }, prefer: 'return=minimal' }).catch(function () {});
+      });
+    }
+  });
+
+  // ─── Clientes (CRM) ─────────────────────────────────────────────────
+  function renderCrm(body) {
+    var q = S.crmQ.toLowerCase(), ty = S.crmType, rows = S.crm.filter(function (c) { var tg = c.tags || []; if (ty === 'empresa' && c.customer_type !== 'empresa') return false; if (ty === 'grupo' && c.customer_type !== 'grupo') return false; if (ty === 'alergias' && !tg.some(function (k) { return AL[k]; })) return false; if (ty === 'transferencia' && tg.indexOf('transferencia') === -1) return false; if (ty === 'saldo' && !c.balance_cents) return false; if (ty === 'bloqueados' && !c.blocked) return false; return !q || ((c.name || '') + ' ' + (c.email || '') + ' ' + (c.phone || '') + ' ' + (c.note || '')).toLowerCase().indexOf(q) !== -1; });
+    var by = { last: function (a, b) { return String(b.last_visit || '').localeCompare(String(a.last_visit || '')); }, visits: function (a, b) { return b.visits - a.visits; }, spend: function (a, b) { return b.spend_cents - a.spend_cents; }, noshows: function (a, b) { return b.no_shows - a.no_shows; } };
+    rows = rows.slice().sort(by[S.crmSort] || by.last);
+    var tot = rows.reduce(function (n, c) { return n + Number(c.spend_cents || 0); }, 0);
+    body.innerHTML = '<div class="ad-bar"><input type="search" id="crmQ" placeholder="Buscar nombre, email, teléfono o nota" value="' + esc(S.crmQ) + '" style="flex:1 1 16rem">' +
+      '<select id="crmType"><option value="">Todos</option><option value="empresa"' + (S.crmType === 'empresa' ? ' selected' : '') + '>Empresas</option><option value="grupo"' + (S.crmType === 'grupo' ? ' selected' : '') + '>Grupo / consumo interno</option><option value="alergias"' + (S.crmType === 'alergias' ? ' selected' : '') + '>Con alergias</option><option value="transferencia"' + (S.crmType === 'transferencia' ? ' selected' : '') + '>Pagan por transferencia</option><option value="saldo"' + (S.crmType === 'saldo' ? ' selected' : '') + '>Con saldo pendiente</option><option value="bloqueados"' + (S.crmType === 'bloqueados' ? ' selected' : '') + '>Bloqueados</option></select>' +
+      '<select id="crmSort"><option value="last"' + (S.crmSort === 'last' ? ' selected' : '') + '>Última visita</option><option value="visits"' + (S.crmSort === 'visits' ? ' selected' : '') + '>Más visitas</option><option value="spend"' + (S.crmSort === 'spend' ? ' selected' : '') + '>Más gasto</option><option value="noshows"' + (S.crmSort === 'noshows' ? ' selected' : '') + '>Más no shows</option></select>' +
+      '<button class="ad-btn is-ghost is-small" id="crmCsv" type="button">Descargar CSV</button></div>' +
+      '<p class="ad-meta" style="margin-bottom:0.7rem">' + rows.length + ' clientes · gasto total anotado ' + eur(tot) + '. El gasto de cada visita se anota en la ficha de la reserva; cuando se conecte el TPV (Ágora) se rellenará solo.</p>' +
+      '<div class="ad-table-wrap"><table class="ad-table"><thead><tr><th>Cliente</th><th>Visitas</th><th>No shows</th><th>Gasto</th><th>Última visita</th><th>Próximas</th><th>Eventos</th><th></th></tr></thead><tbody>' + rows.map(function (c) {
+        return '<tr' + (c.blocked ? ' class="is-cancelled"' : '') + '><td><b>' + esc(c.name || 'Sin nombre') + '</b>' + (c.blocked ? ' <span class="ad-tag is-red">bloqueado</span>' : '') + (c.customer_type === 'empresa' ? ' <span class="ad-tag">Empresa' + (c.company ? ': ' + esc(c.company) : '') + '</span>' : '') + (c.customer_type === 'grupo' ? ' <span class="ad-tag">Consumo interno' + (c.company ? ': ' + esc(c.company) : '') + '</span>' : '') + (c.balance_cents ? ' <span class="ad-tag is-red">Saldo ' + eur(c.balance_cents) + '</span>' : '') + (c.tags || []).map(function (k) { return ' ' + tagHtml(k); }).join('') + '<br><span class="ad-meta">' + esc(c.email || '') + (c.phone ? ' · ' + esc(c.phone) : '') + '</span>' + (c.note ? '<br><span class="ad-meta">“' + esc(c.note) + '”</span>' : '') + '</td>' +
+          '<td>' + c.visits + '</td><td>' + (c.no_shows ? '<b style="color:var(--red)">' + c.no_shows + '</b>' : '0') + '</td><td class="nowrap">' + eur(Number(c.spend_cents || 0)) + (c.visits && Number(c.spend_cents) ? '<br><span class="ad-meta">' + eur(Math.round(Number(c.spend_cents) / c.visits)) + ' / visita</span>' : '') + '</td>' +
+          '<td class="nowrap">' + (c.last_visit ? esc(fmtShort(c.last_visit)) : '—') + '</td><td>' + c.upcoming + '</td><td>' + (c.event_visits || 0) + (Number(c.tickets_cents) ? '<br><span class="ad-meta">' + eur(Number(c.tickets_cents)) + '</span>' : '') + '</td>' +
+          '<td><button class="ad-btn is-small is-ghost" data-crm="' + esc(c.customer_key) + '">Ficha</button></td></tr>';
+      }).join('') + '</tbody></table></div>' + (rows.length ? '' : '<p class="ad-empty">Todavía no hay clientes con reservas.</p>');
+  }
+  function fmtShort(iso) { return new Intl.DateTimeFormat('es-ES', { timeZone: TZ, day: '2-digit', month: '2-digit', year: '2-digit' }).format(new Date(iso)); }
+  root.addEventListener('input', function (e) { if (e.target.id === 'crmQ') { S.crmQ = e.target.value; var pos = e.target.selectionStart; render(); var el = document.getElementById('crmQ'); if (el) { el.focus(); el.setSelectionRange(pos, pos); } } });
+  root.addEventListener('change', function (e) { if (e.target.id === 'crmSort') { S.crmSort = e.target.value; render(); } if (e.target.id === 'crmType') { S.crmType = e.target.value; render(); } });
+  root.addEventListener('click', function (e) {
+    if (e.target.closest('#crmCsv')) {
+      var head = ['Cliente', 'Email', 'Teléfono', 'Visitas', 'No shows', 'Anulaciones', 'Gasto (€)', 'Última visita', 'Próximas', 'Visitas a eventos', 'Prescriptores', 'Bloqueado', 'Nota'];
+      var lines = [head].concat(S.crm.map(function (c) { return [c.name, c.email, c.phone, c.visits, c.no_shows, c.cancellations, (Number(c.spend_cents || 0) / 100).toFixed(2).replace('.', ','), c.last_visit ? fmtShort(c.last_visit) : '', c.upcoming, c.event_visits, c.prescribers || '', c.blocked ? 'sí' : '', c.note || '']; }))
+        .map(function (r) { return r.map(function (v) { return '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"'; }).join(';'); }).join('\r\n');
+      var a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['﻿' + lines], { type: 'text/csv;charset=utf-8' })); a.download = 'clientes-roce.csv'; document.body.appendChild(a); a.click(); a.remove(); return;
+    }
+    var f = e.target.closest('[data-crm]'); if (!f) return;
+    var c = S.crm.filter(function (x) { return x.customer_key === f.dataset.crm; })[0]; if (!c) return;
+    modal('<h2>' + esc(c.name || 'Cliente') + '</h2><p class="ad-meta">' + esc(c.email || '') + (c.phone ? ' · ' + esc(c.phone) : '') + '</p>' +
+      '<div class="mt-crmstats"><div><b>' + c.visits + '</b><span>visitas</span></div><div><b>' + c.no_shows + '</b><span>no shows</span></div><div><b>' + c.cancellations + '</b><span>anulaciones</span></div><div><b>' + eur(Number(c.spend_cents || 0)) + '</b><span>gasto</span></div></div>' +
+      '<p class="ad-msg is-error" id="cuMsg" hidden></p>' +
+      '<div class="mt-two"><label class="ad-field"><span>Tipo de cliente</span><select id="cuType">' + Object.keys(CT).map(function (k) { return '<option value="' + k + '"' + (c.customer_type === k ? ' selected' : '') + '>' + esc(CT[k]) + '</option>'; }).join('') + '</select></label>' +
+      '<label class="ad-field"><span>Empresa / grupo</span><input type="text" id="cuCompany" maxlength="80" value="' + esc(c.company || '') + '"></label></div>' +
+      '<div class="mt-two"><label class="ad-field"><span>CIF (para facturar)</span><input type="text" id="cuTax" maxlength="20" value="' + esc(c.tax_id || '') + '"></label>' +
+      '<label class="ad-field"><span>Saldo pendiente facturado (€)</span><input type="number" id="cuBal" step="0.01" value="' + (c.balance_cents ? c.balance_cents / 100 : '') + '"></label></div>' +
+      '<div class="ad-field"><span>Alergias, intolerancias y etiquetas</span>' + chips('cuAl', c.tags) + '</div>' +
+      '<div class="ad-field"><span>Comentarios sobre el cliente</span><textarea id="cuNote" maxlength="500">' + esc(c.note || '') + '</textarea></div>' +
+      '<label class="mt-check"><input type="checkbox" id="cuBlock"' + (c.blocked ? ' checked' : '') + '> Bloquear: que no pueda volver a reservar (web ni lista de espera)</label>' +
+      '<div class="ad-field"><span>Motivo del bloqueo</span><input type="text" id="cuWhy" maxlength="200" value="' + esc(c.blocked_reason || '') + '"></div>' +
+      '<div class="mt-foot"><button type="button" class="ad-btn is-ghost" data-close>Cerrar</button><button type="button" class="ad-btn" id="cuSave">Guardar</button></div>', function (m) {
+        m.querySelector('#cuSave').addEventListener('click', function () {
+          saveCust(c.customer_key, { note: m.querySelector('#cuNote').value.trim(), blocked: m.querySelector('#cuBlock').checked, blocked_reason: m.querySelector('#cuWhy').value.trim(), customer_type: m.querySelector('#cuType').value, company: m.querySelector('#cuCompany').value.trim(), tax_id: m.querySelector('#cuTax').value.trim(), balance_cents: Math.round((+m.querySelector('#cuBal').value || 0) * 100), tags: picked(m, 'cuAl') })
+            .then(function () { m.remove(); return enter(); }).then(function () { flash('Ficha del cliente guardada.', 'ok'); })
+            .catch(function (x) { var el = m.querySelector('#cuMsg'); el.textContent = errText(x); el.hidden = false; });
+        });
+      });
+  });
 
   // ─── Bloqueos ───────────────────────────────────────────────────────
   function renderBlocks(body) {
@@ -637,6 +825,11 @@
         '<label class="ad-field"><span>Antelación mínima (min)</span><input data-f="notice_min" type="number" min="0" step="15" value="' + s.notice_min + '"></label>' +
         '<label class="ad-field"><span>Días vista</span><input data-f="days_ahead" type="number" min="1" value="' + s.days_ahead + '"></label>' +
         '<div class="ad-field"><span>Zonas que usa</span><div class="mt-days">' + S.zones.map(function (z) { return '<label><input type="checkbox" data-szone="' + z.id + '"' + (!s.zone_ids || s.zone_ids.indexOf(z.id) !== -1 ? ' checked' : '') + '> ' + esc(z.name_es) + '</label>'; }).join('') + '</div></div>' +
+        '<label class="ad-field"><span>Cortesía de llegada (min)</span><input data-f="grace_min" type="number" min="0" step="5" value="' + s.grace_min + '"></label>' +
+        '<label class="ad-field"><span>Grupos grandes desde (personas; 0 = no)</span><input data-f="big_party_from" type="number" min="0" value="' + s.big_party_from + '"></label>' +
+        '<label class="ad-field"><span>…minutos extra de mesa</span><input data-f="big_party_extra_min" type="number" min="0" step="5" value="' + s.big_party_extra_min + '"></label>' +
+        '<label class="ad-field full"><span>Aviso final en el email (ES)</span><input data-f="end_note_es" maxlength="200" value="' + esc(s.end_note_es) + '" placeholder="p. ej. A las 00:30 te invitamos a bajar a la planta baja…"></label>' +
+        '<label class="ad-field full"><span>Aviso final en el email (EN)</span><input data-f="end_note_en" maxlength="200" value="' + esc(s.end_note_en) + '"></label>' +
         '<label class="mt-check"><input data-f="active" type="checkbox"' + (s.active ? ' checked' : '') + '> Aceptar reservas web</label></div></li>';
     }).join('');
     var tables = S.zones.map(function (z) {
@@ -662,13 +855,30 @@
       '<h2 class="ad-sub">Zonas y fianzas</h2><ul class="ad-list">' + zones + '</ul>' +
       '<h2 class="ad-sub" style="margin-top:1.75rem">Turnos y horarios</h2><ul class="ad-list">' + services + '</ul>' +
       '<h2 class="ad-sub" style="margin-top:1.75rem">Mesas</h2><p class="ad-meta" style="margin-bottom:0.6rem">Las mesas con el mismo “grupo de unión” (en la misma zona) se pueden juntar para grupos grandes.</p>' + tables +
+      '<h2 class="ad-sub" style="margin-top:1.75rem">Prescriptores</h2>' + prescribersHtml() +
       '<h2 class="ad-sub" style="margin-top:1.75rem">Cierres por día</h2>' + closures;
+    var pf = document.getElementById('prForm');
+    if (pf) pf.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var nm = document.getElementById('prName').value.trim(), code = nm.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 30);
+      if (code.length < 2) return flash('Ese nombre no es válido.', 'error');
+      api('dining_prescribers', { method: 'POST', body: { code: code, name: nm }, prefer: 'return=minimal' }).then(function () { return loadConfig(true); }).then(function () { flash('Prescriptor añadido.', 'ok'); render(); }).catch(function () { flash('No se ha podido añadir (¿ya existe?).', 'error'); });
+    });
     var cf = document.getElementById('clForm');
     if (cf) cf.addEventListener('submit', function (e) {
       e.preventDefault();
       api('dining_closures', { method: 'POST', body: closureBody(), prefer: 'return=minimal' })
         .then(function () { flash('Cierre añadido.', 'ok'); return enter(); }).catch(fail);
     });
+  }
+  function prescribersHtml() {
+    var base = location.origin + "/fuck-who-doesn't-like-this-place/";
+    return '<p class="ad-meta" style="margin-bottom:0.6rem">Un prescriptor es quien trae o recomienda reservas (RR. PP., conserjes, agencias). Cada uno tiene su enlace: las reservas que entren por él quedan marcadas con su nombre.</p><ul class="ad-list">' +
+      (S.prescribers.length ? S.prescribers.map(function (p) {
+        return '<li class="ad-card mt-cfg" data-pres-row="' + esc(p.code) + '"><div><div class="ad-name">' + esc(p.name) + (p.active ? '' : ' <span class="ad-tag is-red">inactivo</span>') + '</div><div class="ad-meta">Enlace: <input class="mt-linkin" readonly value="' + esc(base + '?pr=' + p.code) + '" onclick="this.select()"></div></div>' +
+          '<div class="ad-actions"><button class="ad-btn is-small is-ghost" data-pres-toggle="' + esc(p.code) + '">' + (p.active ? 'Desactivar' : 'Activar') + '</button></div></li>';
+      }).join('') : '<li class="ad-empty">Todavía no hay prescriptores.</li>') + '</ul>' +
+      '<form class="ad-sheet-inline" id="prForm"><div class="ad-grid"><label class="ad-field"><span>Nombre del prescriptor</span><input id="prName" maxlength="60" required placeholder="p. ej. Hotel Marqués"></label></div><button class="ad-btn" type="submit">Añadir prescriptor</button></form>';
   }
   function closureBody() {
     var v = function (id) { return document.getElementById(id).value; };
@@ -692,7 +902,7 @@
       else if (el.dataset.szone) { var zs = [].map.call(sr.querySelectorAll('[data-szone]:checked'), function (i) { return i.dataset.szone; }); b.zone_ids = zs.length === S.zones.length ? null : zs; }
       else if (f === 'start') b.start_min = toMin(el.value);
       else if (f === 'last') b.last_min = toMin(el.value, +sr.querySelector('[data-f="start"]').value.slice(0, 2) * 60 + 1);
-      else if (el.type === 'checkbox') b[f] = el.checked; else b[f] = +el.value;
+      else if (el.type === 'checkbox') b[f] = el.checked; else if (f === 'end_note_es' || f === 'end_note_en') b[f] = el.value.trim(); else b[f] = +el.value;
       if (b.last_min != null && sr.querySelector('[data-f="start"]')) { var st = toMin(sr.querySelector('[data-f="start"]').value); if (b.last_min < st) b.last_min += 1440; }
       api('dining_services?id=eq.' + sid, { method: 'PATCH', body: b, prefer: 'return=minimal' }).then(function () { return loadConfig(true); }).then(saved).catch(fail);
     } else if (tr && f) {
@@ -702,6 +912,11 @@
     }
   });
   root.addEventListener('click', function (e) {
+    var pt = e.target.closest('[data-pres-toggle]');
+    if (pt) {
+      var pr = S.prescribers.filter(function (x) { return x.code === pt.dataset.presToggle; })[0];
+      return void api('dining_prescribers?code=eq.' + encodeURIComponent(pt.dataset.presToggle), { method: 'PATCH', body: { active: !(pr && pr.active) }, prefer: 'return=minimal' }).then(function () { return loadConfig(true); }).then(render).catch(fail);
+    }
     var a = e.target.closest('[data-addtable]'), d = e.target.closest('[data-deltable]'), c = e.target.closest('[data-delclosure]');
     if (a) {
       var name = prompt('Nombre de la mesa nueva (p. ej. M9):'); if (!name) return;

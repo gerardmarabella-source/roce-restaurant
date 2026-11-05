@@ -33,9 +33,17 @@
       go_free: 'Reservar mesa', go_pay: 'Pagar {m} y reservar', working: 'Un momento…',
       e_bad_data: 'Revisa el nombre, el email y el teléfono.', e_consent: 'Debes aceptar la política de privacidad.',
       e_no_table: 'Esa mesa se acaba de ocupar. Elige otra hora.', e_too_late: 'Esa hora ya no admite reservas. Elige otra.',
+      e_blocked: 'No podemos aceptar esta reserva. Escríbenos a reservas@roce.es.',
       e_closed: 'Ese día no abrimos para reservas.', e_too_many: 'Ya tienes varias reservas activas con este email.',
       e_network: 'No hemos podido completar la reserva. Inténtalo de nuevo.', e_pay: 'No hemos podido abrir el pago. Tu mesa queda retenida unos minutos: vuelve a pulsar el botón.',
       night_tag: 'Solo mayores de 18 años',
+      allergies: 'Alergias o intolerancias', al: { gluten: 'Gluten', lactosa: 'Lactosa', 'frutos-secos': 'Frutos secos', marisco: 'Marisco', pescado: 'Pescado', huevo: 'Huevo', soja: 'Soja', sesamo: 'Sésamo', vegetariano: 'Vegetariano', vegano: 'Vegano', otras: 'Otras (cuéntanoslo abajo)' },
+      info_dur: 'Tu mesa estará disponible {d}.', info_grace: 'La mantenemos {g} min desde la hora reservada: pasado ese tiempo la damos por no presentada.',
+      full: 'Completo', wl_cta: 'No encuentro hora: avisadme si se libera una mesa', wl_h: 'Lista de espera',
+      wl_intro: 'Déjanos tus datos y te escribiremos si se libera una mesa para {n} el {date}.', wl_time: 'Hora preferida', wl_any: 'Cualquier hora',
+      wl_go: 'Apuntarme a la lista de espera', wl_ok: 'Listo, estás en la lista de espera. Te hemos enviado un email y te avisaremos si se libera una mesa.',
+      wl_err: 'No hemos podido apuntarte. Revisa el nombre y el email.', wl_close: 'Cerrar', alt_h: 'Prueba con…', alt_days: 'Otros días con mesa', alt_space: 'Ese día sí hay mesa en {space}',
+      alt_from: 'desde las {t}', alt_wait: 'Si prefieres este día, apúntate a la lista de espera.',
       card_h: 'Garantía con tarjeta', card_free: 'No se cobra nada ahora',
       card_note: 'Para confirmar la reserva te pediremos los datos de una tarjeta como garantía. No se cobra nada ahora. Si no te presentas o anulas con menos de {h} h de antelación, se cobrarán {m} automáticamente a esa tarjeta.',
       card_consent: 'Autorizo a ROCE a cobrar automáticamente {m} a mi tarjeta si no me presento o anulo con menos de {h} h de antelación',
@@ -60,9 +68,17 @@
       go_free: 'Book table', go_pay: 'Pay {m} and book', working: 'One moment…',
       e_bad_data: 'Please check your name, email and phone.', e_consent: 'You must accept the privacy policy.',
       e_no_table: 'That table was just taken. Please choose another time.', e_too_late: 'That time no longer takes bookings. Choose another.',
+      e_blocked: 'We cannot accept this booking. Please write to reservas@roce.es.',
       e_closed: "We're not taking bookings that day.", e_too_many: 'You already have several active bookings with this email.',
       e_network: "We couldn't complete the booking. Please try again.", e_pay: "We couldn't open the payment. Your table is held for a few minutes: press the button again.",
       night_tag: 'Over 18s only',
+      allergies: 'Allergies or intolerances', al: { gluten: 'Gluten', lactosa: 'Lactose', 'frutos-secos': 'Nuts', marisco: 'Shellfish', pescado: 'Fish', huevo: 'Egg', soja: 'Soy', sesamo: 'Sesame', vegetariano: 'Vegetarian', vegano: 'Vegan', otras: 'Other (tell us below)' },
+      info_dur: 'Your table will be available for {d}.', info_grace: 'We hold it for {g} min after the booked time: after that we treat it as a no-show.',
+      full: 'Full', wl_cta: "Can't find a time: let me know if a table opens up", wl_h: 'Waiting list',
+      wl_intro: 'Leave your details and we will write to you if a table opens up for {n} on {date}.', wl_time: 'Preferred time', wl_any: 'Any time',
+      wl_go: 'Join the waiting list', wl_ok: 'Done, you are on the waiting list. We have emailed you and will let you know if a table opens up.',
+      wl_err: "We couldn't add you. Please check your name and email.", wl_close: 'Close', alt_h: 'Try…', alt_days: 'Other days with tables', alt_space: 'That day there is a table at {space}',
+      alt_from: 'from {t}', alt_wait: 'If you prefer this day, join the waiting list.',
       card_h: 'Card guarantee', card_free: 'Nothing is charged now',
       card_note: "To confirm the booking we will ask for your card details as a guarantee. Nothing is charged now. If you don't show up or cancel less than {h} h in advance, {m} will be charged automatically to that card.",
       card_consent: "I authorise ROCE to automatically charge {m} to my card if I don't show up or cancel less than {h} h in advance",
@@ -71,11 +87,12 @@
   };
   var MAX_PARTY = 8, DAYS_AHEAD = 60;
 
-  var st = { notices: [], pending: '', party: 2, date: '', month: null, ambience: 'all', slots: null, loading: false, loadErr: false, chosen: null, busy: false, error: '' };
+  var st = { alt: null, wait: null, waitDone: false, grid: [], pr: '', notices: [], pending: '', party: 2, date: '', month: null, ambience: 'all', slots: null, loading: false, loadErr: false, chosen: null, busy: false, error: '' };
 
   function lang() { return window.ROCE_I18N && window.ROCE_I18N.getLang ? window.ROCE_I18N.getLang() : 'es'; }
   function t(k, v) {
     var s = (STR[lang()] || STR.es)[k]; if (s == null) s = STR.es[k] || k;
+    if (typeof s !== 'string') return s;
     if (v) Object.keys(v).forEach(function (x) { s = s.split('{' + x + '}').join(v[x]); });
     return s;
   }
@@ -112,9 +129,24 @@
     if (!st.date) { st.slots = null; render(); return; }
     var my = ++seq; st.loading = true; st.loadErr = false; render();
     rpc('dining_day_notice', { p_date: st.date }).then(function (n) { if (my === seq) { st.notices = n || []; render(); } }).catch(function () { st.notices = []; });
-    rpc('dining_slots', { p_date: st.date, p_party: st.party, p_ambience: st.ambience === 'all' ? null : st.ambience })
-      .then(function (rows) { if (my !== seq) return; st.slots = rows || []; st.loading = false; render(); })
-      .catch(function () { if (my !== seq) return; st.slots = []; st.loading = false; st.loadErr = true; render(); });
+    st.alt = null; st.wait = null; st.waitDone = false;
+    rpc('dining_grid', { p_date: st.date, p_party: st.party, p_ambience: st.ambience === 'all' ? null : st.ambience })
+      .then(function (rows) {
+        if (my !== seq) return;
+        st.grid = rows || []; st.slots = st.grid.filter(function (r) { return r.o_free; }); st.loading = false; render();
+        if (!st.slots.length) loadAlt(my);
+      })
+      .catch(function () { if (my !== seq) return; st.grid = []; st.slots = []; st.loading = false; st.loadErr = true; render(); });
+  }
+  // Sin mesa ese día: otros días con hueco y, si miras un solo espacio, el otro espacio ese mismo día.
+  function loadAlt(my) {
+    var amb = st.ambience === 'all' ? null : st.ambience, other = amb ? (amb === 'day' ? 'night' : 'day') : null;
+    var p1 = rpc('dining_next_days', { p_from: st.date, p_party: st.party, p_ambience: amb }).catch(function () { return []; });
+    var p2 = other ? rpc('dining_slots', { p_date: st.date, p_party: st.party, p_ambience: other }).catch(function () { return []; }) : Promise.resolve([]);
+    Promise.all([p1, p2]).then(function (r) {
+      if (my !== seq) return;
+      st.alt = { days: (r[0] || []).filter(function (d) { return d.o_date !== st.date; }), other: r[1] || [], otherAmb: other }; render();
+    });
   }
 
   // ─── Pintado ────────────────────────────────────────────────────────
@@ -143,23 +175,66 @@
     if (!st.date) return '<p class="mz-hint">' + esc(t('pick_date')) + '</p>';
     if (st.loading) return '<p class="mz-hint">' + esc(t('loading')) + '</p>';
     if (st.loadErr) return '<p class="mz-error">' + esc(t('err_load')) + '</p>';
-    if (!st.slots || !st.slots.length) return '<p class="mz-hint">' + esc(t('none', { n: partyLabel(st.party) })) + '</p>';
-    var groups = {}, order = [];
-    st.slots.forEach(function (s) { if (!groups[s.o_ambience]) { groups[s.o_ambience] = []; order.push(s.o_ambience); } groups[s.o_ambience].push(s); });
     var h = '';
+    if (!st.slots || !st.slots.length) h += '<p class="mz-hint">' + esc(t('none', { n: partyLabel(st.party) })) + '</p>';
+    var groups = {}, order = [];
+    (st.grid || []).forEach(function (s) { if (!groups[s.o_ambience]) { groups[s.o_ambience] = []; order.push(s.o_ambience); } groups[s.o_ambience].push(s); });
     order.forEach(function (a) {
       var rows = groups[a], dep = rows[0].o_deposit_cents, hrs = rows[0].o_free_hours, mode = rows[0].o_payment_mode;
+      if (!rows.some(function (r) { return r.o_free; }) && st.slots.length === 0 && order.length > 1) { /* se muestra igualmente para poder apuntarse */ }
       h += '<div class="mz-group"><div class="mz-group-h"><span class="mz-group-name">' + esc(t(a)) + '</span>' +
         (a === 'night' ? '<span class="mz-tag">+18</span>' : '') +
         '<span class="mz-group-note">' + (dep > 0 && mode === 'card' ? esc(t('card_free')) : dep > 0 ? esc(t('deposit_h', { m: money(dep) })) : esc(t('free_h'))) + '</span></div><div class="mz-slots">';
       rows.forEach(function (s) {
-        h += '<button type="button" class="mz-slot' + (st.chosen && st.chosen.o_starts_at === s.o_starts_at ? ' is-on' : '') + '" data-start="' + esc(s.o_starts_at) + '">' + esc(s.o_time) + '</button>';
+        if (s.o_free) h += '<button type="button" class="mz-slot' + (st.chosen && st.chosen.o_starts_at === s.o_starts_at ? ' is-on' : '') + '" data-start="' + esc(s.o_starts_at) + '">' + esc(s.o_time) + '</button>';
+        else h += '<button type="button" class="mz-slot is-full" data-wl="' + esc(s.o_time) + '" data-amb="' + esc(s.o_ambience) + '" title="' + esc(t('wl_cta')) + '"><span>' + esc(s.o_time) + '</span><small>' + esc(t('full')) + '</small></button>';
       });
       h += '</div>' + (dep > 0 && mode === 'card' ? '' : dep > 0 ? '<p class="mz-note">' + esc(t('deposit_free_until', { h: hrs })) + '</p>' : '') + '</div>';
     });
+    // Alternativas cuando no hay nada libre
+    if (st.slots && !st.slots.length && st.alt) {
+      var alt = '';
+      if (st.alt.other && st.alt.other.length) {
+        var o = st.alt.other, times = o.slice(0, 6).map(function (x) { return x.o_time; });
+        alt += '<div class="mz-alt"><p class="mz-alt-h">' + esc(t('alt_space', { space: t(st.alt.otherAmb) })) + '</p><div class="mz-chips">' +
+          '<button type="button" class="mz-chip" data-altamb="' + esc(st.alt.otherAmb) + '">' + esc(t(st.alt.otherAmb)) + ' · ' + esc(times.join(' · ')) + '</button></div></div>';
+      }
+      if (st.alt.days && st.alt.days.length) {
+        alt += '<div class="mz-alt"><p class="mz-alt-h">' + esc(t('alt_days')) + '</p><div class="mz-chips">' + st.alt.days.map(function (d) {
+          var lbl = new Intl.DateTimeFormat(lang() === 'en' ? 'en-GB' : 'es-ES', { timeZone: 'UTC', weekday: 'short', day: 'numeric', month: 'short' }).format(new Date(d.o_date + 'T12:00:00Z'));
+          return '<button type="button" class="mz-chip" data-altdate="' + esc(d.o_date) + '">' + esc(lbl) + ' · ' + esc(t('alt_from', { t: d.o_first })) + '</button>';
+        }).join('') + '</div></div>';
+      }
+      h += alt;
+    }
+    // Lista de espera
+    if (st.grid && st.grid.length) h += '<p class="mz-wl-cta"><button type="button" class="mz-link" data-wl="">' + esc(t('wl_cta')) + '</button></p>';
+    if (st.waitDone) h += '<p class="mz-ok">' + esc(t('wl_ok')) + '</p>';
+    else if (st.wait) h += waitFormHtml();
     return h;
   }
 
+  function waitFormHtml() {
+    var w = st.wait;
+    var times = ['', '13:00', '14:00', '15:00', '20:00', '21:00', '22:00', '23:00'];
+    return '<form class="mz-form mz-wait" id="mzWait" novalidate><h3 class="mz-h">' + esc(t('wl_h')) + '</h3>' +
+      '<p class="mz-summary">' + esc(t('wl_intro', { n: partyLabel(st.party), date: dateLabel(st.date) })) + '</p>' +
+      '<label class="mz-sel"><span>' + esc(t('wl_time')) + '</span><select name="time">' + times.map(function (x) { return '<option value="' + x + '"' + (x === (w.time || '') ? ' selected' : '') + '>' + (x || esc(t('wl_any'))) + '</option>'; }).join('') +
+      (w.time && times.indexOf(w.time) === -1 ? '<option value="' + esc(w.time) + '" selected>' + esc(w.time) + '</option>' : '') + '</select></label>' +
+      '<input class="mz-input" name="name" type="text" autocomplete="name" placeholder="' + esc(t('name')) + '" value="' + esc(st.f_name || '') + '" required>' +
+      '<input class="mz-input" name="email" type="email" autocomplete="email" inputmode="email" placeholder="' + esc(t('email')) + '" value="' + esc(st.f_email || '') + '" required>' +
+      '<input class="mz-input" name="phone" type="tel" autocomplete="tel" inputmode="tel" placeholder="' + esc(t('phone')) + '" value="' + esc(st.f_phone || '') + '">' +
+      '<label class="mz-check"><input type="checkbox" name="consent"><span>' + t('consent') + '</span></label>' +
+      '<p class="mz-error" id="mzWaitErr"' + (st.error ? '' : ' hidden') + '>' + esc(st.error) + '</p>' +
+      '<button type="submit" class="mz-go" id="mzWaitGo">' + esc(t('wl_go')) + '</button></form>';
+  }
+
+  function fmtDur(m) { var h = Math.floor(m / 60), r = m % 60; return (h ? h + ' h' : '') + (h && r ? ' ' : '') + (r ? r + ' min' : ''); }
+  function infoHtml(c) {
+    if (!c.o_duration) return '';
+    var end = lang() === 'en' ? c.o_end_en : c.o_end_es;
+    return '<p class="mz-info">' + esc(t('info_dur', { d: fmtDur(c.o_duration) })) + ' ' + esc(t('info_grace', { g: c.o_grace || 15 })) + (end ? ' ' + esc(end) : '') + '</p>';
+  }
   function formHtml() {
     var c = st.chosen; if (!c) return '';
     var dep = c.o_deposit_cents, hrs = c.o_free_hours, card = c.o_payment_mode === 'card' && dep > 0;
@@ -170,7 +245,11 @@
       '<input class="mz-input" name="name" type="text" autocomplete="name" placeholder="' + esc(t('name')) + '" value="' + esc(st.f_name || '') + '" required>' +
       '<input class="mz-input" name="email" type="email" autocomplete="email" inputmode="email" placeholder="' + esc(t('email')) + '" value="' + esc(st.f_email || '') + '" required>' +
       '<input class="mz-input" name="phone" type="tel" autocomplete="tel" inputmode="tel" placeholder="' + esc(t('phone')) + '" value="' + esc(st.f_phone || '') + '" required>' +
+      '<div class="mz-allergies"><span class="mz-label">' + esc(t('allergies')) + '</span><div class="mz-al-list">' + Object.keys(t('al')).map(function (k) {
+        return '<label class="mz-al"><input type="checkbox" name="al" value="' + k + '"' + ((st.f_al || []).indexOf(k) !== -1 ? ' checked' : '') + '><span>' + esc(t('al')[k]) + '</span></label>';
+      }).join('') + '</div></div>' +
       '<textarea class="mz-input" name="notes" rows="1" placeholder="' + esc(t('notes')) + '">' + esc(st.f_notes || '') + '</textarea>' +
+      infoHtml(c) +
       (dep > 0 ? '<p class="mz-deposit">' + esc(card ? t('card_note', { m: money(dep), h: hrs }) : t('deposit_note', { m: money(dep), h: hrs })) + '</p>' : '') +
       (card ? '<label class="mz-check"><input type="checkbox" name="cardok"' + (st.f_cardok ? ' checked' : '') + '><span>' + esc(t('card_consent', { m: money(dep), h: hrs })) + '</span></label>' : '') +
       '<label class="mz-check"><input type="checkbox" name="consent"' + (st.f_consent ? ' checked' : '') + '><span>' + t('consent') + '</span></label>' +
@@ -195,6 +274,7 @@
     var f = document.getElementById('mzForm'); if (!f) return;
     st.f_name = f.elements.name.value; st.f_email = f.elements.email.value; st.f_phone = f.elements.phone.value;
     st.f_notes = f.elements.notes.value; st.f_consent = f.elements.consent.checked; st.f_marketing = f.elements.marketing.checked; st.f_cardok = !!(f.elements.cardok && f.elements.cardok.checked);
+    st.f_al = [].map.call(f.querySelectorAll('input[name="al"]:checked'), function (i) { return i.value; });
   }
 
   // ─── Eventos ────────────────────────────────────────────────────────
@@ -206,6 +286,13 @@
       var m = st.month, n = new Date(Date.UTC(m.y, m.m + (+b.dataset.nav), 1)); st.month = { y: n.getUTCFullYear(), m: n.getUTCMonth() }; render();
     } else if (b.dataset.date) {
       keepForm(); st.date = b.dataset.date; loadSlots();
+    } else if (b.dataset.wl != null && b.dataset.wl !== undefined && (b.hasAttribute('data-wl'))) {
+      keepForm(); st.wait = { time: b.dataset.wl || '', amb: b.dataset.amb || (st.ambience === 'all' ? '' : st.ambience) }; st.waitDone = false; st.error = ''; st.chosen = null; render();
+      var wf = document.getElementById('mzWait'); if (wf) wf.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } else if (b.dataset.altdate) {
+      keepForm(); st.date = b.dataset.altdate; var dd = new Date(st.date + 'T12:00:00Z'); st.month = { y: dd.getUTCFullYear(), m: dd.getUTCMonth() }; loadSlots();
+    } else if (b.dataset.altamb) {
+      document.dispatchEvent(new CustomEvent('mesas:ambience', { detail: b.dataset.altamb }));
     } else if (b.dataset.start) {
       keepForm(); st.pending = '';
       var row = (st.slots || []).filter(function (s) { return s.o_starts_at === b.dataset.start; })[0]; if (!row) return;
@@ -219,6 +306,19 @@
   });
 
   root.addEventListener('submit', function (e) {
+    if (e.target.id === 'mzWait') {
+      e.preventDefault();
+      var f = e.target, name = f.elements.name.value.trim(), email = f.elements.email.value.trim(), phone = f.elements.phone.value.trim();
+      st.f_name = name; st.f_email = email; st.f_phone = phone;
+      var err = document.getElementById('mzWaitErr'), bad = function (k) { st.error = t(k); err.textContent = st.error; err.hidden = false; };
+      if (name.length < 2 || !/^[^@\s]+@[^@\s]+\.[^@\s]{2,}$/.test(email)) return bad('wl_err');
+      if (!f.elements.consent.checked) return bad('e_consent');
+      document.getElementById('mzWaitGo').disabled = true;
+      rpc('waitlist_join', { p_date: st.date, p_ambience: st.wait.amb || null, p_time: f.elements.time.value, p_party: st.party, p_name: name, p_email: email, p_phone: phone, p_notes: '', p_lang: lang() })
+        .then(function () { st.wait = null; st.waitDone = true; st.error = ''; render(); })
+        .catch(function () { document.getElementById('mzWaitGo').disabled = false; bad('wl_err'); });
+      return;
+    }
     if (e.target.id !== 'mzForm') return;
     e.preventDefault(); keepForm();
     var c = st.chosen; if (!c || st.busy) return;
@@ -231,7 +331,7 @@
     var go = st.pending ? Promise.resolve({ o_status: 'pending', o_token: st.pending }) : rpc('book_table', {
       p_service: c.o_service, p_starts: c.o_starts_at, p_zone: c.o_zone, p_party: st.party,
       p_name: st.f_name.trim(), p_email: st.f_email.trim(), p_phone: st.f_phone.trim(), p_notes: (st.f_notes || '').trim(),
-      p_lang: lang(), p_marketing: !!st.f_marketing
+      p_lang: lang(), p_marketing: !!st.f_marketing, p_prescriber: st.pr || '', p_allergies: st.f_al || []
     }).then(function (d) { return Array.isArray(d) ? d[0] : d; });
     go.then(function (row) {
       if (row.o_status === 'confirmed') { location.href = '/reserva/?t=' + encodeURIComponent(row.o_token) + '&new=1'; return; }
@@ -247,7 +347,7 @@
     }).catch(function (err) {
       st.busy = false;
       var m = String(err && err.message || '');
-      var code = ['no_table', 'too_late', 'closed', 'too_many', 'bad_data', 'bad_slot'].filter(function (x) { return m.indexOf(x) !== -1; })[0];
+      var code = ['no_table', 'too_late', 'closed', 'too_many', 'bad_data', 'bad_slot', 'blocked'].filter(function (x) { return m.indexOf(x) !== -1; })[0];
       var key = code === 'bad_slot' ? 'e_too_late' : code ? 'e_' + code : 'e_network';
       if (code === 'no_table' || code === 'too_late' || code === 'bad_slot') { loadSlots(); }
       st.error = t(key); render();
@@ -261,6 +361,18 @@
   }
 
   window.ROCE_MESAS = { setAmbience: setAmbience };
+  // Enlaces: ?d=2026-12-24 (día), ?p=4 (personas) y ?pr=codigo (prescriptor que trae la reserva).
+  try {
+    var qp = new URLSearchParams(location.search);
+    if (/^[a-z0-9-]{2,30}$/.test(qp.get('pr') || '')) { st.pr = qp.get('pr'); try { sessionStorage.setItem('roce_pr', st.pr); } catch (x) {} }
+    else { try { st.pr = sessionStorage.getItem('roce_pr') || ''; } catch (x) {} }
+    var qd = qp.get('d'), qn = parseInt(qp.get('p') || '', 10);
+    if (qn >= 1 && qn <= MAX_PARTY) st.party = qn;
+    if (/^\d{4}-\d{2}-\d{2}$/.test(qd || '') && qd >= todayStr() && qd <= addDays(todayStr(), DAYS_AHEAD)) {
+      st.date = qd; var qdd = new Date(qd + 'T12:00:00Z'); st.month = { y: qdd.getUTCFullYear(), m: qdd.getUTCMonth() };
+      setTimeout(loadSlots, 0);
+    }
+  } catch (x) {}
   document.addEventListener('roce:lang', function () { keepForm(); render(); });
   render();
 })();
