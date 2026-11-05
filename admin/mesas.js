@@ -12,7 +12,7 @@
   var PLAN_RATIO = 1660 / 1175;
   var ZONE_NAME = { baja: 'Planta baja', alta: 'Planta alta', prive: 'Sala privé' };
 
-  var S = { view: 'day', date: '', zone: 'baja', time: '', zones: [], tables: [], services: [], loadedCfg: false, bookings: [], blocks: [], closures: [], busy: false, join: false, sel: [], zoom: 1, px: 0, py: 0, justMoved: false };
+  var S = { view: 'day', date: '', zone: 'baja', time: '', zones: [], tables: [], services: [], loadedCfg: false, bookings: [], blocks: [], closures: [], busy: false, join: false, sel: [], zoom: 1, px: 0, py: 0, justMoved: false, mode: 'timeline', joinTime: '' };
 
   function today() { return new Intl.DateTimeFormat('en-CA', { timeZone: TZ }).format(new Date()); }
   function addDays(d, n) { var x = new Date(d + 'T12:00:00Z'); x.setUTCDate(x.getUTCDate() + n); return x.toISOString().slice(0, 10); }
@@ -104,7 +104,49 @@
     });
     return r;
   }
+
+  // ─── Línea de tiempo: una fila por mesa, las horas en columnas ──────
+  var PXMIN = 1.7; // píxeles por minuto (≈ 100 px por hora)
+  function hhmm(min) { var h = Math.floor(min / 60) % 24; return ('0' + h).slice(-2) + ':' + ('0' + (min % 60)).slice(-2); }
+  function timeline() {
+    var base = new Date(A.madridToISO(S.date + 'T00:00')).getTime();
+    var svcs = S.services.filter(function (x) { return x.active && (!x.zone_ids || x.zone_ids.indexOf(S.zone) !== -1); });
+    var t0 = svcs.length ? Math.min.apply(null, svcs.map(function (x) { return x.start_min; })) : 600;
+    var t1 = svcs.length ? Math.max.apply(null, svcs.map(function (x) { return x.last_min + x.duration_min; })) : 1560;
+    var rows = S.tables.filter(function (t) { return t.zone_id === S.zone && t.active; });
+    var mins = function (iso) { return (new Date(iso).getTime() - base) / 60000; };
+    S.bookings.forEach(function (b) { if (b.zone_id === S.zone && b.status !== 'cancelled') { t0 = Math.min(t0, Math.floor(mins(b.starts_at) / 60) * 60); t1 = Math.max(t1, Math.ceil(mins(b.ends_at) / 60) * 60); } });
+    t0 = Math.floor(t0 / 60) * 60; t1 = Math.ceil(t1 / 60) * 60;
+    var W = Math.round((t1 - t0) * PXMIN);
+    var ticks = '';
+    for (var m = t0; m < t1; m += 60) ticks += '<span class="mt-tick" style="left:' + Math.round((m - t0) * PXMIN) + 'px">' + hhmm(m) + '</span>';
+    var nowMin = S.date === today() ? mins(new Date().toISOString()) : null;
+    var nowLine = nowMin != null && nowMin >= t0 && nowMin <= t1 ? '<i class="mt-now" style="left:' + Math.round((nowMin - t0) * PXMIN) + 'px"></i>' : '';
+    var rowsHtml = rows.map(function (t) {
+      var bars = '';
+      S.bookings.forEach(function (b) {
+        if (b.status === 'cancelled' || b.status === 'no_show' || !(b.table_booking_tables || []).some(function (x) { return x.table_id === t.id; })) return;
+        var l = Math.round((mins(b.starts_at) - t0) * PXMIN), w = Math.max(24, Math.round((mins(b.ends_at) - mins(b.starts_at)) * PXMIN)) - 2;
+        var st = b.status === 'seated' ? 'seated' : b.status === 'completed' ? 'done' : b.status === 'pending' ? 'pending' : 'booked';
+        var many = (b.table_booking_tables || []).length > 1;
+        bars += '<button type="button" class="mt-bar is-' + st + '" data-bid="' + b.id + '" style="left:' + l + 'px;width:' + w + 'px" title="' + esc(b.name + ' · ' + b.party + ' p. · ' + hm(b.starts_at) + '–' + hm(b.ends_at) + (b.notes ? ' · ' + b.notes : '')) + '"><b>' + esc(b.name) + '</b> <span>' + b.party + 'p' + (many ? ' · juntas' : '') + '</span></button>';
+      });
+      S.blocks.forEach(function (k) {
+        if (k.zone_id !== t.zone_id || (k.table_ids && k.table_ids.indexOf(t.id) === -1)) return;
+        var l = Math.max(0, Math.round((mins(k.starts_at) - t0) * PXMIN)), r = Math.min(W, Math.round((mins(k.ends_at) - t0) * PXMIN));
+        if (r > l) bars += '<span class="mt-bar is-blocked" style="left:' + l + 'px;width:' + (r - l) + 'px" title="' + esc('Bloqueada' + (k.note ? ': ' + k.note : '')) + '"><b>' + esc(k.note || 'Bloqueada') + '</b></span>';
+      });
+      return '<div class="mt-row"><button type="button" class="mt-rl' + (S.sel.indexOf(t.id) !== -1 ? ' is-sel' : '') + '" data-rowtable="' + t.id + '"><b>' + esc(t.name) + '</b><small>' + t.seats_max + 'p</small></button>' +
+        '<div class="mt-track" data-track="' + t.id + '" data-t0="' + t0 + '" style="width:' + W + 'px">' + bars + '</div></div>';
+    }).join('');
+    if (!rows.length) return '<p class="ad-empty">Esta zona no tiene mesas activas.</p>';
+    return '<div class="mt-tl"><div class="mt-tl-in" style="min-width:' + (W + 78) + 'px"><div class="mt-row mt-head"><span class="mt-rl"></span><div class="mt-ticks" style="width:' + W + 'px">' + ticks + '</div></div>' +
+      '<div class="mt-body" style="--w:' + W + 'px">' + nowLine + rowsHtml + '</div></div></div>' +
+      '<p class="ad-meta mt-legend"><span class="mt-dot is-booked"></span>Reservada <span class="mt-dot is-pending"></span>Pendiente <span class="mt-dot is-seated"></span>En mesa <span class="mt-dot is-blocked"></span>Bloqueada · Toca un hueco para reservar, una barra para editarla.</p>';
+  }
+
   function renderDay(body) {
+    var prevEl = root.querySelector('.mt-tl'), prevScroll = prevEl ? prevEl.scrollLeft : null;
     var opts = timeOptions(); if (!S.time || opts.indexOf(S.time) === -1) S.time = defaultTime(opts);
     var iso = at(S.date, S.time);
     var live = S.bookings.filter(function (b) { return b.status !== 'cancelled'; });
@@ -154,15 +196,27 @@
       '<button class="ad-btn is-ghost is-small" data-dayn="0">Hoy</button></div>' +
       '<button class="ad-btn" id="mtNew" type="button">+ Nueva reserva</button></div>' +
       '<p class="ad-meta mt-sum"><b>' + esc(dayLabel(S.date)) + '</b> · ' + live.length + ' reservas · ' + covers + ' comensales' + (deposits ? ' · fianzas cobradas ' + eur(deposits) : '') + '</p>' +
+      '<div class="mt-vtoggle" role="group"><button type="button" class="ck-chip" data-mode="timeline" aria-pressed="' + (S.mode === 'timeline') + '">Línea de tiempo</button><button type="button" class="ck-chip" data-mode="map" aria-pressed="' + (S.mode === 'map') + '">Mapa</button></div>' +
       '<div class="ad-bar mt-mapbar"><div class="mt-zones" role="group">' + zones.map(function (z) { return '<button type="button" class="ck-chip" data-zone="' + z.id + '" aria-pressed="' + (z.id === S.zone) + '">' + esc(z.name_es) + '</button>'; }).join('') + '</div>' +
       '<button type="button" class="ad-btn is-small ' + (S.join ? '' : 'is-ghost') + '" id="mtJoin">' + (S.join ? 'Terminar de juntar' : 'Juntar mesas') + '</button>' +
-      '<span class="mt-time"><button type="button" class="ad-btn is-ghost is-small" data-tstep="-1" aria-label="Hora anterior">‹</button><label>Mapa a las <select id="mtTime">' + opts.map(function (t) { return '<option' + (t === S.time ? ' selected' : '') + '>' + t + '</option>'; }).join('') + '</select></label><button type="button" class="ad-btn is-ghost is-small" data-tstep="1" aria-label="Hora siguiente">›</button></span></div>' +
-      (S.join ? joinBar() : '') + map + '<h2 class="ad-sub">Reservas del día</h2><ul class="ad-list" id="mtList">' + list + '</ul>';
+      (S.mode === 'map' ? '<span class="mt-time"><button type="button" class="ad-btn is-ghost is-small" data-tstep="-1" aria-label="Hora anterior">‹</button><label>Mapa a las <select id="mtTime">' + opts.map(function (t) { return '<option' + (t === S.time ? ' selected' : '') + '>' + t + '</option>'; }).join('') + '</select></label><button type="button" class="ad-btn is-ghost is-small" data-tstep="1" aria-label="Hora siguiente">›</button></span>' : '') + '</div>' +
+      (S.join ? joinBar() : '') + (S.mode === 'map' ? map : timeline()) + '<h2 class="ad-sub">Reservas del día</h2><ul class="ad-list" id="mtList">' + list + '</ul>';
+    var tlEl = body.querySelector('.mt-tl');
+    if (tlEl) {
+      var key = S.date + S.zone;
+      if (prevScroll != null && S.tlKey === key) tlEl.scrollLeft = prevScroll;
+      else {
+        // Al abrir el día: se centra en la hora actual (si es hoy) o en la primera reserva.
+        var anchor = tlEl.querySelector('.mt-now'), first = [].slice.call(tlEl.querySelectorAll('.mt-bar:not(.is-blocked)')).sort(function (a, b) { return a.offsetLeft - b.offsetLeft; })[0];
+        var target = anchor ? parseFloat(anchor.style.left) : first ? first.offsetLeft : 0;
+        tlEl.scrollLeft = Math.max(0, target - 60); S.tlKey = key;
+      }
+    }
   }
 
   function joinBar() {
     var ts = S.sel.map(tableById).filter(Boolean), seats = ts.reduce(function (n, t) { return n + t.seats_max; }, 0);
-    return '<div class="mt-joinbar"><span>' + (ts.length ? '<b>' + ts.map(function (t) { return esc(t.name); }).join(' + ') + '</b> · ' + seats + ' plazas' : 'Toca las mesas libres que quieras juntar (pueden ser cualquiera de la misma planta).') + '</span>' +
+    return '<div class="mt-joinbar"><span>' + (ts.length ? '<b>' + ts.map(function (t) { return esc(t.name); }).join(' + ') + '</b> · ' + seats + ' plazas' : 'Toca las mesas que quieras juntar (las filas o los huecos de la línea de tiempo; pueden ser cualquiera de la misma planta).') + '</span>' +
       '<button type="button" class="ad-btn is-small" id="mtJoinGo"' + (ts.length < 1 ? ' disabled' : '') + '>Reservar ' + (ts.length > 1 ? 'estas mesas juntas' : 'esta mesa') + '</button>' +
       (ts.length ? '<button type="button" class="ad-btn is-small is-ghost" id="mtJoinClear">Vaciar</button>' : '') + '</div>';
   }
@@ -245,13 +299,29 @@
   function done(msg) { return loadDay().then(function () { render(); if (msg) flash(msg, 'ok'); }); }
 
   root.addEventListener('click', function (e) {
+    var tr = e.target.closest('.mt-track');
+    if (tr && !e.target.closest('.mt-bar')) {
+      var x = e.clientX - tr.getBoundingClientRect().left, mm0 = +tr.dataset.t0 + Math.round(x / PXMIN / 15) * 15, tv = hhmm(mm0);
+      if (S.join) {
+        var id0 = tr.dataset.track, i0 = S.sel.indexOf(id0); if (i0 === -1) S.sel.push(id0); else S.sel.splice(i0, 1);
+        S.joinTime = tv; return void render();
+      }
+      return void openNew({ table: tableById(tr.dataset.track), time: tv });
+    }
     var t = e.target.closest('button'); if (!t) return;
     if (S.justMoved && t.dataset.table) return;
     if (t.dataset.dayn != null) { S.date = t.dataset.dayn === '0' ? today() : addDays(S.date, +t.dataset.dayn); S.time = ''; return void enter(); }
     if (t.dataset.zone) { S.zone = t.dataset.zone; S.sel = []; return void render(); }
+    if (t.dataset.mode) { S.mode = t.dataset.mode; return void render(); }
+    if (t.dataset.bid) { if (S.justMoved) return; var bb = bk(t.dataset.bid); if (bb) openEdit(bb); return; }
+    if (t.dataset.rowtable) {
+      if (!S.join) return;
+      var rid = t.dataset.rowtable, ri = S.sel.indexOf(rid); if (ri === -1) S.sel.push(rid); else S.sel.splice(ri, 1);
+      return void render();
+    }
     if (t.id === 'mtJoin') { S.join = !S.join; S.sel = []; return void render(); }
     if (t.id === 'mtJoinClear') { S.sel = []; return void render(); }
-    if (t.id === 'mtJoinGo') { var picked = S.sel.map(tableById).filter(Boolean); S.join = false; S.sel = []; render(); return void openNew({ tables: picked }); }
+    if (t.id === 'mtJoinGo') { var picked = S.sel.map(tableById).filter(Boolean), jt = S.joinTime; S.join = false; S.sel = []; S.joinTime = ''; render(); return void openNew({ tables: picked, time: jt }); }
     if (t.id === 'mtNew') return void openNew({});
     if (t.dataset.table) {
       var tb = tableById(t.dataset.table), o = occupancy(tb, at(S.date, S.time));
@@ -319,7 +389,7 @@
     var optsT = timeOptions();
     var html = '<h2>Nueva reserva</h2><p class="ad-msg is-error" id="nwMsg" hidden></p><form id="nwForm"><div class="ad-grid">' +
       '<label class="ad-field"><span>Día</span><input type="date" id="nwDate" value="' + S.date + '" required></label>' +
-      '<label class="ad-field"><span>Hora</span><input type="time" id="nwTime" step="300" value="' + esc(S.time || optsT[0] || '13:00') + '" required></label>' +
+      '<label class="ad-field"><span>Hora</span><input type="time" id="nwTime" step="300" value="' + esc(pre.time || S.time || optsT[0] || '13:00') + '" required></label>' +
       '<label class="ad-field"><span>Personas</span><input type="number" id="nwParty" min="1" max="60" value="' + (pre.tables && pre.tables.length > 1 ? pre.tables.reduce(function (n, t) { return n + t.seats_max; }, 0) : pre.table ? Math.min(pre.table.seats_max, 2) : 2) + '" required></label>' +
       '<label class="ad-field"><span>Zona</span><select id="nwZone">' + S.zones.map(function (z) { return '<option value="' + z.id + '"' + (z.id === zone ? ' selected' : '') + '>' + esc(z.name_es) + (z.deposit_cents ? ' · fianza ' + eur(z.deposit_cents) : '') + '</option>'; }).join('') + '</select></label>' +
       '<label class="ad-field"><span>Turno</span><select id="nwSvc">' + svc.map(function (s) { return '<option value="' + s.id + '">' + esc(s.name_es) + '</option>'; }).join('') + '</select></label>' +
