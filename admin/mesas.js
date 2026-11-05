@@ -25,7 +25,7 @@
   function holds(b) { return b.status === 'confirmed' || b.status === 'seated' || (b.status === 'pending' && new Date(b.hold_until).getTime() > Date.now()); }
   function errText(e) {
     var m = String((e && e.message) || e);
-    var map = { table_busy: 'Alguna de esas mesas ya está ocupada a esa hora.', no_table: 'No hay mesa libre para ese grupo a esa hora en esa zona.', bad_data: 'Revisa los datos (nombre y personas).', email_required: 'Para pedir la fianza hace falta el email del cliente.', forbidden: 'No tienes permiso.', zone_not_found: 'Zona no válida.', service_not_found: 'Turno no válido.' };
+    var map = { table_busy: 'Alguna de esas mesas ya está ocupada a esa hora.', no_table: 'No hay mesa libre para ese grupo a esa hora en esa zona.', bad_data: 'Revisa los datos (nombre y personas).', email_required: 'Para pedir la fianza hace falta el email del cliente.', forbidden: 'No tienes permiso.', zone_not_found: 'Zona no válida.', not_editable: 'Esa reserva ya no se puede editar.', service_not_found: 'Turno no válido.' };
     var k = Object.keys(map).filter(function (x) { return m.indexOf(x) !== -1; })[0];
     return k ? map[k] : m;
   }
@@ -134,10 +134,10 @@
       var cancelled = b.status === 'cancelled' || b.status === 'no_show';
       var pay = b.deposit_cents > 0 ? '<span class="ad-tag ' + (b.payment_status === 'paid' ? 'is-green' : b.payment_status === 'refunded' || b.payment_status === 'retained' ? '' : 'is-red') + '">' + eur(b.deposit_cents) + ' · ' + ({ paid: 'pagada', pending: 'sin pagar', refunded: 'devuelta', retained: 'retenida' }[b.payment_status] || b.payment_status) + '</span>' : '';
       var a = [];
-      if (b.status === 'confirmed') a.push('<button class="ad-btn is-small" data-act="seat" data-id="' + b.id + '">Sentar</button>');
+      if (b.status === 'confirmed' || b.status === 'pending') a.push('<button class="ad-btn is-small" data-act="seat" data-id="' + b.id + '">Sentar</button>');
       if (b.status === 'seated') a.push('<button class="ad-btn is-small" data-act="done" data-id="' + b.id + '">Terminada</button>');
       if (b.status === 'confirmed') a.push('<button class="ad-btn is-small is-ghost" data-act="noshow" data-id="' + b.id + '">No vino</button>');
-      if (!cancelled && b.status !== 'completed') a.push('<button class="ad-btn is-small is-ghost" data-act="move" data-id="' + b.id + '">Cambiar mesa</button>');
+      if (!cancelled && b.status !== 'completed') a.push('<button class="ad-btn is-small is-ghost" data-act="edit" data-id="' + b.id + '">Editar / ampliar</button>');
       if (!cancelled && b.status !== 'completed') a.push('<button class="ad-btn is-small is-danger" data-act="cancel" data-id="' + b.id + '">Anular</button>');
       if ((b.payment_status === 'paid' || b.payment_status === 'retained') && b.deposit_cents > 0) a.push('<button class="ad-btn is-small is-ghost" data-act="refund" data-id="' + b.id + '">Devolver fianza</button>');
       return '<li class="ad-card mt-bk' + (cancelled ? ' is-past' : '') + '"><div class="ad-date"><b>' + hm(b.starts_at) + '</b><span>' + b.party + ' p.</span></div>' +
@@ -261,15 +261,19 @@
         return void render();
       }
       if (o.state === 'free') return void openNew({ table: tb });
-      if (o.booking) { var li = document.querySelector('#mtList .mt-bk [data-id="' + o.booking.id + '"]'); if (li) li.closest('li').scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+      if (o.booking) return void openEdit(o.booking);
+      if (o.block) flash('Mesa bloqueada: ' + (o.block.note || 'sin motivo') + '. Quita el bloqueo en la pestaña Bloqueos.', 'error');
       return;
     }
     var id = t.dataset.id, act = t.dataset.act; if (!act) return;
     var b = bk(id); if (!b) return;
-    if (act === 'seat') patch(id, { status: 'seated' }).then(function () { return done(); }).catch(fail);
+    if (act === 'seat') {
+      if (b.status === 'pending' && b.deposit_cents > 0 && !confirm('La fianza de ' + eur(b.deposit_cents) + ' no está pagada. ¿Sentarlos igualmente? Se confirma la reserva sin fianza.')) return;
+      patch(id, { status: 'seated', hold_until: new Date(Date.now() + 864e5).toISOString() }).then(function () { return done(); }).catch(fail);
+    }
+    else if (act === 'edit') openEdit(b);
     else if (act === 'done') patch(id, { status: 'completed' }).then(function () { return done(); }).catch(fail);
     else if (act === 'noshow') { if (confirm('¿Marcar como "no vino"?' + (b.payment_status === 'paid' ? ' La fianza se queda retenida.' : ''))) patch(id, { status: 'no_show', payment_status: b.payment_status === 'paid' ? 'retained' : b.payment_status }).then(function () { return done(); }).catch(fail); }
-    else if (act === 'move') openMove(b);
     else if (act === 'cancel') cancelBooking(b);
     else if (act === 'refund') {
       if (!confirm('¿Devolver la fianza de ' + eur(b.deposit_cents) + ' a ' + b.name + '? Se devuelve a su tarjeta por Redsys.')) return;
@@ -374,6 +378,61 @@
         void zoneRow;
       });
     });
+  }
+
+
+  function openEdit(b) {
+    var cur = (b.table_booking_tables || []).map(function (x) { return x.table_id; });
+    var busyFor = function (starts, ends) {
+      return S.tables.filter(function (t) { return S.bookings.some(function (o) { return o.id !== b.id && holds(o) && (o.table_booking_tables || []).some(function (x) { return x.table_id === t.id; }) && o.starts_at < ends && o.ends_at > starts; }); }).map(function (t) { return t.id; });
+    };
+    var dur = new Date(b.ends_at).getTime() - new Date(b.starts_at).getTime();
+    var dateV = S.date, timeV = hm(b.starts_at);
+    var canSeat = b.status !== 'seated';
+    modal('<h2>Editar reserva</h2><p class="ad-meta">' + esc(b.ref) + ' · ' + esc(zoneName(b.zone_id)) + ' · ' + esc(ST[b.status] || b.status) + '</p><p class="ad-msg is-error" id="edMsg" hidden></p>' +
+      '<div class="ad-grid">' +
+      '<label class="ad-field"><span>Personas</span><input type="number" id="edParty" min="1" max="60" value="' + b.party + '"></label>' +
+      '<label class="ad-field"><span>Hora</span><input type="time" id="edTime" step="300" value="' + timeV + '"></label>' +
+      '<label class="ad-field"><span>Día</span><input type="date" id="edDate" value="' + dateV + '"></label>' +
+      '<label class="ad-field"><span>Nombre</span><input type="text" id="edName" value="' + esc(b.name) + '" maxlength="80"></label>' +
+      '<label class="ad-field"><span>Teléfono</span><input type="tel" id="edPhone" value="' + esc(b.phone) + '"></label>' +
+      '<label class="ad-field"><span>Email</span><input type="email" id="edEmail" value="' + esc(b.email) + '"></label>' +
+      '<label class="ad-field full"><span>Notas</span><textarea id="edNotes" maxlength="500">' + esc(b.notes) + '</textarea></label></div>' +
+      '<div class="ad-field"><span>Mesas · <b id="edCap"></b></span><div class="mt-picks" id="edPicks"></div></div>' +
+      '<div class="mt-foot"><button type="button" class="ad-btn is-ghost" data-close>Cerrar</button>' +
+      '<button type="button" class="ad-btn is-ghost" id="edSave">Guardar</button>' + (canSeat ? '<button type="button" class="ad-btn" id="edSeat">Guardar y sentar</button>' : '') + '</div>',
+      function (m) {
+        var q = function (id) { return m.querySelector('#' + id); };
+        function starts() { return at(q('edDate').value, q('edTime').value); }
+        function picks(keepSel) {
+          var st = starts(), en = new Date(new Date(st).getTime() + dur).toISOString();
+          var sel = keepSel ? [].map.call(q('edPicks').querySelectorAll('input:checked'), function (i) { return i.value; }) : cur;
+          q('edPicks').innerHTML = tablesPicker(b.zone_id, sel, busyFor(st, en));
+          cap();
+        }
+        function cap() {
+          var ids = [].map.call(q('edPicks').querySelectorAll('input:checked'), function (i) { return i.value; });
+          var seats = ids.map(tableById).filter(Boolean).reduce(function (n, t) { return n + t.seats_max; }, 0), party = +q('edParty').value || 0;
+          q('edCap').textContent = ids.length ? ids.map(function (i) { return tableById(i).name; }).join(' + ') + ' · ' + seats + ' plazas' + (party > seats ? ' · faltan ' + (party - seats) + ': junta otra mesa' : '') : 'ninguna elegida';
+          q('edCap').style.color = party > seats && ids.length ? 'var(--red)' : '';
+        }
+        picks(false);
+        q('edPicks').addEventListener('change', cap); q('edParty').addEventListener('input', cap);
+        ['edTime', 'edDate'].forEach(function (id) { q(id).addEventListener('change', function () { picks(true); }); });
+        function save(seat) {
+          var msg = q('edMsg'); msg.hidden = true;
+          var ids = [].map.call(q('edPicks').querySelectorAll('input:checked'), function (i) { return i.value; });
+          if (!ids.length) { msg.textContent = 'Elige al menos una mesa.'; msg.hidden = false; return; }
+          var newStart = starts(), same = new Date(newStart).getTime() === new Date(b.starts_at).getTime();
+          [q('edSave'), q('edSeat')].forEach(function (x) { if (x) x.disabled = true; });
+          api('rpc/dining_admin_update', { method: 'POST', body: { p_booking: b.id, p_party: +q('edParty').value, p_starts: same ? null : newStart, p_name: q('edName').value.trim(), p_phone: q('edPhone').value.trim(), p_email: q('edEmail').value.trim(), p_notes: q('edNotes').value.trim(), p_tables: ids } })
+            .then(function () { return seat ? patch(b.id, { status: 'seated', hold_until: new Date(Date.now() + 864e5).toISOString() }) : null; })
+            .then(function () { m.remove(); S.date = q('edDate').value; return enter().then(function () { flash(seat ? 'Reserva guardada y sentada.' : 'Reserva guardada.', 'ok'); }); })
+            .catch(function (x) { [q('edSave'), q('edSeat')].forEach(function (y) { if (y) y.disabled = false; }); msg.textContent = errText(x); msg.hidden = false; });
+        }
+        q('edSave').addEventListener('click', function () { save(false); });
+        if (q('edSeat')) q('edSeat').addEventListener('click', function () { save(true); });
+      });
   }
 
   function openMove(b) {
