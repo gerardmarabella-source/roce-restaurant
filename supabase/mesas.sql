@@ -45,8 +45,10 @@ create table if not exists public.dining_services (
   notice_min   integer not null default 60 check (notice_min >= 0),   -- antelación mínima
   days_ahead   integer not null default 60 check (days_ahead >= 1),   -- cuántos días vista se puede reservar
   active       boolean not null default true,
+  zone_ids     text[],   -- zonas que usa el turno (null = todas)
   check (last_min >= start_min)
 );
+alter table public.dining_services add column if not exists zone_ids text[];
 
 -- ─── Cierres (festivos, eventos privados, una planta cerrada…) ────────────
 create table if not exists public.dining_closures (
@@ -227,7 +229,7 @@ begin
              and extract(isodow from p_date)::integer = any (days)
              and p_party <= max_party and p_date <= v_today + days_ahead
            order by start_min loop
-    for z in select * from public.dining_zones where active order by sort, id loop
+    for z in select * from public.dining_zones where active and (s.zone_ids is null or id = any (s.zone_ids)) order by sort, id loop
       if public.dining_closed(p_date, s.id, z.id) then continue; end if;
       t := s.start_min;
       while t <= s.last_min loop
@@ -276,7 +278,7 @@ begin
   select * into s from public.dining_services where id = p_service and active;
   if not found then raise exception 'service_not_found'; end if;
   select * into z from public.dining_zones where id = p_zone and active;
-  if not found then raise exception 'zone_not_found'; end if;
+  if not found or (s.zone_ids is not null and not (z.id = any (s.zone_ids))) then raise exception 'zone_not_found'; end if;
   if p_party is null or p_party < 1 or p_party > s.max_party then raise exception 'bad_party'; end if;
   if length(trim(coalesce(p_name, ''))) < 3
      or coalesce(p_email, '') !~* '^[^@[:space:]]+@[^@[:space:]]+\.[^@[:space:]]{2,}$'
@@ -462,6 +464,10 @@ insert into public.dining_services (id, ambience, name_es, name_en, start_min, l
 values ('day', 'day', 'Day', 'Day', 600, 1110, 30, 90, 8),          -- 10:00 a 18:30
        ('night', 'night', 'Night', 'Night', 1200, 1470, 30, 120, 8)  -- 20:00 a 00:30
 on conflict (id) do nothing;
+
+-- Day usa la planta baja y Night la planta alta (solo si todavía no se ha configurado otra cosa).
+update public.dining_services set zone_ids = array['baja'] where id = 'day' and zone_ids is null;
+update public.dining_services set zone_ids = array['alta'] where id = 'night' and zone_ids is null;
 
 insert into public.dining_tables (zone_id, name, seats_min, seats_max, combine_group, sort)
 select z.id, 'M' || n, 1, case when n <= 4 then 2 else 4 end, z.id, n
