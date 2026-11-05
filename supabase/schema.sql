@@ -408,7 +408,7 @@ end;
 $$;
 
 -- Guarda la lista tal como la deja quien tiene el enlace (sustituye a la anterior).
--- Cada invitado lleva nombre, email y DNI/NIE/pasaporte: recibirá su entrada con QR cuando la lista
+-- Cada invitado lleva nombre y email (el DNI ya no se pide, pero se acepta si llega): recibirá su entrada con QR cuando la lista
 -- se cierre. Controla máximo, cierre y aforo con el evento bloqueado. Quien ya entró no se borra.
 create or replace function public.guest_list_save(p_token text, p_host_name text, p_host_contact text, p_guests jsonb)
 returns jsonb
@@ -439,7 +439,7 @@ begin
     order by lower(nm), pos
   ) d;
   if exists (select 1 from unnest(v_emails) e where e !~* '^[^@[:space:]]+@[^@[:space:]]+\.[^@[:space:]]{2,}$')
-     or exists (select 1 from unnest(v_dnis) d2 where d2 !~ '^[A-Z0-9]{5,20}$') then raise exception 'bad_data'; end if;
+     or exists (select 1 from unnest(v_dnis) d2 where d2 <> '' and d2 !~ '^[A-Z0-9]{5,20}$') then raise exception 'bad_data'; end if;
 
   delete from public.guest_list_entries where list_id = l.id and not checked_in and lower(name) <> all (select lower(c) from unnest(v_names) c);
   select count(*) into kept from public.guest_list_entries where list_id = l.id;

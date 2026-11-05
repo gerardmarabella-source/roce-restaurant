@@ -42,8 +42,8 @@
   .gl-field > span { display: block; margin-bottom: 0.3rem; font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; opacity: 0.7; }
   .gl-field input { width: 100%; padding: 0.8rem 0.85rem; border: 1px solid var(--fg); border-radius: 0; background: transparent; color: inherit; font: inherit; font-size: 1rem; }
   .gl-field input:focus { outline: 2px solid var(--fg); outline-offset: 1px; }
-  .gl-guest { display: grid; grid-template-columns: 1fr 1fr 3rem; gap: 0.5rem; margin-bottom: 0.9rem; padding-bottom: 0.9rem; border-bottom: 1px solid var(--line); }
-  .gl-guest .gl-n { grid-column: 1 / 3; }
+  .gl-guest { display: grid; grid-template-columns: 1fr 3rem; gap: 0.5rem; margin-bottom: 0.9rem; padding-bottom: 0.9rem; border-bottom: 1px solid var(--line); }
+  .gl-guest .gl-m { grid-column: 1 / 3; }
   .gl-guest input { min-width: 0; padding: 0.8rem 0.85rem; border: 1px solid var(--fg); border-radius: 0; background: transparent; color: inherit; font: inherit; font-size: 1rem; }
   .gl-guest input:focus { outline: 2px solid var(--fg); outline-offset: 1px; }
   .gl-guest button { width: 3rem; border: 1px solid var(--fg); background: none; color: inherit; font-size: 1.2rem; cursor: pointer; }
@@ -96,12 +96,12 @@
       <label class="gl-field"><span data-i18n="gl_contact">Tu teléfono o email</span><input id="glContact" type="text" autocomplete="tel" maxlength="120" required></label>
 
       <h2 class="gl-h" data-i18n="gl_guests">Tus invitados</h2>
-      <p class="gl-hint" data-i18n="gl_qr_note">Cada invitado recibe su entrada personal con QR en su email cuando la lista se cierra (a la hora indicada) o cuando tú la confirmas. Por eso necesitamos su email y su DNI, NIE o pasaporte.</p>
+      <p class="gl-hint" data-i18n="gl_qr_note">Cada invitado recibe su entrada personal con QR en su email cuando la lista se cierra (a la hora indicada) o cuando tú la confirmas. Por eso necesitamos su email.</p>
       <div id="glGuests"></div>
       <p class="gl-count" id="glCount"></p>
       <button type="button" class="gl-btn is-ghost" id="glAdd" data-i18n="gl_add">+ Añadir invitado</button>
 
-      <label class="gl-check"><input type="checkbox" id="glConsent"><span data-i18n-html="gl_consent">Confirmo que mis invitados me han autorizado a facilitar su nombre, email y DNI a ROCE para esta lista y para enviarles su entrada con QR. Más información en la <a href="/privacidad.html" target="_blank" rel="noopener">política de privacidad</a>.</span></label>
+      <label class="gl-check"><input type="checkbox" id="glConsent"><span data-i18n-html="gl_consent">Confirmo que mis invitados me han autorizado a facilitar su nombre y email a ROCE para esta lista y para enviarles su entrada con QR. Más información en la <a href="/privacidad.html" target="_blank" rel="noopener">política de privacidad</a>.</span></label>
 
       <p class="gl-error" id="glError" role="alert" hidden></p>
       <p class="gl-ok" id="glOk" role="status" hidden></p>
@@ -129,7 +129,7 @@
   </div>
 </div>
 <script src="/cookies.js?v=4"></script>
-<script src="/i18n.js?v=96"></script>
+<script src="/i18n.js?v=97"></script>
 <script src="/eventos/config.js?v=2"></script>
 <script>
   (function () {
@@ -176,9 +176,8 @@
 
     function field(cls, type, val, ph, key, i) {
       var inp = document.createElement('input'); inp.type = type; inp.value = val; inp.autocomplete = 'off'; inp.placeholder = ph; inp.disabled = data.closed; inp.className = cls;
-      inp.maxLength = type === 'email' ? 120 : (key === 'dni' ? 20 : 80);
+      inp.maxLength = type === 'email' ? 120 : 80;
       if (type === 'email') { inp.inputMode = 'email'; inp.autocapitalize = 'none'; }
-      if (key === 'dni') { inp.autocapitalize = 'characters'; inp.spellcheck = false; }
       inp.addEventListener('input', function () { guests[i][key] = inp.value; if (key === 'name') paintCount(); });
       return inp;
     }
@@ -189,19 +188,18 @@
         row.appendChild(field('gl-n', 'text', g.name, t('gl_guest_n').replace('{n}', i + 1), 'name', i));
         if (!data.closed) {
           var rm = document.createElement('button'); rm.type = 'button'; rm.setAttribute('aria-label', t('gl_remove')); rm.textContent = '×';
-          rm.addEventListener('click', function () { guests.splice(i, 1); if (!guests.length) guests.push({ name: '', email: '', dni: '' }); paintGuests(); });
+          rm.addEventListener('click', function () { guests.splice(i, 1); if (!guests.length) guests.push({ name: '', email: '' }); paintGuests(); });
           row.appendChild(rm);
         } else { row.appendChild(document.createElement('span')); }
         row.appendChild(field('gl-m', 'email', g.email, t('gl_email'), 'email', i));
-        row.appendChild(field('gl-d', 'text', g.dni, t('gl_dni'), 'dni', i));
         box.appendChild(row);
       });
       paintCount();
     }
     function toGuests(d) {
-      var arr = Array.isArray(d.guests) && d.guests.length ? d.guests : (d.names || []).map(function (n) { return { name: n, email: '', dni: '' }; });
-      arr = arr.map(function (g) { return { name: g.name || '', email: g.email || '', dni: g.dni || '' }; });
-      if (!arr.length) arr.push({ name: '', email: '', dni: '' });
+      var arr = Array.isArray(d.guests) && d.guests.length ? d.guests : (d.names || []).map(function (n) { return { name: n, email: '' }; });
+      arr = arr.map(function (g) { return { name: g.name || '', email: g.email || '' }; });
+      if (!arr.length) arr.push({ name: '', email: '' });
       return arr;
     }
 
@@ -222,24 +220,20 @@
 
     function fail(key) { var e = $('glError'); e.textContent = t(key); e.hidden = false; $('glOk').hidden = true; e.scrollIntoView({ block: 'nearest' }); return null; }
 
-    $('glAdd').addEventListener('click', function () { if (guests.length < MAX) { guests.push({ name: '', email: '', dni: '' }); paintGuests(); var ins = $('glGuests').querySelectorAll('input'); ins[ins.length - 1].focus(); } });
+    $('glAdd').addEventListener('click', function () { if (guests.length < MAX) { guests.push({ name: '', email: '' }); paintGuests(); var ins = $('glGuests').querySelectorAll('input'); ins[ins.length - 1].focus(); } });
     var EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
-    function dniOk(raw) {
-      var d = String(raw || '').replace(/[\s.\-]/g, '').toUpperCase();
-      return /^[A-Z0-9]{5,20}$/.test(d) && !(/^\d{8}[A-Z]$/.test(d) && 'TRWAGMYFPDXBNJZSQVHLCKE'.charAt(parseInt(d, 10) % 23) !== d.charAt(8));
-    }
     // Valida el formulario y devuelve los invitados listos para enviar, o null (con el error ya mostrado).
     function collect() {
       $('glError').hidden = true; $('glOk').hidden = true;
-      var rows = guests.filter(function (g) { return g.name.trim() || g.email.trim() || g.dni.trim(); });
+      var rows = guests.filter(function (g) { return g.name.trim() || g.email.trim(); });
       if ($('glHost').value.trim().length < 2) return fail('gl_err_host');
       if ($('glContact').value.trim().length < 5) return fail('gl_err_contact');
       if (!rows.length) return fail('gl_err_none');
       for (var i = 0; i < rows.length; i++) {
-        if (rows[i].name.trim().length < 2 || !EMAIL.test(rows[i].email.trim()) || !dniOk(rows[i].dni)) return fail('gl_err_guest');
+        if (rows[i].name.trim().length < 2 || !EMAIL.test(rows[i].email.trim())) return fail('gl_err_guest');
       }
       if (!$('glConsent').checked) return fail('gl_err_consent');
-      return rows.map(function (g) { return { name: g.name.trim(), email: g.email.trim(), dni: g.dni.trim() }; });
+      return rows.map(function (g) { return { name: g.name.trim(), email: g.email.trim() }; });
     }
     function refreshAfterSave(r) {
       // Se vuelve a leer lo guardado (el servidor quita repetidos y recorta espacios).

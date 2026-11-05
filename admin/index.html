@@ -905,7 +905,7 @@
           return '<li><span>' + esc(n.name) + (n.checked_in ? ' <span class="ck-tag">✓ ha venido</span>' : '') +
             '<br><span class="ad-meta">' + (n.email ? esc(n.email) : '<i>sin email: no recibe QR</i>') + (n.dni ? ' · DNI ' + esc(n.dni) : '') + (n.emailed_at ? ' · ✉ entrada enviada' : (n.email ? ' · entrada por enviar al cerrar' : '')) + '</span></span><button class="ls-rm" data-act="rm" data-eid="' + n.id + '" type="button" aria-label="Quitar a ' + esc(n.name) + '">×</button></li>';
         }).join('') : '<li><span class="ad-meta">Sin nombres todavía.</span></li>') + '</ul>' +
-          '<div class="ls-add"><input type="text" maxlength="200" placeholder="Nombre, email, DNI (el email y el DNI son opcionales)"><button class="ad-btn is-small" data-act="add" type="button">Añadir</button></div></div>' : '') +
+          '<div class="ls-add"><input type="text" maxlength="200" placeholder="Nombre, email (el email es opcional)"><button class="ad-btn is-small" data-act="add" type="button">Añadir</button></div></div>' : '') +
       '</li>';
     }).join('');
   }
@@ -987,12 +987,11 @@
       api('guest_list_entries?id=eq.' + en.id, { method: 'DELETE' }).then(function () { l.guest_list_entries = l.guest_list_entries.filter(function (x) { return x.id !== en.id; }); renderLists(); }).catch(function (x) { flash(x.message, 'error'); });
     }
     else if (act === 'add') {
-      var inp = li.querySelector('.ls-add input'), parts = inp.value.split(',').map(function (x) { return x.trim(); }), name = parts[0] || '', gmail = (parts[1] || '').toLowerCase(), gdni = (parts[2] || '').replace(/[\s.\-]/g, '').toUpperCase();
+      var inp = li.querySelector('.ls-add input'), parts = inp.value.split(',').map(function (x) { return x.trim(); }), name = parts[0] || '', gmail = (parts[1] || '').toLowerCase(),
       if (name.length < 2) { flash('Escribe el nombre.', 'error'); return; }
       if (gmail && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(gmail)) { flash('Ese email no es válido.', 'error'); return; }
-      if (gdni && !/^[A-Z0-9]{5,20}$/.test(gdni)) { flash('Ese DNI no es válido.', 'error'); return; }
       if ((l.guest_list_entries || []).length >= l.max_people) { flash('La lista ya está llena (' + l.max_people + '). Sube el máximo en Editar.', 'error'); return; }
-      api('guest_list_entries', { method: 'POST', body: { list_id: l.id, name: name, email: gmail, dni: gdni }, prefer: 'return=representation' }).then(function (rows) { (l.guest_list_entries = l.guest_list_entries || []).push(rows[0]); renderLists(); }).catch(function (x) { flash(x.message, 'error'); });
+      api('guest_list_entries', { method: 'POST', body: { list_id: l.id, name: name, email: gmail }, prefer: 'return=representation' }).then(function (rows) { (l.guest_list_entries = l.guest_list_entries || []).push(rows[0]); renderLists(); }).catch(function (x) { flash(x.message, 'error'); });
     }
   });
   $('lsList').addEventListener('keydown', function (ev) { if (ev.key === 'Enter' && ev.target.matches('.ls-add input')) { ev.preventDefault(); ev.target.parentNode.querySelector('button').click(); } });
