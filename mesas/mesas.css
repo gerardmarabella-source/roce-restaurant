@@ -90,3 +90,19 @@ body.zone-day #mesasApp { --mz-fg: var(--black); --mz-bg: var(--white); --mz-lin
 .mz-input + .mz-input, .mz-allergies + .mz-input { margin-top: 0.5rem; }
 .mz-allergies { margin: 1.4rem 0 1rem; }
 .mz-wa { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+
+/* Calendario: días cerrados, completos y con algún turno completo. */
+.mz-day { position: relative; }
+.mz-day.is-closed { opacity: 0.22; text-decoration: line-through; }
+.mz-day.is-full { text-decoration: line-through; opacity: 0.55; }
+.mz-day.is-partial::after { content: ""; position: absolute; left: 50%; bottom: 0.3rem; width: 0.3rem; height: 0.3rem; margin-left: -0.15rem; border-radius: 50%; background: var(--mz-fg); opacity: 0.7; }
+.mz-day.is-on.is-partial::after { background: var(--mz-bg); }
+.mz-legend { display: flex; flex-wrap: wrap; gap: 0.3rem 1rem; margin-top: 0.7rem; font-size: 0.78rem; color: var(--mz-soft); }
+.mz-lg { display: inline-flex; align-items: center; gap: 0.4rem; }
+.mz-lg i { display: inline-block; width: 0.55rem; height: 0.55rem; }
+.mz-lg-c { border: 1px solid var(--mz-fg); opacity: 0.3; }
+.mz-lg-f { border: 1px solid var(--mz-fg); opacity: 0.55; background: linear-gradient(to top right, transparent 45%, var(--mz-fg) 45%, var(--mz-fg) 55%, transparent 55%); }
+.mz-lg-p { border-radius: 50%; background: var(--mz-fg); opacity: 0.7; width: 0.4rem !important; height: 0.4rem !important; }
+
+.mz-meal { margin: 1rem 0 0.5rem; font-size: 0.85rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--mz-soft); }
+.mz-slots:empty { display: none; }

@@ -208,7 +208,7 @@
   function shell() {
     root.innerHTML =
       '<div class="mt-nav" role="group" aria-label="Mesas">' +
-      [['day', 'Día', 'tables'], ['wait', 'Lista de espera', 'tables_wait'], ['crm', 'Clientes', 'tables_crm'], ['accounts', 'Cuentas', 'tables_accounts'], ['blocks', 'Bloqueos', 'tables_blocks'], ['config', 'Configuración', 'tables_config']].filter(function (v) { return can(v[2]); }).map(function (v) { return '<button type="button" class="ck-chip" data-view="' + v[0] + '" aria-pressed="' + (S.view === v[0]) + '">' + v[1] + '</button>'; }).join('') +
+      [['day', 'Día', 'tables'], ['wait', 'Lista de espera', 'tables_wait'], ['crm', 'Clientes', 'tables_crm'], ['accounts', 'Cuentas empresa', 'tables_accounts'], ['blocks', 'Bloqueos', 'tables_blocks'], ['config', 'Configuración', 'tables_config']].filter(function (v) { return can(v[2]); }).map(function (v) { return '<button type="button" class="ck-chip" data-view="' + v[0] + '" aria-pressed="' + (S.view === v[0]) + '">' + v[1] + '</button>'; }).join('') +
       '</div><div id="mtBody"></div>';
   }
   function render() {
@@ -935,7 +935,7 @@
       '<form class="ad-sheet-inline" id="acForm"><h2 class="ad-sub">Nueva cuenta</h2><p class="ad-msg is-error" id="acMsg" hidden></p><div class="ad-grid">' + accFields(null, 'ac') +
       '<label class="ad-field"><span>Saldo inicial entregado (€, opcional)</span><input type="number" id="acInit" min="0" step="0.01"></label></div>' +
       '<button class="ad-btn" type="submit">Crear cuenta</button></form>' +
-      '<h2 class="ad-sub" style="margin-top:1.75rem">Cuentas</h2><ul class="ad-list">' + (accs.length ? accs.map(function (a) {
+      '<h2 class="ad-sub" style="margin-top:1.75rem">Cuentas empresa</h2><ul class="ad-list">' + (accs.length ? accs.map(function (a) {
         var bal = accBal(a.id), mv = (S.accMoves || []).filter(function (m) { return m.account_id === a.id; }), open = S.accOpen === a.id;
         var linked = Object.keys(S.notes || {}).filter(function (k) { return (S.notes[k] || {}).account_id === a.id; }).length;
         return '<li class="ad-card mt-acc' + (a.active ? '' : ' is-past') + '"><div class="mt-acc-main"><div class="ad-name">' + esc(a.name) + ' <span class="ad-tag">' + esc(AK[a.kind] || a.kind) + '</span>' + (a.active ? '' : ' <span class="ad-tag is-red">cerrada</span>') + '</div>' +
@@ -1030,6 +1030,7 @@
   function mm(min) { var h = Math.floor(min / 60) % 24; return ('0' + h).slice(-2) + ':' + ('0' + (min % 60)).slice(-2); }
   function toMin(v, ref) { var m = +v.slice(0, 2) * 60 + +v.slice(3, 5); return m < (ref || 0) && +v.slice(0, 2) < 6 ? m + 1440 : m; }
   function renderConfig(body) {
+    S.pend = {};
     var zones = S.zones.map(function (z) {
       return '<li class="ad-card mt-cfg" data-zone-row="' + z.id + '"><div class="ad-grid">' +
         '<label class="ad-field"><span>Nombre</span><input data-f="name_es" value="' + esc(z.name_es) + '"></label>' +
@@ -1065,24 +1066,28 @@
             '<td><input data-f="combine_group" value="' + esc(t.combine_group) + '" placeholder="vacío = no se une"></td><td><input data-f="active" type="checkbox"' + (t.active ? ' checked' : '') + '></td><td><button class="ad-btn is-small is-danger" data-deltable="' + t.id + '">Borrar</button></td></tr>';
         }).join('') + '</tbody></table></div><button class="ad-btn is-small is-ghost" data-addtable="' + z.id + '" style="margin-top:0.5rem">+ Añadir mesa a ' + esc(z.name_es) + '</button>';
     }).join('');
-    var closures = '<p class="ad-meta" style="margin-bottom:0.7rem">Un cierre apaga las reservas de la <b>web</b> para esos días (o solo unas horas); desde aquí seguís pudiendo reservar a mano. Ejemplos: Fallas (todos los días, sin horas) o Nochebuena (solo por la tarde).</p><ul class="ad-list">' + (S.closures.length ? S.closures.map(function (c) {
+    var closures = '<p class="ad-meta" style="margin-bottom:0.7rem">Aquí cierras el restaurante entero o lo marcas <b>completo</b> en la web: el calendario de reservas lo refleja (día tachado = cerrado o completo; punto = algún turno completo). Desde este panel seguís pudiendo reservar a mano.</p><ul class="ad-list">' + (S.closures.length ? S.closures.map(function (c) {
       var hours = c.start_min == null && c.end_min == null ? 'todo el día' : mm(c.start_min || 0) + '–' + mm(c.end_min || 1440);
-      return '<li class="ad-card"><div><div class="ad-name">' + esc(c.date_from === c.date_to ? c.date_from : c.date_from + ' → ' + c.date_to) + ' · ' + esc(hours) + '</div><div class="ad-meta">' + esc(c.service_id ? (S.services.filter(function (s) { return s.id === c.service_id; })[0] || {}).name_es || c.service_id : 'Todos los turnos') + ' · ' + esc(c.zone_id ? zoneName(c.zone_id) : 'Todas las zonas') + (c.note ? ' · ' + esc(c.note) : '') + '</div>' + (c.message_es ? '<div class="ad-meta">Aviso en la web: “' + esc(c.message_es) + '”</div>' : '') + '</div><div class="ad-actions"><button class="ad-btn is-small is-danger" data-delclosure="' + c.id + '">Quitar</button></div></li>';
+      return '<li class="ad-card"><div><div class="ad-name">' + esc(c.date_from === c.date_to ? c.date_from : c.date_from + ' → ' + c.date_to) + ' · ' + esc(hours) + (c.kind === 'full' ? ' <span class="ad-tag">Completo</span>' : ' <span class="ad-tag is-red">Cerrado</span>') + '</div><div class="ad-meta">' + esc(c.service_id ? (S.services.filter(function (s) { return s.id === c.service_id; })[0] || {}).name_es || c.service_id : 'Todos los turnos') + ' · ' + esc(c.zone_id ? zoneName(c.zone_id) : 'Todas las zonas') + (c.note ? ' · ' + esc(c.note) : '') + '</div>' + (c.message_es ? '<div class="ad-meta">Aviso en la web: “' + esc(c.message_es) + '”</div>' : '') + '</div><div class="ad-actions"><button class="ad-btn is-small is-danger" data-delclosure="' + c.id + '">Quitar</button></div></li>';
     }).join('') : '<li class="ad-empty">Sin cierres programados.</li>') + '</ul>' +
-      '<form class="ad-sheet-inline" id="clForm"><h3 class="mt-h3">Nuevo cierre de la web</h3><div class="ad-grid">' +
+      '<form class="ad-sheet-inline" id="clForm"><h3 class="mt-h3">Cerrar el restaurante o marcarlo completo</h3><div class="ad-grid">' +
+      '<label class="ad-field full"><span>Qué quieres hacer</span><select id="clKind"><option value="closed">Cerrar el restaurante entero (no abrimos)</option><option value="full">Marcar como completo (no se admiten más reservas web)</option></select></label>' +
       '<label class="ad-field"><span>Desde el día</span><input type="date" id="clFrom" required></label><label class="ad-field"><span>Hasta el día (incluido)</span><input type="date" id="clTo" required></label>' +
-      '<label class="ad-field"><span>Desde las (opcional)</span><input type="time" id="clT0"></label><label class="ad-field"><span>Hasta las (opcional)</span><input type="time" id="clT1"></label>' +
+      '<label class="ad-field full"><span>Aviso para el público (opcional)</span><input id="clMsg" maxlength="200" placeholder="p. ej. Por Fallas las reservas son solo por WhatsApp: 614 07 31 63"></label>' +
+      '<label class="ad-field full"><span>Motivo interno (opcional)</span><input id="clNote" maxlength="120" placeholder="p. ej. Fallas"></label></div>' +
+      '<details class="mt-more"><summary>Solo un turno, una planta o unas horas (opcional)</summary><div class="ad-grid">' +
       '<label class="ad-field"><span>Turno</span><select id="clSvc"><option value="">Todos</option>' + S.services.map(function (s) { return '<option value="' + s.id + '">' + esc(s.name_es) + '</option>'; }).join('') + '</select></label>' +
       '<label class="ad-field"><span>Zona</span><select id="clZone"><option value="">Todas</option>' + S.zones.map(function (z) { return '<option value="' + z.id + '">' + esc(z.name_es) + '</option>'; }).join('') + '</select></label>' +
-      '<label class="ad-field full"><span>Aviso para el público (opcional)</span><input id="clMsg" maxlength="200" placeholder="p. ej. Por Fallas las reservas son solo por WhatsApp: 614 07 31 63"></label>' +
-      '<label class="ad-field full"><span>Motivo interno (opcional)</span><input id="clNote" maxlength="120" placeholder="p. ej. Fallas"></label></div><button class="ad-btn" type="submit">Cerrar la web esos días</button></form>';
-    body.innerHTML = '<p class="ad-meta" style="margin-bottom:1rem">Los cambios se guardan al momento. Afectan solo a reservas nuevas.</p>' +
+      '<label class="ad-field"><span>Desde las</span><input type="time" id="clT0"></label><label class="ad-field"><span>Hasta las</span><input type="time" id="clT1"></label></div></details>' +
+      '<button class="ad-btn" type="submit">Aplicar en la web</button></form>';
+    body.innerHTML = '<p class="ad-meta" style="margin-bottom:1rem">Cambia lo que necesites y pulsa <b>Guardar cambios</b> (abajo) cuando termines. Afectan solo a reservas nuevas.</p>' +
       '<h2 class="ad-sub">Zonas y fianzas</h2><ul class="ad-list">' + zones + '</ul>' +
       '<h2 class="ad-sub" style="margin-top:1.75rem">Turnos y horarios</h2><ul class="ad-list">' + services + '</ul>' +
       '<h2 class="ad-sub" style="margin-top:1.75rem">Mesas</h2><p class="ad-meta" style="margin-bottom:0.6rem">Las mesas con el mismo “grupo de unión” (en la misma zona) se pueden juntar para grupos grandes.</p>' + tables +
       '<h2 class="ad-sub" style="margin-top:1.75rem">Prescriptores</h2>' + prescribersHtml() +
       '<h2 class="ad-sub" style="margin-top:1.75rem">Etiquetas de cliente</h2>' + tagsCfgHtml() +
-      '<h2 class="ad-sub" style="margin-top:1.75rem">Cierres por día</h2>' + closures;
+      '<h2 class="ad-sub" style="margin-top:1.75rem">Cierres por día</h2>' + closures +
+      '<div class="ad-permbar" id="cfgBar" hidden><span id="cfgCount">Cambios sin guardar</span><button class="ad-btn" type="button" id="cfgSave">Guardar cambios</button><button class="ad-btn is-ghost" type="button" id="cfgReset">Descartar</button></div>';
     var pf = document.getElementById('prForm');
     if (pf) pf.addEventListener('submit', function (e) {
       e.preventDefault();
@@ -1122,16 +1127,41 @@
     var m0 = t0 ? toMin(t0) : null, m1 = t1 ? toMin(t1, m0 || 0) : null;
     if (m0 != null && m1 == null) m1 = 2880;
     if (m1 != null && m0 == null) m0 = 0;
-    return { date_from: v('clFrom'), date_to: v('clTo'), service_id: v('clSvc') || null, zone_id: v('clZone') || null, start_min: m0, end_min: m1, message_es: v('clMsg').trim(), note: v('clNote').trim() };
+    return Object.assign({ date_from: v('clFrom'), date_to: v('clTo'), service_id: v('clSvc') || null, zone_id: v('clZone') || null, start_min: m0, end_min: m1, message_es: v('clMsg').trim(), note: v('clNote').trim() }, v('clKind') === 'full' ? { kind: 'full' } : {});
   }
   function saved() { flash('Guardado.', 'ok'); }
+  // Configuración: los cambios se acumulan y se guardan todos juntos con un botón.
+  function pendCount() { return S.view === 'config' ? Object.keys(S.pend || {}).length : 0; }
+  function queue(path, body) {
+    S.pend = S.pend || {};
+    S.pend[path] = Object.assign({}, S.pend[path], body);
+    var bar = document.getElementById('cfgBar'), n = pendCount();
+    if (bar) { bar.hidden = !n; document.getElementById('cfgCount').textContent = n + (n === 1 ? ' elemento con cambios sin guardar' : ' elementos con cambios sin guardar'); }
+  }
+  // Acciones inmediatas (borrar, desactivar, añadir…) recargan la pantalla: avisa antes de perder cambios sin guardar.
+  root.addEventListener('click', function (e) {
+    if (pendCount() && e.target.closest('[data-deltag],[data-pres-toggle],[data-addtable],[data-deltable],[data-delclosure]') && !confirm('Tienes cambios sin guardar en la configuración; si sigues se perderán. ¿Continuar?')) { e.stopImmediatePropagation(); e.preventDefault(); }
+  }, true);
+  root.addEventListener('submit', function (e) {
+    if (pendCount() && !confirm('Tienes cambios sin guardar en la configuración; si sigues se perderán. ¿Continuar?')) { e.preventDefault(); e.stopImmediatePropagation(); }
+  }, true);
+  root.addEventListener('click', function (e) {
+    var sv = e.target.closest('#cfgSave'), rs = e.target.closest('#cfgReset');
+    if (rs) { S.pend = {}; return render(); }
+    if (!sv) return;
+    var items = Object.keys(S.pend || {}); if (!items.length) return;
+    sv.disabled = true;
+    items.reduce(function (p, path) { return p.then(function () { return api(path, { method: 'PATCH', body: S.pend[path], prefer: 'return=minimal' }); }); }, Promise.resolve())
+      .then(function () { S.pend = {}; return loadConfig(true); }).then(function () { render(); flash('Configuración guardada (' + items.length + (items.length === 1 ? ' elemento' : ' elementos') + ').', 'ok'); })
+      .catch(function (x) { sv.disabled = false; fail(x); });
+  });
   root.addEventListener('change', function (e) {
     var el = e.target, f = el.dataset.f;
     var zr = el.closest('[data-zone-row]'), sr = el.closest('[data-svc-row]'), tr = el.closest('[data-table-row]');
     if (zr && f) {
       var row = zr.dataset.zoneRow, body = {};
       if (f === 'deposit') body.deposit_cents = Math.round(+el.value * 100); else if (el.type === 'checkbox') body[f] = el.checked; else if (f === 'free_cancel_hours') body[f] = +el.value; else body[f] = el.value;
-      api('dining_zones?id=eq.' + row, { method: 'PATCH', body: body, prefer: 'return=minimal' }).then(function () { return loadConfig(true); }).then(saved).catch(fail);
+      queue('dining_zones?id=eq.' + row, body);
     } else if (sr && (f || el.dataset.day || el.dataset.szone)) {
       var sid = sr.dataset.svcRow, b = {};
       if (el.dataset.day) b.days = [].map.call(sr.querySelectorAll('[data-day]:checked'), function (i) { return +i.dataset.day; });
@@ -1140,11 +1170,11 @@
       else if (f === 'last') b.last_min = toMin(el.value, +sr.querySelector('[data-f="start"]').value.slice(0, 2) * 60 + 1);
       else if (el.type === 'checkbox') b[f] = el.checked; else if (f === 'end_note_es' || f === 'end_note_en') b[f] = el.value.trim(); else b[f] = +el.value;
       if (b.last_min != null && sr.querySelector('[data-f="start"]')) { var st = toMin(sr.querySelector('[data-f="start"]').value); if (b.last_min < st) b.last_min += 1440; }
-      api('dining_services?id=eq.' + sid, { method: 'PATCH', body: b, prefer: 'return=minimal' }).then(function () { return loadConfig(true); }).then(saved).catch(fail);
+      queue('dining_services?id=eq.' + sid, b);
     } else if (tr && f) {
       var tb = {};
       if (el.type === 'checkbox') tb[f] = el.checked; else if (f === 'seats_min' || f === 'seats_max') tb[f] = +el.value; else tb[f] = el.value.trim();
-      api('dining_tables?id=eq.' + tr.dataset.tableRow, { method: 'PATCH', body: tb, prefer: 'return=minimal' }).then(function () { return loadConfig(true); }).then(saved).catch(fail);
+      queue('dining_tables?id=eq.' + tr.dataset.tableRow, tb);
     }
   });
   root.addEventListener('click', function (e) {

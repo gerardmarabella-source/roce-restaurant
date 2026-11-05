@@ -15,5 +15,7 @@
 13. `mesas_etiquetas.sql` — etiquetas de cliente propias (VIP, etc.)
 14. `mesas_cuentas.sql` — cuentas de empresa / grupo con saldo (bote) y movimientos
 15. `permisos_finos.sql` — permisos de detalle del equipo (ejecutar el último)
+16. `mesas_calendario.sql` — calendario de la web con días cerrados / completos / con un turno completo, y cierres de tipo "completo"
+17. `mesas_limite_reservas.sql` — hasta 10 reservas activas por email
 
 Todos se pueden ejecutar más de una vez. Si se vuelve a ejecutar `mesas.sql` o `mesas_tarjeta.sql`, hay que volver a ejecutar los de después.

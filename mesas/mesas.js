@@ -18,7 +18,7 @@
       party: 'Personas', date: 'Fecha', time: 'Hora', person: 'persona', people: 'personas',
       months: ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'],
       dows: ['L', 'M', 'X', 'J', 'V', 'S', 'D'],
-      prev: 'Mes anterior', next: 'Mes siguiente',
+      prev: 'Mes anterior', next: 'Mes siguiente', meal_lunch: 'Comida', meal_dinner: 'Cena', cal_closed: 'Cerrado', cal_full: 'Completo', cal_partial: 'Algún turno completo', cal_full_in: 'Completo: {n}',
       pick_date: 'Elige un día para ver las horas disponibles.',
       loading: 'Buscando mesas…', none: 'No quedan mesas ese día para {n}. Prueba otro día o escríbenos por {wa}.', wa_msg: 'Hola, quería reservar mesa para {n} el {date}.',
       err_load: 'No hemos podido consultar las mesas. Inténtalo de nuevo en un momento.',
@@ -34,7 +34,7 @@
       e_bad_data: 'Revisa el nombre, el email y el teléfono.', e_consent: 'Debes aceptar la política de privacidad.',
       e_no_table: 'Esa mesa se acaba de ocupar. Elige otra hora.', e_too_late: 'Esa hora ya no admite reservas. Elige otra.',
       e_blocked: 'No podemos aceptar esta reserva. Escríbenos a reservas@roce.es.',
-      e_closed: 'Ese día no abrimos para reservas.', e_too_many: 'Ya tienes varias reservas activas con este email.',
+      e_closed: 'Ese día no abrimos para reservas.', e_too_many: 'Has llegado al máximo de 10 reservas activas con este email.',
       e_network: 'No hemos podido completar la reserva. Inténtalo de nuevo.', e_pay: 'No hemos podido abrir el pago. Tu mesa queda retenida unos minutos: vuelve a pulsar el botón.',
       night_tag: 'Solo mayores de 18 años',
       allergies: 'Alergias o intolerancias', al: { gluten: 'Gluten', lactosa: 'Lactosa', 'frutos-secos': 'Frutos secos', marisco: 'Marisco', pescado: 'Pescado', huevo: 'Huevo', soja: 'Soja', sesamo: 'Sésamo', vegetariano: 'Vegetariano', vegano: 'Vegano', otras: 'Otras' }, yes: 'Sí', no: 'No', al_hint: 'Si es otra, cuéntanosla en comentarios.',
@@ -53,7 +53,7 @@
       party: 'Guests', date: 'Date', time: 'Time', person: 'guest', people: 'guests',
       months: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
       dows: ['M', 'T', 'W', 'T', 'F', 'S', 'S'],
-      prev: 'Previous month', next: 'Next month',
+      prev: 'Previous month', next: 'Next month', meal_lunch: 'Lunch', meal_dinner: 'Dinner', cal_closed: 'Closed', cal_full: 'Fully booked', cal_partial: 'One service fully booked', cal_full_in: 'Fully booked: {n}',
       pick_date: 'Pick a day to see the available times.',
       loading: 'Looking for tables…', none: 'No tables left that day for {n}. Try another day or message us on {wa}.', wa_msg: 'Hi, I would like to book a table for {n} on {date}.',
       err_load: "We couldn't check the tables. Please try again in a moment.",
@@ -69,7 +69,7 @@
       e_bad_data: 'Please check your name, email and phone.', e_consent: 'You must accept the privacy policy.',
       e_no_table: 'That table was just taken. Please choose another time.', e_too_late: 'That time no longer takes bookings. Choose another.',
       e_blocked: 'We cannot accept this booking. Please write to reservas@roce.es.',
-      e_closed: "We're not taking bookings that day.", e_too_many: 'You already have several active bookings with this email.',
+      e_closed: "We're not taking bookings that day.", e_too_many: 'You have reached the maximum of 10 active bookings with this email.',
       e_network: "We couldn't complete the booking. Please try again.", e_pay: "We couldn't open the payment. Your table is held for a few minutes: press the button again.",
       night_tag: 'Over 18s only',
       allergies: 'Allergies or intolerances', al: { gluten: 'Gluten', lactosa: 'Lactose', 'frutos-secos': 'Nuts', marisco: 'Shellfish', pescado: 'Fish', huevo: 'Egg', soja: 'Soy', sesamo: 'Sesame', vegetariano: 'Vegetarian', vegano: 'Vegan', otras: 'Other' }, yes: 'Yes', no: 'No', al_hint: 'If it is something else, tell us in the comments.',
@@ -87,7 +87,7 @@
   };
   var MAX_PARTY = 8, DAYS_AHEAD = 60;
 
-  var st = { alt: null, wait: null, waitDone: false, grid: [], pr: '', notices: [], pending: '', party: 2, date: '', month: null, ambience: 'all', slots: null, loading: false, loadErr: false, chosen: null, busy: false, error: '' };
+  var st = { cal: {}, calBusy: '', alt: null, wait: null, waitDone: false, grid: [], pr: '', notices: [], pending: '', party: 2, date: '', month: null, ambience: 'all', slots: null, loading: false, loadErr: false, chosen: null, busy: false, error: '' };
 
   function lang() { return window.ROCE_I18N && window.ROCE_I18N.getLang ? window.ROCE_I18N.getLang() : 'es'; }
   var WA_NUMBER = '34614073163'; // WhatsApp de ROCE (el mismo que el de grupos)
@@ -151,6 +151,18 @@
   }
 
   // ─── Pintado ────────────────────────────────────────────────────────
+  // Estado de cada día del mes que se ve (cerrado / completo / algún turno completo); si la función aún no existe, el calendario se ve como siempre.
+  function calKey() { var m = st.month || { y: 0, m: 0 }; return st.party + '|' + st.ambience + '|' + m.y + '-' + m.m; }
+  function loadCal() {
+    var m = st.month || (function () { var td = todayStr(); return { y: +td.slice(0, 4), m: +td.slice(5, 7) - 1 }; })();
+    st.month = m;
+    var key = calKey(); if (st.cal[key] || st.calBusy === key) return;
+    st.calBusy = key;
+    var from = ymd(m.y, m.m, 1), to = ymd(m.y, m.m, new Date(Date.UTC(m.y, m.m + 1, 0)).getUTCDate());
+    rpc('dining_calendar', { p_from: from, p_to: to, p_party: st.party, p_ambience: st.ambience === 'all' ? null : st.ambience })
+      .then(function (rows) { var o = {}; (rows || []).forEach(function (r) { o[r.o_date] = r; }); st.cal[key] = o; st.calBusy = ''; render(); })
+      .catch(function () { st.cal[key] = {}; st.calBusy = ''; });
+  }
   function calendarHtml() {
     var today = todayStr(), last = addDays(today, DAYS_AHEAD);
     var m = st.month || { y: +today.slice(0, 4), m: +today.slice(5, 7) - 1 };
@@ -163,10 +175,14 @@
     t('dows').forEach(function (d) { h += '<span class="mz-dow">' + d + '</span>'; });
     for (var i = 0; i < startDow; i++) h += '<span></span>';
     for (var d = 1; d <= dim; d++) {
-      var s = ymd(m.y, m.m, d), off = s < today || s > last;
-      h += '<button type="button" class="mz-day' + (s === st.date ? ' is-on' : '') + (s === today ? ' is-today' : '') + '" data-date="' + s + '"' + (off ? ' disabled' : '') + '>' + d + '</button>';
+      var s = ymd(m.y, m.m, d), off = s < today || s > last, cs = (st.cal[calKey()] || {})[s], stt = cs ? cs.o_state : '';
+      var tip = stt === 'closed' ? t('cal_closed') : stt === 'full' ? t('cal_full') : stt === 'partial' ? t('cal_full_in', { n: (lang() === 'en' ? cs.o_full_en : cs.o_full_es).join(', ') }) : '';
+      h += '<button type="button" class="mz-day' + (s === st.date ? ' is-on' : '') + (s === today ? ' is-today' : '') + (stt === 'closed' ? ' is-closed' : stt === 'full' ? ' is-full' : stt === 'partial' ? ' is-partial' : '') + '" data-date="' + s + '"' + (tip ? ' title="' + esc(tip) + '" aria-label="' + d + ' · ' + esc(tip) + '"' : '') + (off || stt === 'closed' ? ' disabled' : '') + '>' + d + '</button>';
     }
-    return h + '</div></div>';
+    var seen = st.cal[calKey()] || {}, kinds = {};
+    Object.keys(seen).forEach(function (k) { kinds[seen[k].o_state] = 1; });
+    var lg = (kinds.closed ? '<span class="mz-lg"><i class="mz-lg-c"></i>' + esc(t('cal_closed')) + '</span>' : '') + (kinds.full ? '<span class="mz-lg"><i class="mz-lg-f"></i>' + esc(t('cal_full')) + '</span>' : '') + (kinds.partial ? '<span class="mz-lg"><i class="mz-lg-p"></i>' + esc(t('cal_partial')) + '</span>' : '');
+    return h + '</div>' + (lg ? '<div class="mz-legend">' + lg + '</div>' : '') + '</div>';
   }
 
   function noticeHtml() {
@@ -189,9 +205,15 @@
       h += '<div class="mz-group"><div class="mz-group-h"><span class="mz-group-name">' + esc(t(a)) + '</span>' +
         (a === 'night' ? '<span class="mz-tag">+18</span>' : '') +
         '<span class="mz-group-note">' + (dep > 0 && mode === 'card' ? '' : dep > 0 ? esc(t('deposit_h', { m: money(dep) })) : esc(t('free_h'))) + '</span></div><div class="mz-slots">';
-      rows.forEach(function (s) {
-        if (s.o_free) h += '<button type="button" class="mz-slot' + (st.chosen && st.chosen.o_starts_at === s.o_starts_at ? ' is-on' : '') + '" data-start="' + esc(s.o_starts_at) + '">' + esc(s.o_time) + '</button>';
-        else h += '<button type="button" class="mz-slot is-full" data-wl="' + esc(s.o_time) + '" data-amb="' + esc(s.o_ambience) + '" title="' + esc(t('wl_cta')) + '"><span>' + esc(s.o_time) + '</span><small>' + esc(t('full')) + '</small></button>';
+      // En Restaurant & Cocktails las horas se separan en Comida y Cena (cada turno tiene su cuadrícula).
+      var svcs = []; rows.forEach(function (r) { if (svcs.indexOf(r.o_service) === -1) svcs.push(r.o_service); });
+      var split = a === 'night';
+      svcs.forEach(function (sv) {
+        if (split) h += '</div><p class="mz-meal">' + esc(t(sv === 'night-lunch' ? 'meal_lunch' : 'meal_dinner')) + '</p><div class="mz-slots">';
+        rows.filter(function (r) { return r.o_service === sv; }).forEach(function (s) {
+          if (s.o_free) h += '<button type="button" class="mz-slot' + (st.chosen && st.chosen.o_starts_at === s.o_starts_at ? ' is-on' : '') + '" data-start="' + esc(s.o_starts_at) + '">' + esc(s.o_time) + '</button>';
+          else h += '<button type="button" class="mz-slot is-full" data-wl="' + esc(s.o_time) + '" data-amb="' + esc(s.o_ambience) + '" title="' + esc(t('wl_cta')) + '"><span>' + esc(s.o_time) + '</span><small>' + esc(t('full')) + '</small></button>';
+        });
       });
       h += '</div>' + (dep > 0 && mode === 'card' ? '' : dep > 0 ? '<p class="mz-note">' + esc(t('deposit_free_until', { h: hrs })) + '</p>' : '') + '</div>';
     });
@@ -275,6 +297,7 @@
       '<div class="mz-step"><span class="mz-label">' + esc(t('date')) + '</span>' + calendarHtml() + '</div>' +
       '<div class="mz-step"><span class="mz-label">' + esc(t('time')) + '</span>' + (st.date ? noticeHtml() : '') + slotsHtml() + '</div>' + formHtml();
     if (Math.abs(window.scrollY - keepScroll) > 1) window.scrollTo(0, keepScroll);
+    loadCal();
   }
 
   function keepForm() {
