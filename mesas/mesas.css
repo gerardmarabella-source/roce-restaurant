@@ -76,3 +76,4 @@ body.zone-day #mesasApp { --mz-fg: var(--black); --mz-bg: var(--white); --mz-lin
 .mz-step-party { text-align: center; }
 .mz-step-party .mz-stepper { justify-content: center; }
 .mz-pm.is-max { opacity: 0.45; }
+.mz-group-name { font-weight: 700; }

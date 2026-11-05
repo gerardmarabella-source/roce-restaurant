@@ -212,7 +212,7 @@
     text-transform: uppercase;
   }
   /* Nombres largos de los dos espacios: dos líneas, más pequeños que la palabra sola. */
-  .home-square strong.home-name { font-size: clamp(0.72rem, min(9.6cqw, calc(var(--sh) * 0.15)), 2.5rem); line-height: 1.02; }
+  .home-square strong.home-name { font-weight: 700; font-size: clamp(0.72rem, min(9.6cqw, calc(var(--sh) * 0.15)), 2.5rem); line-height: 1.02; }
   .home-name span { display: block; }
   .home-square small { display: block; margin-top: 0.35rem; font-family: var(--display); font-size: clamp(0.6rem, min(6.2cqw, calc(var(--sh) * 0.085)), 1.25rem); opacity: 0.75; }
   .home-square-arrow { font-family: var(--display); font-size: clamp(1rem, min(13cqw, calc(var(--sh) * 0.17)), 3.4rem); line-height: 1; flex-shrink: 0; }
@@ -414,7 +414,7 @@
     line-height: 1;
     letter-spacing: 0.01em;
   }
-  .reservas-menu-title.is-long { font-size: clamp(1.7rem, 8vw, 3.4rem); line-height: 1.02; }
+  .reservas-menu-title.is-long { font-weight: 700; font-size: clamp(1.7rem, 8vw, 3.4rem); line-height: 1.02; }
   .reservas-menu-title.is-long span { display: block; }
   .reservas-menu-sub {
     display: block;
@@ -479,13 +479,12 @@
         <div class="home-square-bottom">
           <div>
             <strong class="home-name"><span>Coffee, Bakery</span> <span>&amp; Kitchen</span></strong>
-            <small>10:00 – 20:00</small>
+            <small>10:00 – 21:00</small>
           </div>
           <span class="home-square-arrow" aria-hidden="true">→</span>
         </div>
       </a>
-      <a class="home-live home-live-day" id="liveDay" href="/eventos/?f=baja">
-        <span class="home-live-floor" data-i18n="floor_ground">Planta baja</span>
+      <a class="home-live home-live-day" id="liveDay" href="/eventos/?f=day">
         <span class="home-live-title"></span>
         <span class="home-live-time"></span>
         <span class="home-live-arrow" aria-hidden="true">→</span>
@@ -495,13 +494,12 @@
         <div class="home-square-bottom">
           <div>
             <strong class="home-name"><span>Restaurant</span> <span>&amp; Cocktails</span></strong>
-            <small>20:00 – 02:00</small>
+            <small>13:00 – 16:00 · 20:00 – 02:00</small>
           </div>
           <span class="home-square-arrow" aria-hidden="true">→</span>
         </div>
       </a>
-      <a class="home-live home-live-night" id="liveNight" href="/eventos/?f=alta">
-        <span class="home-live-floor" data-i18n="floor_first">Primera planta</span>
+      <a class="home-live home-live-night" id="liveNight" href="/eventos/?f=night">
         <span class="home-live-title"></span>
         <span class="home-live-time"></span>
         <span class="home-live-arrow" aria-hidden="true">→</span>
@@ -527,11 +525,11 @@
   </button>
   <a class="reservas-menu-item" href="/day/">
     <span class="reservas-menu-title is-long"><span>Coffee, Bakery</span> <span>&amp; Kitchen</span></span>
-    <span class="reservas-menu-sub">10:00 – 20:00</span>
+    <span class="reservas-menu-sub">10:00 – 21:00</span>
   </a>
   <a class="reservas-menu-item" href="/night/">
     <span class="reservas-menu-title is-long"><span>Restaurant</span> <span>&amp; Cocktails</span></span>
-    <span class="reservas-menu-sub">20:00 – 02:00</span>
+    <span class="reservas-menu-sub">13:00 – 16:00 · 20:00 – 02:00</span>
   </a>
   <a class="reservas-menu-item" href="/eventos/">
     <span class="reservas-menu-title" data-i18n="menu_eventos_title">Eventos</span>
@@ -548,7 +546,7 @@
   </div>
 </div>
 <script src="/cookies.js?v=4"></script>
-<script src="/i18n.js?v=99"></script>
+<script src="/i18n.js?v=100"></script>
 <script src="/eventos/config.js?v=2"></script>
 <script src="/eventos/events.js?v=13"></script>
 
@@ -574,17 +572,17 @@
       renderLive();
     }
 
-    // Franjas de eventos bajo cada cuadrado, siempre visibles: la de arriba con el próximo evento de la planta baja
-    // y la de abajo con el de la primera planta (si hay uno en marcha, ese). Sin eventos, lleva a la agenda.
+    // Franjas de eventos bajo cada cuadrado, siempre visibles, con el próximo evento de ese espacio
+    // (si hay uno en marcha, ese). Sin eventos, lleva a la agenda.
     var U = window.ROCE_EVENT_UTIL, EVENTS = [];
     var TZ = 'Europe/Madrid';
     function hm(ms) { return new Intl.DateTimeFormat('es-ES', { timeZone: TZ, hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).format(ms); }
     function renderLive() {
       var l = window.ROCE_I18N ? window.ROCE_I18N.getLang() : 'es';
-      [['baja', 'liveDay'], ['alta', 'liveNight']].forEach(function (c) {
+      [['day', 'liveDay'], ['night', 'liveNight']].forEach(function (c) {
         var el = document.getElementById(c[1]);
         var now = Date.now();
-        var e = U && EVENTS.filter(function (x) { return U.floorKey(x) === c[0] && U.bounds(x)[1] > now; })
+        var e = U && EVENTS.filter(function (x) { return x.env === c[0] && U.bounds(x)[1] > now; })
           .sort(function (a, b) { return U.bounds(a)[0] - U.bounds(b)[0]; })[0];
         if (!e) {
           U && U.setMarquee(el.querySelector('.home-live-title'), (window.ROCE_I18N && window.ROCE_I18N.t('home_events_none')) || 'Próximos eventos');

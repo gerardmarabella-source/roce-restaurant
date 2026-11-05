@@ -521,8 +521,10 @@
     modal(html, function (m) {
       var q = function (id) { return m.querySelector('#' + id); };
       function pickSvc() {
-        var h = +q('nwTime').value.slice(0, 2), want = h >= 17 || h < 6 ? 'night' : 'day';
-        var s = svc.filter(function (x) { return x.ambience === want; })[0] || svc[0]; if (s) q('nwSvc').value = s.id;
+        // El turno que sirve esa zona a esa hora (p. ej. comida o cena de la planta alta); si ninguno, el primero de la zona.
+        var zid = q('nwZone').value, tv = q('nwTime').value, mn = +tv.slice(0, 2) * 60 + +tv.slice(3, 5); if (+tv.slice(0, 2) < 6) mn += 1440;
+        var ofZone = svc.filter(function (x) { return !x.zone_ids || x.zone_ids.indexOf(zid) !== -1; });
+        var s = ofZone.filter(function (x) { return mn >= x.start_min - 60 && mn <= x.last_min + 60; })[0] || ofZone[0] || svc[0]; if (s) q('nwSvc').value = s.id;
       }
       function pickZoneFromSvc() { /* la zona se elige a mano */ }
       function depRow() {
