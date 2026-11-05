@@ -259,10 +259,10 @@
   }
 
   function render() {
-    var p = '<div class="mz-step"><span class="mz-label">' + esc(t('party')) + '</span><div class="mz-stepper">' +
+    var p = '<div class="mz-step mz-step-party"><span class="mz-label">' + esc(t('party')) + '</span><div class="mz-stepper">' +
       '<button type="button" class="mz-pm" data-party="-1" aria-label="-"' + (st.party <= 1 ? ' disabled' : '') + '>&minus;</button>' +
       '<span class="mz-party" aria-live="polite">' + st.party + '</span>' +
-      '<button type="button" class="mz-pm" data-party="1" aria-label="+"' + (st.party >= MAX_PARTY ? ' disabled' : '') + '>+</button></div></div>';
+      '<button type="button" class="mz-pm' + (st.party >= MAX_PARTY ? ' is-max' : '') + '" data-party="1" aria-label="+">+</button></div></div>';
     var keepScroll = window.scrollY;
     root.innerHTML = p +
       '<div class="mz-step"><span class="mz-label">' + esc(t('date')) + '</span>' + calendarHtml() + '</div>' +
@@ -281,6 +281,8 @@
   root.addEventListener('click', function (e) {
     var b = e.target.closest('button'); if (!b || b.disabled) return;
     if (b.dataset.party) {
+      // Más de 8 personas no se reserva por la web: se hace vibrar el aviso de grupos para que lo vean.
+      if (+b.dataset.party > 0 && st.party >= MAX_PARTY) { nudgeGroups(); return; }
       keepForm(); st.party = Math.min(MAX_PARTY, Math.max(1, st.party + (+b.dataset.party))); loadSlots();
     } else if (b.dataset.nav) {
       var m = st.month, n = new Date(Date.UTC(m.y, m.m + (+b.dataset.nav), 1)); st.month = { y: n.getUTCFullYear(), m: n.getUTCMonth() }; render();
@@ -354,6 +356,14 @@
     });
   });
 
+  function nudgeGroups() {
+    var el = document.getElementById('groupNotice'); if (!el) return;
+    var r = el.getBoundingClientRect();
+    if (r.top < 70 || r.bottom > window.innerHeight) window.scrollTo({ top: window.scrollY + r.top - 110, behavior: 'smooth' });
+    el.classList.remove('is-shake'); void el.offsetWidth; el.classList.add('is-shake');
+    if (navigator.vibrate) { try { navigator.vibrate([60, 40, 60]); } catch (x) {} }
+    clearTimeout(nudgeGroups.t); nudgeGroups.t = setTimeout(function () { el.classList.remove('is-shake'); }, 1800);
+  }
   function setAmbience(a) {
     if (a !== 'day' && a !== 'night') a = 'all';
     if (st.ambience === a) return;

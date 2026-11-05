@@ -73,3 +73,6 @@ body.zone-day #mesasApp { --mz-fg: var(--black); --mz-bg: var(--white); --mz-lin
 .mz-al span { padding: 0.45rem 0.7rem; border: 1px solid var(--mz-line); font-size: 0.85rem; }
 .mz-al input:checked + span { background: var(--mz-fg); color: var(--mz-bg); border-color: var(--mz-fg); }
 .mz-al input:focus-visible + span { outline: 2px solid var(--mz-fg); outline-offset: 2px; }
+.mz-step-party { text-align: center; }
+.mz-step-party .mz-stepper { justify-content: center; }
+.mz-pm.is-max { opacity: 0.45; }

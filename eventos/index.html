@@ -26,7 +26,8 @@
     // (desde el menú de la home). El fondo sigue al filtro: Day blanco, Night
     // negro y, en Todos, según la hora.
     var f = new URLSearchParams(location.search).get('f');
-    document.documentElement.setAttribute('data-view', f === 'day' || f === 'night' ? f : 'all');
+    // Los eventos se dividen por planta: ?f=baja (planta baja, fondo claro) o ?f=alta (primera planta, fondo oscuro); ?f=day / ?f=night siguen valiendo.
+    document.documentElement.setAttribute('data-view', f === 'baja' || f === 'day' ? 'day' : f === 'alta' || f === 'night' ? 'night' : 'all');
   })();
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -66,7 +67,7 @@
     background: none;
     color: var(--fg);
     font-family: var(--display);
-    font-size: clamp(1.05rem, 3.6vw, 1.6rem);
+    font-size: clamp(1.2rem, 4.4vw, 1.9rem);
     line-height: 1;
     letter-spacing: 0.02em;
     text-transform: uppercase;
@@ -126,8 +127,8 @@
 
   <div class="ev-filters" role="group" aria-label="Filtro">
     <button type="button" class="ev-chip" data-filter="all" aria-pressed="false" data-i18n="ev_all">Todos</button>
-    <button type="button" class="ev-chip" data-filter="day" aria-pressed="false">Coffee, Bakery &amp; Kitchen</button>
-    <button type="button" class="ev-chip" data-filter="night" aria-pressed="false">Restaurant &amp; Cocktails</button>
+    <button type="button" class="ev-chip" data-filter="baja" aria-pressed="false" data-i18n="floor_ground">Planta baja</button>
+    <button type="button" class="ev-chip" data-filter="alta" aria-pressed="false" data-i18n="floor_first">Primera planta</button>
   </div>
 
   <ol class="ev-list" id="evList"></ol>
@@ -152,9 +153,9 @@
   </div>
 </div>
 <script src="/cookies.js?v=4"></script>
-<script src="/i18n.js?v=98"></script>
+<script src="/i18n.js?v=99"></script>
 <script src="/eventos/config.js?v=2"></script>
-<script src="/eventos/events.js?v=12"></script>
+<script src="/eventos/events.js?v=13"></script>
 <script>
   // Los eventos están en /eventos/events.js (misma fuente que la compra de entradas).
   (function () {
@@ -163,8 +164,8 @@
     var list = document.getElementById('evList');
     var empty = document.getElementById('evEmpty');
     var view = document.documentElement.getAttribute('data-view');
-    var filter = view; // 'all' | 'day' | 'night'
-    // "Volver" lleva al sitio de donde se vino (Day, Night o la home).
+    var filter = view === 'day' ? 'baja' : view === 'night' ? 'alta' : 'all'; // 'all' | 'baja' | 'alta'
+    // "Volver" lleva al sitio de donde se vino (planta baja, primera planta o la home).
     document.getElementById('evBack').setAttribute('href', view === 'all' ? '/' : '/' + view + '/');
     function syncChips() {
       document.querySelectorAll('.ev-chip').forEach(function (c) { c.setAttribute('aria-pressed', c.getAttribute('data-filter') === filter ? 'true' : 'false'); });
@@ -180,7 +181,7 @@
     function render() {
       var l = lang();
       var upcoming = EVENTS.filter(function (e) {
-        return (e.date >= U.today() || U.isLive(e)) && (filter === 'all' || e.env === filter);
+        return (e.date >= U.today() || U.isLive(e)) && (filter === 'all' || U.floorKey(e) === filter);
       }).sort(function (a, b) { return (a.date + a.time).localeCompare(b.date + b.time); });
 
       var lastMonth = '';
@@ -190,7 +191,7 @@
         var day = U.fmt(e, l, { day: 'numeric' });
         var monthLabel = U.fmt(e, l, { month: 'long', year: 'numeric' });
         var sold = e.left <= 0;
-        var tag = '<span class="ev-tag">' + (e.env === 'night' ? 'Restaurant &amp; Cocktails ' + AGE : 'Coffee, Bakery &amp; Kitchen') + '</span>';
+        var tag = '<span class="ev-tag">' + esc(U.floor(e, l) || (U.floorKey(e) === 'alta' ? (l === 'en' ? 'First floor' : 'Primera planta') : (l === 'en' ? 'Ground floor' : 'Planta baja'))) + (e.env === 'night' ? ' ' + AGE : '') + '</span>';
         var right = sold ? '<span class="ev-sold">' + esc(t('tk_soldout', 'Agotado')) + '</span>' : (U.isLive(e) ? '<span class="ev-now">' + esc(t('choose_now', 'Ahora')) + '</span>' : '');
         var head = '';
         if (monthLabel !== lastMonth) { lastMonth = monthLabel; head = '<li class="ev-month" role="presentation">' + esc(monthLabel) + '</li>'; }
@@ -211,7 +212,7 @@
     document.querySelectorAll('.ev-chip').forEach(function (chip) {
       chip.addEventListener('click', function () {
         filter = chip.getAttribute('data-filter');
-        document.documentElement.setAttribute('data-view', filter);
+        document.documentElement.setAttribute('data-view', filter === 'baja' ? 'day' : filter === 'alta' ? 'night' : 'all');
         history.replaceState(null, '', filter === 'all' ? location.pathname : '?f=' + filter);
         syncChips();
         render();

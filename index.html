@@ -276,12 +276,12 @@
   .home-live-day { background: var(--white); color: var(--black); border: 2px solid var(--black); }
   .home-live-night { background: var(--black); color: var(--white); border: 2px solid var(--black); }
   html[data-mode="night"] .home-live-night { border-color: var(--white); }
-  .home-live .home-now { display: flex; flex-shrink: 0; }
-  .home-live-title { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: var(--display); text-transform: uppercase; letter-spacing: 0.01em; font-size: clamp(0.85rem, min(5.2cqw, calc(var(--live-h) * 0.4)), 1.5rem); }
+  .home-live-floor { flex-shrink: 0; font-family: var(--display); font-size: clamp(0.5rem, min(3cqw, calc(var(--live-h) * 0.2)), 0.8rem); letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.6; padding-right: 0.7rem; border-right: 1px solid currentColor; line-height: 1.1; }
+  .home-live-title { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: var(--display); text-transform: uppercase; letter-spacing: 0.01em; font-size: clamp(0.8rem, min(4.2cqw, calc(var(--live-h) * 0.36)), 1.4rem); }
   .home-live-time { flex-shrink: 0; font-family: var(--display); font-size: clamp(0.65rem, min(3.6cqw, calc(var(--live-h) * 0.26)), 1rem); opacity: 0.7; white-space: nowrap; }
   .home-live-arrow { flex-shrink: 0; font-family: var(--display); font-size: 1.2rem; line-height: 1; }
-  @container (max-width: 400px) { .home-live-time { display: none; } }
-  @container (max-width: 270px) { .home-live .home-now { font-size: 0; gap: 0; padding: 0.2rem; } }
+  @container (max-width: 300px) { .home-live-time { display: none; } }
+  @container (max-width: 270px) { .home-live-floor { display: none; } }
   @container (max-width: 150px) { .home-live-arrow { display: none; } }
 
   .home-foot {
@@ -475,7 +475,7 @@
 
     <div class="home-squares">
       <a class="home-square home-square-day" id="chooseDay" href="/day/">
-        <div class="home-square-top"><span class="home-now" data-i18n="choose_now">Ahora</span></div>
+        <div class="home-square-top"></div>
         <div class="home-square-bottom">
           <div>
             <strong class="home-name"><span>Coffee, Bakery</span> <span>&amp; Kitchen</span></strong>
@@ -484,14 +484,14 @@
           <span class="home-square-arrow" aria-hidden="true">→</span>
         </div>
       </a>
-      <a class="home-live home-live-day" id="liveDay" href="/eventos/?f=day" hidden>
-        <span class="home-now" data-i18n="choose_now">Ahora</span>
+      <a class="home-live home-live-day" id="liveDay" href="/eventos/?f=baja">
+        <span class="home-live-floor" data-i18n="floor_ground">Planta baja</span>
         <span class="home-live-title"></span>
         <span class="home-live-time"></span>
         <span class="home-live-arrow" aria-hidden="true">→</span>
       </a>
       <a class="home-square home-square-night" id="chooseNight" href="/night/">
-        <div class="home-square-top"><span class="home-now" data-i18n="choose_now">Ahora</span><svg class="age-badge" viewBox="0 0 100 100" role="img" aria-label="+18"><circle cx="50" cy="50" r="44" fill="#ffffff" stroke="#e5453a" stroke-width="9"/><text x="44" y="65" text-anchor="middle" font-family="'Helvetica Neue Web','Helvetica Neue',Arial,sans-serif" font-weight="700" font-size="46" letter-spacing="-3" fill="#0a0a0a">18</text><text x="77" y="52" text-anchor="middle" font-family="'Helvetica Neue Web','Helvetica Neue',Arial,sans-serif" font-weight="700" font-size="30" fill="#0a0a0a">+</text></svg></div>
+        <div class="home-square-top"><svg class="age-badge" viewBox="0 0 100 100" role="img" aria-label="+18"><circle cx="50" cy="50" r="44" fill="#ffffff" stroke="#e5453a" stroke-width="9"/><text x="44" y="65" text-anchor="middle" font-family="'Helvetica Neue Web','Helvetica Neue',Arial,sans-serif" font-weight="700" font-size="46" letter-spacing="-3" fill="#0a0a0a">18</text><text x="77" y="52" text-anchor="middle" font-family="'Helvetica Neue Web','Helvetica Neue',Arial,sans-serif" font-weight="700" font-size="30" fill="#0a0a0a">+</text></svg></div>
         <div class="home-square-bottom">
           <div>
             <strong class="home-name"><span>Restaurant</span> <span>&amp; Cocktails</span></strong>
@@ -500,8 +500,8 @@
           <span class="home-square-arrow" aria-hidden="true">→</span>
         </div>
       </a>
-      <a class="home-live home-live-night" id="liveNight" href="/eventos/?f=night" hidden>
-        <span class="home-now" data-i18n="choose_now">Ahora</span>
+      <a class="home-live home-live-night" id="liveNight" href="/eventos/?f=alta">
+        <span class="home-live-floor" data-i18n="floor_first">Primera planta</span>
         <span class="home-live-title"></span>
         <span class="home-live-time"></span>
         <span class="home-live-arrow" aria-hidden="true">→</span>
@@ -548,9 +548,9 @@
   </div>
 </div>
 <script src="/cookies.js?v=4"></script>
-<script src="/i18n.js?v=98"></script>
+<script src="/i18n.js?v=99"></script>
 <script src="/eventos/config.js?v=2"></script>
-<script src="/eventos/events.js?v=12"></script>
+<script src="/eventos/events.js?v=13"></script>
 
 <script>
   // Se marca "Ahora" en lo que está abierto según la hora de Valencia (Day de
@@ -571,32 +571,37 @@
       var hour = Number(p.hour);
       var isDay = hour >= 10 && hour < 20; // Day abierto
       document.documentElement.setAttribute('data-mode', hour >= 8 && hour < 20 ? 'day' : 'night');
-      // "Ahora" solo en lo que está abierto en este momento.
-      document.getElementById('chooseDay').classList.toggle('is-now', isDay);
-      document.getElementById('chooseNight').classList.toggle('is-now', nightOpen(DAYS[p.weekday], hour));
       renderLive();
     }
 
-    // Eventos en marcha ahora mismo: franja bajo el cuadrado de su ambiente.
+    // Franjas de eventos bajo cada cuadrado, siempre visibles: la de arriba con el próximo evento de la planta baja
+    // y la de abajo con el de la primera planta (si hay uno en marcha, ese). Sin eventos, lleva a la agenda.
     var U = window.ROCE_EVENT_UTIL, EVENTS = [];
     var TZ = 'Europe/Madrid';
     function hm(ms) { return new Intl.DateTimeFormat('es-ES', { timeZone: TZ, hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).format(ms); }
     function renderLive() {
-      var l = window.ROCE_I18N ? window.ROCE_I18N.getLang() : 'es', n = 0;
-      [['day', 'liveDay'], ['night', 'liveNight']].forEach(function (c) {
+      var l = window.ROCE_I18N ? window.ROCE_I18N.getLang() : 'es';
+      [['baja', 'liveDay'], ['alta', 'liveNight']].forEach(function (c) {
         var el = document.getElementById(c[1]);
-        var e = U && EVENTS.filter(function (x) { return x.env === c[0] && U.isLive(x); })[0];
-        if (!e) { el.hidden = true; return; }
+        var now = Date.now();
+        var e = U && EVENTS.filter(function (x) { return U.floorKey(x) === c[0] && U.bounds(x)[1] > now; })
+          .sort(function (a, b) { return U.bounds(a)[0] - U.bounds(b)[0]; })[0];
+        if (!e) {
+          U && U.setMarquee(el.querySelector('.home-live-title'), (window.ROCE_I18N && window.ROCE_I18N.t('home_events_none')) || 'Próximos eventos');
+          el.querySelector('.home-live-time').textContent = '';
+          return;
+        }
         var b = U.bounds(e);
         U.setMarquee(el.querySelector('.home-live-title'), e.title[l] || e.title.es);
-        el.querySelector('.home-live-time').textContent = hm(b[0]) + ' – ' + hm(b[1]);
-        el.hidden = false; n++;
+        el.querySelector('.home-live-time').textContent = U.isLive(e) ? hm(b[0]) + ' – ' + hm(b[1]) :
+          new Intl.DateTimeFormat(l === 'en' ? 'en-GB' : 'es-ES', { timeZone: TZ, weekday: 'short', day: 'numeric', month: 'short' }).format(b[0]).replace('.', '') + ' · ' + hm(b[0]);
       });
-      document.querySelector('.home-main').style.setProperty('--live-n', n);
     }
     if (window.ROCE_EVENTS_READY) window.ROCE_EVENTS_READY.then(function (list) { EVENTS = list; renderLive(); });
     document.addEventListener('roce:lang', renderLive);
 
+    document.querySelector('.home-main').style.setProperty('--live-n', 2);
+    renderLive();
     sync();
     setInterval(sync, 60000);
   })();
