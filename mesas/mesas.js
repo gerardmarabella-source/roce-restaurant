@@ -20,12 +20,12 @@
       dows: ['L', 'M', 'X', 'J', 'V', 'S', 'D'],
       prev: 'Mes anterior', next: 'Mes siguiente',
       pick_date: 'Elige un día para ver las horas disponibles.',
-      loading: 'Buscando mesas…', none: 'No quedan mesas ese día para {n}. Prueba otro día o escríbenos por WhatsApp.',
+      loading: 'Buscando mesas…', none: 'No quedan mesas ese día para {n}. Prueba otro día o escríbenos por {wa}.', wa_msg: 'Hola, quería reservar mesa para {n} el {date}.',
       err_load: 'No hemos podido consultar las mesas. Inténtalo de nuevo en un momento.',
       day: 'Coffee, Bakery & Kitchen', night: 'Restaurant & Cocktails',
       deposit_h: 'Fianza de {m}', deposit_free_until: 'Se devuelve si cancelas con al menos {h} h de antelación.',
       free_h: 'Reserva gratuita',
-      form_h: 'Tus datos', name: 'Nombre y apellidos', email: 'Email', phone: 'Teléfono', notes: 'Alergias o comentarios (opcional)',
+      form_h: 'Tus datos', name: 'Nombre y apellidos', email: 'Email', phone: 'Teléfono', notes: 'Comentarios (opcional)',
       consent: 'Acepto la <a href="/privacidad.html" target="_blank" rel="noopener">política de privacidad</a> y los <a href="/terminos.html" target="_blank" rel="noopener">términos</a>',
       marketing: 'Quiero recibir novedades de ROCE (opcional)',
       summary: '{date} · {time} · {party}',
@@ -37,7 +37,7 @@
       e_closed: 'Ese día no abrimos para reservas.', e_too_many: 'Ya tienes varias reservas activas con este email.',
       e_network: 'No hemos podido completar la reserva. Inténtalo de nuevo.', e_pay: 'No hemos podido abrir el pago. Tu mesa queda retenida unos minutos: vuelve a pulsar el botón.',
       night_tag: 'Solo mayores de 18 años',
-      allergies: 'Alergias o intolerancias', al: { gluten: 'Gluten', lactosa: 'Lactosa', 'frutos-secos': 'Frutos secos', marisco: 'Marisco', pescado: 'Pescado', huevo: 'Huevo', soja: 'Soja', sesamo: 'Sésamo', vegetariano: 'Vegetariano', vegano: 'Vegano', otras: 'Otras (cuéntanoslo abajo)' },
+      allergies: 'Alergias o intolerancias', al: { gluten: 'Gluten', lactosa: 'Lactosa', 'frutos-secos': 'Frutos secos', marisco: 'Marisco', pescado: 'Pescado', huevo: 'Huevo', soja: 'Soja', sesamo: 'Sésamo', vegetariano: 'Vegetariano', vegano: 'Vegano', otras: 'Otras' }, yes: 'Sí', no: 'No', al_hint: 'Si es otra, cuéntanosla en comentarios.',
       info_dur: 'Tu mesa estará disponible {d}.', info_grace: 'La mantenemos {g} min desde la hora reservada: pasado ese tiempo la damos por no presentada.',
       full: 'Completo', wl_cta: 'No encuentro hora: avisadme si se libera una mesa', wl_h: 'Lista de espera',
       wl_intro: 'Déjanos tus datos y te escribiremos si se libera una mesa para {n} el {date}.', wl_time: 'Hora preferida', wl_any: 'Cualquier hora',
@@ -45,7 +45,7 @@
       wl_err: 'No hemos podido apuntarte. Revisa el nombre y el email.', wl_close: 'Cerrar', alt_h: 'Prueba con…', alt_days: 'Otros días con mesa', alt_space: 'Ese día sí hay mesa en {space}',
       alt_from: 'desde las {t}', alt_wait: 'Si prefieres este día, apúntate a la lista de espera.',
       card_h: 'Garantía con tarjeta', card_free: 'No se cobra nada ahora',
-      card_note: 'Para confirmar la reserva te pediremos los datos de una tarjeta como garantía. No se cobra nada ahora. Si no te presentas o anulas con menos de {h} h de antelación, se cobrarán {m} automáticamente a esa tarjeta.',
+      card_note: 'Para confirmar la reserva te pediremos los datos de una tarjeta como garantía. Si no te presentas o anulas con menos de {h} h de antelación, se cobrarán {m} automáticamente a esa tarjeta.',
       card_consent: 'Autorizo a ROCE a cobrar automáticamente {m} a mi tarjeta si no me presento o anulo con menos de {h} h de antelación',
       go_card: 'Continuar y dar la tarjeta', e_card: 'Debes autorizar la garantía con tarjeta.', day_notice: 'Aviso'
     },
@@ -55,12 +55,12 @@
       dows: ['M', 'T', 'W', 'T', 'F', 'S', 'S'],
       prev: 'Previous month', next: 'Next month',
       pick_date: 'Pick a day to see the available times.',
-      loading: 'Looking for tables…', none: 'No tables left that day for {n}. Try another day or message us on WhatsApp.',
+      loading: 'Looking for tables…', none: 'No tables left that day for {n}. Try another day or message us on {wa}.', wa_msg: 'Hi, I would like to book a table for {n} on {date}.',
       err_load: "We couldn't check the tables. Please try again in a moment.",
       day: 'Coffee, Bakery & Kitchen', night: 'Restaurant & Cocktails',
       deposit_h: '{m} deposit', deposit_free_until: 'Refunded if you cancel at least {h} h in advance.',
       free_h: 'Free booking',
-      form_h: 'Your details', name: 'Full name', email: 'Email', phone: 'Phone', notes: 'Allergies or comments (optional)',
+      form_h: 'Your details', name: 'Full name', email: 'Email', phone: 'Phone', notes: 'Comments (optional)',
       consent: 'I accept the <a href="/privacidad.html" target="_blank" rel="noopener">privacy policy</a> and the <a href="/terminos.html" target="_blank" rel="noopener">terms</a>',
       marketing: 'I would like to receive news from ROCE (optional)',
       summary: '{date} · {time} · {party}',
@@ -72,7 +72,7 @@
       e_closed: "We're not taking bookings that day.", e_too_many: 'You already have several active bookings with this email.',
       e_network: "We couldn't complete the booking. Please try again.", e_pay: "We couldn't open the payment. Your table is held for a few minutes: press the button again.",
       night_tag: 'Over 18s only',
-      allergies: 'Allergies or intolerances', al: { gluten: 'Gluten', lactosa: 'Lactose', 'frutos-secos': 'Nuts', marisco: 'Shellfish', pescado: 'Fish', huevo: 'Egg', soja: 'Soy', sesamo: 'Sesame', vegetariano: 'Vegetarian', vegano: 'Vegan', otras: 'Other (tell us below)' },
+      allergies: 'Allergies or intolerances', al: { gluten: 'Gluten', lactosa: 'Lactose', 'frutos-secos': 'Nuts', marisco: 'Shellfish', pescado: 'Fish', huevo: 'Egg', soja: 'Soy', sesamo: 'Sesame', vegetariano: 'Vegetarian', vegano: 'Vegan', otras: 'Other' }, yes: 'Yes', no: 'No', al_hint: 'If it is something else, tell us in the comments.',
       info_dur: 'Your table will be available for {d}.', info_grace: 'We hold it for {g} min after the booked time: after that we treat it as a no-show.',
       full: 'Full', wl_cta: "Can't find a time: let me know if a table opens up", wl_h: 'Waiting list',
       wl_intro: 'Leave your details and we will write to you if a table opens up for {n} on {date}.', wl_time: 'Preferred time', wl_any: 'Any time',
@@ -80,7 +80,7 @@
       wl_err: "We couldn't add you. Please check your name and email.", wl_close: 'Close', alt_h: 'Try…', alt_days: 'Other days with tables', alt_space: 'That day there is a table at {space}',
       alt_from: 'from {t}', alt_wait: 'If you prefer this day, join the waiting list.',
       card_h: 'Card guarantee', card_free: 'Nothing is charged now',
-      card_note: "To confirm the booking we will ask for your card details as a guarantee. Nothing is charged now. If you don't show up or cancel less than {h} h in advance, {m} will be charged automatically to that card.",
+      card_note: "To confirm the booking we will ask for your card details as a guarantee. If you don't show up or cancel less than {h} h in advance, {m} will be charged automatically to that card.",
       card_consent: "I authorise ROCE to automatically charge {m} to my card if I don't show up or cancel less than {h} h in advance",
       go_card: 'Continue and enter card', e_card: 'You must authorise the card guarantee.', day_notice: 'Notice'
     }
@@ -90,6 +90,7 @@
   var st = { alt: null, wait: null, waitDone: false, grid: [], pr: '', notices: [], pending: '', party: 2, date: '', month: null, ambience: 'all', slots: null, loading: false, loadErr: false, chosen: null, busy: false, error: '' };
 
   function lang() { return window.ROCE_I18N && window.ROCE_I18N.getLang ? window.ROCE_I18N.getLang() : 'es'; }
+  var WA_NUMBER = '34614073163'; // WhatsApp de ROCE (el mismo que el de grupos)
   function t(k, v) {
     var s = (STR[lang()] || STR.es)[k]; if (s == null) s = STR.es[k] || k;
     if (typeof s !== 'string') return s;
@@ -176,7 +177,10 @@
     if (st.loading) return '<p class="mz-hint">' + esc(t('loading')) + '</p>';
     if (st.loadErr) return '<p class="mz-error">' + esc(t('err_load')) + '</p>';
     var h = '';
-    if (!st.slots || !st.slots.length) h += '<p class="mz-hint">' + esc(t('none', { n: partyLabel(st.party) })) + '</p>';
+    if (!st.slots || !st.slots.length) {
+      var waUrl = 'https://wa.me/' + WA_NUMBER + '?text=' + encodeURIComponent(t('wa_msg', { n: partyLabel(st.party), date: dateLabel(st.date) }));
+      h += '<p class="mz-hint">' + esc(t('none', { n: partyLabel(st.party), wa: '@@WA@@' })).replace('@@WA@@', '<a class="mz-wa" href="' + esc(waUrl) + '" target="_blank" rel="noopener">WhatsApp</a>') + '</p>';
+    }
     var groups = {}, order = [];
     (st.grid || []).forEach(function (s) { if (!groups[s.o_ambience]) { groups[s.o_ambience] = []; order.push(s.o_ambience); } groups[s.o_ambience].push(s); });
     order.forEach(function (a) {
@@ -184,7 +188,7 @@
       if (!rows.some(function (r) { return r.o_free; }) && st.slots.length === 0 && order.length > 1) { /* se muestra igualmente para poder apuntarse */ }
       h += '<div class="mz-group"><div class="mz-group-h"><span class="mz-group-name">' + esc(t(a)) + '</span>' +
         (a === 'night' ? '<span class="mz-tag">+18</span>' : '') +
-        '<span class="mz-group-note">' + (dep > 0 && mode === 'card' ? esc(t('card_free')) : dep > 0 ? esc(t('deposit_h', { m: money(dep) })) : esc(t('free_h'))) + '</span></div><div class="mz-slots">';
+        '<span class="mz-group-note">' + (dep > 0 && mode === 'card' ? '' : dep > 0 ? esc(t('deposit_h', { m: money(dep) })) : esc(t('free_h'))) + '</span></div><div class="mz-slots">';
       rows.forEach(function (s) {
         if (s.o_free) h += '<button type="button" class="mz-slot' + (st.chosen && st.chosen.o_starts_at === s.o_starts_at ? ' is-on' : '') + '" data-start="' + esc(s.o_starts_at) + '">' + esc(s.o_time) + '</button>';
         else h += '<button type="button" class="mz-slot is-full" data-wl="' + esc(s.o_time) + '" data-amb="' + esc(s.o_ambience) + '" title="' + esc(t('wl_cta')) + '"><span>' + esc(s.o_time) + '</span><small>' + esc(t('full')) + '</small></button>';
@@ -197,12 +201,12 @@
       if (st.alt.other && st.alt.other.length) {
         var o = st.alt.other, times = o.slice(0, 6).map(function (x) { return x.o_time; });
         alt += '<div class="mz-alt"><p class="mz-alt-h">' + esc(t('alt_space', { space: t(st.alt.otherAmb) })) + '</p><div class="mz-chips">' +
-          '<button type="button" class="mz-chip" data-altamb="' + esc(st.alt.otherAmb) + '">' + esc(t(st.alt.otherAmb)) + ' · ' + esc(times.join(' · ')) + '</button></div></div>';
+          '<button type="button" class="mz-chip mz-chip-wide" data-altamb="' + esc(st.alt.otherAmb) + '"><span>' + esc(t(st.alt.otherAmb)) + '</span><small>' + esc(times.join(' · ')) + '</small></button></div></div>';
       }
       if (st.alt.days && st.alt.days.length) {
         alt += '<div class="mz-alt"><p class="mz-alt-h">' + esc(t('alt_days')) + '</p><div class="mz-chips">' + st.alt.days.map(function (d) {
           var lbl = new Intl.DateTimeFormat(lang() === 'en' ? 'en-GB' : 'es-ES', { timeZone: 'UTC', weekday: 'short', day: 'numeric', month: 'short' }).format(new Date(d.o_date + 'T12:00:00Z'));
-          return '<button type="button" class="mz-chip" data-altdate="' + esc(d.o_date) + '">' + esc(lbl) + ' · ' + esc(t('alt_from', { t: d.o_first })) + '</button>';
+          return '<button type="button" class="mz-chip" data-altdate="' + esc(d.o_date) + '"><span>' + esc(lbl) + '</span><small>' + esc(t('alt_from', { t: d.o_first })) + '</small></button>';
         }).join('') + '</div></div>';
       }
       h += alt;
@@ -245,9 +249,12 @@
       '<input class="mz-input" name="name" type="text" autocomplete="name" placeholder="' + esc(t('name')) + '" value="' + esc(st.f_name || '') + '" required>' +
       '<input class="mz-input" name="email" type="email" autocomplete="email" inputmode="email" placeholder="' + esc(t('email')) + '" value="' + esc(st.f_email || '') + '" required>' +
       '<input class="mz-input" name="phone" type="tel" autocomplete="tel" inputmode="tel" placeholder="' + esc(t('phone')) + '" value="' + esc(st.f_phone || '') + '" required>' +
-      '<div class="mz-allergies"><span class="mz-label">' + esc(t('allergies')) + '</span><div class="mz-al-list">' + Object.keys(t('al')).map(function (k) {
-        return '<label class="mz-al"><input type="checkbox" name="al" value="' + k + '"' + ((st.f_al || []).indexOf(k) !== -1 ? ' checked' : '') + '><span>' + esc(t('al')[k]) + '</span></label>';
-      }).join('') + '</div></div>' +
+      '<div class="mz-allergies"><span class="mz-label">' + esc(t('allergies')) + '</span>' +
+        '<div class="mz-yn"><button type="button" class="mz-yn-b' + (st.f_alyes ? ' is-on' : '') + '" data-alyes="1" aria-pressed="' + (st.f_alyes ? 'true' : 'false') + '">' + esc(t('yes')) + '</button>' +
+        '<button type="button" class="mz-yn-b' + (st.f_alyes ? '' : ' is-on') + '" data-alyes="0" aria-pressed="' + (st.f_alyes ? 'false' : 'true') + '">' + esc(t('no')) + '</button></div>' +
+        '<div class="mz-al-wrap"' + (st.f_alyes ? '' : ' hidden') + '><div class="mz-al-list">' + Object.keys(t('al')).map(function (k) {
+          return '<label class="mz-al"><input type="checkbox" name="al" value="' + k + '"' + ((st.f_al || []).indexOf(k) !== -1 ? ' checked' : '') + '><span>' + esc(t('al')[k]) + '</span></label>';
+        }).join('') + '</div><p class="mz-al-hint">' + esc(t('al_hint')) + '</p></div></div>' +
       '<textarea class="mz-input" name="notes" rows="1" placeholder="' + esc(t('notes')) + '">' + esc(st.f_notes || '') + '</textarea>' +
       infoHtml(c) +
       (dep > 0 ? '<p class="mz-deposit">' + esc(card ? t('card_note', { m: money(dep), h: hrs }) : t('deposit_note', { m: money(dep), h: hrs })) + '</p>' : '') +
@@ -280,6 +287,13 @@
   // ─── Eventos ────────────────────────────────────────────────────────
   root.addEventListener('click', function (e) {
     var b = e.target.closest('button'); if (!b || b.disabled) return;
+    if (b.dataset.alyes != null) {
+      st.f_alyes = b.dataset.alyes === '1';
+      var fm = b.closest('.mz-allergies');
+      [].forEach.call(fm.querySelectorAll('.mz-yn-b'), function (x) { var on = (x.dataset.alyes === '1') === st.f_alyes; x.classList.toggle('is-on', on); x.setAttribute('aria-pressed', on ? 'true' : 'false'); });
+      fm.querySelector('.mz-al-wrap').hidden = !st.f_alyes;
+      return;
+    }
     if (b.dataset.party) {
       // Más de 8 personas no se reserva por la web: se hace vibrar el aviso de grupos para que lo vean.
       if (+b.dataset.party > 0 && st.party >= MAX_PARTY) { nudgeGroups(); return; }
@@ -333,7 +347,7 @@
     var go = st.pending ? Promise.resolve({ o_status: 'pending', o_token: st.pending }) : rpc('book_table', {
       p_service: c.o_service, p_starts: c.o_starts_at, p_zone: c.o_zone, p_party: st.party,
       p_name: st.f_name.trim(), p_email: st.f_email.trim(), p_phone: st.f_phone.trim(), p_notes: (st.f_notes || '').trim(),
-      p_lang: lang(), p_marketing: !!st.f_marketing, p_prescriber: st.pr || '', p_allergies: st.f_al || []
+      p_lang: lang(), p_marketing: !!st.f_marketing, p_prescriber: st.pr || '', p_allergies: st.f_alyes ? (st.f_al || []) : []
     }).then(function (d) { return Array.isArray(d) ? d[0] : d; });
     go.then(function (row) {
       if (row.o_status === 'confirmed') { location.href = '/reserva/?t=' + encodeURIComponent(row.o_token) + '&new=1'; return; }

@@ -22,7 +22,7 @@ body.zone-day #mesasApp { --mz-fg: var(--black); --mz-bg: var(--white); --mz-lin
 .mz-day.is-on { background: var(--mz-fg); color: var(--mz-bg); border-color: var(--mz-fg); }
 .mz-day:disabled { opacity: 0.22; cursor: default; }
 
-.mz-hint { margin: 0; font-size: 0.95rem; line-height: 1.5; color: var(--mz-soft); }
+.mz-hint { margin: 0 0 1.25rem; font-size: 0.95rem; line-height: 1.5; color: var(--mz-soft); }
 .mz-error { margin: 0 0 1rem; font-size: 0.95rem; line-height: 1.45; color: var(--mz-err); }
 .mz-error[hidden] { display: none; }
 .mz-group { margin-bottom: 1.4rem; }
@@ -55,8 +55,8 @@ body.zone-day #mesasApp { --mz-fg: var(--black); --mz-bg: var(--white); --mz-lin
 .mz-slot.is-full small { font-size: 0.62rem; letter-spacing: 0.05em; text-transform: uppercase; }
 .mz-alt { margin: 0 0 1.2rem; }
 .mz-alt-h { margin: 0 0 0.5rem; font-size: 0.85rem; letter-spacing: 0.05em; text-transform: uppercase; color: var(--mz-soft); }
-.mz-chips { display: flex; flex-wrap: wrap; gap: 0.5rem; }
-.mz-chip { padding: 0.65rem 0.9rem; border: 1px solid var(--mz-fg); background: transparent; font-size: 0.92rem; cursor: pointer; border-radius: 0; text-align: left; text-transform: uppercase; letter-spacing: 0.02em; }
+.mz-chips { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; }
+.mz-chip { display: flex; flex-direction: column; justify-content: center; gap: 0.2rem; width: 100%; min-height: 3.6rem; box-sizing: border-box; padding: 0.6rem 0.8rem; border: 1px solid var(--mz-fg); background: transparent; font-size: 0.92rem; cursor: pointer; border-radius: 0; text-align: left; text-transform: uppercase; letter-spacing: 0.02em; }
 .mz-chip:hover { background: var(--mz-fg); color: var(--mz-bg); }
 .mz-wl-cta { margin: 1.2rem 0 0; }
 .mz-link { padding: 0; border: 0; background: none; color: inherit; font-size: 0.95rem; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; text-align: left; }
@@ -66,14 +66,27 @@ body.zone-day #mesasApp { --mz-fg: var(--black); --mz-bg: var(--white); --mz-lin
 .mz-sel option { color: #0a0a0a; text-transform: none; }
 .mz-wait { margin-top: 1.4rem; }
 .mz-info { margin: 1.25rem 0 0; font-size: 0.88rem; line-height: 1.5; color: var(--mz-soft); font-family: var(--body, inherit); }
-.mz-allergies { margin-top: 1.1rem; }
-.mz-al-list { display: flex; flex-wrap: wrap; gap: 0.4rem; }
-.mz-al { display: inline-flex; cursor: pointer; }
+.mz-al-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(6.4rem, 1fr)); gap: 0.4rem; }
+.mz-al { display: flex; cursor: pointer; }
 .mz-al input { position: absolute; opacity: 0; pointer-events: none; }
-.mz-al span { padding: 0.45rem 0.7rem; border: 1px solid var(--mz-line); font-size: 0.85rem; }
+.mz-al span { display: flex; align-items: center; justify-content: center; width: 100%; box-sizing: border-box; min-height: 2.7rem; padding: 0.4rem 0.5rem; text-align: center; border: 1px solid var(--mz-line); font-size: 0.85rem; }
 .mz-al input:checked + span { background: var(--mz-fg); color: var(--mz-bg); border-color: var(--mz-fg); }
 .mz-al input:focus-visible + span { outline: 2px solid var(--mz-fg); outline-offset: 2px; }
 .mz-step-party { text-align: center; }
 .mz-step-party .mz-stepper { justify-content: center; }
 .mz-pm.is-max { opacity: 0.45; }
 .mz-group-name { font-weight: 700; }
+
+/* Respuesta Sí / No (alergias): dos casillas iguales; solo si dice que sí se despliega la lista. */
+.mz-chip small { font-size: 0.78rem; letter-spacing: 0.03em; opacity: 0.7; }
+.mz-chip-wide { grid-column: 1 / -1; }
+.mz-yn { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+.mz-yn-b { min-height: 3rem; border: 1px solid var(--mz-line); background: transparent; font-size: 1.05rem; text-transform: uppercase; cursor: pointer; border-radius: 0; }
+.mz-yn-b:hover { border-color: var(--mz-fg); }
+.mz-yn-b.is-on { background: var(--mz-fg); color: var(--mz-bg); border-color: var(--mz-fg); }
+.mz-al-wrap { margin-top: 0.8rem; }
+.mz-al-wrap[hidden] { display: none; }
+.mz-al-hint { margin: 0.6rem 0 0; font-size: 0.8rem; color: var(--mz-soft); }
+.mz-input + .mz-input, .mz-allergies + .mz-input { margin-top: 0.5rem; }
+.mz-allergies { margin: 1.4rem 0 1rem; }
+.mz-wa { color: inherit; text-decoration: underline; text-underline-offset: 3px; }

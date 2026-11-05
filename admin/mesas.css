@@ -103,3 +103,34 @@
 .mt-ctx.is-round { border-radius: 24px; }
 .mt-ctx.is-col { background: rgba(10, 10, 10, 0.14); border: 1px solid rgba(10, 10, 10, 0.3); border-radius: 3px; }
 .mt-t { z-index: 1; }
+
+/* Elegir mesas / asignar: las opciones van una debajo de otra y el selector no ocupa todo el ancho. */
+.ad-field > .mt-pick { display: flex; margin-bottom: 0.4rem; }
+.mt-pick input[type="radio"], .mt-pick input[type="checkbox"] { width: auto; margin: 0; padding: 0; }
+.mt-svcname { padding: 0.6rem 0.7rem; border: 1px solid var(--line); font-size: 0.95rem; }
+
+/* Etiquetas propias y secciones plegables (menos campos a la vista). */
+.mt-al-new { padding: 0.3rem 0.6rem; border: 1px dashed var(--fg); background: transparent; font-size: 0.8rem; cursor: pointer; border-radius: 0; }
+.mt-al-new:hover { background: var(--fg); color: var(--bg); }
+.mt-tagcfg { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.3rem 0.6rem; border: 1px solid var(--line); font-size: 0.85rem; }
+.mt-x { border: 0; background: transparent; cursor: pointer; font-size: 1rem; line-height: 1; padding: 0 0.1rem; }
+.mt-more { border-top: 1px solid var(--line); padding: 0.2rem 0; margin-top: 0.6rem; }
+.mt-more > summary { cursor: pointer; padding: 0.6rem 0; font-size: 0.78rem; letter-spacing: 0.06em; text-transform: uppercase; list-style: none; display: flex; justify-content: space-between; }
+.mt-more > summary::-webkit-details-marker { display: none; }
+.mt-more > summary::after { content: "+"; font-size: 1.1rem; line-height: 1; }
+.mt-more[open] > summary::after { content: "−"; }
+.mt-more[open] { padding-bottom: 0.4rem; }
+
+/* Cuentas de empresa / grupo */
+.mt-acc { display: grid; grid-template-columns: 1fr auto; gap: 0.6rem 1rem; align-items: center; }
+.mt-acc-bal { text-align: right; }
+.mt-acc-bal b { display: block; font-size: 1.5rem; line-height: 1.1; }
+.mt-acc-bal span { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; opacity: 0.7; }
+.mt-acc-bal.is-neg b { color: var(--red); }
+.mt-acc-bal.is-pos b { color: var(--ok); }
+.mt-acc .ad-actions, .mt-acc-ledger { grid-column: 1 / -1; }
+.mt-accrow { margin: 0.5rem 0; }
+.mt-accrow .ad-meta { margin: 0; }
+
+/* Casillas de verificación dentro de un campo: tamaño normal (no heredan el ancho de los campos de texto). */
+.mt-check input[type="checkbox"], .ad-field .mt-check input { width: 1.1rem; height: 1.1rem; padding: 0; border: 0; margin: 0.15rem 0 0; flex-shrink: 0; }
