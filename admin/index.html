@@ -25,8 +25,12 @@
 
   .ad-wrap { max-width: 980px; margin: 0 auto; padding: 1.25rem; }
   .ad-tabs { display: flex; flex-wrap: wrap; gap: 0.2rem 1.75rem; margin: 0.5rem 0 1.25rem; }
-  .ad-tab { background: none; border: 0; padding: 0; cursor: pointer; font-family: var(--display); font-size: 1.6rem; text-transform: uppercase; opacity: 0.28; transition: opacity 0.2s; }
-  .ad-tab[aria-pressed="true"] { opacity: 1; }
+  .ad-tab, .ad-group { background: none; border: 0; padding: 0; cursor: pointer; font-family: var(--display); font-size: 1.6rem; text-transform: uppercase; opacity: 0.28; transition: opacity 0.2s; color: inherit; }
+  .ad-tab[aria-pressed="true"], .ad-group[aria-pressed="true"] { opacity: 1; }
+  .ad-subtabs { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: -0.25rem 0 1.25rem; }
+  .ad-subtabs[hidden] { display: none !important; }
+  .ad-tab.is-sub { font-size: 0.85rem; letter-spacing: 0.05em; padding: 0.5rem 0.95rem; border: 1px solid var(--fg); opacity: 1; }
+  .ad-tab.is-sub[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
 
   .ad-btn { padding: 0.7rem 1.1rem; border: 2px solid var(--fg); background: var(--fg); color: var(--bg); font-family: var(--display); font-size: 0.9rem; letter-spacing: 0.04em; text-transform: uppercase; cursor: pointer; }
   .ad-btn.is-ghost { background: none; color: var(--fg); }
@@ -127,7 +131,7 @@
   .sc-manual { padding: 0.5rem 1rem 1rem; font-size: 0.85rem; opacity: 0.9; }
   .sc-manual summary { cursor: pointer; padding: 0.4rem 0; }
   .sc-manual input { width: 100%; margin: 0.4rem 0; padding: 0.7rem; border: 1px solid #fff; background: #111; color: #fff; font: inherit; }
-  .ad-tab[hidden], .ad-perms[hidden] { display: none !important; }
+  .ad-tab[hidden], .ad-group[hidden], .ad-perms[hidden] { display: none !important; }
   .ad-perms { display: flex; flex-wrap: wrap; gap: 0.35rem 1rem; margin-top: 0.45rem; font-size: 0.85rem; }
   .ad-perms label { display: inline-flex; align-items: center; gap: 0.35rem; cursor: pointer; }
   .ad-perms input { width: auto; margin: 0; }
@@ -147,7 +151,8 @@
 
   @media (max-width: 560px) {
     .ad-tabs { flex-wrap: wrap; gap: 0.2rem 1.2rem; }
-    .ad-tab { font-size: 1.3rem; }
+    .ad-tab, .ad-group { font-size: 1.3rem; }
+    .ad-tab.is-sub { font-size: 0.8rem; }
     .ck-row { grid-template-columns: 1fr; }
     .ck-controls { width: 100%; }
     .ck-controls .ck-main { flex: 1; }
@@ -178,7 +183,7 @@
   .ad-hint { font-size: 0.78rem; opacity: 0.6; margin-top: 0.25rem; }
   @media (max-width: 560px) { .ad-grid { grid-template-columns: 1fr; } .ad-table { font-size: 0.8rem; } }
 </style>
-<link rel="stylesheet" href="/admin/mesas.css?v=7">
+<link rel="stylesheet" href="/admin/mesas.css?v=8">
 </head>
 <body>
 
@@ -201,13 +206,17 @@
   </header>
   <main class="ad-wrap">
     <div class="ad-tabs">
-      <button class="ad-tab" data-tab="events" aria-pressed="true" type="button">Eventos</button>
-      <button class="ad-tab" data-tab="bookings" aria-pressed="false" type="button">Reservas</button>
-      <button class="ad-tab" data-tab="checkin" aria-pressed="false" type="button">Asistencia</button>
-      <button class="ad-tab" data-tab="lists" aria-pressed="false" type="button">Listas</button>
-      <button class="ad-tab" data-tab="tables" aria-pressed="false" type="button">Mesas</button>
+      <button class="ad-group" data-group="events" aria-pressed="true" type="button">Eventos</button>
+      <button class="ad-group" data-group="cover" aria-pressed="false" type="button">RoceCover</button>
       <button class="ad-tab" data-tab="team" id="teamTab" aria-pressed="false" type="button">Equipo</button>
     </div>
+    <div class="ad-subtabs" id="subEvents" role="group" aria-label="Eventos">
+      <button class="ad-tab is-sub" data-tab="events" aria-pressed="true" type="button">Eventos</button>
+      <button class="ad-tab is-sub" data-tab="bookings" aria-pressed="false" type="button">Reservas</button>
+      <button class="ad-tab is-sub" data-tab="checkin" aria-pressed="false" type="button">Asistencia</button>
+      <button class="ad-tab is-sub" data-tab="lists" aria-pressed="false" type="button">Listas</button>
+    </div>
+    <button class="ad-tab" data-tab="tables" id="coverTab" aria-pressed="false" type="button" style="display:none !important">RoceCover</button>
     <p class="ad-msg" id="appMsg" hidden></p>
 
     <section id="tabEvents">
@@ -261,7 +270,7 @@
 
     <section id="tabTeam" hidden>
       <div id="teamAdmin">
-      <p class="ad-meta" style="margin-bottom:1rem"><b>Administrador</b>: gestiona el equipo (crea cuentas, cambia contraseñas, quita accesos). <b>Equipo</b>: solo ve las pestañas que le marques abajo (Eventos, Reservas, Asistencia, Listas) y no puede tocar el equipo. Ambos pueden cambiar su propia contraseña.</p>
+      <p class="ad-meta" style="margin-bottom:1rem"><b>Administrador</b>: gestiona el equipo (crea cuentas, cambia contraseñas, quita accesos). <b>Equipo</b>: solo ve las pestañas que le marques abajo (Eventos, Reservas, Asistencia, Listas, RoceCover) y no puede tocar el equipo. Ambos pueden cambiar su propia contraseña.</p>
       <ul class="ad-list" id="teamList"></ul>
       <form class="ad-sheet-inline" id="teamForm" autocomplete="off">
         <h2 class="ad-sub">Añadir a alguien</h2>
@@ -270,7 +279,7 @@
           <input type="email" id="teamEmail" placeholder="persona@roce.es" required style="flex:1 1 14rem">
           <input type="text" id="teamPass" placeholder="Contraseña (mín. 10)" required minlength="10" style="flex:1 1 12rem" spellcheck="false">
           <select id="teamRole" aria-label="Nivel"><option value="staff">Equipo</option><option value="admin">Administrador</option></select>
-          <span class="ad-perms" id="teamNewTabs" aria-label="Pestañas que podrá ver"><label><input type="checkbox" data-tab="events"> Eventos</label><label><input type="checkbox" data-tab="bookings"> Reservas</label><label><input type="checkbox" data-tab="checkin" checked> Asistencia</label><label><input type="checkbox" data-tab="lists"> Listas</label><label><input type="checkbox" data-tab="tables"> Mesas</label></span>
+          <span class="ad-perms" id="teamNewTabs" aria-label="Pestañas que podrá ver"><label><input type="checkbox" data-tab="events"> Eventos</label><label><input type="checkbox" data-tab="bookings"> Reservas</label><label><input type="checkbox" data-tab="checkin" checked> Asistencia</label><label><input type="checkbox" data-tab="lists"> Listas</label><label><input type="checkbox" data-tab="tables"> RoceCover</label></span>
           <button class="ad-btn is-ghost" type="button" id="teamGen">Generar</button>
           <button class="ad-btn" type="submit" id="teamAdd">Crear y dar acceso</button>
         </div>
@@ -472,6 +481,9 @@
     document.querySelectorAll('.ad-tab[data-tab]').forEach(function (b) {
       var t = b.dataset.tab; b.hidden = t !== 'team' && myTabs.indexOf(t) === -1;
     });
+    var evAny = ['events', 'bookings', 'checkin', 'lists'].some(function (t) { return myTabs.indexOf(t) !== -1; });
+    document.querySelector('.ad-group[data-group="events"]').hidden = !evAny;
+    document.querySelector('.ad-group[data-group="cover"]').hidden = myTabs.indexOf('tables') === -1;
     var first = ALL_TABS.filter(function (t) { return myTabs.indexOf(t) !== -1; })[0] || 'team';
     var btn = document.querySelector('.ad-tab[data-tab="' + first + '"]'); if (btn) btn.click();
   }
@@ -512,6 +524,27 @@
       if (t.dataset.tab === 'checkin') openCheckin();
       if (t.dataset.tab === 'tables' && window.ROCE_ADMIN && window.ROCE_ADMIN.openTables) window.ROCE_ADMIN.openTables();
       if (t.dataset.tab === 'team' && myRole === 'admin') loadTeam();
+    });
+  });
+
+  // Grupos del panel: "Eventos" (eventos, reservas, asistencia, listas) y "RoceCover" (todo lo del restaurante).
+  var lastSub = 'events';
+  function syncGroups(tab) {
+    var grp = tab === 'tables' ? 'cover' : tab === 'team' ? 'team' : 'events';
+    document.querySelectorAll('.ad-group').forEach(function (g) { g.setAttribute('aria-pressed', g.dataset.group === grp ? 'true' : 'false'); });
+    $('subEvents').hidden = grp !== 'events';
+  }
+  document.querySelectorAll('.ad-tab').forEach(function (t) {
+    t.addEventListener('click', function () {
+      if (['events', 'bookings', 'checkin', 'lists'].indexOf(t.dataset.tab) !== -1) lastSub = t.dataset.tab;
+      syncGroups(t.dataset.tab);
+    });
+  });
+  document.querySelectorAll('.ad-group').forEach(function (g) {
+    g.addEventListener('click', function () {
+      if (g.dataset.group === 'cover') { $('coverTab').click(); return; }
+      var subs = [].slice.call(document.querySelectorAll('#subEvents .ad-tab')).filter(function (b) { return !b.hidden; });
+      var btn = subs.filter(function (b) { return b.dataset.tab === lastSub; })[0] || subs[0]; if (btn) btn.click();
     });
   });
 
@@ -1281,7 +1314,7 @@
     crypto.getRandomValues(a); for (var i = 0; i < a.length; i++) o += chars[a[i] % chars.length];
     return o;
   }
-  var TAB_LABEL = [['events', 'Eventos'], ['bookings', 'Reservas'], ['checkin', 'Asistencia'], ['lists', 'Listas'], ['tables', 'Mesas']];
+  var TAB_LABEL = [['events', 'Eventos'], ['bookings', 'Reservas'], ['checkin', 'Asistencia'], ['lists', 'Listas'], ['tables', 'RoceCover']];
   function permsHtml(p) {
     if (p.role === 'admin') return '<div class="ad-meta">Acceso a todo, incluido Equipo.</div>';
     var cur = Array.isArray(p.tabs) ? p.tabs : DEFAULT_TABS;
@@ -1366,6 +1399,6 @@
   window.ROCE_ADMIN = { api: api, flash: flash, esc: esc, $: $, madridToISO: madridToISO, toInputValue: toInputValue, fmtDate: fmtDate, money: money, cfg: cfg, TZ: TZ, session: function () { return session; } };
 })();
 </script>
-<script src="/admin/mesas.js?v=13"></script>
+<script src="/admin/mesas.js?v=14"></script>
 </body>
 </html>

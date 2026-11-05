@@ -10,6 +10,40 @@
   var ST = { pending: 'Pendiente de pago', confirmed: 'Confirmada', seated: 'En mesa', completed: 'Completada', cancelled: 'Anulada', no_show: 'No vino' };
   var SHAPE = { bench: [2.1, 2.3], square: [4.4, 4.4], rect: [6.2, 4.4], long: [10, 4.4], bar: [8, 3.2], sofa: [7, 5], round: [5.4, 5.4] };
   var PLAN_RATIO = 1660 / 1175;
+
+  // Elementos fijos del local (barras, cocina, escaleras, aseos, columnas…) en gris claro, solo para situarse.
+  // Coordenadas en el mismo plano de referencia que las mesas (1660 × 1175).
+  var CTX_ALTA = [
+    { k: 'room', x0: 255, y0: 250, x1: 1500, y1: 740, l: 'Comedor', dash: 1 },
+    { k: 'room', x0: 740, y0: 250, x1: 1015, y1: 400, l: 'Cocina' },
+    { k: 'room', x0: 1045, y0: 455, x1: 1290, y1: 545, l: 'Barra', round: 1 },
+    { k: 'room', x0: 630, y0: 545, x1: 830, y1: 670, l: 'Aseos' },
+    { k: 'room', x0: 915, y0: 565, x1: 1100, y1: 640, l: 'Escalera', hatch: 1 },
+    { k: 'room', x0: 255, y0: 735, x1: 470, y1: 800, l: 'Office' },
+    { k: 'room', x0: 255, y0: 850, x1: 545, y1: 960, l: 'Almacén' },
+    { k: 'room', x0: 15, y0: 185, x1: 225, y1: 720, l: 'Terraza cubierta', dash: 1 },
+    { k: 'room', x0: 40, y0: 800, x1: 215, y1: 945, l: 'Sala privé', dash: 1 },
+    { k: 'col', x: 448, y: 488, s: 30 }, { k: 'col', x: 710, y: 488, s: 30 }, { k: 'col', x: 1030, y: 488, s: 30 }
+  ];
+  var CTX = {
+    baja: [
+      { k: 'room', x0: 300, y0: 60, x1: 1510, y1: 470, l: 'Comedor', dash: 1 },
+      { k: 'room', x0: 155, y0: 55, x1: 300, y1: 655, l: 'Cocina' },
+      { k: 'room', x0: 310, y0: 110, x1: 500, y1: 345, l: 'Barra', round: 1 },
+      { k: 'room', x0: 735, y0: 345, x1: 990, y1: 380, l: 'Barra público' },
+      { k: 'room', x0: 735, y0: 425, x1: 850, y1: 465, l: 'Barra' },
+      { k: 'room', x0: 1075, y0: 400, x1: 1255, y1: 470, l: 'Escalera', hatch: 1 },
+      { k: 'room', x0: 1350, y0: 140, x1: 1500, y1: 300, l: 'Acceso' },
+      { k: 'room', x0: 1360, y0: 330, x1: 1500, y1: 430, l: 'Salida emergencia' },
+      { k: 'room', x0: 1375, y0: 440, x1: 1500, y1: 570, l: 'Bollería' },
+      { k: 'room', x0: 465, y0: 440, x1: 590, y1: 620, l: 'Aseos' },
+      { k: 'room', x0: 790, y0: 480, x1: 980, y1: 830, l: 'Patio', hatch: 1 },
+      { k: 'col', x: 480, y: 340, s: 34 }, { k: 'col', x: 725, y: 335, s: 34 }, { k: 'col', x: 1000, y: 335, s: 34 }, { k: 'col', x: 1260, y: 335, s: 34 }
+    ],
+    alta: CTX_ALTA,
+    prive: CTX_ALTA.filter(function (c) { return c.l === 'Terraza cubierta' || c.l === 'Sala privé' || c.l === 'Office' || c.l === 'Almacén'; })
+  };
+
   var ZONE_NAME = { baja: 'Planta baja', alta: 'Planta alta', prive: 'Sala privé' };
 
   var S = { view: 'day', date: '', zone: 'baja', time: '', zones: [], tables: [], services: [], loadedCfg: false, bookings: [], blocks: [], closures: [], busy: false, join: false, sel: [], zoom: 1, px: 0, py: 0, justMoved: false, mode: 'timeline', joinTime: '', prescribers: [], notes: {}, waitlist: [], crm: [], crmQ: '', crmSort: 'last', crmType: '' };
@@ -195,7 +229,7 @@
 
     var zones = S.zones.filter(function (z) { return S.tables.some(function (t) { return t.zone_id === z.id; }); });
     // El plano se recorta a donde hay mesas (con un margen) para que se vean grandes.
-    var PW = 1660, PH = 1175, PAD = 45;
+    var PW = 1660, PH = 1175, PAD = (CTX[S.zone] || []).length ? 110 : 45;
     var zt = S.tables.filter(function (t) { return t.zone_id === S.zone && t.pos_x != null; });
     var boxes = zt.map(function (t) { var sz = SHAPE[t.shape] || SHAPE.square; return { t: t, cx: t.pos_x / 100 * PW, cy: t.pos_y / 100 * PH, w: sz[0] / 100 * PW, h: sz[1] / 100 * PW }; });
     var minx = Math.min.apply(null, boxes.map(function (b) { return b.cx - b.w / 2; })), maxx = Math.max.apply(null, boxes.map(function (b) { return b.cx + b.w / 2; }));
@@ -203,6 +237,10 @@
     if (!boxes.length) { minx = 0; maxx = PW; miny = 0; maxy = PH; }
     var bw = maxx - minx + 2 * PAD, bh = Math.max(maxy - miny + 2 * PAD, bw / 2.4), oy = miny - PAD - (bh - (maxy - miny + 2 * PAD)) / 2;
     var map = '<div class="mt-map-wrap"><div class="mt-viewport" style="aspect-ratio:' + (bw / bh).toFixed(3) + '"><div class="mt-zoom"><button type="button" data-zoom="1" aria-label="Acercar">+</button><button type="button" data-zoom="-1" aria-label="Alejar">−</button><button type="button" data-zoom="0" aria-label="Ver todo">⤢</button></div><div class="mt-map">' +
+      (CTX[S.zone] || []).map(function (c) {
+        if (c.k === 'col') { var cl = ((c.x - c.s / 2 - minx + PAD) / bw * 100).toFixed(2), ct = ((c.y - c.s / 2 - oy) / bh * 100).toFixed(2); return '<i class="mt-ctx is-col" style="left:' + cl + '%;top:' + ct + '%;width:' + (c.s / bw * 100).toFixed(2) + '%;height:' + (c.s / bh * 100).toFixed(2) + '%"></i>'; }
+        return '<div class="mt-ctx' + (c.dash ? ' is-dash' : '') + (c.hatch ? ' is-hatch' : '') + (c.round ? ' is-round' : '') + '" style="left:' + ((c.x0 - minx + PAD) / bw * 100).toFixed(2) + '%;top:' + ((c.y0 - oy) / bh * 100).toFixed(2) + '%;width:' + ((c.x1 - c.x0) / bw * 100).toFixed(2) + '%;height:' + ((c.y1 - c.y0) / bh * 100).toFixed(2) + '%"><span>' + esc(c.l) + '</span></div>';
+      }).join('') +
       boxes.map(function (b) {
         var t = b.t, o = occupancy(t, iso);
         var tip = t.name + ' · ' + t.seats_max + ' p.' + (o.booking ? ' · ' + o.booking.name + ' (' + o.booking.party + ')' : o.block ? ' · bloqueada' + (o.block.note ? ': ' + o.block.note : '') : '');
