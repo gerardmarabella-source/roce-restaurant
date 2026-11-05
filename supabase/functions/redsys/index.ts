@@ -443,22 +443,32 @@ async function handleTableRefund(req: Request, body: { token?: string; booking_i
 
 // Cobro de la penalización a la tarjeta guardada (solo el equipo, desde el panel: no se presentó o anuló tarde).
 // Operación iniciada por el comercio (MIT) con la referencia que devolvió Redsys al guardar la tarjeta.
-async function handleTableCharge(req: Request, body: { booking_id?: string; no_show?: boolean }): Promise<Response> {
+async function handleTableCharge(req: Request, body: { booking_id?: string; token?: string; no_show?: boolean }): Promise<Response> {
   const url = Deno.env.get("SUPABASE_URL")!;
-  const caller = createClient(url, Deno.env.get("SUPABASE_ANON_KEY")!, {
-    global: { headers: { Authorization: req.headers.get("Authorization") ?? "" } },
-    auth: { persistSession: false },
-  });
-  const { data: ok } = await caller.rpc("has_tab", { t: "tables" });
-  if (ok !== true) return json({ error: "forbidden" }, 403);
-  const { data: me } = await caller.auth.getUser();
-  const who = (me.user?.email ?? "").toLowerCase();
+  // Dos formas de llamarla: el equipo desde el panel ({booking_id}, p. ej. al pulsar "No vino"), o el propio cliente justo
+  // después de anular con poca antelación ({token}): solo funciona si la base de datos ya marcó la anulación como tardía.
+  let who = "cliente";
+  const staff = !!body.booking_id;
+  if (staff) {
+    const caller = createClient(url, Deno.env.get("SUPABASE_ANON_KEY")!, {
+      global: { headers: { Authorization: req.headers.get("Authorization") ?? "" } },
+      auth: { persistSession: false },
+    });
+    const { data: ok } = await caller.rpc("has_tab", { t: "tables" });
+    if (ok !== true) return json({ error: "forbidden" }, 403);
+    const { data: me } = await caller.auth.getUser();
+    who = (me.user?.email ?? "").toLowerCase();
+  } else if (!/^[a-f0-9]{32}$/.test(String(body.token ?? ""))) {
+    return json({ error: "not_found" }, 404);
+  }
 
   const cfg = config();
   if (!cfg.enabled) return json({ error: "disabled" }, 503);
   const sb = createClient(url, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
-  const { data: b } = await sb.from("table_bookings").select("id, ref, status, payment_status, deposit_cents, party, zone_id").eq("id", String(body.booking_id ?? "")).maybeSingle();
+  const q = sb.from("table_bookings").select("id, ref, status, payment_status, deposit_cents, party, zone_id, late_cancel");
+  const { data: b } = await (staff ? q.eq("id", String(body.booking_id)) : q.eq("token", String(body.token))).maybeSingle();
   if (!b) return json({ error: "not_found" }, 404);
+  if (!staff && !(b.status === "cancelled" && b.late_cancel === true)) return json({ error: "not_chargeable" }, 409);
   if (b.payment_status === "charged") return json({ error: "already_charged" }, 409);
   if (b.payment_status !== "guaranteed") return json({ error: "no_guarantee" }, 409);
   const { data: z } = await sb.from("dining_zones").select("deposit_cents, deposit_per_person").eq("id", b.zone_id).maybeSingle();

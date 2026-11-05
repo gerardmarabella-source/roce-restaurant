@@ -512,10 +512,10 @@ const TT = {
     rfSubject: "Fianza devuelta · ROCE", rfTitle: "Fianza devuelta", rfIntro: (m: string) => `Hemos devuelto la fianza de ${m} a tu tarjeta. Según tu banco puede tardar unos días en verse reflejada.`,
     privacy: "BRUNCH DINNER ETC. SL (ROCE) trata tus datos para gestionar tu reserva. Más información y tus derechos en https://roce.es/privacidad.html o escribiendo a reservas@roce.es.",
     guarantee: "Garantía", guaranteeVal: (m: string) => `${m} solo si no vienes`,
-    cardPayIntro: (m: string, until: string, h: number) => `Hemos guardado tu mesa. Para confirmarla, añade una tarjeta como garantía antes del ${until}. No se cobra nada ahora: solo si no vienes o anulas con menos de ${h} h de antelación cobraremos ${m}. Si no la añades, la mesa se liberará.`,
+    cardPayIntro: (m: string, until: string, h: number) => `Hemos guardado tu mesa. Para confirmarla, añade una tarjeta como garantía antes del ${until}. No se cobra nada ahora: solo si no vienes o anulas con menos de ${h} h de antelación se cobrarán ${m} automáticamente. Si no la añades, la mesa se liberará.`,
     cardPayBtn: "Añadir tarjeta (no se cobra nada)",
-    cardTxt: (m: string, h: number) => `No se ha cobrado nada. Si no te presentas o anulas con menos de ${h} h de antelación cobraremos ${m} a la tarjeta que has dado como garantía.`,
-    cxReleased: "No se ha cobrado nada y tu tarjeta ya no queda como garantía.", cxLate: (m: string) => `Como la anulación se hizo con poca antelación, cobraremos ${m} a la tarjeta que dejaste como garantía.`,
+    cardTxt: (m: string, h: number) => `No se ha cobrado nada. ATENCIÓN: si no te presentas o anulas con menos de ${h} h de antelación, se cobrarán ${m} automáticamente a la tarjeta que has dado como garantía.`,
+    cxReleased: "No se ha cobrado nada y tu tarjeta ya no queda como garantía.", cxLate: (m: string) => `Como la anulación se hizo con poca antelación, se cobrarán ${m} a la tarjeta que dejaste como garantía.`,
     chSubject: "Cobro por no presentación · ROCE", chTitle: "Penalización cobrada", chIntro: (m: string) => `Hemos cobrado ${m} a tu tarjeta por la no presentación o anulación tardía de tu reserva.`,
   },
   en: {
@@ -531,10 +531,10 @@ const TT = {
     rfSubject: "Deposit refunded · ROCE", rfTitle: "Deposit refunded", rfIntro: (m: string) => `We have refunded the ${m} deposit to your card. Depending on your bank it can take a few days to show up.`,
     privacy: "BRUNCH DINNER ETC. SL (ROCE) processes your data to manage your booking. More information and your rights at https://roce.es/privacidad.html or by writing to reservas@roce.es.",
     guarantee: "Guarantee", guaranteeVal: (m: string) => `${m} only if you do not show up`,
-    cardPayIntro: (m: string, until: string, h: number) => `We are holding your table. To confirm it, add a card as a guarantee before ${until}. Nothing is charged now: only if you don't show up or cancel less than ${h} h in advance will we charge ${m}. If you don't add it, the table will be released.`,
+    cardPayIntro: (m: string, until: string, h: number) => `We are holding your table. To confirm it, add a card as a guarantee before ${until}. Nothing is charged now: only if you don't show up or cancel less than ${h} h in advance will ${m} be charged automatically. If you don't add it, the table will be released.`,
     cardPayBtn: "Add card (nothing is charged)",
-    cardTxt: (m: string, h: number) => `Nothing has been charged. If you don't show up or cancel less than ${h} h in advance, we will charge ${m} to the card you gave as a guarantee.`,
-    cxReleased: "Nothing has been charged and your card is no longer held as a guarantee.", cxLate: (m: string) => `As the cancellation was made at short notice, we will charge ${m} to the card you left as a guarantee.`,
+    cardTxt: (m: string, h: number) => `Nothing has been charged. WARNING: if you don't show up or cancel less than ${h} h in advance, ${m} will be charged automatically to the card you gave as a guarantee.`,
+    cxReleased: "Nothing has been charged and your card is no longer held as a guarantee.", cxLate: (m: string) => `As the cancellation was made at short notice, ${m} will be charged to the card you left as a guarantee.`,
     chSubject: "No-show charge · ROCE", chTitle: "Fee charged", chIntro: (m: string) => `We have charged ${m} to your card for the no-show or late cancellation of your booking.`,
   },
 };
@@ -660,6 +660,15 @@ async function handleTableBooking(p: any): Promise<Response> {
     if (n.payment_status === "charged" && o.payment_status !== "charged") {
       await notifyTableStaff(n, "Penalización cobrada");
       return await sendTableEmail("charge", n);
+    }
+    // Anulada con poca antelación y tarjeta de garantía: se cobra la penalización sin esperar a nadie
+    // (la página de la reserva también lo pide; el candado de la función de pago evita cobrar dos veces).
+    if (n.status === "cancelled" && n.late_cancel === true && n.payment_status === "guaranteed" && o.late_cancel !== true) {
+      await fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/redsys`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}` },
+        body: JSON.stringify({ action: "table_charge", token: n.token }),
+      }).catch(() => {});
     }
     if (n.status === "cancelled" && o.status !== "cancelled" && ["confirmed", "pending"].includes(o.status)) {
       // Solo se avisa si ya se había confirmado o se había pagado algo: una pendiente que nunca se pagó no merece email.

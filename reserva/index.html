@@ -115,12 +115,12 @@
       ko: 'El pago no se ha completado. Puedes intentarlo otra vez mientras tu mesa siga guardada.', slow: 'El banco tarda en confirmar el pago. Te avisaremos por email en cuanto llegue.',
       day: 'Day', night: 'Night',
       guarantee: 'Garantía', g_value: '{m} solo si no vienes',
-      hint_card_pending: 'Para confirmar la reserva hay que dar los datos de una tarjeta como garantía. No se cobra nada ahora: solo si no te presentas o anulas con menos de {h} h de antelación cobraremos {m}.',
-      hint_card_ok: 'Tarjeta {b} ····{l} guardada como garantía. No se ha cobrado nada. Si no te presentas o anulas con menos de {h} h de antelación cobraremos {m}.',
-      hint_card_released: 'No se ha cobrado nada y tu tarjeta ya no queda como garantía.', hint_card_late: 'Como has anulado con menos de {h} h de antelación, cobraremos {m} a tu tarjeta.',
+      hint_card_pending: 'Para confirmar la reserva hay que dar los datos de una tarjeta como garantía. No se cobra nada ahora: solo si no te presentas o anulas con menos de {h} h de antelación se cobrarán {m} automáticamente.',
+      hint_card_ok: 'Tarjeta {b} ····{l} guardada como garantía. No se ha cobrado nada. Si no te presentas o anulas con menos de {h} h de antelación se cobrarán {m} automáticamente.',
+      hint_card_released: 'No se ha cobrado nada y tu tarjeta ya no queda como garantía.', hint_card_late: 'Como has anulado con menos de {h} h de antelación, se cobrarán {m} a tu tarjeta.',
       hint_card_charged: 'Se han cobrado {m} a tu tarjeta por la no presentación o la anulación tardía.',
       pay_card: 'Añadir tarjeta (no se cobra nada)',
-      sure_card_in: '¿Seguro que quieres anular? No se cobrará nada.', sure_card_late: '¿Seguro que quieres anular? Faltan menos de {h} h, así que cobraremos {m} a tu tarjeta.'
+      sure_card_in: '¿Seguro que quieres anular? No se cobrará nada.', sure_card_late: 'Atención: faltan menos de {h} h para tu reserva. Si anulas ahora se cobrarán {m} automáticamente a tu tarjeta. ¿Quieres anular igualmente?'
     },
     en: {
       loading: 'Loading your booking…', notfound: 'This link is not valid. Open the booking from the email we sent you.',
@@ -143,10 +143,10 @@
       guarantee: 'Guarantee', g_value: '{m} only if you do not show up',
       hint_card_pending: "To confirm the booking you need to give your card details as a guarantee. Nothing is charged now: only if you don't show up or cancel less than {h} h in advance will we charge {m}.",
       hint_card_ok: "{b} card ····{l} saved as a guarantee. Nothing has been charged. If you don't show up or cancel less than {h} h in advance we will charge {m}.",
-      hint_card_released: 'Nothing has been charged and your card is no longer held as a guarantee.', hint_card_late: 'Since you cancelled less than {h} h in advance, we will charge {m} to your card.',
+      hint_card_released: 'Nothing has been charged and your card is no longer held as a guarantee.', hint_card_late: 'Since you cancelled less than {h} h in advance, {m} will be charged to your card.',
       hint_card_charged: '{m} has been charged to your card for the no-show or late cancellation.',
       pay_card: 'Add card (nothing is charged)',
-      sure_card_in: 'Are you sure you want to cancel? Nothing will be charged.', sure_card_late: 'Are you sure? There are less than {h} h to go, so we will charge {m} to your card.'
+      sure_card_in: 'Are you sure you want to cancel? Nothing will be charged.', sure_card_late: 'Warning: there are less than {h} h to go. If you cancel now, {m} will be charged automatically to your card. Do you still want to cancel?'
     }
   };
   function lang() { return window.ROCE_I18N && window.ROCE_I18N.getLang ? window.ROCE_I18N.getLang() : 'es'; }
@@ -247,6 +247,8 @@
     rpc('table_booking_cancel', { p_token: token }).then(function (r) {
       if (!r || !r.ok) throw new Error('cancel');
       // Anulada a tiempo y con fianza cobrada: se pide la devolución al banco.
+      // Anulada tarde con tarjeta de garantía: se cobra la penalización automáticamente.
+      if (r.card && r.late) return fn({ action: 'table_charge', token: token }).catch(function () { return null; });
       return (r.refund_due ? fn({ action: 'table_refund', token: token }).catch(function () { return null; }) : null);
     }).then(function () { b.disabled = false; $('rvSure').hidden = true; return load(); })
       .catch(function () { b.disabled = false; $('rvErr').textContent = t('e_generic'); $('rvErr').hidden = false; });

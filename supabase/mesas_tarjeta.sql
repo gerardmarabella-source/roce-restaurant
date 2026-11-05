@@ -15,6 +15,8 @@ begin
     update public.dining_zones set payment_mode = case when deposit_cents > 0 then 'card' else 'none' end;
   end if;
 end $$;
+-- Anulación sin coste: la planta alta, hasta 12 h antes (solo si seguía con el valor de partida de 24 h).
+update public.dining_zones set free_cancel_hours = 12 where id = 'alta' and free_cancel_hours = 24;
 alter table public.dining_zones drop constraint if exists dining_zones_payment_mode_check;
 alter table public.dining_zones add constraint dining_zones_payment_mode_check check (payment_mode in ('none', 'deposit', 'card'));
 

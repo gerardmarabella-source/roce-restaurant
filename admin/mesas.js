@@ -356,7 +356,8 @@
     else if (act === 'done') patch(id, { status: 'completed' }).then(function () { return done(); }).catch(fail);
     else if (act === 'noshow') {
       if (b.payment_status === 'guaranteed') {
-        if (!confirm('Marcar como "no vino".\n\n¿Cobrar ahora ' + eur(b.deposit_cents) + ' a la tarjeta ' + (b.card_brand || '') + ' ····' + (b.card_last4 || '') + '?\n\nAceptar = se cobra. Cancelar = solo se marca como no vino (podrás cobrar después desde su ficha).')) return void patch(id, { status: 'no_show' }).then(function () { return done('Marcada como no vino. La tarjeta sigue guardada: puedes cobrar la penalización cuando quieras.'); }).catch(fail);
+        // "No vino" con tarjeta de garantía: se cobra la penalización automáticamente.
+        if (!confirm('Marcar como "no vino" y cobrar ' + eur(b.deposit_cents) + ' a la tarjeta ' + (b.card_brand || '') + ' ····' + (b.card_last4 || '') + ' automáticamente. ¿Continuar?')) return;
         return void chargeFee(b, t);
       }
       if (confirm('¿Marcar como "no vino"?' + (b.payment_status === 'paid' ? ' La fianza se queda retenida.' : ''))) patch(id, { status: 'no_show', payment_status: b.payment_status === 'paid' ? 'retained' : b.payment_status }).then(function () { return done(); }).catch(fail);
@@ -379,8 +380,8 @@
   function cancelBooking(b) {
     if (b.payment_status === 'guaranteed') {
       if (!confirm('¿Anular la reserva de ' + (b.name || 'esta reserva') + ' (' + b.party + ' p., ' + hm(b.starts_at) + ')?')) return;
-      var late = confirm('¿Se anula con poca antelación y quieres poder cobrar la penalización de ' + eur(b.deposit_cents) + '?\n\nAceptar = la tarjeta se mantiene para cobrarla (botón "Cobrar").\nCancelar = se anula sin coste y la tarjeta se libera.');
-      return void patch(b.id, { status: 'cancelled', cancelled_at: new Date().toISOString(), late_cancel: late }).then(function () { return done(late ? 'Anulada. Puedes cobrar la penalización desde su ficha.' : 'Reserva anulada. Tarjeta liberada: no se cobra nada.'); }).catch(fail);
+      var late = confirm('¿Se anula con poca antelación (menos de ' + (((S.zones.filter(function (z) { return z.id === b.zone_id; })[0]) || {}).free_cancel_hours || 12) + ' h)?\n\nAceptar = se cobran ' + eur(b.deposit_cents) + ' a la tarjeta automáticamente.\nCancelar = se anula sin coste y la tarjeta se libera.');
+      return void patch(b.id, { status: 'cancelled', cancelled_at: new Date().toISOString(), late_cancel: late }).then(function () { return late ? chargeFee(b, null) : done('Reserva anulada. Tarjeta liberada: no se cobra nada.'); }).catch(fail);
     }
     var paid = b.payment_status === 'paid' && b.deposit_cents > 0;
     if (!confirm('¿Anular la reserva de ' + b.name + ' (' + b.party + ' p., ' + hm(b.starts_at) + ')?' + (paid ? '\n\nPaga ' + eur(b.deposit_cents) + ' de fianza: a continuación te pregunto si se la devuelves.' : ''))) return;

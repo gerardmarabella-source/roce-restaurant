@@ -37,8 +37,8 @@
       e_network: 'No hemos podido completar la reserva. Inténtalo de nuevo.', e_pay: 'No hemos podido abrir el pago. Tu mesa queda retenida unos minutos: vuelve a pulsar el botón.',
       night_tag: 'Solo mayores de 18 años',
       card_h: 'Garantía con tarjeta', card_free: 'No se cobra nada ahora',
-      card_note: 'Para confirmar la reserva te pediremos los datos de una tarjeta como garantía. No se cobra nada ahora. Si no te presentas o anulas con menos de {h} h de antelación, cobraremos {m}.',
-      card_consent: 'Autorizo a ROCE a cobrar {m} a mi tarjeta si no me presento o anulo con menos de {h} h de antelación',
+      card_note: 'Para confirmar la reserva te pediremos los datos de una tarjeta como garantía. No se cobra nada ahora. Si no te presentas o anulas con menos de {h} h de antelación, se cobrarán {m} automáticamente a esa tarjeta.',
+      card_consent: 'Autorizo a ROCE a cobrar automáticamente {m} a mi tarjeta si no me presento o anulo con menos de {h} h de antelación',
       go_card: 'Continuar y dar la tarjeta', e_card: 'Debes autorizar la garantía con tarjeta.', day_notice: 'Aviso'
     },
     en: {
@@ -64,8 +64,8 @@
       e_network: "We couldn't complete the booking. Please try again.", e_pay: "We couldn't open the payment. Your table is held for a few minutes: press the button again.",
       night_tag: 'Over 18s only',
       card_h: 'Card guarantee', card_free: 'Nothing is charged now',
-      card_note: "To confirm the booking we will ask for your card details as a guarantee. Nothing is charged now. If you don't show up or cancel less than {h} h in advance, we will charge {m}.",
-      card_consent: "I authorise ROCE to charge {m} to my card if I don't show up or cancel less than {h} h in advance",
+      card_note: "To confirm the booking we will ask for your card details as a guarantee. Nothing is charged now. If you don't show up or cancel less than {h} h in advance, {m} will be charged automatically to that card.",
+      card_consent: "I authorise ROCE to automatically charge {m} to my card if I don't show up or cancel less than {h} h in advance",
       go_card: 'Continue and enter card', e_card: 'You must authorise the card guarantee.', day_notice: 'Notice'
     }
   };
