@@ -174,16 +174,19 @@
     var list = S.bookings.length ? S.bookings.map(function (b) {
       var tn = bookingTables(b).map(function (t) { return t.name; }).join(' + ');
       var cancelled = b.status === 'cancelled' || b.status === 'no_show';
-      var pay = b.deposit_cents > 0 ? '<span class="ad-tag ' + (b.payment_status === 'paid' ? 'is-green' : b.payment_status === 'refunded' || b.payment_status === 'retained' ? '' : 'is-red') + '">' + eur(b.deposit_cents) + ' · ' + ({ paid: 'pagada', pending: 'sin pagar', refunded: 'devuelta', retained: 'retenida' }[b.payment_status] || b.payment_status) + '</span>' : '';
+      var PSL = { paid: 'pagada', pending: 'sin pagar', refunded: 'devuelta', retained: 'retenida', guaranteed: 'tarjeta guardada', charging: 'cobrando…', charged: 'cobrada', released: 'tarjeta liberada' };
+      var pay = b.card_last4 && b.payment_status === 'guaranteed' ? '<span class="ad-tag is-green">Tarjeta ' + esc(b.card_brand || '') + ' ····' + esc(b.card_last4) + ' · garantía ' + eur(b.deposit_cents) + '</span>' :
+        b.deposit_cents > 0 && b.payment_status !== 'free' ? '<span class="ad-tag ' + (b.payment_status === 'paid' || b.payment_status === 'charged' ? 'is-green' : b.payment_status === 'pending' ? 'is-red' : '') + '">' + eur(b.deposit_cents) + ' · ' + (PSL[b.payment_status] || b.payment_status) + (b.late_cancel && b.payment_status === 'guaranteed' ? ' · anulada tarde' : '') + '</span>' : '';
       var a = [];
       if (b.status === 'confirmed' || b.status === 'pending') a.push('<button class="ad-btn is-small" data-act="seat" data-id="' + b.id + '">Sentar</button>');
       if (b.status === 'seated') a.push('<button class="ad-btn is-small" data-act="done" data-id="' + b.id + '">Terminada</button>');
       if (b.status === 'confirmed') a.push('<button class="ad-btn is-small is-ghost" data-act="noshow" data-id="' + b.id + '">No vino</button>');
       if (!cancelled && b.status !== 'completed') a.push('<button class="ad-btn is-small is-ghost" data-act="edit" data-id="' + b.id + '">Editar / ampliar</button>');
       if (!cancelled && b.status !== 'completed') a.push('<button class="ad-btn is-small is-danger" data-act="cancel" data-id="' + b.id + '">Anular</button>');
-      if ((b.payment_status === 'paid' || b.payment_status === 'retained') && b.deposit_cents > 0) a.push('<button class="ad-btn is-small is-ghost" data-act="refund" data-id="' + b.id + '">Devolver fianza</button>');
+      if (b.payment_status === 'guaranteed' && (b.status === 'no_show' || b.late_cancel || (b.status === 'confirmed' && new Date(b.starts_at).getTime() < Date.now()))) a.push('<button class="ad-btn is-small is-danger" data-act="charge" data-id="' + b.id + '">Cobrar ' + eur(b.deposit_cents) + ' a la tarjeta</button>');
+      if ((b.payment_status === 'paid' || b.payment_status === 'retained' || b.payment_status === 'charged') && b.deposit_cents > 0) a.push('<button class="ad-btn is-small is-ghost" data-act="refund" data-id="' + b.id + '">Devolver fianza</button>');
       return '<li class="ad-card mt-bk' + (cancelled ? ' is-past' : '') + '"><div class="ad-date"><b>' + hm(b.starts_at) + '</b><span>' + b.party + ' p.</span></div>' +
-        '<div><div class="ad-name">' + esc(b.name) + ' <span class="ad-tag ' + (b.status === 'seated' ? 'is-green' : b.status === 'cancelled' || b.status === 'no_show' ? 'is-red' : '') + '">' + esc(ST[b.status] || b.status) + '</span>' + pay + '</div>' +
+        '<div><div class="ad-name">' + (b.name ? esc(b.name) : '<i>Sin nombre</i>') + ' <span class="ad-tag ' + (b.status === 'seated' ? 'is-green' : b.status === 'cancelled' || b.status === 'no_show' ? 'is-red' : '') + '">' + esc(ST[b.status] || b.status) + '</span>' + pay + '</div>' +
         '<div class="ad-meta">' + esc(zoneName(b.zone_id)) + (tn ? ' · mesa ' + esc(tn) : '') + ' · ' + esc(b.ambience === 'night' ? 'Night' : 'Day') + (b.source === 'admin' ? ' · creada en el panel' : '') + '</div>' +
         '<div class="ad-meta">' + esc(b.phone) + (b.email ? ' · ' + esc(b.email) : '') + ' · ' + esc(b.ref) + '</div>' +
         (b.notes ? '<div class="ad-meta">“' + esc(b.notes) + '”</div>' : '') + '</div>' +
@@ -296,6 +299,14 @@
     return fetch(A.cfg.url + '/functions/v1/redsys', { method: 'POST', headers: { 'Content-Type': 'application/json', apikey: A.cfg.anonKey, Authorization: 'Bearer ' + s.access_token }, body: JSON.stringify({ action: 'table_refund', booking_id: id, manual: !!manual }) })
       .then(function (r) { return r.json().catch(function () { return {}; }).then(function (d) { if (!r.ok) { var e = new Error(d.detail || d.error || ('Error ' + r.status)); throw e; } return d; }); });
   }
+  function chargeFee(b, btn) {
+    var s = A.session();
+    if (btn) btn.disabled = true;
+    return fetch(A.cfg.url + '/functions/v1/redsys', { method: 'POST', headers: { 'Content-Type': 'application/json', apikey: A.cfg.anonKey, Authorization: 'Bearer ' + s.access_token }, body: JSON.stringify({ action: 'table_charge', booking_id: b.id, no_show: true }) })
+      .then(function (r) { return r.json().catch(function () { return {}; }).then(function (d) { if (!r.ok) throw new Error((d.detail || d.error || ('Error ' + r.status)) + (d.code ? ' (código ' + d.code + ')' : '')); return d; }); })
+      .then(function () { return done('Cobrados ' + eur(b.deposit_cents) + ' a la tarjeta.'); })
+      .catch(function (x) { if (btn) btn.disabled = false; flash('No se ha podido cobrar: ' + x.message, 'error'); return loadDay().then(render); });
+  }
   function done(msg) { return loadDay().then(function () { render(); if (msg) flash(msg, 'ok'); }); }
 
   root.addEventListener('click', function (e) {
@@ -343,7 +354,17 @@
     }
     else if (act === 'edit') openEdit(b);
     else if (act === 'done') patch(id, { status: 'completed' }).then(function () { return done(); }).catch(fail);
-    else if (act === 'noshow') { if (confirm('¿Marcar como "no vino"?' + (b.payment_status === 'paid' ? ' La fianza se queda retenida.' : ''))) patch(id, { status: 'no_show', payment_status: b.payment_status === 'paid' ? 'retained' : b.payment_status }).then(function () { return done(); }).catch(fail); }
+    else if (act === 'noshow') {
+      if (b.payment_status === 'guaranteed') {
+        if (!confirm('Marcar como "no vino".\n\n¿Cobrar ahora ' + eur(b.deposit_cents) + ' a la tarjeta ' + (b.card_brand || '') + ' ····' + (b.card_last4 || '') + '?\n\nAceptar = se cobra. Cancelar = solo se marca como no vino (podrás cobrar después desde su ficha).')) return void patch(id, { status: 'no_show' }).then(function () { return done('Marcada como no vino. La tarjeta sigue guardada: puedes cobrar la penalización cuando quieras.'); }).catch(fail);
+        return void chargeFee(b, t);
+      }
+      if (confirm('¿Marcar como "no vino"?' + (b.payment_status === 'paid' ? ' La fianza se queda retenida.' : ''))) patch(id, { status: 'no_show', payment_status: b.payment_status === 'paid' ? 'retained' : b.payment_status }).then(function () { return done(); }).catch(fail);
+    }
+    else if (act === 'charge') {
+      if (!confirm('¿Cobrar ' + eur(b.deposit_cents) + ' a la tarjeta ' + (b.card_brand || '') + ' ····' + (b.card_last4 || '') + ' de ' + (b.name || 'esta reserva') + '? Es un cobro real.')) return;
+      chargeFee(b, t);
+    }
     else if (act === 'cancel') cancelBooking(b);
     else if (act === 'refund') {
       if (!confirm('¿Devolver la fianza de ' + eur(b.deposit_cents) + ' a ' + b.name + '? Se devuelve a su tarjeta por Redsys.')) return;
@@ -356,6 +377,11 @@
   });
   function fail(e) { flash(errText(e), 'error'); }
   function cancelBooking(b) {
+    if (b.payment_status === 'guaranteed') {
+      if (!confirm('¿Anular la reserva de ' + (b.name || 'esta reserva') + ' (' + b.party + ' p., ' + hm(b.starts_at) + ')?')) return;
+      var late = confirm('¿Se anula con poca antelación y quieres poder cobrar la penalización de ' + eur(b.deposit_cents) + '?\n\nAceptar = la tarjeta se mantiene para cobrarla (botón "Cobrar").\nCancelar = se anula sin coste y la tarjeta se libera.');
+      return void patch(b.id, { status: 'cancelled', cancelled_at: new Date().toISOString(), late_cancel: late }).then(function () { return done(late ? 'Anulada. Puedes cobrar la penalización desde su ficha.' : 'Reserva anulada. Tarjeta liberada: no se cobra nada.'); }).catch(fail);
+    }
     var paid = b.payment_status === 'paid' && b.deposit_cents > 0;
     if (!confirm('¿Anular la reserva de ' + b.name + ' (' + b.party + ' p., ' + hm(b.starts_at) + ')?' + (paid ? '\n\nPaga ' + eur(b.deposit_cents) + ' de fianza: a continuación te pregunto si se la devuelves.' : ''))) return;
     if (!paid) return void patch(b.id, { status: 'cancelled', cancelled_at: new Date().toISOString() }).then(function () { return done('Reserva anulada.'); }).catch(fail);
@@ -391,15 +417,15 @@
       '<label class="ad-field"><span>Día</span><input type="date" id="nwDate" value="' + S.date + '" required></label>' +
       '<label class="ad-field"><span>Hora</span><input type="time" id="nwTime" step="300" value="' + esc(pre.time || S.time || optsT[0] || '13:00') + '" required></label>' +
       '<label class="ad-field"><span>Personas</span><input type="number" id="nwParty" min="1" max="60" value="' + (pre.tables && pre.tables.length > 1 ? pre.tables.reduce(function (n, t) { return n + t.seats_max; }, 0) : pre.table ? Math.min(pre.table.seats_max, 2) : 2) + '" required></label>' +
-      '<label class="ad-field"><span>Zona</span><select id="nwZone">' + S.zones.map(function (z) { return '<option value="' + z.id + '"' + (z.id === zone ? ' selected' : '') + '>' + esc(z.name_es) + (z.deposit_cents ? ' · fianza ' + eur(z.deposit_cents) : '') + '</option>'; }).join('') + '</select></label>' +
+      '<label class="ad-field"><span>Zona</span><select id="nwZone">' + S.zones.map(function (z) { return '<option value="' + z.id + '"' + (z.id === zone ? ' selected' : '') + '>' + esc(z.name_es) + (z.deposit_cents && z.payment_mode !== 'none' ? (z.payment_mode === 'card' ? ' · garantía ' : ' · fianza ') + eur(z.deposit_cents) : '') + '</option>'; }).join('') + '</select></label>' +
       '<label class="ad-field"><span>Turno</span><select id="nwSvc">' + svc.map(function (s) { return '<option value="' + s.id + '">' + esc(s.name_es) + '</option>'; }).join('') + '</select></label>' +
-      '<label class="ad-field"><span>Nombre</span><input type="text" id="nwName" required maxlength="80"></label>' +
+      '<label class="ad-field"><span>Nombre (opcional)</span><input type="text" id="nwName" maxlength="80" placeholder="Sin nombre"></label>' +
       '<label class="ad-field"><span>Teléfono</span><input type="tel" id="nwPhone"></label>' +
       '<label class="ad-field"><span>Email</span><input type="email" id="nwEmail" placeholder="para enviarle la confirmación"></label>' +
       '<label class="ad-field full"><span>Notas</span><textarea id="nwNotes" maxlength="500" placeholder="Alergias, ocasión…"></textarea></label></div>' +
       '<div class="ad-field"><span>Mesas</span><label class="mt-pick"><input type="radio" name="nwAuto" value="auto" checked> Asignar automáticamente</label>' +
       '<label class="mt-pick"><input type="radio" name="nwAuto" value="manual"' + (pre.table ? ' checked' : '') + '> Elegir mesas</label><div class="mt-picks" id="nwPicks"></div></div>' +
-      '<label class="mt-check" id="nwPayRow"><input type="checkbox" id="nwPay" checked> Pedir fianza por email (enlace para pagar con tarjeta; la mesa se guarda 24 h)</label>' +
+      '<label class="mt-check" id="nwPayRow"><input type="checkbox" id="nwPay" checked> <span id="nwPayTxt">Pedir fianza por email (enlace para pagar con tarjeta; la mesa se guarda 24 h)</span></label>' +
       '<label class="mt-check"><input type="checkbox" id="nwSeated"> Sentar ahora (cliente que ya está aquí)</label>' +
       '<div class="mt-foot"><button type="button" class="ad-btn is-ghost" data-close>Cancelar</button><button type="submit" class="ad-btn" id="nwGo">Crear reserva</button></div></form>';
     modal(html, function (m) {
@@ -409,7 +435,7 @@
         var s = svc.filter(function (x) { return x.ambience === want; })[0] || svc[0]; if (s) q('nwSvc').value = s.id;
       }
       function pickZoneFromSvc() { /* la zona se elige a mano */ }
-      function depRow() { var z = S.zones.filter(function (x) { return x.id === q('nwZone').value; })[0]; q('nwPayRow').hidden = !(z && z.deposit_cents > 0); }
+      function depRow() { var z = S.zones.filter(function (x) { return x.id === q('nwZone').value; })[0]; q('nwPayRow').hidden = !(z && z.deposit_cents > 0 && z.payment_mode !== 'none'); q('nwPayTxt').textContent = z && z.payment_mode === 'card' ? 'Pedir tarjeta de garantía por email (enlace para dar la tarjeta; no se cobra nada; la mesa se guarda 24 h)' : 'Pedir fianza por email (enlace para pagar con tarjeta; la mesa se guarda 24 h)'; }
       function refreshPicks() {
         var auto = m.querySelector('input[name="nwAuto"]:checked').value === 'auto';
         q('nwPicks').hidden = auto; if (auto) return;
@@ -433,7 +459,7 @@
         var msg = q('nwMsg'); msg.hidden = true;
         if (manual && !tables.length) { msg.textContent = 'Elige al menos una mesa o deja la asignación automática.'; msg.hidden = false; return; }
         var wantPay = !q('nwPayRow').hidden && q('nwPay').checked;
-        if (wantPay && !q('nwEmail').value.trim()) { msg.textContent = 'Para pedir la fianza hace falta el email del cliente.'; msg.hidden = false; return; }
+        if (wantPay && !q('nwEmail').value.trim()) { msg.textContent = 'Para pedir la tarjeta o la fianza hace falta el email del cliente.'; msg.hidden = false; return; }
         q('nwGo').disabled = true;
         api('rpc/dining_admin_create', { method: 'POST', body: {
           p_service: q('nwSvc').value, p_starts: at(q('nwDate').value, q('nwTime').value), p_zone: q('nwZone').value, p_party: +q('nwParty').value,
@@ -441,7 +467,7 @@
           p_tables: tables, p_seated: q('nwSeated').checked, p_request_payment: wantPay, p_hold_hours: 24
         } }).then(function (r) {
           m.remove(); S.date = q('nwDate').value; S.time = '';
-          var word = r.status === 'pending' ? 'Reserva creada. Hemos enviado un email a ' + q('nwEmail').value.trim() + ' para que pague la fianza de ' + eur(r.deposit_cents) + ' y la confirme.' :
+          var word = r.status === 'pending' ? 'Reserva creada. Hemos enviado un email a ' + q('nwEmail').value.trim() + ' para que confirme la reserva con su tarjeta (' + eur(r.deposit_cents) + ').' :
             q('nwEmail').value.trim() ? 'Reserva creada y confirmación enviada por email.' : 'Reserva creada.';
           enter().then(function () { flash(word, 'ok'); });
         }).catch(function (x) { q('nwGo').disabled = false; msg.textContent = errText(x); msg.hidden = false; });
@@ -585,9 +611,10 @@
     var zones = S.zones.map(function (z) {
       return '<li class="ad-card mt-cfg" data-zone-row="' + z.id + '"><div class="ad-grid">' +
         '<label class="ad-field"><span>Nombre</span><input data-f="name_es" value="' + esc(z.name_es) + '"></label>' +
-        '<label class="ad-field"><span>Fianza (€)</span><input data-f="deposit" type="number" min="0" step="0.5" value="' + z.deposit_cents / 100 + '"></label>' +
-        '<label class="ad-field"><span>Se devuelve si anula con (h)</span><input data-f="free_cancel_hours" type="number" min="0" value="' + z.free_cancel_hours + '"></label>' +
-        '<label class="mt-check"><input data-f="deposit_per_person" type="checkbox"' + (z.deposit_per_person ? ' checked' : '') + '> Fianza por persona</label>' +
+        '<label class="ad-field"><span>Cómo se garantiza</span><select data-f="payment_mode"><option value="none"' + (z.payment_mode === 'none' ? ' selected' : '') + '>Sin pago</option><option value="card"' + (z.payment_mode === 'card' ? ' selected' : '') + '>Tarjeta de garantía (no se cobra, solo si no viene)</option><option value="deposit"' + (z.payment_mode === 'deposit' ? ' selected' : '') + '>Fianza cobrada al reservar</option></select></label>' +
+        '<label class="ad-field"><span>Importe (€)</span><input data-f="deposit" type="number" min="0" step="0.5" value="' + z.deposit_cents / 100 + '"></label>' +
+        '<label class="ad-field"><span>Sin coste si anula con (h) de antelación</span><input data-f="free_cancel_hours" type="number" min="0" value="' + z.free_cancel_hours + '"></label>' +
+        '<label class="mt-check"><input data-f="deposit_per_person" type="checkbox"' + (z.deposit_per_person ? ' checked' : '') + '> Importe por persona</label>' +
         '<label class="mt-check"><input data-f="active" type="checkbox"' + (z.active ? ' checked' : '') + '> Visible en la web</label></div></li>';
     }).join('');
     var services = S.services.map(function (s) {
@@ -611,14 +638,17 @@
             '<td><input data-f="combine_group" value="' + esc(t.combine_group) + '" placeholder="vacío = no se une"></td><td><input data-f="active" type="checkbox"' + (t.active ? ' checked' : '') + '></td><td><button class="ad-btn is-small is-danger" data-deltable="' + t.id + '">Borrar</button></td></tr>';
         }).join('') + '</tbody></table></div><button class="ad-btn is-small is-ghost" data-addtable="' + z.id + '" style="margin-top:0.5rem">+ Añadir mesa a ' + esc(z.name_es) + '</button>';
     }).join('');
-    var closures = '<ul class="ad-list">' + (S.closures.length ? S.closures.map(function (c) {
-      return '<li class="ad-card"><div><div class="ad-name">' + esc(c.date_from === c.date_to ? c.date_from : c.date_from + ' → ' + c.date_to) + '</div><div class="ad-meta">' + esc(c.service_id ? (S.services.filter(function (s) { return s.id === c.service_id; })[0] || {}).name_es || c.service_id : 'Todos los turnos') + ' · ' + esc(c.zone_id ? zoneName(c.zone_id) : 'Todas las zonas') + (c.note ? ' · ' + esc(c.note) : '') + '</div></div><div class="ad-actions"><button class="ad-btn is-small is-danger" data-delclosure="' + c.id + '">Quitar</button></div></li>';
+    var closures = '<p class="ad-meta" style="margin-bottom:0.7rem">Un cierre apaga las reservas de la <b>web</b> para esos días (o solo unas horas); desde aquí seguís pudiendo reservar a mano. Ejemplos: Fallas (todos los días, sin horas) o Nochebuena (solo por la tarde).</p><ul class="ad-list">' + (S.closures.length ? S.closures.map(function (c) {
+      var hours = c.start_min == null && c.end_min == null ? 'todo el día' : mm(c.start_min || 0) + '–' + mm(c.end_min || 1440);
+      return '<li class="ad-card"><div><div class="ad-name">' + esc(c.date_from === c.date_to ? c.date_from : c.date_from + ' → ' + c.date_to) + ' · ' + esc(hours) + '</div><div class="ad-meta">' + esc(c.service_id ? (S.services.filter(function (s) { return s.id === c.service_id; })[0] || {}).name_es || c.service_id : 'Todos los turnos') + ' · ' + esc(c.zone_id ? zoneName(c.zone_id) : 'Todas las zonas') + (c.note ? ' · ' + esc(c.note) : '') + '</div>' + (c.message_es ? '<div class="ad-meta">Aviso en la web: “' + esc(c.message_es) + '”</div>' : '') + '</div><div class="ad-actions"><button class="ad-btn is-small is-danger" data-delclosure="' + c.id + '">Quitar</button></div></li>';
     }).join('') : '<li class="ad-empty">Sin cierres programados.</li>') + '</ul>' +
-      '<form class="ad-sheet-inline" id="clForm"><div class="ad-grid">' +
-      '<label class="ad-field"><span>Desde</span><input type="date" id="clFrom" required></label><label class="ad-field"><span>Hasta</span><input type="date" id="clTo" required></label>' +
+      '<form class="ad-sheet-inline" id="clForm"><h3 class="mt-h3">Nuevo cierre de la web</h3><div class="ad-grid">' +
+      '<label class="ad-field"><span>Desde el día</span><input type="date" id="clFrom" required></label><label class="ad-field"><span>Hasta el día (incluido)</span><input type="date" id="clTo" required></label>' +
+      '<label class="ad-field"><span>Desde las (opcional)</span><input type="time" id="clT0"></label><label class="ad-field"><span>Hasta las (opcional)</span><input type="time" id="clT1"></label>' +
       '<label class="ad-field"><span>Turno</span><select id="clSvc"><option value="">Todos</option>' + S.services.map(function (s) { return '<option value="' + s.id + '">' + esc(s.name_es) + '</option>'; }).join('') + '</select></label>' +
       '<label class="ad-field"><span>Zona</span><select id="clZone"><option value="">Todas</option>' + S.zones.map(function (z) { return '<option value="' + z.id + '">' + esc(z.name_es) + '</option>'; }).join('') + '</select></label>' +
-      '<label class="ad-field full"><span>Motivo</span><input id="clNote" maxlength="120" placeholder="p. ej. Festivo, cerrado por vacaciones"></label></div><button class="ad-btn" type="submit">Cerrar esos días</button></form>';
+      '<label class="ad-field full"><span>Aviso para el público (opcional)</span><input id="clMsg" maxlength="200" placeholder="p. ej. Por Fallas las reservas son solo por WhatsApp: 614 07 31 63"></label>' +
+      '<label class="ad-field full"><span>Motivo interno (opcional)</span><input id="clNote" maxlength="120" placeholder="p. ej. Fallas"></label></div><button class="ad-btn" type="submit">Cerrar la web esos días</button></form>';
     body.innerHTML = '<p class="ad-meta" style="margin-bottom:1rem">Los cambios se guardan al momento. Afectan solo a reservas nuevas.</p>' +
       '<h2 class="ad-sub">Zonas y fianzas</h2><ul class="ad-list">' + zones + '</ul>' +
       '<h2 class="ad-sub" style="margin-top:1.75rem">Turnos y horarios</h2><ul class="ad-list">' + services + '</ul>' +
@@ -627,9 +657,17 @@
     var cf = document.getElementById('clForm');
     if (cf) cf.addEventListener('submit', function (e) {
       e.preventDefault();
-      api('dining_closures', { method: 'POST', body: { date_from: document.getElementById('clFrom').value, date_to: document.getElementById('clTo').value, service_id: document.getElementById('clSvc').value || null, zone_id: document.getElementById('clZone').value || null, note: document.getElementById('clNote').value.trim() }, prefer: 'return=minimal' })
+      api('dining_closures', { method: 'POST', body: closureBody(), prefer: 'return=minimal' })
         .then(function () { flash('Cierre añadido.', 'ok'); return enter(); }).catch(fail);
     });
+  }
+  function closureBody() {
+    var v = function (id) { return document.getElementById(id).value; };
+    var t0 = v('clT0'), t1 = v('clT1');
+    var m0 = t0 ? toMin(t0) : null, m1 = t1 ? toMin(t1, m0 || 0) : null;
+    if (m0 != null && m1 == null) m1 = 2880;
+    if (m1 != null && m0 == null) m0 = 0;
+    return { date_from: v('clFrom'), date_to: v('clTo'), service_id: v('clSvc') || null, zone_id: v('clZone') || null, start_min: m0, end_min: m1, message_es: v('clMsg').trim(), note: v('clNote').trim() };
   }
   function saved() { flash('Guardado.', 'ok'); }
   root.addEventListener('change', function (e) {
