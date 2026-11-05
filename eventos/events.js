@@ -123,6 +123,13 @@
       return lang === 'en' ? (first ? 'First floor' : 'Ground floor') : (first ? 'Primera planta' : 'Planta baja');
     },
 
+    // 'baja' | 'alta' según la planta del evento (si no se indica, los de noche van arriba).
+    floorKey: function (e) {
+      var raw = (e.place && (e.place.es || e.place.en)) || '';
+      if (!raw) return e.env === 'night' ? 'alta' : 'baja';
+      return /primera|first|alta|upper/i.test(raw) ? 'alta' : 'baja';
+    },
+
     // Inicio y fin del evento (ms).
     bounds: function (e) {
       var s = Date.parse(e.starts_at);

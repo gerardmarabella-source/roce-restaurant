@@ -20,8 +20,8 @@
     '@media (max-width:420px){.age-actions{grid-template-columns:1fr}}';
   var BADGE = '<svg class="age-badge-lg" viewBox="0 0 100 100" role="img" aria-label="+18"><circle cx="50" cy="50" r="44" fill="#ffffff" stroke="#e5453a" stroke-width="9"/><text x="44" y="65" text-anchor="middle" font-family="\'Helvetica Neue Web\',\'Helvetica Neue\',Arial,sans-serif" font-weight="700" font-size="46" letter-spacing="-3" fill="#0a0a0a">18</text><text x="77" y="52" text-anchor="middle" font-family="\'Helvetica Neue Web\',\'Helvetica Neue\',Arial,sans-serif" font-weight="700" font-size="30" fill="#0a0a0a">+</text></svg>';
   var FALLBACK = {
-    es: { age_title: 'Estás entrando en un espacio +18', age_text: 'Las reservas de noche son para mayores de 18 años. ¿Tienes 18 años o más?', age_yes: 'Sí, tengo 18 o más', age_no: 'No, ir a Day' },
-    en: { age_title: "You're entering an 18+ space", age_text: 'Evening bookings are for guests aged 18 and over. Are you 18 or older?', age_yes: "Yes, I'm 18 or older", age_no: 'No, take me to Day' }
+    es: { age_title: 'Estás entrando en un espacio +18', age_text: 'Las reservas de noche son para mayores de 18 años. ¿Tienes 18 años o más?', age_yes: 'Sí, tengo 18 o más', age_no: 'No, ir a Coffee, Bakery & Kitchen' },
+    en: { age_title: "You're entering an 18+ space", age_text: 'Evening bookings are for guests aged 18 and over. Are you 18 or older?', age_yes: "Yes, I'm 18 or older", age_no: 'No, take me to Coffee, Bakery & Kitchen' }
   };
 
   function confirmed() { try { return sessionStorage.getItem(KEY) === '1'; } catch (e) { return false; } }

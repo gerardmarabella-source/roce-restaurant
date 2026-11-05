@@ -4,5 +4,6 @@ Disallow: /privacidad.html
 Disallow: /cookies.html
 Disallow: /aviso-legal.html
 Disallow: /terminos.html
+Disallow: /reservas-cover/
 
 Sitemap: https://roce.es/sitemap.xml

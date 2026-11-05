@@ -11,7 +11,7 @@
 <link rel="icon" type="image/png" href="/assets/meta/favicon-32.png" sizes="32x32">
 <link rel="apple-touch-icon" href="/assets/meta/apple-touch-icon.png">
 <script src="/eventos/config.js?v=2"></script>
-<script src="/eventos/events.js?v=12"></script>
+<script src="/eventos/events.js?v=13"></script>
 <script>
   // El color de la página es el del ambiente del evento: Day claro, Night
   // oscuro. Hasta saber de qué evento se trata la página va oculta.
@@ -238,14 +238,14 @@
 </footer>
 
 <div class="cookie-banner" id="cookieBanner">
-  <p class="cookie-text"><span data-i18n="cookie_text">Usamos una cookie técnica propia para recordar tu elección. Si aceptas, también activamos el Píxel de Meta (Facebook e Instagram) y Google Tag Manager para medir y mejorar nuestra publicidad y nuestra web. El sistema de reservas es de un tercero (CoverManager) y puede usar las suyas.</span> <a href="/cookies.html" data-i18n="cookie_more_info">Más información</a>.</p>
+  <p class="cookie-text"><span data-i18n="cookie_text">Usamos una cookie técnica propia para recordar tu elección. Si aceptas, también activamos el Píxel de Meta (Facebook e Instagram) y Google Tag Manager para medir y mejorar nuestra publicidad y nuestra web. Al reservar o pagar, los servicios de pago (Redsys) y de reservas de terceros (CoverManager) pueden usar las suyas.</span> <a href="/cookies.html" data-i18n="cookie_more_info">Más información</a>.</p>
   <div class="cookie-actions">
     <button class="cookie-reject" id="cookieReject" data-i18n="cookie_reject">Rechazar</button>
     <button class="cookie-accept" id="cookieAccept" data-i18n="cookie_accept">Aceptar</button>
   </div>
 </div>
 <script src="/cookies.js?v=4"></script>
-<script src="/i18n.js?v=97"></script>
+<script src="/i18n.js?v=102"></script>
 <script src="/assets/js/qrcode.js?v=1"></script>
 <script>
   window.ROCE_EVENTS_READY.then(function () {
@@ -314,7 +314,7 @@
         botcheck: '',
         referencia: order.ref,
         evento: ev.title.es,
-        ambiente: ev.env === 'night' ? 'Night (+18)' : 'Day',
+        ambiente: ev.env === 'night' ? 'Noche (+18)' : 'Día',
         fecha: ev.date + ' ' + ev.time,
         lugar: ev.place.es,
         entradas: order.qty,
@@ -360,7 +360,7 @@
 
     // ─── Pintado ────────────────────────────────────────────────────────
     function paintEvent() {
-      $('tkEnv').innerHTML = ev.env === 'night' ? 'Night ' + AGE : 'Day';
+      $('tkEnv').innerHTML = ev.env === 'night' ? t('ev_night') + ' ' + AGE : t('ev_day');
       $('tkTitle').textContent = ev.title[lang()];
       if (ev.image) { $('tkPoster').querySelector('img').src = ev.image; $('tkPoster').hidden = false; }
       $('tkWhen').textContent = whenText();
@@ -519,7 +519,7 @@
       var ics = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//ROCE//Eventos//ES', 'BEGIN:VEVENT',
         'UID:' + state.order.ref + '@roce.es', 'DTSTAMP:' + new Date().toISOString().replace(/[-:]|\.\d{3}/g, ''),
         'DTSTART;TZID=Europe/Madrid:' + fmtLocal(start), 'DTEND;TZID=Europe/Madrid:' + fmtLocal(end),
-        'SUMMARY:' + ev.title[lang()] + ' (' + (ev.env === 'night' ? 'Night' : 'Day') + ')',
+        'SUMMARY:' + ev.title[lang()] + ' (' + (ev.env === 'night' ? (lang() === 'en' ? 'Night' : 'Noche') : (lang() === 'en' ? 'Day' : 'Día')) + ')',
         'LOCATION:ROCE\\, Marqués del Túria 16\\, Valencia', 'DESCRIPTION:Ref. ' + state.order.ref, 'END:VEVENT', 'END:VCALENDAR'].join('\r\n');
       var a = document.createElement('a');
       a.href = URL.createObjectURL(new Blob([ics], { type: 'text/calendar;charset=utf-8' }));

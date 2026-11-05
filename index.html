@@ -152,7 +152,7 @@
     --live-n: 0;
     --live-h: clamp(2.6rem, calc(var(--avail) * 0.075), 3.6rem);
     --live-x: calc(var(--live-n) * (var(--live-h) + var(--gap)));
-    --sh: min(calc(var(--sw) * 0.62), calc((var(--avail) - var(--live-x)) * 0.215));
+    --sh: min(calc(var(--sw) * 0.55), calc((var(--avail) - var(--live-x)) * 0.19));
     flex: 1;
     min-height: 0;
     display: flex;
@@ -165,22 +165,22 @@
   .home-statement {
     font-family: var(--display);
     font-weight: 400; /* Helvetica Neue tal cual (Regular de marca) */
-    font-size: min(19vw, 14rem, calc((var(--avail) - 2 * var(--sh) - var(--gap) - 1.25rem - var(--live-x)) / 3.9));
+    font-size: min(19vw, 14rem, calc((var(--avail) - 2 * var(--sh) - var(--gap) - 1.25rem - var(--live-x)) / 4.75));
     width: 100%;
-    margin-inline: auto; /* centrada cuando la altura limita el tamaño */
+    margin-inline: 0; /* pegada a la izquierda, a la altura de los cuadrados */
     max-width: 5.2em; /* el escalonado se mide en la letra, no en la pantalla: las palabras no se alejan en tablet */
     line-height: 0.84;
     letter-spacing: -0.02em;
     text-transform: uppercase;
   }
   .home-statement .line { display: block; }
-  .home-statement .l1, .home-statement .l3 { text-align: left; }
+  .home-statement .line { text-align: left; }
+  .home-statement .l3 > span { display: block; }
   /* La última palabra es el logo de ROCE: casi el ancho de la palabra que sustituye, pegado a la derecha. */
   /* margin-top: el hueco visible (0,055 em bajo la línea base + 0,054 em) iguala al de las demás líneas (0,109 em). */
-  .home-logo { display: block; margin: 0.054em 0 0 auto; height: 1.02em; width: auto; }
+  .home-logo { display: block; margin: 0.054em 0 0 0; height: 1.02em; width: auto; }
   html[data-mode="night"] .home-logo-black, html:not([data-mode="night"]) .home-logo-white { display: none; }
   .visually-hidden { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
-  .home-statement .l2, .home-statement .l4 { text-align: right; }
 
   .home-squares { display: grid; grid-template-columns: var(--sw); justify-content: center; gap: var(--gap); }
   .home-square {
@@ -211,6 +211,9 @@
     letter-spacing: 0.01em;
     text-transform: uppercase;
   }
+  /* Nombres largos de los dos espacios: dos líneas, más pequeños que la palabra sola. */
+  .home-square strong.home-name { font-weight: 700; font-size: clamp(0.72rem, min(9.6cqw, calc(var(--sh) * 0.15)), 2.5rem); line-height: 1.02; }
+  .home-name span { display: block; }
   .home-square small { display: block; margin-top: 0.35rem; font-family: var(--display); font-size: clamp(0.6rem, min(6.2cqw, calc(var(--sh) * 0.085)), 1.25rem); opacity: 0.75; }
   .home-square-arrow { font-family: var(--display); font-size: clamp(1rem, min(13cqw, calc(var(--sh) * 0.17)), 3.4rem); line-height: 1; flex-shrink: 0; }
 
@@ -273,12 +276,12 @@
   .home-live-day { background: var(--white); color: var(--black); border: 2px solid var(--black); }
   .home-live-night { background: var(--black); color: var(--white); border: 2px solid var(--black); }
   html[data-mode="night"] .home-live-night { border-color: var(--white); }
-  .home-live .home-now { display: flex; flex-shrink: 0; }
-  .home-live-title { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: var(--display); text-transform: uppercase; letter-spacing: 0.01em; font-size: clamp(0.85rem, min(5.2cqw, calc(var(--live-h) * 0.4)), 1.5rem); }
+  .home-live-floor { flex-shrink: 0; font-family: var(--display); font-size: clamp(0.5rem, min(3cqw, calc(var(--live-h) * 0.2)), 0.8rem); letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.6; padding-right: 0.7rem; border-right: 1px solid currentColor; line-height: 1.1; }
+  .home-live-title { font-weight: 400; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: var(--display); text-transform: uppercase; letter-spacing: 0.01em; font-size: clamp(0.8rem, min(4.2cqw, calc(var(--live-h) * 0.36)), 1.4rem); }
   .home-live-time { flex-shrink: 0; font-family: var(--display); font-size: clamp(0.65rem, min(3.6cqw, calc(var(--live-h) * 0.26)), 1rem); opacity: 0.7; white-space: nowrap; }
   .home-live-arrow { flex-shrink: 0; font-family: var(--display); font-size: 1.2rem; line-height: 1; }
-  @container (max-width: 400px) { .home-live-time { display: none; } }
-  @container (max-width: 270px) { .home-live .home-now { font-size: 0; gap: 0; padding: 0.2rem; } }
+  @container (max-width: 300px) { .home-live-time { display: none; } }
+  @container (max-width: 270px) { .home-live-floor { display: none; } }
   @container (max-width: 150px) { .home-live-arrow { display: none; } }
 
   .home-foot {
@@ -305,6 +308,12 @@
   /* Solo el selector ES/EN va en negrita real (Helvetica Neue Bold); @somosroce y los enlaces legales, normales. */
   .home-foot .lang-switch button { font-family: var(--display); font-weight: 700; }
 
+  /* Cuadrados anchos (tablet): el nombre de cada espacio cabe entero en una línea. */
+  @media (min-width: 600px) {
+    .home-square strong.home-name { white-space: nowrap; font-size: clamp(0.8rem, min(5.3cqw, calc(var(--sh) * 0.16)), 2.4rem); }
+    .home-name span { display: inline; }
+  }
+
   /* Tablet vertical: bloques algo más bajos para que la frase pueda crecer con el ancho. */
   @media (min-width: 600px) and (max-aspect-ratio: 5/4) {
     .home-main { --sh: min(calc(var(--sw) * 0.62), calc((var(--avail) - var(--live-x)) * 0.18)); }
@@ -316,7 +325,7 @@
     .home { --pad: 2.5rem; }
     .home-main {
       --s: min(calc((var(--avail) - var(--gap) - var(--live-x)) / 2), 30vw);
-      --sw: var(--s);
+      --sw: min(calc(var(--s) * 1.9), 42vw);
       --sh: var(--s);
       flex-direction: row;
       align-items: center;
@@ -329,8 +338,11 @@
       max-width: none;
       flex: 1;
       min-width: 0;
-      font-size: min(10.5rem, calc(var(--avail) / 3.5), calc((100vw - 2 * var(--pad) - var(--s) - 2rem) / 4.4));
+      font-size: min(14rem, calc(var(--avail) / 4.5), calc((100vw - 2 * var(--pad) - var(--sw) - 2rem) / 4.4));
     }
+    /* Cuadrados más anchos: el nombre de cada espacio cabe entero en una línea. */
+    .home-square strong.home-name { white-space: nowrap; font-size: clamp(0.8rem, min(5.3cqw, calc(var(--sh) * 0.16)), 2.4rem); }
+    .home-name span { display: inline; }
     .home-squares { display: flex; flex-direction: column; justify-content: flex-start; }
     .home-square-day, .home-square-night, .home-live { align-self: flex-end; }
   }
@@ -411,6 +423,8 @@
     line-height: 1;
     letter-spacing: 0.01em;
   }
+  .reservas-menu-title.is-long { font-weight: 700; font-size: clamp(1.7rem, 8vw, 3.4rem); line-height: 1.02; }
+  .reservas-menu-title.is-long span { display: block; }
   .reservas-menu-sub {
     display: block;
     font-size: clamp(0.8rem, 2.6vw, 0.95rem);
@@ -470,33 +484,31 @@
 
     <div class="home-squares">
       <a class="home-square home-square-day" id="chooseDay" href="/day/">
-        <div class="home-square-top"><span class="home-now" data-i18n="choose_now">Ahora</span></div>
+        <div class="home-square-top"></div>
         <div class="home-square-bottom">
           <div>
-            <strong>Day</strong>
+            <strong class="home-name"><span>Coffee, Bakery</span> <span>&amp; Kitchen</span></strong>
             <small>10:00 – 20:00</small>
           </div>
           <span class="home-square-arrow" aria-hidden="true">→</span>
         </div>
       </a>
       <a class="home-live home-live-day" id="liveDay" href="/eventos/?f=day" hidden>
-        <span class="home-now" data-i18n="choose_now">Ahora</span>
         <span class="home-live-title"></span>
         <span class="home-live-time"></span>
         <span class="home-live-arrow" aria-hidden="true">→</span>
       </a>
       <a class="home-square home-square-night" id="chooseNight" href="/night/">
-        <div class="home-square-top"><span class="home-now" data-i18n="choose_now">Ahora</span><svg class="age-badge" viewBox="0 0 100 100" role="img" aria-label="+18"><circle cx="50" cy="50" r="44" fill="#ffffff" stroke="#e5453a" stroke-width="9"/><text x="44" y="65" text-anchor="middle" font-family="'Helvetica Neue Web','Helvetica Neue',Arial,sans-serif" font-weight="700" font-size="46" letter-spacing="-3" fill="#0a0a0a">18</text><text x="77" y="52" text-anchor="middle" font-family="'Helvetica Neue Web','Helvetica Neue',Arial,sans-serif" font-weight="700" font-size="30" fill="#0a0a0a">+</text></svg></div>
+        <div class="home-square-top"><svg class="age-badge" viewBox="0 0 100 100" role="img" aria-label="+18"><circle cx="50" cy="50" r="44" fill="#ffffff" stroke="#e5453a" stroke-width="9"/><text x="44" y="65" text-anchor="middle" font-family="'Helvetica Neue Web','Helvetica Neue',Arial,sans-serif" font-weight="700" font-size="46" letter-spacing="-3" fill="#0a0a0a">18</text><text x="77" y="52" text-anchor="middle" font-family="'Helvetica Neue Web','Helvetica Neue',Arial,sans-serif" font-weight="700" font-size="30" fill="#0a0a0a">+</text></svg></div>
         <div class="home-square-bottom">
           <div>
-            <strong>Night</strong>
-            <small>20:00 – 02:00</small>
+            <strong class="home-name"><span>Restaurant</span> <span>&amp; Cocktails</span></strong>
+            <small>13:00 – 16:00 · 20:00 – 02:00</small>
           </div>
           <span class="home-square-arrow" aria-hidden="true">→</span>
         </div>
       </a>
       <a class="home-live home-live-night" id="liveNight" href="/eventos/?f=night" hidden>
-        <span class="home-now" data-i18n="choose_now">Ahora</span>
         <span class="home-live-title"></span>
         <span class="home-live-time"></span>
         <span class="home-live-arrow" aria-hidden="true">→</span>
@@ -521,12 +533,12 @@
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
   </button>
   <a class="reservas-menu-item" href="/day/">
-    <span class="reservas-menu-title">Day</span>
+    <span class="reservas-menu-title is-long"><span>Coffee, Bakery</span> <span>&amp; Kitchen</span></span>
     <span class="reservas-menu-sub">10:00 – 20:00</span>
   </a>
   <a class="reservas-menu-item" href="/night/">
-    <span class="reservas-menu-title">Night</span>
-    <span class="reservas-menu-sub">20:00 – 02:00</span>
+    <span class="reservas-menu-title is-long"><span>Restaurant</span> <span>&amp; Cocktails</span></span>
+    <span class="reservas-menu-sub">13:00 – 16:00 · 20:00 – 02:00</span>
   </a>
   <a class="reservas-menu-item" href="/eventos/">
     <span class="reservas-menu-title" data-i18n="menu_eventos_title">Eventos</span>
@@ -536,16 +548,16 @@
 </div>
 
 <div class="cookie-banner" id="cookieBanner">
-  <p class="cookie-text"><span data-i18n="cookie_text">Usamos una cookie técnica propia para recordar tu elección. Si aceptas, también activamos el Píxel de Meta (Facebook e Instagram) y Google Tag Manager para medir y mejorar nuestra publicidad y nuestra web. El sistema de reservas es de un tercero (CoverManager) y puede usar las suyas.</span> <a href="/cookies.html" data-i18n="cookie_more_info">Más información</a>.</p>
+  <p class="cookie-text"><span data-i18n="cookie_text">Usamos una cookie técnica propia para recordar tu elección. Si aceptas, también activamos el Píxel de Meta (Facebook e Instagram) y Google Tag Manager para medir y mejorar nuestra publicidad y nuestra web. Al reservar o pagar, los servicios de pago (Redsys) y de reservas de terceros (CoverManager) pueden usar las suyas.</span> <a href="/cookies.html" data-i18n="cookie_more_info">Más información</a>.</p>
   <div class="cookie-actions">
     <button class="cookie-reject" id="cookieReject" data-i18n="cookie_reject">Rechazar</button>
     <button class="cookie-accept" id="cookieAccept" data-i18n="cookie_accept">Aceptar</button>
   </div>
 </div>
 <script src="/cookies.js?v=4"></script>
-<script src="/i18n.js?v=97"></script>
+<script src="/i18n.js?v=102"></script>
 <script src="/eventos/config.js?v=2"></script>
-<script src="/eventos/events.js?v=12"></script>
+<script src="/eventos/events.js?v=13"></script>
 
 <script>
   // Se marca "Ahora" en lo que está abierto según la hora de Valencia (Day de
@@ -566,13 +578,11 @@
       var hour = Number(p.hour);
       var isDay = hour >= 10 && hour < 20; // Day abierto
       document.documentElement.setAttribute('data-mode', hour >= 8 && hour < 20 ? 'day' : 'night');
-      // "Ahora" solo en lo que está abierto en este momento.
-      document.getElementById('chooseDay').classList.toggle('is-now', isDay);
-      document.getElementById('chooseNight').classList.toggle('is-now', nightOpen(DAYS[p.weekday], hour));
       renderLive();
     }
 
-    // Eventos en marcha ahora mismo: franja bajo el cuadrado de su ambiente.
+    // Franja de evento bajo el cuadrado de cada espacio, solo si tiene un próximo evento (o uno en marcha).
+    // Sin eventos no hay franja y el espacio se aprovecha para la frase y los cuadrados.
     var U = window.ROCE_EVENT_UTIL, EVENTS = [];
     var TZ = 'Europe/Madrid';
     function hm(ms) { return new Intl.DateTimeFormat('es-ES', { timeZone: TZ, hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).format(ms); }
@@ -580,18 +590,23 @@
       var l = window.ROCE_I18N ? window.ROCE_I18N.getLang() : 'es', n = 0;
       [['day', 'liveDay'], ['night', 'liveNight']].forEach(function (c) {
         var el = document.getElementById(c[1]);
-        var e = U && EVENTS.filter(function (x) { return x.env === c[0] && U.isLive(x); })[0];
+        var now = Date.now();
+        var e = U && EVENTS.filter(function (x) { return x.env === c[0] && U.bounds(x)[1] > now; })
+          .sort(function (a, b) { return U.bounds(a)[0] - U.bounds(b)[0]; })[0];
         if (!e) { el.hidden = true; return; }
+        n++;
+        el.hidden = false;
         var b = U.bounds(e);
         U.setMarquee(el.querySelector('.home-live-title'), e.title[l] || e.title.es);
-        el.querySelector('.home-live-time').textContent = hm(b[0]) + ' – ' + hm(b[1]);
-        el.hidden = false; n++;
+        el.querySelector('.home-live-time').textContent = U.isLive(e) ? hm(b[0]) + ' – ' + hm(b[1]) :
+          new Intl.DateTimeFormat(l === 'en' ? 'en-GB' : 'es-ES', { timeZone: TZ, weekday: 'short', day: 'numeric', month: 'short' }).format(b[0]).replace('.', '') + ' · ' + hm(b[0]);
       });
       document.querySelector('.home-main').style.setProperty('--live-n', n);
     }
     if (window.ROCE_EVENTS_READY) window.ROCE_EVENTS_READY.then(function (list) { EVENTS = list; renderLive(); });
     document.addEventListener('roce:lang', renderLive);
 
+    renderLive();
     sync();
     setInterval(sync, 60000);
   })();

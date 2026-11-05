@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="format-detection" content="telephone=no, address=no, email=no, date=no">
+<!-- Reserva de mesa: enlace privado, no se indexa. -->
+<meta name="robots" content="noindex, nofollow">
+<title>Tu reserva — ROCE</title>
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" href="/assets/meta/favicon-32.png" sizes="32x32">
+<link rel="apple-touch-icon" href="/assets/meta/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/styles.css?v=69">
+<style>
+  html { --bg: var(--white); --fg: var(--black); --line: rgba(10, 10, 10, 0.25); --pad: 1.25rem; --red: #e5453a; --ok: #1f8a4c; }
+  html[data-env="night"] { --bg: var(--black); --fg: var(--white); --line: rgba(255, 255, 255, 0.3); --ok: #3ecf7a; }
+  html, body { background: var(--bg); color: var(--fg); }
+  body { min-height: 100vh; display: flex; flex-direction: column; font-family: var(--body); }
+  .tc-top { display: flex; align-items: center; height: 64px; padding: 0 var(--pad); }
+  .tc-top a { font-family: var(--display); font-size: 1rem; letter-spacing: 0.04em; text-transform: uppercase; color: inherit; text-decoration: none; }
+  .tc-wrap { width: 100%; max-width: 440px; margin: 0 auto; padding: 0.5rem var(--pad) 3rem; flex: 1; }
+  .tc-kicker { font-family: var(--display); font-size: 0.85rem; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.7; }
+  .tc-title { margin: 0.4rem 0 0.5rem; font-family: var(--display); font-weight: 400; font-size: clamp(2rem, 9vw, 3rem); line-height: 0.95; letter-spacing: -0.01em; text-transform: uppercase; }
+  .tc-when { font-size: 1.05rem; line-height: 1.45; }
+  .tc-state { margin: 1.25rem 0 1rem; padding: 0.7rem 1rem; border: 2px solid var(--ok); color: var(--ok); font-family: var(--display); font-size: 1.1rem; letter-spacing: 0.04em; text-transform: uppercase; }
+  .tc-state.is-bad { border-color: var(--red); color: var(--red); }
+  .tc-state.is-wait { border-color: currentColor; color: inherit; opacity: 0.8; }
+  .tc-rows { margin: 1rem 0; border-top: 1px solid var(--line); }
+  .tc-row { display: flex; justify-content: space-between; gap: 1rem; padding: 0.7rem 0; border-bottom: 1px solid var(--line); font-size: 0.95rem; }
+  .tc-row span:first-child { opacity: 0.65; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.04em; padding-top: 0.1rem; }
+  .tc-row span:last-child { text-align: right; }
+  .tc-hint { margin-top: 1rem; font-size: 0.9rem; line-height: 1.5; opacity: 0.85; }
+  .tc-msg { padding: 3rem 0; font-size: 1.05rem; line-height: 1.5; }
+  .tc-btn { display: block; width: 100%; margin-top: 0.8rem; min-height: 3.3rem; border: 1px solid var(--fg); background: var(--fg); color: var(--bg); font-family: var(--display); font-size: 1.02rem; letter-spacing: 0.03em; text-transform: uppercase; cursor: pointer; border-radius: 0; text-align: center; text-decoration: none; line-height: 3.3rem; padding: 0; }
+  .tc-btn.alt { background: transparent; color: var(--fg); }
+  .tc-btn:disabled { opacity: 0.5; cursor: default; }
+  .tc-err { margin-top: 1rem; color: var(--red); font-size: 0.95rem; line-height: 1.45; }
+  .tc-confirm { margin-top: 1rem; padding: 1rem; border: 1px solid var(--red); font-size: 0.92rem; line-height: 1.5; }
+  .tc-confirm .tc-btn { margin-top: 0.7rem; }
+  [hidden] { display: none !important; }
+  .gl-foot { padding: 1.5rem 1rem 2rem; text-align: center; font-size: 0.68rem; line-height: 1.35; letter-spacing: 0.03em; opacity: 0.6; }
+  .gl-foot a { color: inherit; text-decoration: none; }
+  .gl-foot a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+<header class="tc-top"><a href="/">ROCE</a></header>
+
+<main class="tc-wrap">
+  <p class="tc-msg" id="rvLoading"></p>
+  <p class="tc-msg" id="rvNotFound" hidden></p>
+  <section id="rvCard" hidden>
+    <div class="tc-kicker" id="rvKicker"></div>
+    <h1 class="tc-title" id="rvTitle"></h1>
+    <div class="tc-when" id="rvWhen"></div>
+    <div class="tc-state" id="rvState"></div>
+    <div class="tc-rows" id="rvRows"></div>
+    <p class="tc-hint" id="rvHint"></p>
+    <p class="tc-err" id="rvErr" hidden></p>
+    <button type="button" class="tc-btn" id="rvPay" hidden></button>
+    <a class="tc-btn alt" id="rvCal" href="#" hidden></a>
+    <a class="tc-btn alt" id="rvMap" target="_blank" rel="noopener" hidden></a>
+    <button type="button" class="tc-btn alt" id="rvCancel" hidden></button>
+    <div class="tc-confirm" id="rvSure" hidden>
+      <div id="rvSureText"></div>
+      <button type="button" class="tc-btn" id="rvSureYes"></button>
+      <button type="button" class="tc-btn alt" id="rvSureNo"></button>
+    </div>
+  </section>
+</main>
+
+<footer class="gl-foot">
+  <div class="lang-switch">
+    <button type="button" data-lang="es">ES</button>
+    <button type="button" data-lang="en">EN</button>
+  </div>
+  <a href="/aviso-legal.html" data-i18n="footer_legal">Aviso legal</a> · <a href="/terminos.html" data-i18n="footer_terms">Términos y condiciones</a> · <a href="/cookies.html" data-i18n="footer_cookies">Cookies</a> · <a href="/privacidad.html" data-i18n="footer_privacy">Política de privacidad</a>
+</footer>
+
+<div class="cookie-banner" id="cookieBanner">
+  <p class="cookie-text"><span data-i18n="cookie_text">Usamos una cookie técnica propia para recordar tu elección. Si aceptas, también activamos el Píxel de Meta (Facebook e Instagram) y Google Tag Manager para medir y mejorar nuestra publicidad y nuestra web. Al reservar o pagar, los servicios de pago (Redsys) y de reservas de terceros (CoverManager) pueden usar las suyas.</span> <a href="/cookies.html" data-i18n="cookie_more_info">Más información</a>.</p>
+  <div class="cookie-actions">
+    <button class="cookie-reject" id="cookieReject" data-i18n="cookie_reject">Rechazar</button>
+    <button class="cookie-accept" id="cookieAccept" data-i18n="cookie_accept">Aceptar</button>
+  </div>
+</div>
+<script src="/cookies.js?v=4"></script>
+<script src="/i18n.js?v=102"></script>
+<script src="/eventos/config.js?v=2"></script>
+<script>
+(function () {
+  var B = window.ROCE_BACKEND || {};
+  var params = new URLSearchParams(location.search);
+  var token = (params.get('t') || '').toLowerCase();
+  var STR = {
+    es: {
+      loading: 'Cargando tu reserva…', notfound: 'Este enlace no es válido. Abre la reserva desde el email que te enviamos.',
+      kicker: 'Reserva de mesa', party: 'Personas', zone: 'Zona', ref: 'Referencia', name: 'A nombre de', deposit: 'Fianza',
+      s_confirmed: 'Reserva confirmada', s_pending: 'Pendiente de pago', s_expired: 'Reserva caducada', s_cancelled: 'Reserva anulada',
+      s_seated: 'En mesa', s_completed: 'Visita completada', s_no_show: 'No presentado', s_paywait: 'Confirmando el pago…',
+      hint_new: 'Te hemos enviado la confirmación por email. Guarda esta página: desde aquí puedes anularla.',
+      hint_pending: 'Para confirmar la reserva hay que pagar la fianza con tarjeta. Después te llegará la confirmación por email.',
+      hint_expired: 'No se pagó la fianza a tiempo y la mesa se ha liberado. Puedes hacer una reserva nueva en roce.es.',
+      hint_dep_paid: 'Fianza de {m} pagada. Es a cuenta de tu consumición.',
+      hint_refund_ok: 'Tu fianza de {m} se devolverá a tu tarjeta en unos días.', hint_retained: 'Como la anulación llegó con menos de {h} h de antelación, la fianza de {m} no se devuelve.',
+      hint_refunded: 'Fianza de {m} devuelta a tu tarjeta.',
+      pay: 'Pagar {m} y confirmar', cal: 'Añadir al calendario', map: 'Cómo llegar', cancel: 'Anular reserva',
+      sure_free: '¿Seguro que quieres anular esta reserva?', sure_in_time: '¿Seguro que quieres anular? Como faltan más de {h} h, te devolvemos la fianza de {m}.',
+      sure_late: '¿Seguro que quieres anular? Faltan menos de {h} h, así que la fianza de {m} no se devuelve.',
+      yes_cancel: 'Sí, anular', no_cancel: 'No, mantener',
+      e_generic: 'No hemos podido completarlo. Inténtalo de nuevo.', e_pay: 'No hemos podido abrir el pago. Inténtalo de nuevo en un momento.',
+      ko: 'El pago no se ha completado. Puedes intentarlo otra vez mientras tu mesa siga guardada.', slow: 'El banco tarda en confirmar el pago. Te avisaremos por email en cuanto llegue.',
+      day: 'Coffee, Bakery & Kitchen', night: 'Restaurant & Cocktails',
+      info_dur: 'Tu mesa estará disponible {d}.', info_grace: 'La mantenemos {g} min desde la hora reservada: pasado ese tiempo la damos por no presentada.',
+      guarantee: 'Garantía', g_value: '{m} solo si no vienes',
+      hint_card_pending: 'Para confirmar la reserva hay que dar los datos de una tarjeta como garantía. No se cobra nada ahora: solo si no te presentas o anulas con menos de {h} h de antelación se cobrarán {m} automáticamente.',
+      hint_card_ok: 'Tarjeta {b} ····{l} guardada como garantía. No se ha cobrado nada. Si no te presentas o anulas con menos de {h} h de antelación se cobrarán {m} automáticamente.',
+      hint_card_released: 'No se ha cobrado nada y tu tarjeta ya no queda como garantía.', hint_card_late: 'Como has anulado con menos de {h} h de antelación, se cobrarán {m} a tu tarjeta.',
+      hint_card_charged: 'Se han cobrado {m} a tu tarjeta por la no presentación o la anulación tardía.',
+      pay_card: 'Añadir tarjeta (no se cobra nada)',
+      sure_card_in: '¿Seguro que quieres anular? No se cobrará nada.', sure_card_late: 'Atención: faltan menos de {h} h para tu reserva. Si anulas ahora se cobrarán {m} automáticamente a tu tarjeta. ¿Quieres anular igualmente?'
+    },
+    en: {
+      loading: 'Loading your booking…', notfound: 'This link is not valid. Open the booking from the email we sent you.',
+      kicker: 'Table booking', party: 'Guests', zone: 'Area', ref: 'Reference', name: 'Name', deposit: 'Deposit',
+      s_confirmed: 'Booking confirmed', s_pending: 'Awaiting payment', s_expired: 'Booking expired', s_cancelled: 'Booking cancelled',
+      s_seated: 'Seated', s_completed: 'Visit completed', s_no_show: 'No show', s_paywait: 'Confirming payment…',
+      hint_new: 'We have emailed you the confirmation. Keep this page: you can cancel from here.',
+      hint_pending: 'To confirm the booking you need to pay the deposit by card. We will email you the confirmation afterwards.',
+      hint_expired: 'The deposit was not paid in time and the table has been released. You can make a new booking at roce.es.',
+      hint_dep_paid: 'Deposit of {m} paid. It goes towards your bill.',
+      hint_refund_ok: 'Your {m} deposit will be refunded to your card within a few days.', hint_retained: 'Because you cancelled less than {h} h in advance, the {m} deposit is not refunded.',
+      hint_refunded: '{m} deposit refunded to your card.',
+      pay: 'Pay {m} and confirm', cal: 'Add to calendar', map: 'Get directions', cancel: 'Cancel booking',
+      sure_free: 'Are you sure you want to cancel this booking?', sure_in_time: 'Are you sure? Since there are more than {h} h to go, we refund the {m} deposit.',
+      sure_late: 'Are you sure? There are less than {h} h to go, so the {m} deposit is not refunded.',
+      yes_cancel: 'Yes, cancel', no_cancel: 'No, keep it',
+      e_generic: "We couldn't complete it. Please try again.", e_pay: "We couldn't open the payment. Please try again in a moment.",
+      ko: "The payment wasn't completed. You can try again while your table is still held.", slow: 'The bank is slow to confirm the payment. We will email you as soon as it arrives.',
+      day: 'Coffee, Bakery & Kitchen', night: 'Restaurant & Cocktails',
+      info_dur: 'Your table will be available for {d}.', info_grace: 'We hold it for {g} min after the booked time: after that we treat it as a no-show.',
+      guarantee: 'Guarantee', g_value: '{m} only if you do not show up',
+      hint_card_pending: "To confirm the booking you need to give your card details as a guarantee. Nothing is charged now: only if you don't show up or cancel less than {h} h in advance will we charge {m}.",
+      hint_card_ok: "{b} card ····{l} saved as a guarantee. Nothing has been charged. If you don't show up or cancel less than {h} h in advance we will charge {m}.",
+      hint_card_released: 'Nothing has been charged and your card is no longer held as a guarantee.', hint_card_late: 'Since you cancelled less than {h} h in advance, {m} will be charged to your card.',
+      hint_card_charged: '{m} has been charged to your card for the no-show or late cancellation.',
+      pay_card: 'Add card (nothing is charged)',
+      sure_card_in: 'Are you sure you want to cancel? Nothing will be charged.', sure_card_late: 'Warning: there are less than {h} h to go. If you cancel now, {m} will be charged automatically to your card. Do you still want to cancel?'
+    }
+  };
+  function lang() { return window.ROCE_I18N && window.ROCE_I18N.getLang ? window.ROCE_I18N.getLang() : 'es'; }
+  function t(k, v) { var s = (STR[lang()] || STR.es)[k] || STR.es[k] || k; if (v) Object.keys(v).forEach(function (x) { s = s.split('{' + x + '}').join(v[x]); }); return s; }
+  function $(id) { return document.getElementById(id); }
+  function money(c) { return (c / 100).toLocaleString(lang() === 'en' ? 'en-GB' : 'es-ES', { style: 'currency', currency: 'EUR', minimumFractionDigits: c % 100 ? 2 : 0 }); }
+  function rpc(name, body) {
+    return fetch(B.url + '/rest/v1/rpc/' + name, { method: 'POST', headers: { apikey: B.anonKey, Authorization: 'Bearer ' + B.anonKey, 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+      .then(function (r) { return r.json().then(function (d) { if (!r.ok) throw new Error('rpc'); return d; }); });
+  }
+  function fn(body) {
+    return fetch(B.url + '/functions/v1/redsys', { method: 'POST', headers: { 'Content-Type': 'application/json', apikey: B.anonKey, Authorization: 'Bearer ' + B.anonKey }, body: JSON.stringify(body) })
+      .then(function (r) { return r.json().catch(function () { return {}; }).then(function (d) { if (!r.ok) throw new Error(d.error || 'network'); return d; }); });
+  }
+
+  var data = null, waiting = false;
+  function when() {
+    var d = new Date(data.starts_at), l = lang() === 'en' ? 'en-GB' : 'es-ES';
+    var day = new Intl.DateTimeFormat(l, { timeZone: 'Europe/Madrid', weekday: 'long', day: 'numeric', month: 'long' }).format(d);
+    var hm = new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Madrid', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).format(d);
+    return day + ' · ' + hm;
+  }
+  function paint() {
+    if (!data) return;
+    document.documentElement.setAttribute('data-env', data.ambience === 'night' ? 'night' : 'day');
+    $('rvKicker').textContent = t('kicker') + ' · ' + t(data.ambience);
+    $('rvTitle').textContent = data.name;
+    $('rvWhen').textContent = when();
+    var dep = data.deposit_cents, m = money(dep), h = data.free_cancel_hours;
+    var pendingOk = data.can_pay, status = data.status, ps = data.payment_status;
+    var expired = status === 'pending' && !data.can_pay;
+    var st = $('rvState'); st.className = 'tc-state';
+    var label = expired ? t('s_expired') : waiting ? t('s_paywait') : t('s_' + status);
+    if (status === 'cancelled' || status === 'no_show' || expired) st.classList.add('is-bad'); else if (status === 'pending' || waiting) st.classList.add('is-wait');
+    st.textContent = label;
+    var rows = [[t('ref'), data.ref], [t('party'), String(data.party)], [t('zone'), lang() === 'en' ? data.zone_en : data.zone_es]];
+    var cardMode = data.payment_mode === 'card';
+    if (dep > 0) rows.push(cardMode ? [t('guarantee'), t('g_value', { m: m })] : [t('deposit'), m]);
+    $('rvRows').innerHTML = rows.map(function (r) { return '<div class="tc-row"><span></span><span></span></div>'; }).join('');
+    [].forEach.call($('rvRows').children, function (row, i) { row.children[0].textContent = rows[i][0]; row.children[1].textContent = rows[i][1]; });
+    var hint = '';
+    if (expired) hint = t('hint_expired');
+    else if (status === 'pending') hint = cardMode ? t('hint_card_pending', { m: m, h: h }) : t('hint_pending');
+    else if (ps === 'charged') hint = t('hint_card_charged', { m: m });
+    else if (status === 'cancelled' && cardMode) hint = data.late_cancel && ps === 'guaranteed' ? t('hint_card_late', { m: m, h: h }) : ps === 'released' ? t('hint_card_released') : '';
+    else if (status === 'cancelled') hint = ps === 'refunded' ? t('hint_refunded', { m: m }) : data.refund_due ? t('hint_refund_ok', { m: m }) : ps === 'retained' ? t('hint_retained', { m: m, h: h }) : '';
+    else if (ps === 'guaranteed') hint = t('hint_card_ok', { m: m, h: h, b: data.card_brand || 'Tarjeta', l: data.card_last4 || '' });
+    else if (ps === 'paid') hint = t('hint_dep_paid', { m: m });
+    else if (params.get('new')) hint = t('hint_new');
+    var info = '';
+    if (data.ends_at && !expired && (status === 'confirmed' || status === 'pending')) {
+      var dm = Math.round((Date.parse(data.ends_at) - Date.parse(data.starts_at)) / 60000), hh = Math.floor(dm / 60), rr = dm % 60;
+      var durTxt = (hh ? hh + ' h' : '') + (hh && rr ? ' ' : '') + (rr ? rr + ' min' : '');
+      var note = lang() === 'en' ? data.end_note_en : data.end_note_es;
+      info = t('info_dur', { d: durTxt }) + ' ' + t('info_grace', { g: data.grace_min || 15 }) + (note ? ' ' + note : '');
+    }
+    $('rvHint').textContent = (hint ? hint + (info ? '\n\n' : '') : '') + info; $('rvHint').hidden = !(hint || info); $('rvHint').style.whiteSpace = 'pre-line';
+    $('rvPay').hidden = !pendingOk || waiting; $('rvPay').textContent = cardMode ? t('pay_card') : t('pay', { m: m });
+    var live = (status === 'confirmed' || status === 'pending') && !expired;
+    $('rvCal').hidden = !live; $('rvCal').textContent = t('cal');
+    $('rvMap').hidden = !live; $('rvMap').textContent = t('map'); $('rvMap').href = 'https://maps.google.com/?q=' + encodeURIComponent('ROCE, Gran Vía Marqués del Túria 16, Valencia');
+    $('rvCancel').hidden = !data.can_cancel || waiting; $('rvCancel').textContent = t('cancel');
+  }
+  function show(k) { ['rvLoading', 'rvNotFound', 'rvCard'].forEach(function (id) { $(id).hidden = id !== k; }); }
+  function load() {
+    return rpc('table_booking_get', { p_token: token }).then(function (d) {
+      if (!d) { $('rvNotFound').textContent = t('notfound'); show('rvNotFound'); return null; }
+      data = d; show('rvCard'); paint(); return d;
+    });
+  }
+
+  // ─── Calendario ─────────────────────────────────────────────────────
+  $('rvCal').addEventListener('click', function (e) {
+    e.preventDefault(); if (!data) return;
+    var s = new Date(data.starts_at), en = new Date(s.getTime() + 2 * 3600 * 1000);
+    var f = function (d) { return d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, ''); };
+    var ics = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//ROCE//Reservas//ES', 'BEGIN:VEVENT', 'UID:' + data.ref + '@roce.es', 'DTSTAMP:' + f(new Date()), 'DTSTART:' + f(s), 'DTEND:' + f(en),
+      'SUMMARY:ROCE ' + (data.ambience === 'night' ? 'Restaurant & Cocktails' : 'Coffee, Bakery & Kitchen') + ' · ' + data.ref, 'LOCATION:ROCE\\, Gran Vía Marqués del Túria 16\\, Valencia', 'END:VEVENT', 'END:VCALENDAR'].join('\r\n');
+    var a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([ics], { type: 'text/calendar;charset=utf-8' })); a.download = 'roce-' + data.ref + '.ics';
+    document.body.appendChild(a); a.click(); a.remove();
+  });
+
+  // ─── Pagar la fianza ────────────────────────────────────────────────
+  $('rvPay').addEventListener('click', function () {
+    var b = this; b.disabled = true; $('rvErr').hidden = true;
+    fn({ action: 'pay_table', token: token, lang: lang(), return_base: location.origin }).then(function (p) {
+      var f = document.createElement('form'); f.method = 'POST'; f.action = p.url; f.style.display = 'none';
+      ['Ds_SignatureVersion', 'Ds_MerchantParameters', 'Ds_Signature'].forEach(function (k) { var i = document.createElement('input'); i.type = 'hidden'; i.name = k; i.value = p[k]; f.appendChild(i); });
+      document.body.appendChild(f); f.submit();
+    }).catch(function () { b.disabled = false; $('rvErr').textContent = t('e_pay'); $('rvErr').hidden = false; });
+  });
+
+  // ─── Anular ─────────────────────────────────────────────────────────
+  $('rvCancel').addEventListener('click', function () {
+    var dep = data.deposit_cents, paid = data.payment_status === 'paid', h = data.free_cancel_hours;
+    var inTime = Date.parse(data.refundable_until) >= Date.now();
+    var guaranteed = data.payment_status === 'guaranteed';
+    $('rvSureText').textContent = guaranteed ? (inTime ? t('sure_card_in') : t('sure_card_late', { h: h, m: money(dep) })) : !paid || dep <= 0 ? t('sure_free') : inTime ? t('sure_in_time', { h: h, m: money(dep) }) : t('sure_late', { h: h, m: money(dep) });
+    $('rvSureYes').textContent = t('yes_cancel'); $('rvSureNo').textContent = t('no_cancel');
+    $('rvSure').hidden = false; this.hidden = true;
+  });
+  $('rvSureNo').addEventListener('click', function () { $('rvSure').hidden = true; paint(); });
+  $('rvSureYes').addEventListener('click', function () {
+    var b = this; b.disabled = true; $('rvErr').hidden = true;
+    rpc('table_booking_cancel', { p_token: token }).then(function (r) {
+      if (!r || !r.ok) throw new Error('cancel');
+      // Anulada a tiempo y con fianza cobrada: se pide la devolución al banco.
+      // Anulada tarde con tarjeta de garantía: se cobra la penalización automáticamente.
+      if (r.card && r.late) return fn({ action: 'table_charge', token: token }).catch(function () { return null; });
+      return (r.refund_due ? fn({ action: 'table_refund', token: token }).catch(function () { return null; }) : null);
+    }).then(function () { b.disabled = false; $('rvSure').hidden = true; return load(); })
+      .catch(function () { b.disabled = false; $('rvErr').textContent = t('e_generic'); $('rvErr').hidden = false; });
+  });
+
+  // ─── Vuelta del banco ───────────────────────────────────────────────
+  // "ok" solo significa que el cliente ha vuelto: el cobro real lo confirma el banco al servidor.
+  function afterBank() {
+    var status = params.get('status');
+    history.replaceState(null, '', location.pathname + '?t=' + token);
+    if (status === 'ko') { $('rvErr').textContent = t('ko'); $('rvErr').hidden = false; return; }
+    waiting = true; paint();
+    var tries = 0;
+    (function poll() {
+      rpc('table_booking_get', { p_token: token }).then(function (d) {
+        data = d || data;
+        if ((d && (d.payment_status === 'paid' || d.payment_status === 'guaranteed')) || ++tries >= 15) {
+          waiting = false; paint();
+          if (!d || (d.payment_status !== 'paid' && d.payment_status !== 'guaranteed')) { $('rvErr').textContent = t('slow'); $('rvErr').hidden = false; }
+        } else setTimeout(poll, 2000);
+      }).catch(function () { if (++tries >= 15) { waiting = false; paint(); } else setTimeout(poll, 2000); });
+    })();
+  }
+
+  function init() {
+    $('rvLoading').textContent = t('loading');
+    if (!/^[a-f0-9]{32}$/.test(token) || !B.url) { $('rvNotFound').textContent = t('notfound'); show('rvNotFound'); return; }
+    load().then(function (d) { if (d && params.get('status')) afterBank(); }).catch(function () { $('rvNotFound').textContent = t('e_generic'); show('rvNotFound'); });
+  }
+  document.addEventListener('roce:lang', function () { $('rvLoading').textContent = t('loading'); paint(); });
+  init();
+})();
+</script>
+</body>
+</html>

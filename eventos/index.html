@@ -7,13 +7,13 @@
 <!-- Sin indexar hasta decidir que la agenda sale en buscadores (quitar la línea robots de abajo). -->
 <meta name="robots" content="noindex">
 <title>Eventos — ROCE Valencia</title>
-<meta name="description" content="Agenda de eventos de Day y Night en ROCE Valencia: brunch, música y noches especiales.">
+<meta name="description" content="Agenda de eventos de ROCE Valencia: brunch, música y noches especiales en Coffee, Bakery &amp; Kitchen y Restaurant &amp; Cocktails.">
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link rel="icon" type="image/png" href="/assets/meta/favicon-32.png" sizes="32x32">
 <link rel="apple-touch-icon" href="/assets/meta/apple-touch-icon.png">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Eventos — ROCE Valencia">
-<meta property="og:description" content="Brunch, música y noches especiales en Day y Night.">
+<meta property="og:description" content="Brunch, música y noches especiales en Coffee, Bakery &amp; Kitchen y Restaurant &amp; Cocktails.">
 <meta property="og:image" content="https://roce.es/assets/meta/og-image.png">
 <meta property="og:url" content="https://roce.es/eventos/">
 <script>
@@ -26,7 +26,9 @@
     // (desde el menú de la home). El fondo sigue al filtro: Day blanco, Night
     // negro y, en Todos, según la hora.
     var f = new URLSearchParams(location.search).get('f');
-    document.documentElement.setAttribute('data-view', f === 'day' || f === 'night' ? f : 'all');
+    // Los eventos se dividen por planta: ?f=baja (planta baja, fondo claro) o ?f=alta (primera planta, fondo oscuro); ?f=day / ?f=night siguen valiendo.
+    // Día y Noche son solo filtros: la agenda se abre siempre en "Todos" (el enlace ?f= solo decide a dónde lleva "Volver").
+    document.documentElement.setAttribute('data-view', 'all');
   })();
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -66,7 +68,8 @@
     background: none;
     color: var(--fg);
     font-family: var(--display);
-    font-size: clamp(1.3rem, 4.5vw, 2rem);
+    font-weight: 700;
+    font-size: clamp(1.05rem, 3.6vw, 1.6rem);
     line-height: 1;
     letter-spacing: 0.02em;
     text-transform: uppercase;
@@ -126,8 +129,8 @@
 
   <div class="ev-filters" role="group" aria-label="Filtro">
     <button type="button" class="ev-chip" data-filter="all" aria-pressed="false" data-i18n="ev_all">Todos</button>
-    <button type="button" class="ev-chip" data-filter="day" aria-pressed="false">Day</button>
-    <button type="button" class="ev-chip" data-filter="night" aria-pressed="false">Night</button>
+    <button type="button" class="ev-chip" data-filter="day" aria-pressed="false" data-i18n="ev_day">Día</button>
+    <button type="button" class="ev-chip" data-filter="night" aria-pressed="false" data-i18n="ev_night">Noche</button>
   </div>
 
   <ol class="ev-list" id="evList"></ol>
@@ -145,16 +148,16 @@
 </footer>
 
 <div class="cookie-banner" id="cookieBanner">
-  <p class="cookie-text"><span data-i18n="cookie_text">Usamos una cookie técnica propia para recordar tu elección. Si aceptas, también activamos el Píxel de Meta (Facebook e Instagram) y Google Tag Manager para medir y mejorar nuestra publicidad y nuestra web. El sistema de reservas es de un tercero (CoverManager) y puede usar las suyas.</span> <a href="/cookies.html" data-i18n="cookie_more_info">Más información</a>.</p>
+  <p class="cookie-text"><span data-i18n="cookie_text">Usamos una cookie técnica propia para recordar tu elección. Si aceptas, también activamos el Píxel de Meta (Facebook e Instagram) y Google Tag Manager para medir y mejorar nuestra publicidad y nuestra web. Al reservar o pagar, los servicios de pago (Redsys) y de reservas de terceros (CoverManager) pueden usar las suyas.</span> <a href="/cookies.html" data-i18n="cookie_more_info">Más información</a>.</p>
   <div class="cookie-actions">
     <button class="cookie-reject" id="cookieReject" data-i18n="cookie_reject">Rechazar</button>
     <button class="cookie-accept" id="cookieAccept" data-i18n="cookie_accept">Aceptar</button>
   </div>
 </div>
 <script src="/cookies.js?v=4"></script>
-<script src="/i18n.js?v=97"></script>
+<script src="/i18n.js?v=102"></script>
 <script src="/eventos/config.js?v=2"></script>
-<script src="/eventos/events.js?v=12"></script>
+<script src="/eventos/events.js?v=13"></script>
 <script>
   // Los eventos están en /eventos/events.js (misma fuente que la compra de entradas).
   (function () {
@@ -163,9 +166,9 @@
     var list = document.getElementById('evList');
     var empty = document.getElementById('evEmpty');
     var view = document.documentElement.getAttribute('data-view');
-    var filter = view; // 'all' | 'day' | 'night'
-    // "Volver" lleva al sitio de donde se vino (Day, Night o la home).
-    document.getElementById('evBack').setAttribute('href', view === 'all' ? '/' : '/' + view + '/');
+    var filter = 'all'; // 'all' | 'day' | 'night'
+    // "Volver" lleva siempre a la home.
+    document.getElementById('evBack').setAttribute('href', '/');
     function syncChips() {
       document.querySelectorAll('.ev-chip').forEach(function (c) { c.setAttribute('aria-pressed', c.getAttribute('data-filter') === filter ? 'true' : 'false'); });
     }
@@ -190,7 +193,7 @@
         var day = U.fmt(e, l, { day: 'numeric' });
         var monthLabel = U.fmt(e, l, { month: 'long', year: 'numeric' });
         var sold = e.left <= 0;
-        var tag = '<span class="ev-tag">' + (e.env === 'night' ? 'Night ' + AGE : 'Day') + '</span>';
+        var tag = '<span class="ev-tag">' + (e.env === 'night' ? esc(t('ev_night', 'Noche')) + ' ' + AGE : esc(t('ev_day', 'Día'))) + '</span>';
         var right = sold ? '<span class="ev-sold">' + esc(t('tk_soldout', 'Agotado')) + '</span>' : (U.isLive(e) ? '<span class="ev-now">' + esc(t('choose_now', 'Ahora')) + '</span>' : '');
         var head = '';
         if (monthLabel !== lastMonth) { lastMonth = monthLabel; head = '<li class="ev-month" role="presentation">' + esc(monthLabel) + '</li>'; }
@@ -212,7 +215,7 @@
       chip.addEventListener('click', function () {
         filter = chip.getAttribute('data-filter');
         document.documentElement.setAttribute('data-view', filter);
-        history.replaceState(null, '', filter === 'all' ? location.pathname : '?f=' + filter);
+        history.replaceState(null, '', location.pathname);
         syncChips();
         render();
       });

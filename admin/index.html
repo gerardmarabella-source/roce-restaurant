@@ -25,8 +25,12 @@
 
   .ad-wrap { max-width: 980px; margin: 0 auto; padding: 1.25rem; }
   .ad-tabs { display: flex; flex-wrap: wrap; gap: 0.2rem 1.75rem; margin: 0.5rem 0 1.25rem; }
-  .ad-tab { background: none; border: 0; padding: 0; cursor: pointer; font-family: var(--display); font-size: 1.6rem; text-transform: uppercase; opacity: 0.28; transition: opacity 0.2s; }
-  .ad-tab[aria-pressed="true"] { opacity: 1; }
+  .ad-tab, .ad-group { background: none; border: 0; padding: 0; cursor: pointer; font-family: var(--display); font-size: 1.6rem; text-transform: uppercase; opacity: 0.28; transition: opacity 0.2s; color: inherit; }
+  .ad-tab[aria-pressed="true"], .ad-group[aria-pressed="true"] { opacity: 1; }
+  .ad-subtabs { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: -0.25rem 0 1.25rem; }
+  .ad-subtabs[hidden] { display: none !important; }
+  .ad-tab.is-sub { font-size: 0.85rem; letter-spacing: 0.05em; padding: 0.5rem 0.95rem; border: 1px solid var(--fg); opacity: 1; }
+  .ad-tab.is-sub[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
 
   .ad-btn { padding: 0.7rem 1.1rem; border: 2px solid var(--fg); background: var(--fg); color: var(--bg); font-family: var(--display); font-size: 0.9rem; letter-spacing: 0.04em; text-transform: uppercase; cursor: pointer; }
   .ad-btn.is-ghost { background: none; color: var(--fg); }
@@ -127,7 +131,7 @@
   .sc-manual { padding: 0.5rem 1rem 1rem; font-size: 0.85rem; opacity: 0.9; }
   .sc-manual summary { cursor: pointer; padding: 0.4rem 0; }
   .sc-manual input { width: 100%; margin: 0.4rem 0; padding: 0.7rem; border: 1px solid #fff; background: #111; color: #fff; font: inherit; }
-  .ad-tab[hidden], .ad-perms[hidden] { display: none !important; }
+  .ad-tab[hidden], .ad-group[hidden], .ad-perms[hidden] { display: none !important; }
   .ad-perms { display: flex; flex-wrap: wrap; gap: 0.35rem 1rem; margin-top: 0.45rem; font-size: 0.85rem; }
   .ad-perms label { display: inline-flex; align-items: center; gap: 0.35rem; cursor: pointer; }
   .ad-perms input { width: auto; margin: 0; }
@@ -147,7 +151,8 @@
 
   @media (max-width: 560px) {
     .ad-tabs { flex-wrap: wrap; gap: 0.2rem 1.2rem; }
-    .ad-tab { font-size: 1.3rem; }
+    .ad-tab, .ad-group { font-size: 1.3rem; }
+    .ad-tab.is-sub { font-size: 0.8rem; }
     .ck-row { grid-template-columns: 1fr; }
     .ck-controls { width: 100%; }
     .ck-controls .ck-main { flex: 1; }
@@ -178,6 +183,7 @@
   .ad-hint { font-size: 0.78rem; opacity: 0.6; margin-top: 0.25rem; }
   @media (max-width: 560px) { .ad-grid { grid-template-columns: 1fr; } .ad-table { font-size: 0.8rem; } }
 </style>
+<link rel="stylesheet" href="/admin/mesas.css?v=8">
 </head>
 <body>
 
@@ -200,12 +206,17 @@
   </header>
   <main class="ad-wrap">
     <div class="ad-tabs">
-      <button class="ad-tab" data-tab="events" aria-pressed="true" type="button">Eventos</button>
-      <button class="ad-tab" data-tab="bookings" aria-pressed="false" type="button">Reservas</button>
-      <button class="ad-tab" data-tab="checkin" aria-pressed="false" type="button">Asistencia</button>
-      <button class="ad-tab" data-tab="lists" aria-pressed="false" type="button">Listas</button>
+      <button class="ad-group" data-group="events" aria-pressed="true" type="button">Eventos</button>
+      <button class="ad-group" data-group="cover" aria-pressed="false" type="button">RoceCover</button>
       <button class="ad-tab" data-tab="team" id="teamTab" aria-pressed="false" type="button">Equipo</button>
     </div>
+    <div class="ad-subtabs" id="subEvents" role="group" aria-label="Eventos">
+      <button class="ad-tab is-sub" data-tab="events" aria-pressed="true" type="button">Eventos</button>
+      <button class="ad-tab is-sub" data-tab="bookings" aria-pressed="false" type="button">Reservas</button>
+      <button class="ad-tab is-sub" data-tab="checkin" aria-pressed="false" type="button">Asistencia</button>
+      <button class="ad-tab is-sub" data-tab="lists" aria-pressed="false" type="button">Listas</button>
+    </div>
+    <button class="ad-tab" data-tab="tables" id="coverTab" aria-pressed="false" type="button" style="display:none !important">RoceCover</button>
     <p class="ad-msg" id="appMsg" hidden></p>
 
     <section id="tabEvents">
@@ -255,9 +266,11 @@
       <p class="ad-empty" id="lsEmpty" hidden>No hay listas. Crea la primera con “+ Nueva lista”.</p>
     </section>
 
+    <section id="tabTables" hidden></section>
+
     <section id="tabTeam" hidden>
       <div id="teamAdmin">
-      <p class="ad-meta" style="margin-bottom:1rem"><b>Administrador</b>: gestiona el equipo (crea cuentas, cambia contraseñas, quita accesos). <b>Equipo</b>: solo ve las pestañas que le marques abajo (Eventos, Reservas, Asistencia, Listas) y no puede tocar el equipo. Ambos pueden cambiar su propia contraseña.</p>
+      <p class="ad-meta" style="margin-bottom:1rem"><b>Administrador</b>: gestiona el equipo (crea cuentas, cambia contraseñas, quita accesos). <b>Equipo</b>: solo ve las pestañas que le marques abajo (Eventos, Reservas, Asistencia, Listas, RoceCover) y no puede tocar el equipo. Ambos pueden cambiar su propia contraseña.</p>
       <ul class="ad-list" id="teamList"></ul>
       <form class="ad-sheet-inline" id="teamForm" autocomplete="off">
         <h2 class="ad-sub">Añadir a alguien</h2>
@@ -266,7 +279,7 @@
           <input type="email" id="teamEmail" placeholder="persona@roce.es" required style="flex:1 1 14rem">
           <input type="text" id="teamPass" placeholder="Contraseña (mín. 10)" required minlength="10" style="flex:1 1 12rem" spellcheck="false">
           <select id="teamRole" aria-label="Nivel"><option value="staff">Equipo</option><option value="admin">Administrador</option></select>
-          <span class="ad-perms" id="teamNewTabs" aria-label="Pestañas que podrá ver"><label><input type="checkbox" data-tab="events"> Eventos</label><label><input type="checkbox" data-tab="bookings"> Reservas</label><label><input type="checkbox" data-tab="checkin" checked> Asistencia</label><label><input type="checkbox" data-tab="lists"> Listas</label></span>
+          <span class="ad-perms" id="teamNewTabs" aria-label="Pestañas que podrá ver"><label><input type="checkbox" data-tab="events"> Eventos</label><label><input type="checkbox" data-tab="bookings"> Reservas</label><label><input type="checkbox" data-tab="checkin" checked> Asistencia</label><label><input type="checkbox" data-tab="lists"> Listas</label><label><input type="checkbox" data-tab="tables"> RoceCover</label></span>
           <button class="ad-btn is-ghost" type="button" id="teamGen">Generar</button>
           <button class="ad-btn" type="submit" id="teamAdd">Crear y dar acceso</button>
         </div>
@@ -341,7 +354,7 @@
     <p class="ad-msg is-error" id="evFormMsg" hidden></p>
     <div class="ad-grid">
       <label class="ad-field"><span>Ambiente</span>
-        <select id="fEnv"><option value="day">Day</option><option value="night">Night (+18)</option></select></label>
+        <select id="fEnv"><option value="day">Coffee, Bakery &amp; Kitchen</option><option value="night">Restaurant &amp; Cocktails (+18)</option></select></label>
       <label class="ad-field"><span>Fecha y hora (Valencia)</span><input type="datetime-local" id="fStart" required></label>
       <label class="ad-field full"><span>Título (español)</span><input type="text" id="fTitleEs" required maxlength="80"></label>
       <label class="ad-field full"><span>Título (inglés)</span><input type="text" id="fTitleEn" maxlength="80"><p class="ad-hint">Si lo dejas vacío se usa el español.</p></label>
@@ -463,11 +476,14 @@
   $('logout').addEventListener('click', function () { saveSession(null); showLogin(''); });
 
   // Pestañas que puede usar esta cuenta (las define un administrador en Equipo). Equipo/"Mi cuenta" siempre se ve.
-  var ALL_TABS = ['events', 'bookings', 'checkin', 'lists'], myTabs = ALL_TABS.slice();
+  var ALL_TABS = ['events', 'bookings', 'checkin', 'lists', 'tables'], DEFAULT_TABS = ['events', 'bookings', 'checkin', 'lists'], myTabs = DEFAULT_TABS.slice();
   function applyTabs() {
     document.querySelectorAll('.ad-tab[data-tab]').forEach(function (b) {
       var t = b.dataset.tab; b.hidden = t !== 'team' && myTabs.indexOf(t) === -1;
     });
+    var evAny = ['events', 'bookings', 'checkin', 'lists'].some(function (t) { return myTabs.indexOf(t) !== -1; });
+    document.querySelector('.ad-group[data-group="events"]').hidden = !evAny;
+    document.querySelector('.ad-group[data-group="cover"]').hidden = myTabs.indexOf('tables') === -1;
     var first = ALL_TABS.filter(function (t) { return myTabs.indexOf(t) !== -1; })[0] || 'team';
     var btn = document.querySelector('.ad-tab[data-tab="' + first + '"]'); if (btn) btn.click();
   }
@@ -476,7 +492,7 @@
       if (!rows || !rows.length) { saveSession(null); showLogin('Esta cuenta no tiene permiso para usar el panel.'); return; }
       var mine = rows.filter(function (r) { return String(r.email).toLowerCase() === String(session.email).toLowerCase(); })[0];
       myRole = mine && mine.role === 'admin' ? 'admin' : 'staff';
-      myTabs = myRole === 'admin' ? ALL_TABS.slice() : (mine && Array.isArray(mine.tabs) ? mine.tabs.slice() : ALL_TABS.slice());
+      myTabs = myRole === 'admin' ? ALL_TABS.slice() : (mine && Array.isArray(mine.tabs) ? mine.tabs.slice() : DEFAULT_TABS.slice());
       $('teamAdmin').hidden = myRole !== 'admin';
       $('teamTab').textContent = myRole === 'admin' ? 'Equipo' : 'Mi cuenta';
       $('whoami').textContent = session.email;
@@ -503,10 +519,32 @@
   document.querySelectorAll('.ad-tab').forEach(function (t) {
     t.addEventListener('click', function () {
       document.querySelectorAll('.ad-tab').forEach(function (x) { x.setAttribute('aria-pressed', x === t ? 'true' : 'false'); });
-      $('tabEvents').hidden = t.dataset.tab !== 'events'; $('tabBookings').hidden = t.dataset.tab !== 'bookings'; $('tabTeam').hidden = t.dataset.tab !== 'team'; $('tabCheckin').hidden = t.dataset.tab !== 'checkin'; $('tabLists').hidden = t.dataset.tab !== 'lists';
+      $('tabEvents').hidden = t.dataset.tab !== 'events'; $('tabBookings').hidden = t.dataset.tab !== 'bookings'; $('tabTeam').hidden = t.dataset.tab !== 'team'; $('tabCheckin').hidden = t.dataset.tab !== 'checkin'; $('tabLists').hidden = t.dataset.tab !== 'lists'; $('tabTables').hidden = t.dataset.tab !== 'tables';
       if (t.dataset.tab === 'lists') openLists();
       if (t.dataset.tab === 'checkin') openCheckin();
+      if (t.dataset.tab === 'tables' && window.ROCE_ADMIN && window.ROCE_ADMIN.openTables) window.ROCE_ADMIN.openTables();
       if (t.dataset.tab === 'team' && myRole === 'admin') loadTeam();
+    });
+  });
+
+  // Grupos del panel: "Eventos" (eventos, reservas, asistencia, listas) y "RoceCover" (todo lo del restaurante).
+  var lastSub = 'events';
+  function syncGroups(tab) {
+    var grp = tab === 'tables' ? 'cover' : tab === 'team' ? 'team' : 'events';
+    document.querySelectorAll('.ad-group').forEach(function (g) { g.setAttribute('aria-pressed', g.dataset.group === grp ? 'true' : 'false'); });
+    $('subEvents').hidden = grp !== 'events';
+  }
+  document.querySelectorAll('.ad-tab').forEach(function (t) {
+    t.addEventListener('click', function () {
+      if (['events', 'bookings', 'checkin', 'lists'].indexOf(t.dataset.tab) !== -1) lastSub = t.dataset.tab;
+      syncGroups(t.dataset.tab);
+    });
+  });
+  document.querySelectorAll('.ad-group').forEach(function (g) {
+    g.addEventListener('click', function () {
+      if (g.dataset.group === 'cover') { $('coverTab').click(); return; }
+      var subs = [].slice.call(document.querySelectorAll('#subEvents .ad-tab')).filter(function (b) { return !b.hidden; });
+      var btn = subs.filter(function (b) { return b.dataset.tab === lastSub; })[0] || subs[0]; if (btn) btn.click();
     });
   });
 
@@ -523,7 +561,7 @@
       return '<li class="ad-card' + (e.published ? '' : ' is-draft') + (past ? ' is-past' : '') + '">' +
         '<div class="ad-date"><b>' + esc(fmtDate(e.starts_at, { day: 'numeric' })) + '</b><span>' + esc(fmtDate(e.starts_at, { month: 'short' }).replace('.', '')) + '</span></div>' +
         '<div><div class="ad-name">' + esc(e.title_es) + '</div>' +
-        '<div class="ad-meta"><span class="ad-tag ' + e.env + '">' + (e.env === 'night' ? 'Night +18' : 'Day') + '</span>' +
+        '<div class="ad-meta"><span class="ad-tag ' + e.env + '">' + (e.env === 'night' ? 'Restaurant & Cocktails +18' : 'Coffee, Bakery & Kitchen') + '</span>' +
           '<span class="ad-tag ' + (e.published ? 'is-green' : 'is-red') + '">' + (e.published ? 'Publicado' : 'Borrador') + '</span>' +
           esc(fmtDate(e.starts_at, { weekday: 'short', hour: '2-digit', minute: '2-digit' })) + ' · ' + esc(money(e.price_cents)) + '</div>' +
         '<div class="ad-meta">' + t + ' de ' + e.capacity + ' plazas reservadas</div><div class="ad-bar-cap"><i style="width:' + pct + '%"></i></div></div>' +
@@ -872,7 +910,7 @@
     return events.filter(function (e) { return new Date(e.starts_at).getTime() + e.duration_h * 3600000 > now || lists.some(function (l) { return l.event_id === e.id; }); })
       .sort(function (a, b) { return new Date(b.starts_at) - new Date(a.starts_at); });
   }
-  function evOptionLabel(e) { return fmtDate(e.starts_at, { day: 'numeric', month: 'short' }) + ' · ' + e.title_es + ' (' + (e.env === 'night' ? 'Night' : 'Day') + ')'; }
+  function evOptionLabel(e) { return fmtDate(e.starts_at, { day: 'numeric', month: 'short' }) + ' · ' + e.title_es + ' (' + (e.env === 'night' ? 'Restaurant & Cocktails' : 'Coffee, Bakery & Kitchen') + ')'; }
   function openLists() {
     var keep = $('lsEvent').value;
     $('lsEvent').innerHTML = '<option value="">Todos los eventos</option>' + lsEvents().map(function (e) { return '<option value="' + esc(e.id) + '">' + esc(evOptionLabel(e)) + '</option>'; }).join('');
@@ -889,7 +927,7 @@
       var came = names.filter(function (n) { return n.checked_in; }).length;
       return '<li class="ls-card' + (closed ? ' is-closed' : '') + '" data-id="' + l.id + '">' +
         '<div class="ad-name">' + esc(l.label) + '</div>' +
-        '<div class="ad-meta"><span class="ad-tag ' + (e && e.env === 'night' ? 'night' : 'day') + '">' + (e && e.env === 'night' ? 'Night' : 'Day') + '</span>' + esc(e ? e.title_es + ' · ' + fmtDate(e.starts_at, { day: 'numeric', month: 'short' }) : l.event_id) + '</div>' +
+        '<div class="ad-meta"><span class="ad-tag ' + (e && e.env === 'night' ? 'night' : 'day') + '">' + (e && e.env === 'night' ? 'Restaurant & Cocktails' : 'Coffee, Bakery & Kitchen') + '</span>' + esc(e ? e.title_es + ' · ' + fmtDate(e.starts_at, { day: 'numeric', month: 'short' }) : l.event_id) + '</div>' +
         '<div class="ad-meta"><b>' + names.length + ' / ' + l.max_people + '</b> personas' + (full ? ' · <span class="ad-tag is-red">Llena</span>' : '') + (came ? ' · ' + came + ' han venido' : '') + ' · ' +
           (l.validated_at ? '<span class="ad-tag is-green">Confirmada por quien la rellena</span>' : closed ? '<span class="ad-tag is-red">Cerrada</span>' : 'cierra el ' + esc(fmtDate(l.closes_at, { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }))) + '</div>' +
         (l.host_name ? '<div class="ad-meta">Apuntada por <b>' + esc(l.host_name) + '</b> · ' + esc(l.host_contact) + '</div>' : '<div class="ad-meta">Aún nadie ha abierto el enlace y la ha rellenado.</div>') +
@@ -987,7 +1025,7 @@
       api('guest_list_entries?id=eq.' + en.id, { method: 'DELETE' }).then(function () { l.guest_list_entries = l.guest_list_entries.filter(function (x) { return x.id !== en.id; }); renderLists(); }).catch(function (x) { flash(x.message, 'error'); });
     }
     else if (act === 'add') {
-      var inp = li.querySelector('.ls-add input'), parts = inp.value.split(',').map(function (x) { return x.trim(); }), name = parts[0] || '', gmail = (parts[1] || '').toLowerCase(),
+      var inp = li.querySelector('.ls-add input'), parts = inp.value.split(',').map(function (x) { return x.trim(); }), name = parts[0] || '', gmail = (parts[1] || '').toLowerCase();
       if (name.length < 2) { flash('Escribe el nombre.', 'error'); return; }
       if (gmail && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(gmail)) { flash('Ese email no es válido.', 'error'); return; }
       if ((l.guest_list_entries || []).length >= l.max_people) { flash('La lista ya está llena (' + l.max_people + '). Sube el máximo en Editar.', 'error'); return; }
@@ -1276,10 +1314,10 @@
     crypto.getRandomValues(a); for (var i = 0; i < a.length; i++) o += chars[a[i] % chars.length];
     return o;
   }
-  var TAB_LABEL = [['events', 'Eventos'], ['bookings', 'Reservas'], ['checkin', 'Asistencia'], ['lists', 'Listas']];
+  var TAB_LABEL = [['events', 'Eventos'], ['bookings', 'Reservas'], ['checkin', 'Asistencia'], ['lists', 'Listas'], ['tables', 'RoceCover']];
   function permsHtml(p) {
     if (p.role === 'admin') return '<div class="ad-meta">Acceso a todo, incluido Equipo.</div>';
-    var cur = Array.isArray(p.tabs) ? p.tabs : ALL_TABS;
+    var cur = Array.isArray(p.tabs) ? p.tabs : DEFAULT_TABS;
     return '<div class="ad-perms" data-email="' + esc(p.email) + '" aria-label="Pestañas de ' + esc(p.email) + '">' + TAB_LABEL.map(function (t) {
       return '<label><input type="checkbox" data-tab="' + t[0] + '"' + (cur.indexOf(t[0]) !== -1 ? ' checked' : '') + '> ' + t[1] + '</label>';
     }).join('') + '</div>';
@@ -1358,7 +1396,9 @@
 
   // ─── Arranque ───────────────────────────────────────────────────────
   if (session && session.access_token) start(); else showLogin('');
+  window.ROCE_ADMIN = { api: api, flash: flash, esc: esc, $: $, madridToISO: madridToISO, toInputValue: toInputValue, fmtDate: fmtDate, money: money, cfg: cfg, TZ: TZ, session: function () { return session; } };
 })();
 </script>
+<script src="/admin/mesas.js?v=15"></script>
 </body>
 </html>
