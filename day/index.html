@@ -643,10 +643,12 @@
     let events = [];
     function render() {
       const l = window.ROCE_I18N ? window.ROCE_I18N.getLang() : 'es';
-      const e = U && events.filter((x) => x.env === ENV && U.isLive(x))[0];
+      // Un evento en marcha se muestra siempre, sea de día o de noche.
+      const e = U && events.filter((x) => U.isLive(x))[0];
       if (!e) { el.hidden = true; return; }
       U.setMarquee(el.querySelector('.teaser-live-title'), e.title[l] || e.title.es);
       el.querySelector('.teaser-live-time').textContent = U.range(e);
+      el.href = '/eventos/evento/?e=' + encodeURIComponent(e.id);
       el.hidden = false;
     }
     if (window.ROCE_EVENTS_READY) window.ROCE_EVENTS_READY.then((list) => { events = list; render(); });

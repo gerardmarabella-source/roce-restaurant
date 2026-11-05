@@ -628,6 +628,7 @@
         if (!e) { el.hidden = true; return; }
         n++;
         el.hidden = false;
+        el.href = '/eventos/evento/?e=' + encodeURIComponent(e.id);
         var b = U.bounds(e);
         U.setMarquee(el.querySelector('.home-live-title'), e.title[l] || e.title.es);
         el.querySelector('.home-live-time').textContent = U.isLive(e) ? hm(b[0]) + ' – ' + hm(b[1]) :
