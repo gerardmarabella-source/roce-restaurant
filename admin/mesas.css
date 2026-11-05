@@ -120,3 +120,14 @@
 .mt-more > summary::after { content: "+"; font-size: 1.1rem; line-height: 1; }
 .mt-more[open] > summary::after { content: "−"; }
 .mt-more[open] { padding-bottom: 0.4rem; }
+
+/* Cuentas de empresa / grupo */
+.mt-acc { display: grid; grid-template-columns: 1fr auto; gap: 0.6rem 1rem; align-items: center; }
+.mt-acc-bal { text-align: right; }
+.mt-acc-bal b { display: block; font-size: 1.5rem; line-height: 1.1; }
+.mt-acc-bal span { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; opacity: 0.7; }
+.mt-acc-bal.is-neg b { color: var(--red); }
+.mt-acc-bal.is-pos b { color: var(--ok); }
+.mt-acc .ad-actions, .mt-acc-ledger { grid-column: 1 / -1; }
+.mt-accrow { margin: 0.5rem 0; }
+.mt-accrow .ad-meta { margin: 0; }

@@ -73,8 +73,10 @@
       api('dining_services?select=*&order=start_min'),
       api('dining_prescribers?select=*&order=name').catch(function () { return []; }),
       api('rpc/dining_team_people', { method: 'POST', body: {} }).catch(function () { return []; }),
-      api('dining_tags?select=*&order=name').catch(function () { return []; })
-    ]).then(function (r) { S.tags = r[5] || []; S.zones = r[0] || []; S.tables = r[1] || []; S.services = r[2] || []; S.prescribers = r[3] || []; S.team = r[4] || []; S.loadedCfg = true; });
+      api('dining_tags?select=*&order=name').catch(function () { return []; }),
+      api('dining_accounts?select=*&order=name').catch(function () { return []; }),
+      api('dining_account_moves?select=*&order=created_at.desc&limit=2000').catch(function () { return []; })
+    ]).then(function (r) { S.tags = r[5] || []; S.accounts = r[6] || []; S.accMoves = r[7] || []; S.zones = r[0] || []; S.tables = r[1] || []; S.services = r[2] || []; S.prescribers = r[3] || []; S.team = r[4] || []; S.loadedCfg = true; });
   }
   function loadDay() {
     var from = A.madridToISO(S.date + 'T05:00'), to = A.madridToISO(addDays(S.date, 1) + 'T05:00');
@@ -136,6 +138,17 @@
       var tmp = document.createElement('div'); tmp.innerHTML = chips(nameAttr, on); list.replaceWith(tmp.firstChild);
     }).catch(function () { flash('No se ha podido crear la etiqueta: ejecuta primero mesas_etiquetas.sql en Supabase.', 'error'); });
   });
+  // ─── Cuentas de empresa / grupo (saldo) ───
+  function accBal(id) { return (S.accMoves || []).reduce(function (n, m) { return m.account_id === id ? n + m.amount_cents : n; }, 0); }
+  function accOptions(sel) {
+    var act = (S.accounts || []).filter(function (a) { return a.active || a.id === sel; });
+    return '<option value="">Sin cuenta</option>' + act.map(function (a) { return '<option value="' + a.id + '"' + (a.id === sel ? ' selected' : '') + '>' + esc(a.name) + ' · ' + eur(accBal(a.id)) + '</option>'; }).join('');
+  }
+  function accVal(el) { return el && !el.disabled ? (el.value || null) : undefined; }
+  function accField(id, sel) {
+    var none = !(S.accounts || []).length;
+    return '<label class="ad-field"><span>Cuenta de empresa / grupo (saldo)</span><select id="' + id + '"' + (none ? ' disabled' : '') + '>' + (none ? '<option value="">Sin cuentas: créalas en RoceCover → Cuentas</option>' : accOptions(sel)) + '</select></label>';
+  }
   function presName(code) { var p = S.prescribers.filter(function (x) { return x.code === code; })[0]; return p ? p.name : code; }
   var AL = { gluten: 'Gluten / celiaquía', lactosa: 'Lactosa', 'frutos-secos': 'Frutos secos', marisco: 'Marisco', pescado: 'Pescado', huevo: 'Huevo', soja: 'Soja', sesamo: 'Sésamo', vegetariano: 'Vegetariano', vegano: 'Vegano', otras: 'Otras alergias' };
   var LB = { transferencia: 'Pago por transferencia' };   // etiquetas que no son alergias
@@ -157,7 +170,9 @@
     var cur = S.notes[key] || { note: '', blocked: false, blocked_reason: '', tags: [], customer_type: 'particular', company: '', tax_id: '', balance_cents: 0 };
     var n = Object.assign({}, cur, o, { customer_key: key });
     if (!n.blocked) n.blocked_reason = '';
-    return api('dining_customer_notes?on_conflict=customer_key', { method: 'POST', prefer: 'resolution=merge-duplicates,return=minimal', body: { customer_key: key, note: n.note || '', blocked: !!n.blocked, blocked_reason: n.blocked_reason || '', tags: n.tags || [], customer_type: n.customer_type || 'particular', company: n.company || '', tax_id: n.tax_id || '', balance_cents: n.balance_cents || 0, updated_by: A.session().email || '', updated_at: new Date().toISOString() } })
+    var body = { customer_key: key, note: n.note || '', blocked: !!n.blocked, blocked_reason: n.blocked_reason || '', tags: n.tags || [], customer_type: n.customer_type || 'particular', company: n.company || '', tax_id: n.tax_id || '', balance_cents: n.balance_cents || 0, updated_by: A.session().email || '', updated_at: new Date().toISOString() };
+    if (n.account_id !== undefined) body.account_id = n.account_id || null;   // solo si la columna existe (mesas_cuentas.sql)
+    return api('dining_customer_notes?on_conflict=customer_key', { method: 'POST', prefer: 'resolution=merge-duplicates,return=minimal', body: body })
       .then(function () { S.notes[key] = n; });
   }
   function saveNote(key, note, blocked, why) { return saveCust(key, { note: note, blocked: blocked, blocked_reason: why }); }
@@ -173,14 +188,14 @@
   function shell() {
     root.innerHTML =
       '<div class="mt-nav" role="group" aria-label="Mesas">' +
-      [['day', 'Día'], ['wait', 'Lista de espera'], ['crm', 'Clientes'], ['blocks', 'Bloqueos'], ['config', 'Configuración']].map(function (v) { return '<button type="button" class="ck-chip" data-view="' + v[0] + '" aria-pressed="' + (S.view === v[0]) + '">' + v[1] + '</button>'; }).join('') +
+      [['day', 'Día'], ['wait', 'Lista de espera'], ['crm', 'Clientes'], ['accounts', 'Cuentas'], ['blocks', 'Bloqueos'], ['config', 'Configuración']].map(function (v) { return '<button type="button" class="ck-chip" data-view="' + v[0] + '" aria-pressed="' + (S.view === v[0]) + '">' + v[1] + '</button>'; }).join('') +
       '</div><div id="mtBody"></div>';
   }
   function render() {
     if (!document.getElementById('mtBody')) shell();
     [].forEach.call(root.querySelectorAll('[data-view]'), function (b) { b.setAttribute('aria-pressed', String(b.dataset.view === S.view)); });
     var body = document.getElementById('mtBody');
-    if (S.view === 'day') { renderDay(body); applyView(); } else if (S.view === 'wait') renderWait(body); else if (S.view === 'crm') renderCrm(body); else if (S.view === 'blocks') renderBlocks(body); else renderConfig(body);
+    if (S.view === 'day') { renderDay(body); applyView(); } else if (S.view === 'wait') renderWait(body); else if (S.view === 'crm') renderCrm(body); else if (S.view === 'accounts') renderAccounts(body); else if (S.view === 'blocks') renderBlocks(body); else renderConfig(body);
   }
   root.addEventListener('click', function (e) {
     var v = e.target.closest('[data-view]');
@@ -193,7 +208,8 @@
     return loadConfig().then(function () {
       if (S.view === 'day') return loadDay();
       if (S.view === 'wait') return api('dining_waitlist?select=*&status=in.(waiting,notified)&want_date=gte.' + today() + '&order=want_date,created_at').then(function (r) { S.waitlist = r || []; });
-      if (S.view === 'crm') return A.api('rpc/dining_crm', { method: 'POST', body: {} }).then(function (r) { S.crm = r || []; });
+      if (S.view === 'crm') return Promise.all([A.api('rpc/dining_crm', { method: 'POST', body: {} }), api('dining_customer_notes?select=*').catch(function () { return []; })]).then(function (r) { S.crm = r[0] || []; (r[1] || []).forEach(function (n) { S.notes[n.customer_key] = n; }); });
+      if (S.view === 'accounts') return loadConfig(true);
       if (S.view === 'blocks') return api('dining_blocks?select=*&ends_at=gt.' + encodeURIComponent(new Date().toISOString()) + '&order=starts_at').then(function (r) { S.blocks = r || []; });
       return api('dining_closures?select=*&date_to=gte.' + today() + '&order=date_from').then(function (r) { S.closures = r || []; });
     }).then(render).catch(function (e) { flash('No se han podido cargar las mesas: ' + e.message, 'error'); });
@@ -667,7 +683,8 @@
       '<div class="ad-field mt-cust"><span>Ficha del cliente' + (ckey(b) ? '' : ' (sin email ni teléfono: no se puede guardar)') + '</span>' +
       '<div class="mt-two"><select id="edType">' + Object.keys(CT).map(function (k) { return '<option value="' + k + '"' + (((noteOf(b) || {}).customer_type || 'particular') === k ? ' selected' : '') + '>' + esc(CT[k]) + '</option>'; }).join('') + '</select>' +
       '<input type="text" id="edCompany" maxlength="80" placeholder="Empresa / grupo" value="' + esc((noteOf(b) || {}).company || '') + '"></div>' +
-      '<div class="mt-two"><input type="text" id="edTax" maxlength="20" placeholder="CIF (para facturar)" value="' + esc((noteOf(b) || {}).tax_id || '') + '"><input type="number" id="edBal" step="0.01" placeholder="Saldo pendiente facturado (€)" value="' + (((noteOf(b) || {}).balance_cents || 0) ? (noteOf(b).balance_cents / 100) : '') + '"></div>' +
+      '<div class="mt-two"><input type="text" id="edTax" maxlength="20" placeholder="CIF (para facturar)" value="' + esc((noteOf(b) || {}).tax_id || '') + '">' + accField('edAcc', (noteOf(b) || {}).account_id) + '</div>' +
+      '<div class="mt-accrow" id="edAccRow"></div>' +
       '<textarea id="edCNote" maxlength="500" placeholder="Comentarios sobre este cliente (alergias, trato, preferencias…)">' + esc((noteOf(b) || {}).note || '') + '</textarea>' +
       '<label class="mt-check"><input type="checkbox" id="edBlock"' + ((noteOf(b) || {}).blocked ? ' checked' : '') + '> Bloquear: que no pueda volver a reservar</label>' +
       '<input type="text" id="edBlockWhy" maxlength="200" placeholder="Motivo del bloqueo (solo lo ve el equipo)" value="' + esc((noteOf(b) || {}).blocked_reason || '') + '"></div>' +
@@ -694,6 +711,33 @@
           q('edCap').style.color = party > seats && ids.length ? 'var(--red)' : '';
         }
         picks(false);
+        // Cargar el gasto de la visita al saldo de la cuenta de empresa / grupo.
+        var charged = null;
+        function accRow() {
+          var sel = q('edAcc'), row = q('edAccRow'); if (!sel || sel.disabled || !sel.value) { row.innerHTML = ''; return; }
+          var a = (S.accounts || []).filter(function (x) { return x.id === sel.value; })[0]; if (!a) { row.innerHTML = ''; return; }
+          var sp = Math.round((+q('edSpend').value || 0) * 100);
+          row.innerHTML = charged ? '<p class="ad-meta">✓ Ya cargado a ' + esc(a.name) + ': ' + eur(-charged.amount_cents) + ' (' + esc(fmtShort(charged.created_at)) + '). Saldo: ' + eur(accBal(a.id)) + '.</p>'
+            : sp > 0 ? '<button type="button" class="ad-btn is-small" id="edCharge">Cargar ' + eur(sp) + ' al saldo de ' + esc(a.name) + ' (' + eur(accBal(a.id)) + ')</button>'
+            : '<p class="ad-meta">Saldo de ' + esc(a.name) + ': ' + eur(accBal(a.id)) + '. Anota el gasto de la visita (abajo) para cargarlo al saldo.</p>';
+        }
+        if (q('edAcc')) {
+          api('dining_account_moves?booking_id=eq.' + b.id + '&kind=eq.spend&select=*&limit=1').then(function (r) { charged = (r || [])[0] || null; accRow(); }).catch(function () {});
+          q('edAcc').addEventListener('change', accRow); q('edSpend').addEventListener('input', accRow); accRow();
+          q('edAccRow').addEventListener('click', function (ev) {
+            var btn = ev.target.closest('#edCharge'); if (!btn) return;
+            var a = (S.accounts || []).filter(function (x) { return x.id === q('edAcc').value; })[0], sp = Math.round((+q('edSpend').value || 0) * 100); if (!a || sp <= 0) return;
+            var after = accBal(a.id) - sp;
+            if (!confirm('¿Cargar ' + eur(sp) + ' al saldo de ' + a.name + '? Quedará en ' + eur(after) + (after < 0 ? ' (por encima del saldo: pendiente de facturar)' : '') + '.')) return;
+            btn.disabled = true;
+            addMove(a.id, -sp, 'spend', 'Reserva ' + b.ref + (b.name ? ' · ' + b.name : ''), b.id, ckey(b))
+              .then(function () { return b.spend_cents !== sp ? patch(b.id, { spend_cents: sp }) : null; })
+              .then(function () { b.spend_cents = sp; return loadConfig(true); })
+              .then(function () { return api('dining_account_moves?booking_id=eq.' + b.id + '&kind=eq.spend&select=*&limit=1'); })
+              .then(function (r) { charged = (r || [])[0] || null; flash('Cargado al saldo de ' + a.name + '. Saldo ahora: ' + eur(accBal(a.id)) + '.', 'ok'); accRow(); })
+              .catch(function (x) { btn.disabled = false; fail(x); });
+          });
+        }
         q('edPicks').addEventListener('change', cap); q('edParty').addEventListener('input', cap);
         ['edTime', 'edDate'].forEach(function (id) { q(id).addEventListener('change', function () { picks(true); }); });
         function save(seat) {
@@ -708,7 +752,7 @@
             .then(function () {
               var key = ckey({ email: q('edEmail').value, phone: q('edPhone').value }), cur = S.notes[key] || {}, tags = (cur.tags || []).slice();
               if (q('edAlKeep').checked) picked(m, 'edAl').forEach(function (k) { if (tags.indexOf(k) === -1) tags.push(k); });
-              return saveCust(key, { note: q('edCNote').value.trim(), blocked: q('edBlock').checked, blocked_reason: q('edBlockWhy').value.trim(), customer_type: q('edType').value, company: q('edCompany').value.trim(), tax_id: q('edTax').value.trim(), balance_cents: Math.round((+q('edBal').value || 0) * 100), tags: tags });
+              return saveCust(key, { note: q('edCNote').value.trim(), blocked: q('edBlock').checked, blocked_reason: q('edBlockWhy').value.trim(), customer_type: q('edType').value, company: q('edCompany').value.trim(), tax_id: q('edTax').value.trim(), account_id: accVal(q('edAcc')), tags: tags });
             })
             .then(function () { return seat ? patch(b.id, { status: 'seated', hold_until: new Date(Date.now() + 864e5).toISOString() }) : null; })
             .then(function () { m.remove(); S.date = q('edDate').value; return enter().then(function () { flash(seat ? 'Reserva guardada y sentada.' : 'Reserva guardada.', 'ok'); }); })
@@ -840,18 +884,63 @@
       '<div class="mt-two"><label class="ad-field"><span>Tipo de cliente</span><select id="cuType">' + Object.keys(CT).map(function (k) { return '<option value="' + k + '"' + (c.customer_type === k ? ' selected' : '') + '>' + esc(CT[k]) + '</option>'; }).join('') + '</select></label>' +
       '<label class="ad-field"><span>Empresa / grupo</span><input type="text" id="cuCompany" maxlength="80" value="' + esc(c.company || '') + '"></label></div>' +
       '<div class="mt-two"><label class="ad-field"><span>CIF (para facturar)</span><input type="text" id="cuTax" maxlength="20" value="' + esc(c.tax_id || '') + '"></label>' +
-      '<label class="ad-field"><span>Saldo pendiente facturado (€)</span><input type="number" id="cuBal" step="0.01" value="' + (c.balance_cents ? c.balance_cents / 100 : '') + '"></label></div>' +
+      ''+ accField('cuAcc', (S.notes[c.customer_key] || {}).account_id) + '</div>' +
       '<div class="ad-field"><span>Alergias, intolerancias y etiquetas</span>' + chips('cuAl', c.tags) + '</div>' +
       '<div class="ad-field"><span>Comentarios sobre el cliente</span><textarea id="cuNote" maxlength="500">' + esc(c.note || '') + '</textarea></div>' +
       '<label class="mt-check"><input type="checkbox" id="cuBlock"' + (c.blocked ? ' checked' : '') + '> Bloquear: que no pueda volver a reservar (web ni lista de espera)</label>' +
       '<div class="ad-field"><span>Motivo del bloqueo</span><input type="text" id="cuWhy" maxlength="200" value="' + esc(c.blocked_reason || '') + '"></div>' +
       '<div class="mt-foot"><button type="button" class="ad-btn is-ghost" data-close>Cerrar</button><button type="button" class="ad-btn" id="cuSave">Guardar</button></div>', function (m) {
         m.querySelector('#cuSave').addEventListener('click', function () {
-          saveCust(c.customer_key, { note: m.querySelector('#cuNote').value.trim(), blocked: m.querySelector('#cuBlock').checked, blocked_reason: m.querySelector('#cuWhy').value.trim(), customer_type: m.querySelector('#cuType').value, company: m.querySelector('#cuCompany').value.trim(), tax_id: m.querySelector('#cuTax').value.trim(), balance_cents: Math.round((+m.querySelector('#cuBal').value || 0) * 100), tags: picked(m, 'cuAl') })
+          saveCust(c.customer_key, { note: m.querySelector('#cuNote').value.trim(), blocked: m.querySelector('#cuBlock').checked, blocked_reason: m.querySelector('#cuWhy').value.trim(), customer_type: m.querySelector('#cuType').value, company: m.querySelector('#cuCompany').value.trim(), tax_id: m.querySelector('#cuTax').value.trim(), account_id: accVal(m.querySelector('#cuAcc')), tags: picked(m, 'cuAl') })
             .then(function () { m.remove(); return enter(); }).then(function () { flash('Ficha del cliente guardada.', 'ok'); })
             .catch(function (x) { var el = m.querySelector('#cuMsg'); el.textContent = errText(x); el.hidden = false; });
         });
       });
+  });
+
+  // ─── Cuentas de empresa / grupo ─────────────────────────────────────
+  function cents(str) { var v = Math.round(parseFloat(String(str).replace(',', '.')) * 100); return isFinite(v) ? v : 0; }
+  function addMove(accId, amount, kind, note, bookingId, ckeyV) {
+    return api('dining_account_moves', { method: 'POST', prefer: 'return=minimal', body: { account_id: accId, amount_cents: amount, kind: kind, note: note || '', booking_id: bookingId || null, customer_key: ckeyV || '', created_by: A.session().email || '' } });
+  }
+  function renderAccounts(body) {
+    var accs = S.accounts || [];
+    body.innerHTML = '<p class="ad-meta" style="margin-bottom:0.9rem">Una cuenta guarda el dinero que una empresa o grupo ha entregado a cuenta (<b>bote</b>) para que sus clientes consuman contra él, o lo que se les ha consumido y toca <b>facturar</b>. Vincula a cada cliente a su cuenta en su ficha, y al editar una reserva con gasto puedes cargarlo al saldo. Saldo positivo = a favor del grupo; negativo = pendiente de facturar.</p>' +
+      '<form class="ad-sheet-inline" id="acForm"><h2 class="ad-sub">Nueva cuenta</h2><p class="ad-msg is-error" id="acMsg" hidden></p><div class="ad-grid">' +
+      '<label class="ad-field"><span>Nombre de la empresa / grupo</span><input id="acName" maxlength="80" required placeholder="p. ej. Grupo Marqués"></label>' +
+      '<label class="ad-field"><span>Tipo</span><select id="acKind"><option value="grupo">Grupo: bote prepagado (consumen contra su saldo)</option><option value="empresa">Empresa: se les factura después</option></select></label>' +
+      '<label class="ad-field"><span>CIF</span><input id="acTax" maxlength="20"></label>' +
+      '<label class="ad-field"><span>Saldo inicial entregado (€, opcional)</span><input type="number" id="acInit" min="0" step="0.01"></label></div>' +
+      '<button class="ad-btn" type="submit">Crear cuenta</button></form>' +
+      '<h2 class="ad-sub" style="margin-top:1.75rem">Cuentas</h2><ul class="ad-list">' + (accs.length ? accs.map(function (a) {
+        var bal = accBal(a.id), mv = (S.accMoves || []).filter(function (m) { return m.account_id === a.id; }), open = S.accOpen === a.id;
+        var linked = Object.keys(S.notes || {}).filter(function (k) { return (S.notes[k] || {}).account_id === a.id; }).length;
+        return '<li class="ad-card mt-acc' + (a.active ? '' : ' is-past') + '"><div class="mt-acc-main"><div class="ad-name">' + esc(a.name) + ' <span class="ad-tag">' + (a.kind === 'grupo' ? 'Grupo · bote' : 'Empresa · factura') + '</span>' + (a.active ? '' : ' <span class="ad-tag is-red">cerrada</span>') + '</div>' +
+          '<div class="ad-meta">' + (a.tax_id ? 'CIF ' + esc(a.tax_id) + ' · ' : '') + linked + ' cliente' + (linked === 1 ? '' : 's') + ' vinculado' + (linked === 1 ? '' : 's') + ' · ' + mv.length + ' movimiento' + (mv.length === 1 ? '' : 's') + '</div></div>' +
+          '<div class="mt-acc-bal ' + (bal < 0 ? 'is-neg' : 'is-pos') + '"><b>' + eur(bal) + '</b><span>' + (bal < 0 ? 'pendiente de facturar' : 'saldo a favor') + '</span></div>' +
+          '<div class="ad-actions"><button class="ad-btn is-small" data-acc-top="' + a.id + '">Ingresar saldo</button> <button class="ad-btn is-small is-ghost" data-acc-adj="' + a.id + '">Ajuste</button> <button class="ad-btn is-small is-ghost" data-acc-open="' + a.id + '">' + (open ? 'Ocultar movimientos' : 'Movimientos') + '</button> <button class="ad-btn is-small is-ghost" data-acc-toggle="' + a.id + '">' + (a.active ? 'Cerrar' : 'Reabrir') + '</button></div>' +
+          (open ? '<div class="mt-acc-ledger">' + (mv.length ? '<table class="ad-table"><thead><tr><th>Fecha</th><th>Concepto</th><th>Importe</th></tr></thead><tbody>' + mv.map(function (m) { return '<tr><td class="nowrap">' + esc(fmtShort(m.created_at)) + '</td><td>' + esc(({ topup: 'Ingreso', spend: 'Consumo', adjust: 'Ajuste' })[m.kind] || m.kind) + (m.note ? ' · ' + esc(m.note) : '') + '<br><small>' + esc(m.created_by || '') + '</small></td><td class="nowrap"><b style="color:' + (m.amount_cents < 0 ? 'var(--red)' : 'var(--ok)') + '">' + (m.amount_cents > 0 ? '+' : '') + eur(m.amount_cents) + '</b></td></tr>'; }).join('') + '</tbody></table>' : '<p class="ad-meta">Sin movimientos todavía.</p>') + '</div>' : '') + '</li>';
+      }).join('') : '<li class="ad-empty">Todavía no hay cuentas. Crea la primera arriba.</li>') + '</ul>';
+    var f = document.getElementById('acForm');
+    f.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var init = cents(document.getElementById('acInit').value || 0), msg = document.getElementById('acMsg'); msg.hidden = true;
+      api('dining_accounts', { method: 'POST', prefer: 'return=representation', body: { name: document.getElementById('acName').value.trim(), kind: document.getElementById('acKind').value, tax_id: document.getElementById('acTax').value.trim() } })
+        .then(function (r) { var id = (Array.isArray(r) ? r[0] : r).id; return init > 0 ? addMove(id, init, 'topup', 'Saldo inicial') : null; })
+        .then(function () { return loadConfig(true); }).then(function () { flash('Cuenta creada.', 'ok'); render(); })
+        .catch(function (x) { msg.textContent = 'No se ha podido crear la cuenta' + (/relation|dining_accounts/.test(String(x && x.message)) ? ': ejecuta primero mesas_cuentas.sql en Supabase.' : '.'); msg.hidden = false; });
+    });
+  }
+  root.addEventListener('click', function (e) {
+    var t = e.target.closest('[data-acc-top],[data-acc-adj],[data-acc-open],[data-acc-toggle]'); if (!t) return;
+    var id = t.dataset.accTop || t.dataset.accAdj || t.dataset.accOpen || t.dataset.accToggle, a = (S.accounts || []).filter(function (x) { return x.id === id; })[0]; if (!a) return;
+    if (t.dataset.accOpen) { S.accOpen = S.accOpen === id ? '' : id; return render(); }
+    if (t.dataset.accToggle) return void api('dining_accounts?id=eq.' + id, { method: 'PATCH', body: { active: !a.active }, prefer: 'return=minimal' }).then(function () { return loadConfig(true); }).then(render).catch(fail);
+    var top = !!t.dataset.accTop;
+    var amt = prompt(top ? 'Importe entregado a cuenta por ' + a.name + ' (€):' : 'Ajuste de saldo de ' + a.name + ' (€; negativo para restar):'); if (amt == null || !String(amt).trim()) return;
+    var c = cents(amt); if (!c || (top && c < 0)) return flash('Importe no válido.', 'error');
+    var note = prompt(top ? 'Concepto (p. ej. transferencia del 12/11):' : 'Motivo del ajuste:', ''); if (note == null) return;
+    addMove(id, c, top ? 'topup' : 'adjust', note.trim()).then(function () { return loadConfig(true); }).then(function () { flash((top ? 'Saldo ingresado: ' : 'Ajuste aplicado: ') + eur(c) + '. Saldo ahora: ' + eur(accBal(id)) + '.', 'ok'); render(); }).catch(fail);
   });
 
   // ─── Bloqueos ───────────────────────────────────────────────────────
