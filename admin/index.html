@@ -345,7 +345,7 @@
     <p class="ad-msg is-error" id="evFormMsg" hidden></p>
     <div class="ad-grid">
       <label class="ad-field"><span>Ambiente</span>
-        <select id="fEnv"><option value="day">Day</option><option value="night">Night (+18)</option></select></label>
+        <select id="fEnv"><option value="day">Coffee, Bakery &amp; Kitchen</option><option value="night">Restaurant &amp; Cocktails (+18)</option></select></label>
       <label class="ad-field"><span>Fecha y hora (Valencia)</span><input type="datetime-local" id="fStart" required></label>
       <label class="ad-field full"><span>Título (español)</span><input type="text" id="fTitleEs" required maxlength="80"></label>
       <label class="ad-field full"><span>Título (inglés)</span><input type="text" id="fTitleEn" maxlength="80"><p class="ad-hint">Si lo dejas vacío se usa el español.</p></label>
@@ -528,7 +528,7 @@
       return '<li class="ad-card' + (e.published ? '' : ' is-draft') + (past ? ' is-past' : '') + '">' +
         '<div class="ad-date"><b>' + esc(fmtDate(e.starts_at, { day: 'numeric' })) + '</b><span>' + esc(fmtDate(e.starts_at, { month: 'short' }).replace('.', '')) + '</span></div>' +
         '<div><div class="ad-name">' + esc(e.title_es) + '</div>' +
-        '<div class="ad-meta"><span class="ad-tag ' + e.env + '">' + (e.env === 'night' ? 'Night +18' : 'Day') + '</span>' +
+        '<div class="ad-meta"><span class="ad-tag ' + e.env + '">' + (e.env === 'night' ? 'Restaurant & Cocktails +18' : 'Coffee, Bakery & Kitchen') + '</span>' +
           '<span class="ad-tag ' + (e.published ? 'is-green' : 'is-red') + '">' + (e.published ? 'Publicado' : 'Borrador') + '</span>' +
           esc(fmtDate(e.starts_at, { weekday: 'short', hour: '2-digit', minute: '2-digit' })) + ' · ' + esc(money(e.price_cents)) + '</div>' +
         '<div class="ad-meta">' + t + ' de ' + e.capacity + ' plazas reservadas</div><div class="ad-bar-cap"><i style="width:' + pct + '%"></i></div></div>' +
@@ -877,7 +877,7 @@
     return events.filter(function (e) { return new Date(e.starts_at).getTime() + e.duration_h * 3600000 > now || lists.some(function (l) { return l.event_id === e.id; }); })
       .sort(function (a, b) { return new Date(b.starts_at) - new Date(a.starts_at); });
   }
-  function evOptionLabel(e) { return fmtDate(e.starts_at, { day: 'numeric', month: 'short' }) + ' · ' + e.title_es + ' (' + (e.env === 'night' ? 'Night' : 'Day') + ')'; }
+  function evOptionLabel(e) { return fmtDate(e.starts_at, { day: 'numeric', month: 'short' }) + ' · ' + e.title_es + ' (' + (e.env === 'night' ? 'Restaurant & Cocktails' : 'Coffee, Bakery & Kitchen') + ')'; }
   function openLists() {
     var keep = $('lsEvent').value;
     $('lsEvent').innerHTML = '<option value="">Todos los eventos</option>' + lsEvents().map(function (e) { return '<option value="' + esc(e.id) + '">' + esc(evOptionLabel(e)) + '</option>'; }).join('');
@@ -894,7 +894,7 @@
       var came = names.filter(function (n) { return n.checked_in; }).length;
       return '<li class="ls-card' + (closed ? ' is-closed' : '') + '" data-id="' + l.id + '">' +
         '<div class="ad-name">' + esc(l.label) + '</div>' +
-        '<div class="ad-meta"><span class="ad-tag ' + (e && e.env === 'night' ? 'night' : 'day') + '">' + (e && e.env === 'night' ? 'Night' : 'Day') + '</span>' + esc(e ? e.title_es + ' · ' + fmtDate(e.starts_at, { day: 'numeric', month: 'short' }) : l.event_id) + '</div>' +
+        '<div class="ad-meta"><span class="ad-tag ' + (e && e.env === 'night' ? 'night' : 'day') + '">' + (e && e.env === 'night' ? 'Restaurant & Cocktails' : 'Coffee, Bakery & Kitchen') + '</span>' + esc(e ? e.title_es + ' · ' + fmtDate(e.starts_at, { day: 'numeric', month: 'short' }) : l.event_id) + '</div>' +
         '<div class="ad-meta"><b>' + names.length + ' / ' + l.max_people + '</b> personas' + (full ? ' · <span class="ad-tag is-red">Llena</span>' : '') + (came ? ' · ' + came + ' han venido' : '') + ' · ' +
           (l.validated_at ? '<span class="ad-tag is-green">Confirmada por quien la rellena</span>' : closed ? '<span class="ad-tag is-red">Cerrada</span>' : 'cierra el ' + esc(fmtDate(l.closes_at, { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }))) + '</div>' +
         (l.host_name ? '<div class="ad-meta">Apuntada por <b>' + esc(l.host_name) + '</b> · ' + esc(l.host_contact) + '</div>' : '<div class="ad-meta">Aún nadie ha abierto el enlace y la ha rellenado.</div>') +
@@ -1366,6 +1366,6 @@
   window.ROCE_ADMIN = { api: api, flash: flash, esc: esc, $: $, madridToISO: madridToISO, toInputValue: toInputValue, fmtDate: fmtDate, money: money, cfg: cfg, TZ: TZ, session: function () { return session; } };
 })();
 </script>
-<script src="/admin/mesas.js?v=8"></script>
+<script src="/admin/mesas.js?v=9"></script>
 </body>
 </html>

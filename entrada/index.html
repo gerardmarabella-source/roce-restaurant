@@ -75,7 +75,7 @@
   </div>
 </div>
 <script src="/cookies.js?v=4"></script>
-<script src="/i18n.js?v=97"></script>
+<script src="/i18n.js?v=98"></script>
 <script src="/eventos/config.js?v=2"></script>
 <script src="/assets/js/qrcode.js?v=1"></script>
 <script>
@@ -95,7 +95,7 @@
       var es = lang() !== 'en';
       var d = data, end = new Date(new Date(d.starts_at).getTime() + d.duration_h * 3600000).toISOString();
       document.documentElement.setAttribute('data-env', d.env);
-      $('tcEnv').textContent = (d.env === 'night' ? 'Night +18' : 'Day') + ' · ROCE';
+      $('tcEnv').textContent = (d.env === 'night' ? 'Restaurant & Cocktails +18' : 'Coffee, Bakery & Kitchen') + ' · ROCE';
       $('tcTitle').textContent = (!es && d.title_en) ? d.title_en : d.title_es;
       var floorRaw = d.place_es || d.place_en || '';
       var first = /primera|first|alta|upper/i.test(floorRaw);

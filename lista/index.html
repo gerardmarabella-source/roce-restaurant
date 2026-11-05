@@ -84,7 +84,7 @@
     <div class="gl-rules">
       <b id="glLabel"></b>
       <p id="glRule" style="margin-top:0.4rem"></p>
-      <p class="gl-night" id="glNight" hidden data-i18n="gl_night">Night es un espacio +18: todos los invitados deben ser mayores de 18 años.</p>
+      <p class="gl-night" id="glNight" hidden data-i18n="gl_night">Restaurant & Cocktails es un espacio +18: todos los invitados deben ser mayores de 18 años.</p>
       <p class="gl-note" id="glNote" hidden></p>
     </div>
 
@@ -129,7 +129,7 @@
   </div>
 </div>
 <script src="/cookies.js?v=4"></script>
-<script src="/i18n.js?v=97"></script>
+<script src="/i18n.js?v=98"></script>
 <script src="/eventos/config.js?v=2"></script>
 <script>
   (function () {
@@ -162,7 +162,7 @@
       var title = (l === 'en' && ev.title_en) ? ev.title_en : ev.title_es;
       var place = (l === 'en' && ev.place_en) ? ev.place_en : ev.place_es;
       var end = new Date(new Date(ev.starts_at).getTime() + ev.duration_h * 3600000).toISOString();
-      $('glKicker').textContent = (ev.env === 'night' ? 'Night' : 'Day') + ' · ' + t('gl_title');
+      $('glKicker').textContent = (ev.env === 'night' ? 'Restaurant & Cocktails' : 'Coffee, Bakery & Kitchen') + ' · ' + t('gl_title');
       $('glEvent').textContent = title;
       $('glWhen').textContent = fmt(ev.starts_at, { weekday: 'long', day: 'numeric', month: 'long' }) + ' · ' + fmt(ev.starts_at, { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }) + ' – ' + fmt(end, { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }) + (place ? ' · ' + place : '');
       $('glLabel').textContent = data.label;

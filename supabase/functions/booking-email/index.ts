@@ -500,7 +500,7 @@ async function notifyStaff(b: any): Promise<void> {
 //   UPDATE → fianza devuelta         → "Fianza devuelta"
 const TT = {
   es: {
-    locale: "es-ES", ref: "Referencia", date: "Día", time: "Hora", party: "Personas", zone: "Zona", deposit: "Fianza", ambience: { day: "Day", night: "Night" } as Record<string, string>,
+    locale: "es-ES", ref: "Referencia", date: "Día", time: "Hora", party: "Personas", zone: "Zona", deposit: "Fianza", ambience: { day: "Coffee, Bakery & Kitchen", night: "Restaurant & Cocktails" } as Record<string, string>,
     okSubject: (a: string, w: string) => `Reserva confirmada · ROCE ${a} · ${w}`, okTitle: "¡Mesa reservada!", okIntro: "Tu reserva está confirmada. Te esperamos.",
     payTitle: "Confirma tu reserva", paySubject: (a: string, w: string) => `Confirma tu reserva · ROCE ${a} · ${w}`,
     payIntro: (m: string, until: string) => `Hemos guardado tu mesa. Para confirmarla, paga la fianza de ${m} con tarjeta antes del ${until}. Si no, la mesa se liberará.`,
@@ -519,7 +519,7 @@ const TT = {
     chSubject: "Cobro por no presentación · ROCE", chTitle: "Penalización cobrada", chIntro: (m: string) => `Hemos cobrado ${m} a tu tarjeta por la no presentación o anulación tardía de tu reserva.`,
   },
   en: {
-    locale: "en-GB", ref: "Reference", date: "Day", time: "Time", party: "Guests", zone: "Area", deposit: "Deposit", ambience: { day: "Day", night: "Night" } as Record<string, string>,
+    locale: "en-GB", ref: "Reference", date: "Day", time: "Time", party: "Guests", zone: "Area", deposit: "Deposit", ambience: { day: "Coffee, Bakery & Kitchen", night: "Restaurant & Cocktails" } as Record<string, string>,
     okSubject: (a: string, w: string) => `Booking confirmed · ROCE ${a} · ${w}`, okTitle: "Table booked!", okIntro: "Your booking is confirmed. See you soon.",
     payTitle: "Confirm your booking", paySubject: (a: string, w: string) => `Confirm your booking · ROCE ${a} · ${w}`,
     payIntro: (m: string, until: string) => `We are holding your table. To confirm it, pay the ${m} deposit by card before ${until}. Otherwise the table will be released.`,
@@ -630,7 +630,7 @@ async function notifyTableStaff(b: any, what: string): Promise<void> {
     body: JSON.stringify({
       sender: { name: "ROCE", email: FROM },
       to: [{ email: REPLY_TO }],
-      subject: `${what} · mesa ${b.ambience === "night" ? "Night" : "Day"} · ${when} (${b.ref})`,
+      subject: `${what} · mesa ${b.ambience === "night" ? "Restaurant & Cocktails" : "Coffee, Bakery & Kitchen"} · ${when} (${b.ref})`,
       htmlContent: `<p><b>${esc(what)}</b> · ${esc(when)} · ${b.party} persona(s)</p><p>${esc(b.name)} · ${esc(b.email)} · ${esc(b.phone)}<br>${b.notes ? esc(b.notes) + "<br>" : ""}Ref. ${esc(b.ref)}${b.deposit_cents > 0 ? " · fianza " + (b.deposit_cents / 100) + " € (" + esc(b.payment_status) + ")" : ""}</p>`,
     }),
   }).catch(() => {});

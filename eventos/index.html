@@ -7,13 +7,13 @@
 <!-- Sin indexar hasta decidir que la agenda sale en buscadores (quitar la línea robots de abajo). -->
 <meta name="robots" content="noindex">
 <title>Eventos — ROCE Valencia</title>
-<meta name="description" content="Agenda de eventos de Day y Night en ROCE Valencia: brunch, música y noches especiales.">
+<meta name="description" content="Agenda de eventos de ROCE Valencia: brunch, música y noches especiales en Coffee, Bakery &amp; Kitchen y Restaurant &amp; Cocktails.">
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link rel="icon" type="image/png" href="/assets/meta/favicon-32.png" sizes="32x32">
 <link rel="apple-touch-icon" href="/assets/meta/apple-touch-icon.png">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Eventos — ROCE Valencia">
-<meta property="og:description" content="Brunch, música y noches especiales en Day y Night.">
+<meta property="og:description" content="Brunch, música y noches especiales en Coffee, Bakery &amp; Kitchen y Restaurant &amp; Cocktails.">
 <meta property="og:image" content="https://roce.es/assets/meta/og-image.png">
 <meta property="og:url" content="https://roce.es/eventos/">
 <script>
@@ -66,7 +66,7 @@
     background: none;
     color: var(--fg);
     font-family: var(--display);
-    font-size: clamp(1.3rem, 4.5vw, 2rem);
+    font-size: clamp(1.05rem, 3.6vw, 1.6rem);
     line-height: 1;
     letter-spacing: 0.02em;
     text-transform: uppercase;
@@ -126,8 +126,8 @@
 
   <div class="ev-filters" role="group" aria-label="Filtro">
     <button type="button" class="ev-chip" data-filter="all" aria-pressed="false" data-i18n="ev_all">Todos</button>
-    <button type="button" class="ev-chip" data-filter="day" aria-pressed="false">Day</button>
-    <button type="button" class="ev-chip" data-filter="night" aria-pressed="false">Night</button>
+    <button type="button" class="ev-chip" data-filter="day" aria-pressed="false">Coffee, Bakery &amp; Kitchen</button>
+    <button type="button" class="ev-chip" data-filter="night" aria-pressed="false">Restaurant &amp; Cocktails</button>
   </div>
 
   <ol class="ev-list" id="evList"></ol>
@@ -152,7 +152,7 @@
   </div>
 </div>
 <script src="/cookies.js?v=4"></script>
-<script src="/i18n.js?v=97"></script>
+<script src="/i18n.js?v=98"></script>
 <script src="/eventos/config.js?v=2"></script>
 <script src="/eventos/events.js?v=12"></script>
 <script>
@@ -190,7 +190,7 @@
         var day = U.fmt(e, l, { day: 'numeric' });
         var monthLabel = U.fmt(e, l, { month: 'long', year: 'numeric' });
         var sold = e.left <= 0;
-        var tag = '<span class="ev-tag">' + (e.env === 'night' ? 'Night ' + AGE : 'Day') + '</span>';
+        var tag = '<span class="ev-tag">' + (e.env === 'night' ? 'Restaurant &amp; Cocktails ' + AGE : 'Coffee, Bakery &amp; Kitchen') + '</span>';
         var right = sold ? '<span class="ev-sold">' + esc(t('tk_soldout', 'Agotado')) + '</span>' : (U.isLive(e) ? '<span class="ev-now">' + esc(t('choose_now', 'Ahora')) + '</span>' : '');
         var head = '';
         if (monthLabel !== lastMonth) { lastMonth = monthLabel; head = '<li class="ev-month" role="presentation">' + esc(monthLabel) + '</li>'; }

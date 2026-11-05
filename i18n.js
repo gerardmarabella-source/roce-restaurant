@@ -16,7 +16,7 @@
     gl_title: { es: 'Lista de invitados', en: 'Guest list' },
     gl_rule: { es: 'Puedes apuntar hasta {n} personas. Entran sin pagar entrada.', en: 'You can add up to {n} people. They get in without paying.' },
     gl_until: { es: 'Puedes cambiarla hasta el {date}.', en: 'You can change it until {date}.' },
-    gl_night: { es: 'Night es un espacio +18: todos los invitados deben ser mayores de 18 años.', en: 'Night is an 18+ space: all guests must be 18 or older.' },
+    gl_night: { es: 'Restaurant & Cocktails es un espacio +18: todos los invitados deben ser mayores de 18 años.', en: 'Restaurant & Cocktails is an 18+ space: all guests must be 18 or older.' },
     gl_closed: { es: 'Esta lista ya está cerrada. Si necesitas cambiar algo, escríbenos a reservas@roce.es.', en: 'This list is now closed. If you need to change anything, write to reservas@roce.es.' },
     gl_you: { es: 'Tus datos', en: 'Your details' },
     gl_host: { es: 'Tu nombre', en: 'Your name' },
@@ -51,7 +51,7 @@
     age_title: { es: 'Estás entrando en un espacio +18', en: "You're entering an 18+ space" },
     age_text: { es: 'Las reservas de noche son para mayores de 18 años. ¿Tienes 18 años o más?', en: 'Evening bookings are for guests aged 18 and over. Are you 18 or older?' },
     age_yes: { es: 'Sí, tengo 18 o más', en: "Yes, I'm 18 or older" },
-    age_no: { es: 'No, ir a Day', en: 'No, take me to Day' },
+    age_no: { es: 'No, ir a Coffee, Bakery & Kitchen', en: 'No, take me to Coffee, Bakery & Kitchen' },
     cookie_more_info: { es: 'Más información', en: 'More info' },
     cookie_reject: { es: 'Rechazar', en: 'Reject' },
     cookie_accept: { es: 'Aceptar', en: 'Accept' },
@@ -92,10 +92,10 @@
 
     // reservar.html
     reservar_h1: { es: 'Reserva<br>tu mesa', en: 'Book<br>your table' },
-    hours_day: { es: 'Day · Todos los días, de 10:00 a 20:00', en: 'Day · Every day, 10:00 – 20:00' },
+    hours_day: { es: 'Coffee, Bakery & Kitchen · Todos los días, de 10:00 a 20:00', en: 'Coffee, Bakery & Kitchen · Every day, 10:00 – 20:00' },
     reservar_night: {
       es: 'Reservas de noche solo para mayores de 18 años',
-      en: 'Night bookings are for guests aged 18 and over',
+      en: 'Restaurant & Cocktails bookings are for guests aged 18 and over',
     },
 
     // Aviso de grupos grandes (reservar.html)
@@ -272,8 +272,8 @@
       en: '<strong>Contact and bookings:</strong> when you write to reservas@roce.es, use the table booking system or contact us on WhatsApp from the website (group bookings, space rental), we process your name, email, phone number and the content of your message to handle your request. If you expressly agree to receive communications when booking, we also add you to our customer database (CRM) to contact you about your booking and send you communications about ROCE (events, news, offers).',
     },
     privacy_li_events: {
-      es: '<strong>Eventos y entradas:</strong> cuando reservas una plaza o entrada para un evento de ROCE Day o ROCE Night, tratamos tu nombre, email, teléfono, DNI, NIE o número de pasaporte, el número de entradas y los comentarios que quieras añadir para gestionar tu reserva, enviarte la confirmación y avisarte si hay cambios o cancelación del evento. El documento de identidad lo pedimos solo para identificar a la persona que compra la entrada y comprobar su acceso al evento. Si el evento es de pago, también los datos necesarios para gestionar el cobro y, si solicitas factura completa, los datos fiscales que nos indiques (nombre o razón social, NIF/CIF y dirección fiscal). No es necesario que nos facilites datos de salud; si indicas alergias u otras necesidades en los comentarios, los usaremos solo para atender tu reserva. Solo te enviaremos novedades y comunicaciones comerciales si marcas la casilla correspondiente.',
-      en: '<strong>Events and tickets:</strong> when you book a spot or ticket for a ROCE Day or ROCE Night event, we process your name, email, phone number, ID card, foreigner ID or passport number, number of tickets and any comments you wish to add in order to manage your booking, send you the confirmation and notify you of changes to or cancellation of the event. We ask for your identity document only to identify the person buying the ticket and to check their access to the event. If the event is paid, we also process the data needed to handle the payment and, if you request a full invoice, the tax details you give us (name or company name, tax ID and billing address). You do not need to give us any health data; if you mention allergies or other needs in the comments, we will use them only to attend to your booking. We will only send you news and commercial communications if you tick the corresponding box.',
+      es: '<strong>Eventos y entradas:</strong> cuando reservas una plaza o entrada para un evento de ROCE Coffee, Bakery & Kitchen o ROCE Restaurant & Cocktails, tratamos tu nombre, email, teléfono, DNI, NIE o número de pasaporte, el número de entradas y los comentarios que quieras añadir para gestionar tu reserva, enviarte la confirmación y avisarte si hay cambios o cancelación del evento. El documento de identidad lo pedimos solo para identificar a la persona que compra la entrada y comprobar su acceso al evento. Si el evento es de pago, también los datos necesarios para gestionar el cobro y, si solicitas factura completa, los datos fiscales que nos indiques (nombre o razón social, NIF/CIF y dirección fiscal). No es necesario que nos facilites datos de salud; si indicas alergias u otras necesidades en los comentarios, los usaremos solo para atender tu reserva. Solo te enviaremos novedades y comunicaciones comerciales si marcas la casilla correspondiente.',
+      en: '<strong>Events and tickets:</strong> when you book a spot or ticket for a ROCE Coffee, Bakery & Kitchen or ROCE Restaurant & Cocktails event, we process your name, email, phone number, ID card, foreigner ID or passport number, number of tickets and any comments you wish to add in order to manage your booking, send you the confirmation and notify you of changes to or cancellation of the event. We ask for your identity document only to identify the person buying the ticket and to check their access to the event. If the event is paid, we also process the data needed to handle the payment and, if you request a full invoice, the tax details you give us (name or company name, tax ID and billing address). You do not need to give us any health data; if you mention allergies or other needs in the comments, we will use them only to attend to your booking. We will only send you news and commercial communications if you tick the corresponding box.',
     },
     privacy_li_lists: {
       es: '<strong>Listas de invitados:</strong> si alguien te apunta a una lista de invitados de un evento, esa persona nos facilita tu nombre y tu email. Los usamos para enviarte tu entrada personal con QR, controlar el acceso en la puerta y avisarte si hay cambios o cancelación del evento. La persona que te apunta confirma que tiene tu autorización. Puedes pedirnos que te borremos de la lista escribiendo a reservas@roce.es.',

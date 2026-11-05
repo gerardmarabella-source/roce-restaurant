@@ -22,7 +22,7 @@
       pick_date: 'Elige un día para ver las horas disponibles.',
       loading: 'Buscando mesas…', none: 'No quedan mesas ese día para {n}. Prueba otro día o escríbenos por WhatsApp.',
       err_load: 'No hemos podido consultar las mesas. Inténtalo de nuevo en un momento.',
-      day: 'Day', night: 'Night',
+      day: 'Coffee, Bakery & Kitchen', night: 'Restaurant & Cocktails',
       deposit_h: 'Fianza de {m}', deposit_free_until: 'Se devuelve si cancelas con al menos {h} h de antelación.',
       free_h: 'Reserva gratuita',
       form_h: 'Tus datos', name: 'Nombre y apellidos', email: 'Email', phone: 'Teléfono', notes: 'Alergias o comentarios (opcional)',
@@ -49,7 +49,7 @@
       pick_date: 'Pick a day to see the available times.',
       loading: 'Looking for tables…', none: 'No tables left that day for {n}. Try another day or message us on WhatsApp.',
       err_load: "We couldn't check the tables. Please try again in a moment.",
-      day: 'Day', night: 'Night',
+      day: 'Coffee, Bakery & Kitchen', night: 'Restaurant & Cocktails',
       deposit_h: '{m} deposit', deposit_free_until: 'Refunded if you cancel at least {h} h in advance.',
       free_h: 'Free booking',
       form_h: 'Your details', name: 'Full name', email: 'Email', phone: 'Phone', notes: 'Allergies or comments (optional)',
@@ -155,7 +155,7 @@
       rows.forEach(function (s) {
         h += '<button type="button" class="mz-slot' + (st.chosen && st.chosen.o_starts_at === s.o_starts_at ? ' is-on' : '') + '" data-start="' + esc(s.o_starts_at) + '">' + esc(s.o_time) + '</button>';
       });
-      h += '</div>' + (dep > 0 && mode === 'card' ? '<p class="mz-note">' + esc(t('card_note', { m: money(dep), h: hrs })) + '</p>' : dep > 0 ? '<p class="mz-note">' + esc(t('deposit_free_until', { h: hrs })) + '</p>' : '') + '</div>';
+      h += '</div>' + (dep > 0 && mode === 'card' ? '' : dep > 0 ? '<p class="mz-note">' + esc(t('deposit_free_until', { h: hrs })) + '</p>' : '') + '</div>';
     });
     return h;
   }
