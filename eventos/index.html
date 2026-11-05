@@ -167,9 +167,8 @@
     var empty = document.getElementById('evEmpty');
     var view = document.documentElement.getAttribute('data-view');
     var filter = 'all'; // 'all' | 'day' | 'night'
-    // "Volver" lleva al sitio de donde se vino (Día, Noche o la home).
-    var from = new URLSearchParams(location.search).get('f');
-    document.getElementById('evBack').setAttribute('href', from === 'day' || from === 'baja' ? '/day/' : from === 'night' || from === 'alta' ? '/night/' : '/');
+    // "Volver" lleva siempre a la home.
+    document.getElementById('evBack').setAttribute('href', '/');
     function syncChips() {
       document.querySelectorAll('.ev-chip').forEach(function (c) { c.setAttribute('aria-pressed', c.getAttribute('data-filter') === filter ? 'true' : 'false'); });
     }
