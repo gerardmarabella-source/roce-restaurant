@@ -122,7 +122,7 @@
   html[data-mode="night"], html[data-mode="night"] body { background: var(--black); }
 
   .home {
-    --head: 64px;
+    --head: 0px; /* el botón del menú flota arriba a la derecha: la frase aprovecha todo el alto */
     --foot: 96px;
     --pad: 1.25rem;
     --gap: 0.75rem;
@@ -139,7 +139,7 @@
   html[data-mode="night"] .home-foot { color: rgba(236, 231, 221, 0.6); }
   html[data-mode="night"] .home-square-night { border-color: var(--white); }
 
-  .home-head { flex-shrink: 0; height: var(--head); display: flex; align-items: center; justify-content: flex-end; padding: 0 var(--pad); }
+  .home-head { position: absolute; top: 0; right: 0; z-index: 20; height: 64px; display: flex; align-items: center; justify-content: flex-end; padding: 0 var(--pad); }
   .menu-btn { background: none; border: none; padding: 0.4rem; color: inherit; cursor: pointer; line-height: 0; }
   .menu-btn svg { width: 2rem; height: 2rem; }
 
@@ -152,7 +152,7 @@
     --live-n: 0;
     --live-h: clamp(2.6rem, calc(var(--avail) * 0.075), 3.6rem);
     --live-x: calc(var(--live-n) * (var(--live-h) + var(--gap)));
-    --sh: min(calc(var(--sw) * 0.55), calc((var(--avail) - var(--live-x)) * 0.19));
+    --sh: min(calc(var(--sw) * 0.55), calc((var(--avail) - var(--live-x)) * 0.17));
     flex: 1;
     min-height: 0;
     display: flex;
@@ -162,13 +162,28 @@
     padding: 0 var(--pad);
   }
 
+  /* Frase a la izquierda y, si queda hueco a su lado, el próximo evento (lo decide el script según el espacio libre). */
+  .home-top { display: flex; align-items: center; gap: 2rem; min-width: 0; width: 100%; }
+  /* Tarjeta del próximo evento: cartel en 4:5 (sin recortes) y debajo la fecha y el título. Fondo blanco si el evento es de día, negro si es de noche. */
+  .home-event { --he-pad: 0.7rem; display: flex; flex-direction: column; gap: 0.6rem; flex: 0 0 auto; align-self: flex-end; margin-inline: auto; padding: var(--he-pad); box-sizing: border-box; text-decoration: none; border: 2px solid var(--black); background: var(--black); color: var(--white); transition: transform 0.25s ease; }
+  .home-event[hidden] { display: none; }
+  .home-event[data-env="day"] { background: var(--white); color: var(--black); }
+  html[data-mode="night"] .home-event[data-env="night"] { border-color: var(--white); }
+  .home-event:hover { transform: translateY(-4px); }
+  .he-media { display: block; width: 100%; aspect-ratio: 4 / 5; background-size: cover; background-position: center; background-repeat: no-repeat; }
+  .home-event.no-img .he-media { display: none; }
+  .he-body { display: flex; flex-direction: column; gap: 0.25rem; }
+  .he-kicker { font-family: var(--display); font-size: clamp(0.62rem, 0.9vw, 0.82rem); letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.75; line-height: 1.1; }
+  .he-title { font-family: var(--display); font-weight: 700; text-transform: uppercase; line-height: 1; letter-spacing: 0.01em; font-size: clamp(0.9rem, 1.5vw, 1.35rem); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
+  .home-event.no-img .he-title { font-size: clamp(1.4rem, 3vw, 2.6rem); -webkit-line-clamp: 4; }
   .home-statement {
     font-family: var(--display);
     font-weight: 400; /* Helvetica Neue tal cual (Regular de marca) */
-    font-size: min(19vw, 14rem, calc((var(--avail) - 2 * var(--sh) - var(--gap) - 1.25rem - var(--live-x)) / 4.75));
-    width: 100%;
-    margin-inline: 0; /* pegada a la izquierda, a la altura de los cuadrados */
-    max-width: 5.2em; /* el escalonado se mide en la letra, no en la pantalla: las palabras no se alejan en tablet */
+    font-size: min(calc((100vw - 2 * var(--pad)) / 4.3), 14rem, calc((var(--avail) - 2 * var(--sh) - var(--gap) - 1.25rem - var(--live-x)) / 4.5));
+    width: auto;
+    flex: 0 0 auto;
+    margin: 0;
+    max-width: none;
     line-height: 0.84;
     letter-spacing: -0.02em;
     text-transform: uppercase;
@@ -316,13 +331,15 @@
 
   /* Tablet vertical: bloques algo más bajos para que la frase pueda crecer con el ancho. */
   @media (min-width: 600px) and (max-aspect-ratio: 5/4) {
-    .home-main { --sh: min(calc(var(--sw) * 0.62), calc((var(--avail) - var(--live-x)) * 0.18)); }
+    .home-main { --sh: min(calc(var(--sw) * 0.62), calc((var(--avail) - var(--live-x)) * 0.15)); }
   }
 
   /* Horizontal (escritorio, móvil tumbado): frase a la izquierda y los dos
      cuadrados apilados a la derecha. */
   @media (min-aspect-ratio: 5/4) {
-    .home { --pad: 2.5rem; }
+    /* En horizontal el menú ocupa su franja arriba (si no, taparía el cuadrado de la derecha). */
+    .home { --pad: 2.5rem; --head: 56px; }
+    .home-head { position: static; height: var(--head); flex-shrink: 0; }
     .home-main {
       --s: min(calc((var(--avail) - var(--gap) - var(--live-x)) / 2), 30vw);
       --sw: min(calc(var(--s) * 1.9), 42vw);
@@ -332,12 +349,8 @@
       justify-content: space-between;
       gap: 2rem;
     }
+    .home-top { flex: 1; min-width: 0; width: auto; }
     .home-statement {
-      width: auto;
-      margin-inline: 0;
-      max-width: none;
-      flex: 1;
-      min-width: 0;
       font-size: min(14rem, calc(var(--avail) / 4.5), calc((100vw - 2 * var(--pad) - var(--sw) - 2rem) / 4.4));
     }
     /* Cuadrados más anchos: el nombre de cada espacio cabe entero en una línea. */
@@ -471,6 +484,7 @@
   </header>
 
   <main class="home-main">
+    <div class="home-top">
     <h1 class="home-statement">
       <span class="line l1"><span data-i18n="home_w1">Todo</span></span>
       <span class="line l2"><span data-i18n="home_w2">empieza</span></span>
@@ -481,6 +495,11 @@
         <img class="home-logo home-logo-white" src="/assets/logo/roce-horizontal-white.png" alt="" aria-hidden="true">
       </span>
     </h1>
+    <a class="home-event" id="homeEvent" href="/eventos/" hidden>
+      <span class="he-media"></span>
+      <span class="he-body"><span class="he-kicker"></span><span class="he-title"></span></span>
+    </a>
+    </div>
 
     <div class="home-squares">
       <a class="home-square home-square-day" id="chooseDay" href="/day/">
@@ -555,7 +574,7 @@
   </div>
 </div>
 <script src="/cookies.js?v=4"></script>
-<script src="/i18n.js?v=102"></script>
+<script src="/i18n.js?v=104"></script>
 <script src="/eventos/config.js?v=2"></script>
 <script src="/eventos/events.js?v=13"></script>
 
@@ -586,7 +605,22 @@
     var U = window.ROCE_EVENT_UTIL, EVENTS = [];
     var TZ = 'Europe/Madrid';
     function hm(ms) { return new Intl.DateTimeFormat('es-ES', { timeZone: TZ, hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).format(ms); }
-    function renderLive() {
+    var CARD_MIN = 150; // ancho mínimo de la tarjeta de evento junto a la frase
+    function nextEvent() {
+      var now = Date.now();
+      return U && EVENTS.filter(function (x) { return U.bounds(x)[1] > now; }).sort(function (a, b) { return U.bounds(a)[0] - U.bounds(b)[0]; })[0];
+    }
+    function textWidth() {
+      var w = 0;
+      [].forEach.call(document.querySelectorAll('.home-statement .line'), function (ln) {
+        var r = document.createRange(); r.selectNodeContents(ln);
+        [].forEach.call(r.getClientRects(), function (q) { w = Math.max(w, q.right - document.querySelector('.home-statement').getBoundingClientRect().left); });
+      });
+      var img = document.querySelector('.home-logo:not([style*="none"])');
+      return w;
+    }
+    // Franjas bajo los cuadrados (cuando no cabe la tarjeta junto a la frase): una por espacio con evento.
+    function renderStrips() {
       var l = window.ROCE_I18N ? window.ROCE_I18N.getLang() : 'es', n = 0;
       [['day', 'liveDay'], ['night', 'liveNight']].forEach(function (c) {
         var el = document.getElementById(c[1]);
@@ -596,6 +630,7 @@
         if (!e) { el.hidden = true; return; }
         n++;
         el.hidden = false;
+        el.href = '/eventos/evento/?e=' + encodeURIComponent(e.id);
         var b = U.bounds(e);
         U.setMarquee(el.querySelector('.home-live-title'), e.title[l] || e.title.es);
         el.querySelector('.home-live-time').textContent = U.isLive(e) ? hm(b[0]) + ' – ' + hm(b[1]) :
@@ -603,6 +638,36 @@
       });
       document.querySelector('.home-main').style.setProperty('--live-n', n);
     }
+    // Con espacio libre junto a la frase se pone ahí el próximo evento; si no, franjas bajo los cuadrados. Nunca hay scroll.
+    function renderLive() {
+      var main = document.querySelector('.home-main'), card = document.getElementById('homeEvent'), st = document.querySelector('.home-statement');
+      var l = window.ROCE_I18N ? window.ROCE_I18N.getLang() : 'es';
+      main.style.setProperty('--live-n', 0);
+      card.hidden = true;
+      ['liveDay', 'liveNight'].forEach(function (id) { document.getElementById(id).hidden = true; });
+      var e = nextEvent();
+      if (!e) return;
+      var h = st.getBoundingClientRect().height, free = document.querySelector('.home-top').clientWidth - textWidth() - 40;
+      // El cartel mantiene siempre su proporción 4:5 (sin recortes ni zoom): la tarjeta se ajusta al ancho libre y al alto
+      // disponible (dejando sitio al botón del menú y al texto de debajo).
+      var PAD = 26, BODY = e.image ? 58 : 150;
+      var pw = Math.min(free - PAD, (h - 70 - BODY - PAD) / 1.25), cw = pw + PAD;
+      if (cw >= CARD_MIN && h >= 260) {
+        var b = U.bounds(e);
+        card.hidden = false; card.style.width = Math.floor(cw) + 'px';
+        card.href = '/eventos/evento/?e=' + encodeURIComponent(e.id);
+        card.setAttribute('data-env', e.env);
+        card.classList.toggle('has-img', !!e.image);
+        card.classList.toggle('no-img', !e.image);
+        card.querySelector('.he-media').style.backgroundImage = e.image ? 'url("' + e.image.replace(/"/g, '%22') + '")' : 'none';
+        card.querySelector('.he-kicker').textContent = U.isLive(e) ? hm(b[0]) + ' – ' + hm(b[1]) :
+          new Intl.DateTimeFormat(l === 'en' ? 'en-GB' : 'es-ES', { timeZone: TZ, weekday: 'short', day: 'numeric', month: 'short' }).format(b[0]).replace('.', '') + ' · ' + hm(b[0]);
+        card.querySelector('.he-title').textContent = e.title[l] || e.title.es;
+      } else {
+        renderStrips();
+      }
+    }
+    var rz; window.addEventListener('resize', function () { clearTimeout(rz); rz = setTimeout(renderLive, 120); });
     if (window.ROCE_EVENTS_READY) window.ROCE_EVENTS_READY.then(function (list) { EVENTS = list; renderLive(); });
     document.addEventListener('roce:lang', renderLive);
 
