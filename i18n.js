@@ -55,6 +55,7 @@
     ev_night: { es: 'Noche', en: 'Night' },
     floor_ground: { es: 'Planta baja', en: 'Ground floor' },
     floor_first: { es: 'Primera planta', en: 'First floor' },
+    home_next_event: { es: 'Próximo evento', en: 'Next event' },
     home_events_none: { es: 'Próximos eventos', en: 'Upcoming events' },
     age_no: { es: 'No, ir a Coffee, Bakery & Kitchen', en: 'No, take me to Coffee, Bakery & Kitchen' },
     cookie_more_info: { es: 'Más información', en: 'More info' },

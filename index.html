@@ -164,13 +164,16 @@
 
   /* Frase a la izquierda y, si queda hueco a su lado, el próximo evento (lo decide el script según el espacio libre). */
   .home-top { display: flex; align-items: center; gap: 2rem; min-width: 0; width: 100%; }
-  .home-event { position: relative; display: block; flex: 0 0 auto; margin-inline: auto; overflow: hidden; color: #fff; background: var(--black); border: 2px solid var(--black); text-decoration: none; transition: transform 0.25s ease; }
-  .home-event[hidden] { display: none; }
+  .home-event-wrap { display: flex; flex-direction: column; gap: 0.5rem; flex: 0 0 auto; margin-inline: auto; align-self: flex-end; }
+  .home-event-wrap[hidden] { display: none; }
+  .he-label { font-family: var(--display); font-weight: 700; font-size: clamp(0.72rem, 1.1vw, 1rem); letter-spacing: 0.08em; text-transform: uppercase; line-height: 1; }
+  .he-foot { font-family: var(--display); font-size: clamp(0.68rem, 0.95vw, 0.9rem); letter-spacing: 0.06em; text-transform: uppercase; line-height: 1.1; opacity: 0.8; }
+  .home-event { position: relative; display: block; width: 100%; aspect-ratio: 4 / 5; overflow: hidden; color: #fff; background: var(--black); border: 2px solid var(--black); text-decoration: none; transition: transform 0.25s ease; }
   .home-event[data-env="day"] { background: var(--white); color: var(--black); }
   .home-event:hover { transform: translateY(-4px); }
   .he-media { position: absolute; inset: 0; background-size: cover; background-position: center; }
   .he-body { position: absolute; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column; gap: 0.3rem; padding: 2.5rem 1rem 1rem; }
-  .home-event.has-img .he-body { background: linear-gradient(transparent, rgba(0, 0, 0, 0.88)); color: #fff; }
+  .home-event.has-img .he-body { display: none; }
   .home-event:not(.has-img) .he-body { top: 0; justify-content: flex-end; padding-top: 1rem; }
   .he-kicker { font-family: var(--display); font-size: clamp(0.62rem, 1.1vw, 0.85rem); letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.85; }
   .he-title { font-family: var(--display); font-weight: 700; text-transform: uppercase; line-height: 1; letter-spacing: 0.01em; font-size: clamp(1rem, 2.4vw, 2rem); overflow-wrap: anywhere; }
@@ -491,10 +494,14 @@
         <img class="home-logo home-logo-white" src="/assets/logo/roce-horizontal-white.png" alt="" aria-hidden="true">
       </span>
     </h1>
-    <a class="home-event" id="homeEvent" href="/eventos/" hidden>
-      <span class="he-media"></span>
-      <span class="he-body"><span class="he-kicker"></span><span class="he-title"></span></span>
-    </a>
+    <div class="home-event-wrap" id="homeEventWrap" hidden>
+      <span class="he-label" data-i18n="home_next_event">Próximo evento</span>
+      <a class="home-event" id="homeEvent" href="/eventos/">
+        <span class="he-media"></span>
+        <span class="he-body"><span class="he-kicker"></span><span class="he-title"></span></span>
+      </a>
+      <span class="he-foot" id="heFoot"></span>
+    </div>
     </div>
 
     <div class="home-squares">
@@ -570,7 +577,7 @@
   </div>
 </div>
 <script src="/cookies.js?v=4"></script>
-<script src="/i18n.js?v=102"></script>
+<script src="/i18n.js?v=103"></script>
 <script src="/eventos/config.js?v=2"></script>
 <script src="/eventos/events.js?v=13"></script>
 
@@ -635,25 +642,29 @@
     }
     // Con espacio libre junto a la frase se pone ahí el próximo evento; si no, franjas bajo los cuadrados. Nunca hay scroll.
     function renderLive() {
-      var main = document.querySelector('.home-main'), card = document.getElementById('homeEvent'), st = document.querySelector('.home-statement');
+      var main = document.querySelector('.home-main'), card = document.getElementById('homeEvent'), wrap = document.getElementById('homeEventWrap'), st = document.querySelector('.home-statement');
       var l = window.ROCE_I18N ? window.ROCE_I18N.getLang() : 'es';
       main.style.setProperty('--live-n', 0);
-      card.hidden = true;
+      wrap.hidden = true;
       ['liveDay', 'liveNight'].forEach(function (id) { document.getElementById(id).hidden = true; });
       var e = nextEvent();
       if (!e) return;
       var h = st.getBoundingClientRect().height, free = document.querySelector('.home-top').clientWidth - textWidth() - 40;
-      var cw = Math.min(free, h * 0.8);
-      if (cw >= CARD_MIN && h >= 200) {
+      // El cartel mantiene siempre su proporción 4:5 (sin recortes ni zoom): se ajusta al ancho libre y al alto disponible,
+      // dejando sitio al rótulo de arriba, a la fecha de abajo y al botón del menú.
+      var cw = Math.min(free, (h - 70 - 76) * 0.8);
+      if (cw >= CARD_MIN && h >= 260) {
         var b = U.bounds(e);
-        var ch = Math.max(160, h - 56); card.hidden = false; card.style.height = Math.floor(ch) + 'px'; card.style.width = Math.floor(Math.min(free, ch * 0.8)) + 'px'; card.style.alignSelf = 'flex-end';
+        wrap.hidden = false; wrap.style.width = Math.floor(cw) + 'px';
         card.href = '/eventos/evento/?e=' + encodeURIComponent(e.id);
         card.setAttribute('data-env', e.env);
         card.classList.toggle('has-img', !!e.image);
         card.querySelector('.he-media').style.backgroundImage = e.image ? 'url("' + e.image.replace(/"/g, '%22') + '")' : 'none';
-        card.querySelector('.he-kicker').textContent = (U.isLive(e) ? hm(b[0]) + ' – ' + hm(b[1]) :
-          new Intl.DateTimeFormat(l === 'en' ? 'en-GB' : 'es-ES', { timeZone: TZ, weekday: 'short', day: 'numeric', month: 'short' }).format(b[0]).replace('.', '') + ' · ' + hm(b[0]));
+        var when = U.isLive(e) ? hm(b[0]) + ' – ' + hm(b[1]) :
+          new Intl.DateTimeFormat(l === 'en' ? 'en-GB' : 'es-ES', { timeZone: TZ, weekday: 'short', day: 'numeric', month: 'short' }).format(b[0]).replace('.', '') + ' · ' + hm(b[0]);
+        card.querySelector('.he-kicker').textContent = when;
         card.querySelector('.he-title').textContent = e.title[l] || e.title.es;
+        document.getElementById('heFoot').textContent = when + ' · ' + (e.title[l] || e.title.es);
       } else {
         renderStrips();
       }
