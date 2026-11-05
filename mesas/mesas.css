@@ -103,3 +103,6 @@ body.zone-day #mesasApp { --mz-fg: var(--black); --mz-bg: var(--white); --mz-lin
 .mz-lg-c { border: 1px solid var(--mz-fg); opacity: 0.3; }
 .mz-lg-f { border: 1px solid var(--mz-fg); opacity: 0.55; background: linear-gradient(to top right, transparent 45%, var(--mz-fg) 45%, var(--mz-fg) 55%, transparent 55%); }
 .mz-lg-p { border-radius: 50%; background: var(--mz-fg); opacity: 0.7; width: 0.4rem !important; height: 0.4rem !important; }
+
+.mz-meal { margin: 1rem 0 0.5rem; font-size: 0.85rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--mz-soft); }
+.mz-slots:empty { display: none; }

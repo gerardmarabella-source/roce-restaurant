@@ -18,7 +18,7 @@
       party: 'Personas', date: 'Fecha', time: 'Hora', person: 'persona', people: 'personas',
       months: ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'],
       dows: ['L', 'M', 'X', 'J', 'V', 'S', 'D'],
-      prev: 'Mes anterior', next: 'Mes siguiente', cal_closed: 'Cerrado', cal_full: 'Completo', cal_partial: 'Algún turno completo', cal_full_in: 'Completo: {n}',
+      prev: 'Mes anterior', next: 'Mes siguiente', meal_lunch: 'Comida', meal_dinner: 'Cena', cal_closed: 'Cerrado', cal_full: 'Completo', cal_partial: 'Algún turno completo', cal_full_in: 'Completo: {n}',
       pick_date: 'Elige un día para ver las horas disponibles.',
       loading: 'Buscando mesas…', none: 'No quedan mesas ese día para {n}. Prueba otro día o escríbenos por {wa}.', wa_msg: 'Hola, quería reservar mesa para {n} el {date}.',
       err_load: 'No hemos podido consultar las mesas. Inténtalo de nuevo en un momento.',
@@ -53,7 +53,7 @@
       party: 'Guests', date: 'Date', time: 'Time', person: 'guest', people: 'guests',
       months: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
       dows: ['M', 'T', 'W', 'T', 'F', 'S', 'S'],
-      prev: 'Previous month', next: 'Next month', cal_closed: 'Closed', cal_full: 'Fully booked', cal_partial: 'One service fully booked', cal_full_in: 'Fully booked: {n}',
+      prev: 'Previous month', next: 'Next month', meal_lunch: 'Lunch', meal_dinner: 'Dinner', cal_closed: 'Closed', cal_full: 'Fully booked', cal_partial: 'One service fully booked', cal_full_in: 'Fully booked: {n}',
       pick_date: 'Pick a day to see the available times.',
       loading: 'Looking for tables…', none: 'No tables left that day for {n}. Try another day or message us on {wa}.', wa_msg: 'Hi, I would like to book a table for {n} on {date}.',
       err_load: "We couldn't check the tables. Please try again in a moment.",
@@ -205,9 +205,15 @@
       h += '<div class="mz-group"><div class="mz-group-h"><span class="mz-group-name">' + esc(t(a)) + '</span>' +
         (a === 'night' ? '<span class="mz-tag">+18</span>' : '') +
         '<span class="mz-group-note">' + (dep > 0 && mode === 'card' ? '' : dep > 0 ? esc(t('deposit_h', { m: money(dep) })) : esc(t('free_h'))) + '</span></div><div class="mz-slots">';
-      rows.forEach(function (s) {
-        if (s.o_free) h += '<button type="button" class="mz-slot' + (st.chosen && st.chosen.o_starts_at === s.o_starts_at ? ' is-on' : '') + '" data-start="' + esc(s.o_starts_at) + '">' + esc(s.o_time) + '</button>';
-        else h += '<button type="button" class="mz-slot is-full" data-wl="' + esc(s.o_time) + '" data-amb="' + esc(s.o_ambience) + '" title="' + esc(t('wl_cta')) + '"><span>' + esc(s.o_time) + '</span><small>' + esc(t('full')) + '</small></button>';
+      // En Restaurant & Cocktails las horas se separan en Comida y Cena (cada turno tiene su cuadrícula).
+      var svcs = []; rows.forEach(function (r) { if (svcs.indexOf(r.o_service) === -1) svcs.push(r.o_service); });
+      var split = a === 'night';
+      svcs.forEach(function (sv) {
+        if (split) h += '</div><p class="mz-meal">' + esc(t(sv === 'night-lunch' ? 'meal_lunch' : 'meal_dinner')) + '</p><div class="mz-slots">';
+        rows.filter(function (r) { return r.o_service === sv; }).forEach(function (s) {
+          if (s.o_free) h += '<button type="button" class="mz-slot' + (st.chosen && st.chosen.o_starts_at === s.o_starts_at ? ' is-on' : '') + '" data-start="' + esc(s.o_starts_at) + '">' + esc(s.o_time) + '</button>';
+          else h += '<button type="button" class="mz-slot is-full" data-wl="' + esc(s.o_time) + '" data-amb="' + esc(s.o_ambience) + '" title="' + esc(t('wl_cta')) + '"><span>' + esc(s.o_time) + '</span><small>' + esc(t('full')) + '</small></button>';
+        });
       });
       h += '</div>' + (dep > 0 && mode === 'card' ? '' : dep > 0 ? '<p class="mz-note">' + esc(t('deposit_free_until', { h: hrs })) + '</p>' : '') + '</div>';
     });
