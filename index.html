@@ -162,13 +162,26 @@
     padding: 0 var(--pad);
   }
 
+  /* Frase a la izquierda y, si queda hueco a su lado, el próximo evento (lo decide el script según el espacio libre). */
+  .home-top { display: flex; align-items: center; gap: 2rem; min-width: 0; width: 100%; }
+  .home-event { position: relative; display: block; flex: 0 0 auto; margin-inline: auto; overflow: hidden; color: #fff; background: var(--black); border: 2px solid var(--black); text-decoration: none; transition: transform 0.25s ease; }
+  .home-event[hidden] { display: none; }
+  .home-event[data-env="day"] { background: var(--white); color: var(--black); }
+  .home-event:hover { transform: translateY(-4px); }
+  .he-media { position: absolute; inset: 0; background-size: cover; background-position: center; }
+  .he-body { position: absolute; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column; gap: 0.3rem; padding: 2.5rem 1rem 1rem; }
+  .home-event.has-img .he-body { background: linear-gradient(transparent, rgba(0, 0, 0, 0.88)); color: #fff; }
+  .home-event:not(.has-img) .he-body { top: 0; justify-content: flex-end; padding-top: 1rem; }
+  .he-kicker { font-family: var(--display); font-size: clamp(0.62rem, 1.1vw, 0.85rem); letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.85; }
+  .he-title { font-family: var(--display); font-weight: 700; text-transform: uppercase; line-height: 1; letter-spacing: 0.01em; font-size: clamp(1rem, 2.4vw, 2rem); overflow-wrap: anywhere; }
   .home-statement {
     font-family: var(--display);
     font-weight: 400; /* Helvetica Neue tal cual (Regular de marca) */
     font-size: min(19vw, 14rem, calc((var(--avail) - 2 * var(--sh) - var(--gap) - 1.25rem - var(--live-x)) / 4.75));
-    width: 100%;
-    margin-inline: 0; /* pegada a la izquierda, a la altura de los cuadrados */
-    max-width: 5.2em; /* el escalonado se mide en la letra, no en la pantalla: las palabras no se alejan en tablet */
+    width: auto;
+    flex: 0 0 auto;
+    margin: 0;
+    max-width: none;
     line-height: 0.84;
     letter-spacing: -0.02em;
     text-transform: uppercase;
@@ -332,12 +345,8 @@
       justify-content: space-between;
       gap: 2rem;
     }
+    .home-top { flex: 1; min-width: 0; width: auto; }
     .home-statement {
-      width: auto;
-      margin-inline: 0;
-      max-width: none;
-      flex: 1;
-      min-width: 0;
       font-size: min(14rem, calc(var(--avail) / 4.5), calc((100vw - 2 * var(--pad) - var(--sw) - 2rem) / 4.4));
     }
     /* Cuadrados más anchos: el nombre de cada espacio cabe entero en una línea. */
@@ -471,6 +480,7 @@
   </header>
 
   <main class="home-main">
+    <div class="home-top">
     <h1 class="home-statement">
       <span class="line l1"><span data-i18n="home_w1">Todo</span></span>
       <span class="line l2"><span data-i18n="home_w2">empieza</span></span>
@@ -481,6 +491,11 @@
         <img class="home-logo home-logo-white" src="/assets/logo/roce-horizontal-white.png" alt="" aria-hidden="true">
       </span>
     </h1>
+    <a class="home-event" id="homeEvent" href="/eventos/" hidden>
+      <span class="he-media"></span>
+      <span class="he-body"><span class="he-kicker"></span><span class="he-title"></span></span>
+    </a>
+    </div>
 
     <div class="home-squares">
       <a class="home-square home-square-day" id="chooseDay" href="/day/">
@@ -586,7 +601,22 @@
     var U = window.ROCE_EVENT_UTIL, EVENTS = [];
     var TZ = 'Europe/Madrid';
     function hm(ms) { return new Intl.DateTimeFormat('es-ES', { timeZone: TZ, hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).format(ms); }
-    function renderLive() {
+    var CARD_MIN = 150; // ancho mínimo de la tarjeta de evento junto a la frase
+    function nextEvent() {
+      var now = Date.now();
+      return U && EVENTS.filter(function (x) { return U.bounds(x)[1] > now; }).sort(function (a, b) { return U.bounds(a)[0] - U.bounds(b)[0]; })[0];
+    }
+    function textWidth() {
+      var w = 0;
+      [].forEach.call(document.querySelectorAll('.home-statement .line'), function (ln) {
+        var r = document.createRange(); r.selectNodeContents(ln);
+        [].forEach.call(r.getClientRects(), function (q) { w = Math.max(w, q.right - document.querySelector('.home-statement').getBoundingClientRect().left); });
+      });
+      var img = document.querySelector('.home-logo:not([style*="none"])');
+      return w;
+    }
+    // Franjas bajo los cuadrados (cuando no cabe la tarjeta junto a la frase): una por espacio con evento.
+    function renderStrips() {
       var l = window.ROCE_I18N ? window.ROCE_I18N.getLang() : 'es', n = 0;
       [['day', 'liveDay'], ['night', 'liveNight']].forEach(function (c) {
         var el = document.getElementById(c[1]);
@@ -603,6 +633,32 @@
       });
       document.querySelector('.home-main').style.setProperty('--live-n', n);
     }
+    // Con espacio libre junto a la frase se pone ahí el próximo evento; si no, franjas bajo los cuadrados. Nunca hay scroll.
+    function renderLive() {
+      var main = document.querySelector('.home-main'), card = document.getElementById('homeEvent'), st = document.querySelector('.home-statement');
+      var l = window.ROCE_I18N ? window.ROCE_I18N.getLang() : 'es';
+      main.style.setProperty('--live-n', 0);
+      card.hidden = true;
+      ['liveDay', 'liveNight'].forEach(function (id) { document.getElementById(id).hidden = true; });
+      var e = nextEvent();
+      if (!e) return;
+      var h = st.getBoundingClientRect().height, free = document.querySelector('.home-top').clientWidth - textWidth() - 40;
+      var cw = Math.min(free, h * 0.8);
+      if (cw >= CARD_MIN && h >= 200) {
+        var b = U.bounds(e);
+        card.hidden = false; card.style.width = Math.floor(cw) + 'px'; card.style.height = Math.floor(h) + 'px';
+        card.href = '/eventos/evento/?e=' + encodeURIComponent(e.id);
+        card.setAttribute('data-env', e.env);
+        card.classList.toggle('has-img', !!e.image);
+        card.querySelector('.he-media').style.backgroundImage = e.image ? 'url("' + e.image.replace(/"/g, '%22') + '")' : 'none';
+        card.querySelector('.he-kicker').textContent = (U.isLive(e) ? hm(b[0]) + ' – ' + hm(b[1]) :
+          new Intl.DateTimeFormat(l === 'en' ? 'en-GB' : 'es-ES', { timeZone: TZ, weekday: 'short', day: 'numeric', month: 'short' }).format(b[0]).replace('.', '') + ' · ' + hm(b[0]));
+        card.querySelector('.he-title').textContent = e.title[l] || e.title.es;
+      } else {
+        renderStrips();
+      }
+    }
+    var rz; window.addEventListener('resize', function () { clearTimeout(rz); rz = setTimeout(renderLive, 120); });
     if (window.ROCE_EVENTS_READY) window.ROCE_EVENTS_READY.then(function (list) { EVENTS = list; renderLive(); });
     document.addEventListener('roce:lang', renderLive);
 
