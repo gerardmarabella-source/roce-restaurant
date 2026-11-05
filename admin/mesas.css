@@ -131,3 +131,6 @@
 .mt-acc .ad-actions, .mt-acc-ledger { grid-column: 1 / -1; }
 .mt-accrow { margin: 0.5rem 0; }
 .mt-accrow .ad-meta { margin: 0; }
+
+/* Casillas de verificación dentro de un campo: tamaño normal (no heredan el ancho de los campos de texto). */
+.mt-check input[type="checkbox"], .ad-field .mt-check input { width: 1.1rem; height: 1.1rem; padding: 0; border: 0; margin: 0.15rem 0 0; flex-shrink: 0; }
