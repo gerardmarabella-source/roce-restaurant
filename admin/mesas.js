@@ -535,7 +535,7 @@
       '<label class="ad-field"><span>Hora</span><input type="time" id="nwTime" step="300" value="' + esc(pre.time || S.time || optsT[0] || '13:00') + '" required></label>' +
       '<label class="ad-field"><span>Personas</span><input type="number" id="nwParty" min="1" max="60" value="' + (pre.tables && pre.tables.length > 1 ? pre.tables.reduce(function (n, t) { return n + t.seats_max; }, 0) : pre.table ? Math.min(pre.table.seats_max, 2) : 2) + '" required></label>' +
       '<label class="ad-field"><span>Zona</span><select id="nwZone">' + S.zones.map(function (z) { return '<option value="' + z.id + '"' + (z.id === zone ? ' selected' : '') + '>' + esc(z.name_es) + (z.deposit_cents && z.payment_mode !== 'none' ? (z.payment_mode === 'card' ? ' · garantía ' : ' · fianza ') + eur(z.deposit_cents) : '') + '</option>'; }).join('') + '</select></label>' +
-      '<label class="ad-field"><span>Turno</span><select id="nwSvc">' + svc.map(function (s) { return '<option value="' + s.id + '">' + esc(s.name_es) + '</option>'; }).join('') + '</select></label>' +
+      '<div class="ad-field"><span>Turno (según zona y hora)</span><div class="mt-svcname" id="nwSvcName">—</div><input type="hidden" id="nwSvc"></div>' +
       '<label class="ad-field"><span>Nombre (opcional)</span><input type="text" id="nwName" maxlength="80" placeholder="Sin nombre"></label>' +
       '<label class="ad-field"><span>Teléfono</span><input type="tel" id="nwPhone"></label>' +
       '<label class="ad-field"><span>Email</span><input type="email" id="nwEmail" placeholder="para enviarle la confirmación"></label>' +
@@ -554,10 +554,12 @@
     modal(html, function (m) {
       var q = function (id) { return m.querySelector('#' + id); };
       function pickSvc() {
-        // El turno que sirve esa zona a esa hora (p. ej. comida o cena de la planta alta); si ninguno, el primero de la zona.
+        // El turno viene dado: la zona decide el espacio (alta = Restaurant & Cocktails, baja = Coffee, Bakery & Kitchen)
+        // y la hora el servicio (mediodía = comida, el resto = cena).
         var zid = q('nwZone').value, tv = q('nwTime').value, mn = +tv.slice(0, 2) * 60 + +tv.slice(3, 5); if (+tv.slice(0, 2) < 6) mn += 1440;
-        var ofZone = svc.filter(function (x) { return !x.zone_ids || x.zone_ids.indexOf(zid) !== -1; });
-        var s = ofZone.filter(function (x) { return mn >= x.start_min - 60 && mn <= x.last_min + 60; })[0] || ofZone[0] || svc[0]; if (s) q('nwSvc').value = s.id;
+        var ofZone = svc.filter(function (x) { return !x.zone_ids || x.zone_ids.indexOf(zid) !== -1; }).sort(function (a, b) { return a.start_min - b.start_min; });
+        var s = !ofZone.length ? svc[0] : mn < 17 * 60 ? ofZone[0] : ofZone[ofZone.length - 1];
+        q('nwSvc').value = s ? s.id : ''; q('nwSvcName').textContent = s ? s.name_es : '—';
       }
       function pickZoneFromSvc() { /* la zona se elige a mano */ }
       function depRow() {
@@ -583,8 +585,8 @@
       pickSvc(); depRow(); refreshPicks();
       if (pre.prefill) { q('nwName').value = pre.prefill.name || ''; q('nwEmail').value = pre.prefill.email || ''; q('nwPhone').value = pre.prefill.phone || ''; q('nwParty').value = pre.prefill.party || 2; }
       ['nwTime', 'nwDate'].forEach(function (id) { q(id).addEventListener('change', function () { pickSvc(); refreshPicks(); }); });
-      q('nwZone').addEventListener('change', function () { depRow(); q('nwPicks').innerHTML = ''; refreshPicks(); });
-      q('nwSvc').addEventListener('change', refreshPicks); q('nwType').addEventListener('change', typeUi);
+      q('nwZone').addEventListener('change', function () { pickSvc(); depRow(); q('nwPicks').innerHTML = ''; refreshPicks(); });
+      q('nwType').addEventListener('change', typeUi);
       [].forEach.call(m.querySelectorAll('input[name="nwAuto"]'), function (r) { r.addEventListener('change', refreshPicks); });
       q('nwForm').addEventListener('submit', function (ev) {
         ev.preventDefault();

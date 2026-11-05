@@ -107,3 +107,4 @@
 /* Elegir mesas / asignar: las opciones van una debajo de otra y el selector no ocupa todo el ancho. */
 .ad-field > .mt-pick { display: flex; margin-bottom: 0.4rem; }
 .mt-pick input[type="radio"], .mt-pick input[type="checkbox"] { width: auto; margin: 0; padding: 0; }
+.mt-svcname { padding: 0.6rem 0.7rem; border: 1px solid var(--line); font-size: 0.95rem; }
