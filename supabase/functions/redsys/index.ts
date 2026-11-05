@@ -115,11 +115,13 @@ function newOrder(): string {
 // ─── Web → función ──────────────────────────────────────────────────────
 async function handleJson(req: Request): Promise<Response> {
   const cfg = config();
-  let body: { action?: string; ref?: string; lang?: string; return_base?: string; booking_id?: string; manual?: boolean; reason?: string };
+  let body: { action?: string; ref?: string; lang?: string; return_base?: string; booking_id?: string; manual?: boolean; reason?: string; token?: string };
   try { body = await req.json(); } catch { return json({ error: "bad_request" }, 400); }
 
   if (body.action === "status") return json({ enabled: cfg.enabled, env: cfg.env });
   if (body.action === "refund") return await handleRefund(req, body as RefundBody);
+  if (body.action === "pay_table") return await handlePayTable(body);
+  if (body.action === "table_refund") return await handleTableRefund(req, body);
   if (body.action !== "pay") return json({ error: "bad_action" }, 400);
   if (!cfg.enabled) return json({ error: "disabled" }, 503);
 
@@ -268,6 +270,158 @@ async function handleRefund(req: Request, body: RefundBody): Promise<Response> {
   const up = await sb.from("bookings").update({ payment_status: "refunded", status: "cancelled" }).eq("id", b.id);
   if (up.error) return json({ error: "refund_done_but_not_saved", detail: up.error.message, credit_note: creditNumber }, 500);
   return json({ ok: true, method: manual ? "manual" : "redsys", credit_note: creditNumber });
+}
+
+// ─── Mesas: fianza de la reserva ────────────────────────────────────────
+// La reserva de mesa con fianza se crea "pendiente" (book_table / dining_admin_create) y se confirma cuando
+// Redsys avisa del cobro. Se identifica por su código secreto (token), el mismo del enlace del email.
+async function handlePayTable(body: { token?: string; lang?: string; return_base?: string }): Promise<Response> {
+  const cfg = config();
+  if (!cfg.enabled) return json({ error: "disabled" }, 503);
+  const token = String(body.token ?? "");
+  if (!/^[a-f0-9]{32}$/.test(token)) return json({ error: "not_found" }, 404);
+  const sb = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
+  const { data: b } = await sb.from("table_bookings")
+    .select("id, ref, name, deposit_cents, status, payment_status, hold_until, starts_at, lang")
+    .eq("token", token).maybeSingle();
+  if (!b) return json({ error: "not_found" }, 404);
+  if (b.payment_status === "paid") return json({ error: "already_paid" }, 409);
+  if (b.status !== "pending" || b.payment_status !== "pending" || b.deposit_cents <= 0) return json({ error: "not_payable" }, 409);
+  if (Date.parse(b.hold_until) < Date.now() || Date.parse(b.starts_at) <= Date.now()) return json({ error: "expired" }, 410);
+
+  // Mientras el cliente paga, la mesa se le guarda un cuarto de hora más.
+  const extend = new Date(Date.now() + 15 * 60 * 1000).toISOString();
+  if (Date.parse(b.hold_until) < Date.parse(extend)) await sb.from("table_bookings").update({ hold_until: extend }).eq("id", b.id);
+
+  let order = "";
+  for (let i = 0; i < 5 && !order; i++) {
+    const candidate = newOrder();
+    const { error } = await sb.from("payments").insert({ order_id: candidate, table_booking_id: b.id, amount_cents: b.deposit_cents });
+    if (!error) order = candidate;
+  }
+  if (!order) return json({ error: "order_failed" }, 500);
+
+  const base = cfg.origins.includes(String(body.return_base ?? "").replace(/\/+$/, "")) ? String(body.return_base).replace(/\/+$/, "") : cfg.site;
+  const back = (status: string) => `${base}/reserva/?t=${token}&status=${status}`;
+  const params = {
+    DS_MERCHANT_AMOUNT: String(b.deposit_cents),
+    DS_MERCHANT_ORDER: order,
+    DS_MERCHANT_MERCHANTCODE: cfg.merchant,
+    DS_MERCHANT_CURRENCY: "978",
+    DS_MERCHANT_TRANSACTIONTYPE: "0",
+    DS_MERCHANT_TERMINAL: cfg.terminal,
+    DS_MERCHANT_MERCHANTURL: `${Deno.env.get("SUPABASE_URL")}/functions/v1/redsys`,
+    DS_MERCHANT_URLOK: back("ok"),
+    DS_MERCHANT_URLKO: back("ko"),
+    DS_MERCHANT_CONSUMERLANGUAGE: (body.lang ?? b.lang) === "en" ? "002" : "001",
+    DS_MERCHANT_PRODUCTDESCRIPTION: ascii("Fianza reserva de mesa ROCE " + b.ref).slice(0, 120),
+    DS_MERCHANT_TITULAR: ascii(b.name).slice(0, 60),
+    DS_MERCHANT_MERCHANTNAME: ascii(cfg.name).slice(0, 25),
+  };
+  const merchantParameters = toB64(JSON.stringify(params));
+  return json({
+    url: URLS[cfg.env],
+    Ds_SignatureVersion: "HMAC_SHA256_V1",
+    Ds_MerchantParameters: merchantParameters,
+    Ds_Signature: await sign(cfg.key, order, merchantParameters),
+  });
+}
+
+// Devolución de la fianza de una mesa. Dos formas de llamarla:
+//   · el cliente, justo después de anular su reserva a tiempo: {token}. Solo funciona si la reserva está anulada
+//     con "refund_due" (lo decide la base de datos al anular, según las horas de antelación de la zona);
+//   · el equipo desde el panel: {booking_id, manual?} con sesión de alguien con la pestaña Mesas. Puede devolver
+//     también una fianza retenida (si se decide hacer un gesto) y registrar una devolución hecha a mano en el banco.
+async function handleTableRefund(req: Request, body: { token?: string; booking_id?: string; manual?: boolean; reason?: string }): Promise<Response> {
+  const url = Deno.env.get("SUPABASE_URL")!;
+  const sb = createClient(url, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
+  let who = "cliente";
+  let staff = false;
+  if (body.booking_id) {
+    const caller = createClient(url, Deno.env.get("SUPABASE_ANON_KEY")!, {
+      global: { headers: { Authorization: req.headers.get("Authorization") ?? "" } },
+      auth: { persistSession: false },
+    });
+    const { data: ok } = await caller.rpc("has_tab", { t: "tables" });
+    if (ok !== true) return json({ error: "forbidden" }, 403);
+    const { data: me } = await caller.auth.getUser();
+    who = (me.user?.email ?? "").toLowerCase();
+    staff = true;
+  } else if (!/^[a-f0-9]{32}$/.test(String(body.token ?? ""))) {
+    return json({ error: "not_found" }, 404);
+  }
+
+  const q = sb.from("table_bookings").select("id, ref, status, payment_status, deposit_cents, refund_due");
+  const { data: b } = await (staff ? q.eq("id", String(body.booking_id)) : q.eq("token", String(body.token))).maybeSingle();
+  if (!b) return json({ error: "not_found" }, 404);
+  if (b.payment_status === "refunded") return json({ error: "already_refunded" }, 409);
+  if (staff ? !["paid", "retained"].includes(b.payment_status) : !(b.status === "cancelled" && b.refund_due && b.payment_status === "paid")) {
+    return json({ error: "not_refundable" }, 409);
+  }
+  const { data: pay } = await sb.from("payments").select("order_id, amount_cents")
+    .eq("table_booking_id", b.id).eq("status", "paid").order("updated_at", { ascending: false }).limit(1).maybeSingle();
+  const manual = staff && body.manual === true;
+  if (!manual && !pay) return json({ error: "no_online_payment" }, 409);
+
+  // Candado: una devolución por reserva; si una anterior falló se puede reintentar.
+  const row = { table_booking_id: b.id, order_id: pay?.order_id ?? null, amount_cents: b.deposit_cents, method: manual ? "manual" : "redsys", status: "started", requested_by: who };
+  const ins = await sb.from("table_refunds").insert(row);
+  if (ins.error) {
+    const { data: prev } = await sb.from("table_refunds").select("status").eq("table_booking_id", b.id).maybeSingle();
+    if (!prev || prev.status !== "failed") return json({ error: prev?.status === "done" ? "already_refunded" : "refund_in_progress" }, 409);
+    await sb.from("table_refunds").update({ ...row, response_code: null, updated_at: new Date().toISOString() }).eq("table_booking_id", b.id);
+  }
+  const fail = async (code: string, detail: string, status = 502) => {
+    await sb.from("table_refunds").update({ status: "failed", response_code: code.slice(0, 10), updated_at: new Date().toISOString() }).eq("table_booking_id", b.id);
+    return json({ error: "bank_refused", code, detail }, status);
+  };
+
+  if (!manual) {
+    const cfg = config();
+    if (!cfg.enabled) return await fail("CONFIG", "Pasarela sin configurar", 503);
+    const params = {
+      DS_MERCHANT_AMOUNT: String(pay!.amount_cents),
+      DS_MERCHANT_ORDER: pay!.order_id,
+      DS_MERCHANT_MERCHANTCODE: cfg.merchant,
+      DS_MERCHANT_CURRENCY: "978",
+      DS_MERCHANT_TRANSACTIONTYPE: "3", // devolución
+      DS_MERCHANT_TERMINAL: cfg.terminal,
+    };
+    const merchantParameters = toB64(JSON.stringify(params));
+    let out: Record<string, unknown>;
+    try {
+      const r = await fetch(REST_URLS[cfg.env], {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          Ds_SignatureVersion: "HMAC_SHA256_V1",
+          Ds_MerchantParameters: merchantParameters,
+          Ds_Signature: await sign(cfg.key, pay!.order_id, merchantParameters),
+        }),
+        signal: AbortSignal.timeout(25000),
+      });
+      out = await r.json();
+    } catch (e) {
+      return await fail("NETWORK", "No se pudo contactar con el banco: " + String(e).slice(0, 120));
+    }
+    if (out.errorCode) return await fail(String(out.errorCode), "El banco ha rechazado la petición");
+    let resp: Record<string, unknown>;
+    try { resp = fromB64Json(String(out.Ds_MerchantParameters ?? "")); } catch { return await fail("RESPONSE", "Respuesta del banco ilegible"); }
+    const get = (name: string) => { const k = Object.keys(resp).find((x) => x.toLowerCase() === name.toLowerCase()); return k ? String(resp[k]) : ""; };
+    const expected = await sign(cfg.key, get("Ds_Order") || pay!.order_id, String(out.Ds_MerchantParameters));
+    if (!safeEqual(canon(expected), canon(String(out.Ds_Signature ?? "")))) return await fail("SIGNATURE", "Firma de la respuesta no válida: compruébalo en el portal del banco");
+    const code = get("Ds_Response");
+    if (code !== "0900") return await fail(code || "UNKNOWN", "El banco no ha aceptado la devolución (código " + (code || "?") + ")");
+    await sb.from("table_refunds").update({ status: "done", response_code: code, updated_at: new Date().toISOString() }).eq("table_booking_id", b.id);
+  } else {
+    await sb.from("table_refunds").update({ status: "done", response_code: "MANUAL", updated_at: new Date().toISOString() }).eq("table_booking_id", b.id);
+  }
+
+  const up = await sb.from("table_bookings")
+    .update({ payment_status: "refunded", refund_due: false, status: "cancelled", cancelled_at: new Date().toISOString() })
+    .eq("id", b.id);
+  if (up.error) return json({ error: "refund_done_but_not_saved", detail: up.error.message }, 500);
+  return json({ ok: true, method: manual ? "manual" : "redsys" });
 }
 
 // ─── Redsys → función (notificación del cobro) ──────────────────────────

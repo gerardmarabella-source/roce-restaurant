@@ -2,7 +2,7 @@
 #mesasApp { --mz-fg: var(--white); --mz-bg: var(--black); --mz-line: rgba(236, 231, 221, 0.3); --mz-soft: rgba(236, 231, 221, 0.6); --mz-err: #ff7a6e; }
 body.zone-day #mesasApp { --mz-fg: var(--black); --mz-bg: var(--white); --mz-line: rgba(10, 10, 10, 0.28); --mz-soft: rgba(10, 10, 10, 0.6); --mz-err: #c4281c; }
 #mesasApp { color: var(--mz-fg); font-family: var(--display); }
-#mesasApp button, #mesasApp input, #mesasApp textarea { font-family: inherit; color: inherit; }
+:where(#mesasApp) :where(button, input, textarea) { font-family: inherit; color: inherit; }
 .mz-step { margin-bottom: 1.75rem; }
 .mz-label { display: block; margin-bottom: 0.7rem; font-size: 0.8rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--mz-soft); }
 .mz-stepper { display: flex; align-items: center; gap: 1.25rem; }
