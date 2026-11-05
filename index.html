@@ -147,9 +147,11 @@
      del otro, a todo el ancho. El alto se reparte para que todo quepa sin scroll. */
   .home-main {
     --sw: calc(100vw - 2 * var(--pad));
-    /* --sq-n = cuántos cuadrados hay (2 espacios + 1 si hay evento; lo fija el script). El alto se reparte entre ellos para no hacer scroll. */
-    --sq-n: 2;
-    --sh: min(calc(var(--sw) * 0.55), calc(var(--avail) * 0.34 / var(--sq-n)));
+    /* Franja del evento bajo los dos cuadrados (--ev-n = 1 si hay evento; lo fija el script). Su alto se descuenta del resto para no hacer scroll. */
+    --ev-n: 0;
+    --ev-h: clamp(2.6rem, calc(var(--avail) * 0.075), 3.6rem);
+    --ev-x: calc(var(--ev-n) * (var(--ev-h) + var(--gap)));
+    --sh: min(calc(var(--sw) * 0.55), calc((var(--avail) - var(--ev-x)) * 0.17));
     flex: 1;
     min-height: 0;
     display: flex;
@@ -164,7 +166,7 @@
   .home-statement {
     font-family: var(--display);
     font-weight: 400; /* Helvetica Neue tal cual (Regular de marca) */
-    font-size: min(calc((100vw - 2 * var(--pad)) / 4.3), 14rem, calc((var(--avail) - var(--sq-n) * var(--sh) - (var(--sq-n) - 1) * var(--gap) - 1.25rem) / 4.5));
+    font-size: min(calc((100vw - 2 * var(--pad)) / 4.3), 14rem, calc((var(--avail) - 2 * var(--sh) - var(--gap) - 1.25rem - var(--ev-x)) / 4.5));
     width: auto;
     flex: 0 0 auto;
     margin: 0;
@@ -258,14 +260,18 @@
     .age-badge { width: 1.5rem; height: 1.5rem; }
   }
 
-  /* Cubo del próximo evento (o el que está en marcha): el mismo cuadrado que los dos espacios, blanco si es de día y negro si es de noche. Sin cartel. */
+  /* Franja del próximo evento (o el que está en marcha), más baja que los cuadrados: fondo blanco si es de día y negro si es de noche. Sin cartel. */
+  .home-square-event { flex-direction: row; align-items: center; justify-content: flex-start; gap: 0.7rem; height: var(--ev-h); padding: 0 calc(var(--ev-h) * 0.32); }
   .home-square-event[hidden] { display: none; }
   .home-square-event[data-env="day"] { background: var(--white); color: var(--black); border: 2px solid var(--black); }
   .home-square-event[data-env="night"] { background: var(--black); color: var(--white); border: 2px solid var(--black); }
   html[data-mode="night"] .home-square-event[data-env="night"] { border-color: var(--white); }
-  .home-square-event .he-kicker { display: block; font-family: var(--display); font-size: clamp(0.6rem, min(6.2cqw, calc(var(--sh) * 0.085)), 1.25rem); letter-spacing: 0.06em; text-transform: uppercase; opacity: 0.75; line-height: 1.1; }
+  .home-square-event .he-title { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 700; font-size: clamp(0.8rem, min(4.2cqw, calc(var(--ev-h) * 0.34)), 1.3rem); line-height: 1; }
+  .home-square-event .he-kicker { flex-shrink: 0; font-family: var(--display); font-size: clamp(0.65rem, min(3.6cqw, calc(var(--ev-h) * 0.26)), 1rem); opacity: 0.7; white-space: nowrap; }
   .home-square-event .he-kicker.is-live::before { content: ""; display: inline-block; width: 0.55em; height: 0.55em; margin-right: 0.45em; border-radius: 50%; background: #ff1f1f; animation: liveDot 1.3s ease-in-out infinite; }
-  .home-square-event .he-title { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; min-width: 0; }
+  .home-square-event .home-square-arrow { font-size: 1.2rem; }
+  @container (max-width: 300px) { .home-square-event .he-kicker { display: none; } }
+  @container (max-width: 150px) { .home-square-event .home-square-arrow { display: none; } }
   @media (prefers-reduced-motion: reduce) { .home-square-event .he-kicker.is-live::before { animation: none; } }
 
   .home-foot {
@@ -300,7 +306,7 @@
 
   /* Tablet vertical: bloques algo más bajos para que la frase pueda crecer con el ancho. */
   @media (min-width: 600px) and (max-aspect-ratio: 5/4) {
-    .home-main { --sh: min(calc(var(--sw) * 0.62), calc(var(--avail) * 0.30 / var(--sq-n))); }
+    .home-main { --sh: min(calc(var(--sw) * 0.62), calc((var(--avail) - var(--ev-x)) * 0.15)); }
   }
 
   /* Horizontal (escritorio, móvil tumbado): frase a la izquierda y los dos
@@ -310,7 +316,7 @@
     .home { --pad: 2.5rem; --head: 56px; }
     .home-head { position: static; height: var(--head); flex-shrink: 0; }
     .home-main {
-      --s: min(calc((var(--avail) - (var(--sq-n) - 1) * var(--gap)) / var(--sq-n)), 30vw);
+      --s: min(calc((var(--avail) - var(--gap) - var(--ev-x)) / 2), 30vw);
       --sw: min(calc(var(--s) * 1.9), 42vw);
       --sh: var(--s);
       flex-direction: row;
@@ -488,11 +494,9 @@
         </div>
       </a>
       <a class="home-square home-square-event" id="homeEvent" href="/eventos/" hidden>
-        <div class="home-square-top"><span class="he-kicker"></span></div>
-        <div class="home-square-bottom">
-          <strong class="home-name he-title"></strong>
-          <span class="home-square-arrow" aria-hidden="true">→</span>
-        </div>
+        <strong class="he-title"></strong>
+        <span class="he-kicker"></span>
+        <span class="home-square-arrow" aria-hidden="true">→</span>
       </a>
     </div>
   </main>
@@ -575,7 +579,7 @@
       var l = window.ROCE_I18N ? window.ROCE_I18N.getLang() : 'es';
       var e = nextEvent();
       cube.hidden = !e;
-      main.style.setProperty('--sq-n', e ? 3 : 2);
+      main.style.setProperty('--ev-n', e ? 1 : 0);
       if (!e) return;
       var b = U.bounds(e), live = U.isLive(e);
       cube.href = '/eventos/evento/?e=' + encodeURIComponent(e.id);
