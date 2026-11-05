@@ -277,7 +277,7 @@
   .home-live-night { background: var(--black); color: var(--white); border: 2px solid var(--black); }
   html[data-mode="night"] .home-live-night { border-color: var(--white); }
   .home-live-floor { flex-shrink: 0; font-family: var(--display); font-size: clamp(0.5rem, min(3cqw, calc(var(--live-h) * 0.2)), 0.8rem); letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.6; padding-right: 0.7rem; border-right: 1px solid currentColor; line-height: 1.1; }
-  .home-live-title { font-weight: 700; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: var(--display); text-transform: uppercase; letter-spacing: 0.01em; font-size: clamp(0.8rem, min(4.2cqw, calc(var(--live-h) * 0.36)), 1.4rem); }
+  .home-live-title { font-weight: 400; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: var(--display); text-transform: uppercase; letter-spacing: 0.01em; font-size: clamp(0.8rem, min(4.2cqw, calc(var(--live-h) * 0.36)), 1.4rem); }
   .home-live-time { flex-shrink: 0; font-family: var(--display); font-size: clamp(0.65rem, min(3.6cqw, calc(var(--live-h) * 0.26)), 1rem); opacity: 0.7; white-space: nowrap; }
   .home-live-arrow { flex-shrink: 0; font-family: var(--display); font-size: 1.2rem; line-height: 1; }
   @container (max-width: 300px) { .home-live-time { display: none; } }
@@ -332,8 +332,12 @@
       max-width: none;
       flex: 1;
       min-width: 0;
-      font-size: min(10.5rem, calc(var(--avail) / 3.5), calc((100vw - 2 * var(--pad) - var(--s) - 2rem) / 4.4));
+      font-size: min(10.5rem, calc(var(--avail) / 4.75), calc((100vw - 2 * var(--pad) - var(--s) - 2rem) / 4.4));
     }
+    /* En horizontal la frase va en columna, todo alineado a la izquierda: TODO / EMPIEZA / CON / UN / logo. */
+    .home-statement .line { text-align: left; }
+    .home-statement .l3 > span { display: block; }
+    .home-logo { margin: 0.054em 0 0 0; }
     .home-squares { display: flex; flex-direction: column; justify-content: flex-start; }
     .home-square-day, .home-square-night, .home-live { align-self: flex-end; }
   }
