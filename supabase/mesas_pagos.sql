@@ -57,7 +57,7 @@ begin
       select 1 from public.table_booking_tables mine
       join public.table_booking_tables other on other.table_id = mine.table_id and other.booking_id <> mine.booking_id
       join public.table_bookings o on o.id = other.booking_id
-      where mine.booking_id = v_table.id and public.dining_holds(o.status, o.created_at) and o.starts_at < v_table.ends_at and o.ends_at > v_table.starts_at
+      where mine.booking_id = v_table.id and public.dining_holds(o.status, o.hold_until) and o.starts_at < v_table.ends_at and o.ends_at > v_table.starts_at
     ) then return 'paid_but_table_taken'; end if;
     update public.table_bookings
        set status = 'confirmed', payment_status = 'paid', paid_at = coalesce(paid_at, now())

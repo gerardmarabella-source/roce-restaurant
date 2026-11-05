@@ -61,6 +61,22 @@ create table if not exists public.dining_closures (
   check (date_to >= date_from)
 );
 
+-- ─── Bloqueos (comida privada, evento, mesas fuera de servicio) ───────────
+-- Bloquean una zona entera (o solo algunas mesas) en una franja horaria: nadie puede reservarlas desde la web.
+-- Es lo que se usa cuando una planta se reserva fuera del motor de reservas.
+create table if not exists public.dining_blocks (
+  id         uuid primary key default gen_random_uuid(),
+  zone_id    text not null references public.dining_zones(id) on update cascade on delete cascade,
+  table_ids  uuid[],   -- null = toda la zona
+  starts_at  timestamptz not null,
+  ends_at    timestamptz not null,
+  note       text not null default '',
+  created_by text not null default '',
+  created_at timestamptz not null default now(),
+  check (ends_at > starts_at)
+);
+create index if not exists dining_blocks_range_idx on public.dining_blocks (starts_at, ends_at);
+
 -- ─── Reservas de mesa ─────────────────────────────────────────────────────
 create table if not exists public.table_bookings (
   id             uuid primary key default gen_random_uuid(),
@@ -86,9 +102,11 @@ create table if not exists public.table_bookings (
   admin_notes    text not null default '',
   cancelled_at   timestamptz,
   paid_at        timestamptz,
+  hold_until     timestamptz not null default (now() + interval '15 minutes'),   -- una reserva pendiente de pago retiene mesa hasta aquí
   created_at     timestamptz not null default now(),
   check (ends_at > starts_at)
 );
+alter table public.table_bookings add column if not exists hold_until timestamptz not null default (now() + interval '15 minutes');
 create index if not exists table_bookings_starts_idx on public.table_bookings (starts_at);
 create index if not exists table_bookings_email_idx on public.table_bookings (lower(email));
 
@@ -106,6 +124,7 @@ alter table public.dining_zones enable row level security;
 alter table public.dining_tables enable row level security;
 alter table public.dining_services enable row level security;
 alter table public.dining_closures enable row level security;
+alter table public.dining_blocks enable row level security;
 alter table public.table_bookings enable row level security;
 alter table public.table_booking_tables enable row level security;
 
@@ -117,6 +136,8 @@ drop policy if exists dining_services_admin on public.dining_services;
 create policy dining_services_admin on public.dining_services for all to authenticated using (public.has_tab('tables')) with check (public.has_tab('tables'));
 drop policy if exists dining_closures_admin on public.dining_closures;
 create policy dining_closures_admin on public.dining_closures for all to authenticated using (public.has_tab('tables')) with check (public.has_tab('tables'));
+drop policy if exists dining_blocks_admin on public.dining_blocks;
+create policy dining_blocks_admin on public.dining_blocks for all to authenticated using (public.has_tab('tables')) with check (public.has_tab('tables'));
 drop policy if exists table_bookings_admin_read on public.table_bookings;
 create policy table_bookings_admin_read on public.table_bookings for select to authenticated using (public.has_tab('tables'));
 drop policy if exists table_bookings_admin_update on public.table_bookings;
@@ -125,10 +146,12 @@ drop policy if exists table_booking_tables_admin_read on public.table_booking_ta
 create policy table_booking_tables_admin_read on public.table_booking_tables for select to authenticated using (public.has_tab('tables'));
 
 -- ─── Lógica de ocupación ──────────────────────────────────────────────────
--- ¿Esta reserva retiene mesa? Las pendientes de pago solo la retienen 15 minutos.
-create or replace function public.dining_holds(p_status text, p_created timestamptz) returns boolean
+-- ¿Esta reserva retiene mesa? Las pendientes de pago la retienen hasta su hora límite
+-- (15 minutos en la web; las creadas desde el panel, el tiempo que se les dé).
+drop function if exists public.dining_holds(text, timestamptz);
+create function public.dining_holds(p_status text, p_hold_until timestamptz) returns boolean
 language sql stable as $$
-  select p_status in ('confirmed', 'seated') or (p_status = 'pending' and p_created > now() - interval '15 minutes');
+  select p_status in ('confirmed', 'seated') or (p_status = 'pending' and p_hold_until > now());
 $$;
 
 -- Hora de inicio de un servicio y fecha del servicio: ¿es p_starts una hora válida del turno?
@@ -180,9 +203,10 @@ begin
   select array[t.id] into v_pick
   from public.dining_tables t
   where t.active and t.zone_id = p_zone and t.seats_min <= p_party and t.seats_max >= p_party
+    and not exists (select 1 from public.dining_blocks k where k.zone_id = t.zone_id and (k.table_ids is null or t.id = any (k.table_ids)) and k.starts_at < p_end and k.ends_at > p_start)
     and not exists (
       select 1 from public.table_booking_tables bt join public.table_bookings b on b.id = bt.booking_id
-      where bt.table_id = t.id and b.id is distinct from p_exclude and public.dining_holds(b.status, b.created_at)
+      where bt.table_id = t.id and b.id is distinct from p_exclude and public.dining_holds(b.status, b.hold_until)
         and b.starts_at < p_end and b.ends_at > p_start)
   order by t.seats_max, t.sort, t.name
   limit 1;
@@ -193,9 +217,10 @@ begin
     for r in
       select t.id, t.seats_max from public.dining_tables t
       where t.active and t.zone_id = p_zone and t.combine_group = g
+        and not exists (select 1 from public.dining_blocks k where k.zone_id = t.zone_id and (k.table_ids is null or t.id = any (k.table_ids)) and k.starts_at < p_end and k.ends_at > p_start)
         and not exists (
           select 1 from public.table_booking_tables bt join public.table_bookings b on b.id = bt.booking_id
-          where bt.table_id = t.id and b.id is distinct from p_exclude and public.dining_holds(b.status, b.created_at)
+          where bt.table_id = t.id and b.id is distinct from p_exclude and public.dining_holds(b.status, b.hold_until)
             and b.starts_at < p_end and b.ends_at > p_start)
       order by t.seats_max desc, t.sort, t.name
     loop
@@ -294,7 +319,7 @@ begin
   -- Freno contra reservas falsas: como mucho 3 reservas futuras activas por email.
   if (select count(*) from public.table_bookings b
       where lower(b.email) = lower(trim(p_email)) and b.starts_at > now()
-        and public.dining_holds(b.status, b.created_at)) >= 3 then raise exception 'too_many'; end if;
+        and public.dining_holds(b.status, b.hold_until)) >= 3 then raise exception 'too_many'; end if;
 
   v_end := p_starts + make_interval(mins => s.duration_min);
   v_tables := public.dining_assign(p_starts, v_end, p_party, z.id);
@@ -310,10 +335,10 @@ begin
   end loop;
 
   insert into public.table_bookings (ref, service_id, ambience, zone_id, starts_at, ends_at, party, name, email, phone, notes, lang, marketing_optin,
-                                     status, payment_status, deposit_cents, source)
+                                     status, payment_status, deposit_cents, source, hold_until)
   values (v_ref, s.id, s.ambience, z.id, p_starts, v_end, p_party, trim(p_name), lower(trim(p_email)), trim(p_phone),
           left(coalesce(p_notes, ''), 500), case when p_lang = 'en' then 'en' else 'es' end, coalesce(p_marketing, false),
-          v_status, case when v_dep > 0 then 'pending' else 'free' end, v_dep, 'web')
+          v_status, case when v_dep > 0 then 'pending' else 'free' end, v_dep, 'web', now() + interval '15 minutes')
   returning id, token into v_id, v_token;
   insert into public.table_booking_tables (booking_id, table_id) select v_id, unnest(v_tables);
 
@@ -323,20 +348,28 @@ $$;
 revoke all on function public.book_table(text, timestamptz, text, integer, text, text, text, text, text, boolean) from public;
 grant execute on function public.book_table(text, timestamptz, text, integer, text, text, text, text, text, boolean) to anon, authenticated;
 
--- ─── Reserva creada desde el panel (teléfono, mostrador, walk-in) ─────────
--- Sin antelación mínima ni fianza. p_tables vacío = asigna sola; p_tables con mesas = las que elijas.
+-- ─── Reserva creada desde el panel (teléfono, mostrador, grupos) ──────────
+-- Sin antelación mínima. p_tables vacío = asigna sola; con mesas = las que elijas.
+-- p_request_payment = true y zona con fianza: queda "pendiente" y el cliente la confirma pagando la fianza
+-- con el enlace del email (la mesa se le guarda p_hold_hours horas). Sin fianza (o false): queda confirmada.
 drop function if exists public.dining_admin_create(text, timestamptz, text, integer, text, text, text, text, uuid[], boolean);
-create or replace function public.dining_admin_create(
+drop function if exists public.dining_admin_create(text, timestamptz, text, integer, text, text, text, text, uuid[], boolean, boolean, integer);
+create function public.dining_admin_create(
   p_service text, p_starts timestamptz, p_zone text, p_party integer,
-  p_name text, p_email text, p_phone text, p_notes text default '', p_tables uuid[] default null, p_seated boolean default false
+  p_name text, p_email text, p_phone text, p_notes text default '', p_tables uuid[] default null, p_seated boolean default false,
+  p_request_payment boolean default false, p_hold_hours integer default 24
 ) returns jsonb
 language plpgsql security definer set search_path = public as $$
 declare
   s public.dining_services%rowtype;
+  z public.dining_zones%rowtype;
   v_end timestamptz;
   v_tables uuid[];
+  v_dep integer := 0;
+  v_pend boolean;
   v_id uuid;
   v_ref text;
+  v_token text;
   chars text := 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   i integer;
 begin
@@ -344,13 +377,21 @@ begin
   perform pg_advisory_xact_lock(7001);
   select * into s from public.dining_services where id = p_service;
   if not found then raise exception 'service_not_found'; end if;
+  select * into z from public.dining_zones where id = p_zone;
+  if not found then raise exception 'zone_not_found'; end if;
   if p_party is null or p_party < 1 or p_party > 60 or length(trim(coalesce(p_name, ''))) < 1 then raise exception 'bad_data'; end if;
   v_end := p_starts + make_interval(mins => s.duration_min);
+
+  if p_request_payment then
+    v_dep := case when z.deposit_per_person then z.deposit_cents * p_party else z.deposit_cents end;
+    if v_dep > 0 and coalesce(p_email, '') !~* '^[^@[:space:]]+@[^@[:space:]]+\.[^@[:space:]]{2,}$' then raise exception 'email_required'; end if;
+  end if;
+  v_pend := v_dep > 0;
 
   if p_tables is not null and cardinality(p_tables) > 0 then
     if exists (
       select 1 from public.table_booking_tables bt join public.table_bookings b on b.id = bt.booking_id
-      where bt.table_id = any (p_tables) and public.dining_holds(b.status, b.created_at) and b.starts_at < v_end and b.ends_at > p_starts
+      where bt.table_id = any (p_tables) and public.dining_holds(b.status, b.hold_until) and b.starts_at < v_end and b.ends_at > p_starts
     ) then raise exception 'table_busy'; end if;
     v_tables := p_tables;
   else
@@ -364,16 +405,19 @@ begin
     exit when not exists (select 1 from public.table_bookings b where b.ref = v_ref);
   end loop;
   insert into public.table_bookings (ref, service_id, ambience, zone_id, starts_at, ends_at, party, name, email, phone, notes, lang,
-                                     status, payment_status, deposit_cents, source)
+                                     status, payment_status, deposit_cents, source, hold_until)
   values (v_ref, s.id, s.ambience, p_zone, p_starts, v_end, p_party, trim(p_name), lower(trim(coalesce(p_email, ''))), trim(coalesce(p_phone, '')),
-          left(coalesce(p_notes, ''), 500), 'es', case when p_seated then 'seated' else 'confirmed' end, 'free', 0, 'admin')
-  returning id into v_id;
+          left(coalesce(p_notes, ''), 500), 'es',
+          case when v_pend then 'pending' when p_seated then 'seated' else 'confirmed' end,
+          case when v_pend then 'pending' else 'free' end, v_dep, 'admin',
+          now() + make_interval(hours => greatest(1, least(coalesce(p_hold_hours, 24), 168))))
+  returning id, token into v_id, v_token;
   insert into public.table_booking_tables (booking_id, table_id) select v_id, unnest(v_tables);
-  return jsonb_build_object('ok', true, 'id', v_id, 'ref', v_ref);
+  return jsonb_build_object('ok', true, 'id', v_id, 'ref', v_ref, 'token', v_token, 'status', case when v_pend then 'pending' else 'confirmed' end, 'deposit_cents', v_dep);
 end;
 $$;
-revoke all on function public.dining_admin_create(text, timestamptz, text, integer, text, text, text, text, uuid[], boolean) from public, anon;
-grant execute on function public.dining_admin_create(text, timestamptz, text, integer, text, text, text, text, uuid[], boolean) to authenticated;
+revoke all on function public.dining_admin_create(text, timestamptz, text, integer, text, text, text, text, uuid[], boolean, boolean, integer) from public, anon;
+grant execute on function public.dining_admin_create(text, timestamptz, text, integer, text, text, text, text, uuid[], boolean, boolean, integer) to authenticated;
 
 -- Cambiar de mesa (o juntar mesas) una reserva, comprobando que estén libres.
 create or replace function public.dining_admin_move(p_booking uuid, p_tables uuid[]) returns jsonb
@@ -387,7 +431,7 @@ begin
   if p_tables is null or cardinality(p_tables) = 0 then raise exception 'bad_data'; end if;
   if exists (
     select 1 from public.table_booking_tables bt join public.table_bookings o on o.id = bt.booking_id
-    where bt.table_id = any (p_tables) and o.id <> b.id and public.dining_holds(o.status, o.created_at) and o.starts_at < b.ends_at and o.ends_at > b.starts_at
+    where bt.table_id = any (p_tables) and o.id <> b.id and public.dining_holds(o.status, o.hold_until) and o.starts_at < b.ends_at and o.ends_at > b.starts_at
   ) then raise exception 'table_busy'; end if;
   delete from public.table_booking_tables where booking_id = b.id;
   insert into public.table_booking_tables (booking_id, table_id) select b.id, unnest(p_tables);
@@ -413,7 +457,9 @@ begin
     'zone_es', z.name_es, 'zone_en', case when z.name_en <> '' then z.name_en else z.name_es end,
     'free_cancel_hours', coalesce(z.free_cancel_hours, 24),
     'refundable_until', b.starts_at - make_interval(hours => coalesce(z.free_cancel_hours, 24)),
-    'can_cancel', b.status in ('pending', 'confirmed') and b.starts_at > now()
+    'can_cancel', b.status in ('pending', 'confirmed') and b.starts_at > now(),
+    'can_pay', b.status = 'pending' and b.payment_status = 'pending' and b.deposit_cents > 0 and b.hold_until > now() and b.starts_at > now(),
+    'hold_until', b.hold_until, 'source', b.source
   );
 end;
 $$;
