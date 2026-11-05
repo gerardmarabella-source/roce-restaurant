@@ -178,6 +178,7 @@
   .ad-hint { font-size: 0.78rem; opacity: 0.6; margin-top: 0.25rem; }
   @media (max-width: 560px) { .ad-grid { grid-template-columns: 1fr; } .ad-table { font-size: 0.8rem; } }
 </style>
+<link rel="stylesheet" href="/admin/mesas.css?v=1">
 </head>
 <body>
 
@@ -204,6 +205,7 @@
       <button class="ad-tab" data-tab="bookings" aria-pressed="false" type="button">Reservas</button>
       <button class="ad-tab" data-tab="checkin" aria-pressed="false" type="button">Asistencia</button>
       <button class="ad-tab" data-tab="lists" aria-pressed="false" type="button">Listas</button>
+      <button class="ad-tab" data-tab="tables" aria-pressed="false" type="button">Mesas</button>
       <button class="ad-tab" data-tab="team" id="teamTab" aria-pressed="false" type="button">Equipo</button>
     </div>
     <p class="ad-msg" id="appMsg" hidden></p>
@@ -255,6 +257,8 @@
       <p class="ad-empty" id="lsEmpty" hidden>No hay listas. Crea la primera con “+ Nueva lista”.</p>
     </section>
 
+    <section id="tabTables" hidden></section>
+
     <section id="tabTeam" hidden>
       <div id="teamAdmin">
       <p class="ad-meta" style="margin-bottom:1rem"><b>Administrador</b>: gestiona el equipo (crea cuentas, cambia contraseñas, quita accesos). <b>Equipo</b>: solo ve las pestañas que le marques abajo (Eventos, Reservas, Asistencia, Listas) y no puede tocar el equipo. Ambos pueden cambiar su propia contraseña.</p>
@@ -266,7 +270,7 @@
           <input type="email" id="teamEmail" placeholder="persona@roce.es" required style="flex:1 1 14rem">
           <input type="text" id="teamPass" placeholder="Contraseña (mín. 10)" required minlength="10" style="flex:1 1 12rem" spellcheck="false">
           <select id="teamRole" aria-label="Nivel"><option value="staff">Equipo</option><option value="admin">Administrador</option></select>
-          <span class="ad-perms" id="teamNewTabs" aria-label="Pestañas que podrá ver"><label><input type="checkbox" data-tab="events"> Eventos</label><label><input type="checkbox" data-tab="bookings"> Reservas</label><label><input type="checkbox" data-tab="checkin" checked> Asistencia</label><label><input type="checkbox" data-tab="lists"> Listas</label></span>
+          <span class="ad-perms" id="teamNewTabs" aria-label="Pestañas que podrá ver"><label><input type="checkbox" data-tab="events"> Eventos</label><label><input type="checkbox" data-tab="bookings"> Reservas</label><label><input type="checkbox" data-tab="checkin" checked> Asistencia</label><label><input type="checkbox" data-tab="lists"> Listas</label><label><input type="checkbox" data-tab="tables"> Mesas</label></span>
           <button class="ad-btn is-ghost" type="button" id="teamGen">Generar</button>
           <button class="ad-btn" type="submit" id="teamAdd">Crear y dar acceso</button>
         </div>
@@ -463,7 +467,7 @@
   $('logout').addEventListener('click', function () { saveSession(null); showLogin(''); });
 
   // Pestañas que puede usar esta cuenta (las define un administrador en Equipo). Equipo/"Mi cuenta" siempre se ve.
-  var ALL_TABS = ['events', 'bookings', 'checkin', 'lists'], myTabs = ALL_TABS.slice();
+  var ALL_TABS = ['events', 'bookings', 'checkin', 'lists', 'tables'], DEFAULT_TABS = ['events', 'bookings', 'checkin', 'lists'], myTabs = DEFAULT_TABS.slice();
   function applyTabs() {
     document.querySelectorAll('.ad-tab[data-tab]').forEach(function (b) {
       var t = b.dataset.tab; b.hidden = t !== 'team' && myTabs.indexOf(t) === -1;
@@ -476,7 +480,7 @@
       if (!rows || !rows.length) { saveSession(null); showLogin('Esta cuenta no tiene permiso para usar el panel.'); return; }
       var mine = rows.filter(function (r) { return String(r.email).toLowerCase() === String(session.email).toLowerCase(); })[0];
       myRole = mine && mine.role === 'admin' ? 'admin' : 'staff';
-      myTabs = myRole === 'admin' ? ALL_TABS.slice() : (mine && Array.isArray(mine.tabs) ? mine.tabs.slice() : ALL_TABS.slice());
+      myTabs = myRole === 'admin' ? ALL_TABS.slice() : (mine && Array.isArray(mine.tabs) ? mine.tabs.slice() : DEFAULT_TABS.slice());
       $('teamAdmin').hidden = myRole !== 'admin';
       $('teamTab').textContent = myRole === 'admin' ? 'Equipo' : 'Mi cuenta';
       $('whoami').textContent = session.email;
@@ -503,9 +507,10 @@
   document.querySelectorAll('.ad-tab').forEach(function (t) {
     t.addEventListener('click', function () {
       document.querySelectorAll('.ad-tab').forEach(function (x) { x.setAttribute('aria-pressed', x === t ? 'true' : 'false'); });
-      $('tabEvents').hidden = t.dataset.tab !== 'events'; $('tabBookings').hidden = t.dataset.tab !== 'bookings'; $('tabTeam').hidden = t.dataset.tab !== 'team'; $('tabCheckin').hidden = t.dataset.tab !== 'checkin'; $('tabLists').hidden = t.dataset.tab !== 'lists';
+      $('tabEvents').hidden = t.dataset.tab !== 'events'; $('tabBookings').hidden = t.dataset.tab !== 'bookings'; $('tabTeam').hidden = t.dataset.tab !== 'team'; $('tabCheckin').hidden = t.dataset.tab !== 'checkin'; $('tabLists').hidden = t.dataset.tab !== 'lists'; $('tabTables').hidden = t.dataset.tab !== 'tables';
       if (t.dataset.tab === 'lists') openLists();
       if (t.dataset.tab === 'checkin') openCheckin();
+      if (t.dataset.tab === 'tables' && window.ROCE_ADMIN && window.ROCE_ADMIN.openTables) window.ROCE_ADMIN.openTables();
       if (t.dataset.tab === 'team' && myRole === 'admin') loadTeam();
     });
   });
@@ -1276,10 +1281,10 @@
     crypto.getRandomValues(a); for (var i = 0; i < a.length; i++) o += chars[a[i] % chars.length];
     return o;
   }
-  var TAB_LABEL = [['events', 'Eventos'], ['bookings', 'Reservas'], ['checkin', 'Asistencia'], ['lists', 'Listas']];
+  var TAB_LABEL = [['events', 'Eventos'], ['bookings', 'Reservas'], ['checkin', 'Asistencia'], ['lists', 'Listas'], ['tables', 'Mesas']];
   function permsHtml(p) {
     if (p.role === 'admin') return '<div class="ad-meta">Acceso a todo, incluido Equipo.</div>';
-    var cur = Array.isArray(p.tabs) ? p.tabs : ALL_TABS;
+    var cur = Array.isArray(p.tabs) ? p.tabs : DEFAULT_TABS;
     return '<div class="ad-perms" data-email="' + esc(p.email) + '" aria-label="Pestañas de ' + esc(p.email) + '">' + TAB_LABEL.map(function (t) {
       return '<label><input type="checkbox" data-tab="' + t[0] + '"' + (cur.indexOf(t[0]) !== -1 ? ' checked' : '') + '> ' + t[1] + '</label>';
     }).join('') + '</div>';
@@ -1358,7 +1363,9 @@
 
   // ─── Arranque ───────────────────────────────────────────────────────
   if (session && session.access_token) start(); else showLogin('');
+  window.ROCE_ADMIN = { api: api, flash: flash, esc: esc, $: $, madridToISO: madridToISO, toInputValue: toInputValue, fmtDate: fmtDate, money: money, cfg: cfg, TZ: TZ, session: function () { return session; } };
 })();
 </script>
+<script src="/admin/mesas.js?v=1"></script>
 </body>
 </html>

@@ -1,0 +1,43 @@
+/* Panel · pestaña Mesas */
+.mt-nav { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 1rem; }
+.mt-day { display: flex; align-items: center; gap: 0.4rem; }
+.mt-day input[type="date"] { padding: 0.5rem 0.6rem; border: 1px solid var(--fg); background: transparent; }
+.mt-sum { margin: 0 0 1rem; font-size: 0.95rem; }
+.mt-mapbar { align-items: flex-end; }
+.mt-zones { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+.mt-time { display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; }
+.mt-time select { padding: 0.45rem 0.6rem; border: 1px solid var(--fg); background: transparent; }
+
+.mt-map-wrap { margin-bottom: 1.5rem; }
+.mt-map { position: relative; width: 100%; border: 1px dashed var(--fg); background: repeating-linear-gradient(45deg, transparent 0 14px, rgba(10, 10, 10, 0.03) 14px 15px); overflow: hidden; }
+.mt-t { position: absolute; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0; border: 1.5px solid var(--fg); background: var(--bg); color: var(--fg); cursor: pointer; overflow: hidden; line-height: 1.05; }
+.mt-t b { font-family: var(--display); font-weight: 400; font-size: clamp(0.5rem, 1.1vw, 0.8rem); }
+.mt-t i { font-style: normal; font-size: clamp(0.45rem, 0.9vw, 0.65rem); opacity: 0.85; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mt-t.sh-round { border-radius: 50%; }
+.mt-t.sh-sofa, .mt-t.sh-bar { border-radius: 6px; }
+.mt-t:hover { outline: 2px solid var(--fg); outline-offset: 1px; z-index: 2; }
+.mt-t.is-booked { background: var(--fg); color: var(--bg); }
+.mt-t.is-pending { background: repeating-linear-gradient(45deg, var(--fg) 0 6px, #555 6px 12px); color: var(--bg); }
+.mt-t.is-seated { background: var(--ok); border-color: var(--ok); color: #fff; }
+.mt-t.is-blocked { background: repeating-linear-gradient(135deg, transparent 0 5px, var(--red) 5px 7px); border-color: var(--red); color: var(--red); }
+.mt-legend { display: flex; flex-wrap: wrap; align-items: center; gap: 0.3rem 0.9rem; margin-top: 0.6rem; font-size: 0.78rem; }
+.mt-dot { display: inline-block; width: 0.8rem; height: 0.8rem; border: 1.5px solid var(--fg); margin-right: 0.3rem; vertical-align: -0.1rem; }
+.mt-dot.is-booked { background: var(--fg); } .mt-dot.is-seated { background: var(--ok); border-color: var(--ok); }
+.mt-dot.is-pending { background: repeating-linear-gradient(45deg, var(--fg) 0 3px, #777 3px 6px); }
+.mt-dot.is-blocked { border-color: var(--red); background: repeating-linear-gradient(135deg, transparent 0 2px, var(--red) 2px 3px); }
+
+.mt-bk { grid-template-columns: auto 1fr; }
+.mt-check { display: flex; align-items: flex-start; gap: 0.5rem; margin: 0.4rem 0 0.8rem; font-size: 0.9rem; cursor: pointer; }
+.mt-check[hidden] { display: none; }
+.mt-picks { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.5rem; }
+.mt-pick { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.35rem 0.6rem; border: 1px solid var(--line); font-size: 0.85rem; cursor: pointer; }
+.mt-pick.is-busy { opacity: 0.45; }
+.mt-pick small { opacity: 0.6; }
+.mt-foot { display: flex; gap: 0.6rem; justify-content: flex-end; flex-wrap: wrap; margin-top: 1rem; }
+.mt-days { display: flex; flex-wrap: wrap; gap: 0.35rem 0.8rem; font-size: 0.9rem; }
+.mt-days label { display: inline-flex; align-items: center; gap: 0.3rem; cursor: pointer; }
+.mt-h3 { margin: 1.2rem 0 0.4rem; font-family: var(--display); font-weight: 400; font-size: 1.1rem; text-transform: uppercase; }
+.mt-cfg { display: block; }
+.mt-tbl input[type="text"], .mt-tbl input:not([type]), .mt-tbl input[type="number"] { width: 100%; min-width: 3rem; padding: 0.35rem 0.4rem; border: 1px solid var(--line); background: transparent; }
+.mt-tbl input[type="number"] { max-width: 4.5rem; }
+.mt-blockform { margin-bottom: 0.5rem; }
