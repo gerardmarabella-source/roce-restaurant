@@ -47,6 +47,7 @@
     ]).then(function (r) { S.bookings = r[0] || []; S.blocks = r[1] || []; });
   }
   function tableById(id) { return S.tables.filter(function (t) { return t.id === id; })[0]; }
+  function seatsOf(b) { return bookingTables(b).reduce(function (n, t) { return n + t.seats_max; }, 0); }
   function bookingTables(b) { return (b.table_booking_tables || []).map(function (x) { return tableById(x.table_id); }).filter(Boolean); }
 
   // ─── Estructura ─────────────────────────────────────────────────────
@@ -125,24 +126,27 @@
     var rowsHtml = rows.map(function (t) {
       var bars = '';
       S.bookings.forEach(function (b) {
-        if (b.status === 'cancelled' || b.status === 'no_show' || !(b.table_booking_tables || []).some(function (x) { return x.table_id === t.id; })) return;
+        if (b.status === 'cancelled' || !(b.table_booking_tables || []).some(function (x) { return x.table_id === t.id; })) return;
         var l = Math.round((mins(b.starts_at) - t0) * PXMIN), w = Math.max(24, Math.round((mins(b.ends_at) - mins(b.starts_at)) * PXMIN)) - 2;
-        var st = b.status === 'seated' ? 'seated' : b.status === 'completed' ? 'done' : b.status === 'pending' ? 'pending' : 'booked';
-        var many = (b.table_booking_tables || []).length > 1;
-        bars += '<button type="button" class="mt-bar is-' + st + '" data-bid="' + b.id + '" style="left:' + l + 'px;width:' + w + 'px" title="' + esc(b.name + ' · ' + b.party + ' p. · ' + hm(b.starts_at) + '–' + hm(b.ends_at) + (b.notes ? ' · ' + b.notes : '')) + '"><b>' + esc(b.name) + '</b> <span>' + b.party + 'p' + (many ? ' · juntas' : '') + '</span></button>';
+        var st = b.status === 'no_show' ? 'noshow' : b.status === 'seated' ? (b.dessert_at ? 'dessert' : 'seated') : b.status === 'completed' ? 'done' : b.status === 'pending' ? 'pending' : 'booked';
+        var many = (b.table_booking_tables || []).length > 1, seats = seatsOf(b), over = b.party > seats;
+        var arrived = b.status === 'confirmed' && !!b.arrived_at;
+        var late = b.status === 'confirmed' && !b.arrived_at && S.date === today() && Date.now() - Date.parse(b.starts_at) > 15 * 60000;
+        var flags = (arrived ? ' · llegó ' + hm(b.arrived_at) : '') + (b.status === 'seated' && b.dessert_at ? ' · postre' : '') + (late ? ' · ¿llega?' : '') + (b.status === 'no_show' ? ' · no vino' : '');
+        bars += '<button type="button" class="mt-bar is-' + st + (arrived ? ' is-arrived' : '') + (late ? ' is-late' : '') + (over ? ' is-over' : '') + '" data-bid="' + b.id + '" style="left:' + l + 'px;width:' + w + 'px" title="' + esc((b.name || 'Sin nombre') + ' · ' + b.party + ' personas en ' + seats + ' plazas · ' + hm(b.starts_at) + '–' + hm(b.ends_at) + flags + (b.notes ? ' · ' + b.notes : '')) + '"><b>' + esc(b.name || 'Sin nombre') + '</b> <span>' + b.party + '/' + seats + (many ? ' · juntas' : '') + flags + '</span></button>';
       });
       S.blocks.forEach(function (k) {
         if (k.zone_id !== t.zone_id || (k.table_ids && k.table_ids.indexOf(t.id) === -1)) return;
         var l = Math.max(0, Math.round((mins(k.starts_at) - t0) * PXMIN)), r = Math.min(W, Math.round((mins(k.ends_at) - t0) * PXMIN));
         if (r > l) bars += '<span class="mt-bar is-blocked" style="left:' + l + 'px;width:' + (r - l) + 'px" title="' + esc('Bloqueada' + (k.note ? ': ' + k.note : '')) + '"><b>' + esc(k.note || 'Bloqueada') + '</b></span>';
       });
-      return '<div class="mt-row"><button type="button" class="mt-rl' + (S.sel.indexOf(t.id) !== -1 ? ' is-sel' : '') + '" data-rowtable="' + t.id + '"><b>' + esc(t.name) + '</b><small>' + t.seats_max + 'p</small></button>' +
+      return '<div class="mt-row"><button type="button" class="mt-rl' + (S.sel.indexOf(t.id) !== -1 ? ' is-sel' : '') + '" data-rowtable="' + t.id + '"><b>' + esc(t.name) + '</b><small>' + t.seats_max + ' plazas</small></button>' +
         '<div class="mt-track" data-track="' + t.id + '" data-t0="' + t0 + '" style="width:' + W + 'px">' + bars + '</div></div>';
     }).join('');
     if (!rows.length) return '<p class="ad-empty">Esta zona no tiene mesas activas.</p>';
     return '<div class="mt-tl"><div class="mt-tl-in" style="min-width:' + (W + 78) + 'px"><div class="mt-row mt-head"><span class="mt-rl"></span><div class="mt-ticks" style="width:' + W + 'px">' + ticks + '</div></div>' +
       '<div class="mt-body" style="--w:' + W + 'px">' + nowLine + rowsHtml + '</div></div></div>' +
-      '<p class="ad-meta mt-legend"><span class="mt-dot is-booked"></span>Reservada <span class="mt-dot is-pending"></span>Pendiente <span class="mt-dot is-seated"></span>En mesa <span class="mt-dot is-blocked"></span>Bloqueada · Toca un hueco para reservar, una barra para editarla.</p>';
+      '<p class="ad-meta mt-legend"><span class="mt-dot is-booked"></span>Reservada <span class="mt-dot is-pending"></span>Pendiente <span class="mt-dot is-seated"></span>En mesa <span class="mt-dot is-blocked"></span>Bloqueada · en cada barra: personas/plazas de la mesa. Toca un hueco para reservar, una barra para editarla.</p>';
   }
 
   function renderDay(body) {
@@ -178,7 +182,9 @@
       var pay = b.card_last4 && b.payment_status === 'guaranteed' ? '<span class="ad-tag is-green">Tarjeta ' + esc(b.card_brand || '') + ' ····' + esc(b.card_last4) + ' · garantía ' + eur(b.deposit_cents) + '</span>' :
         b.deposit_cents > 0 && b.payment_status !== 'free' ? '<span class="ad-tag ' + (b.payment_status === 'paid' || b.payment_status === 'charged' ? 'is-green' : b.payment_status === 'pending' ? 'is-red' : '') + '">' + eur(b.deposit_cents) + ' · ' + (PSL[b.payment_status] || b.payment_status) + (b.late_cancel && b.payment_status === 'guaranteed' ? ' · anulada tarde' : '') + '</span>' : '';
       var a = [];
+      if (b.status === 'confirmed' && !b.arrived_at) a.push('<button class="ad-btn is-small is-ghost" data-act="arrive" data-id="' + b.id + '">Ha llegado</button>');
       if (b.status === 'confirmed' || b.status === 'pending') a.push('<button class="ad-btn is-small" data-act="seat" data-id="' + b.id + '">Sentar</button>');
+      if (b.status === 'seated' && !b.dessert_at) a.push('<button class="ad-btn is-small is-ghost" data-act="dessert" data-id="' + b.id + '">Postre</button>');
       if (b.status === 'seated') a.push('<button class="ad-btn is-small" data-act="done" data-id="' + b.id + '">Terminada</button>');
       if (b.status === 'confirmed') a.push('<button class="ad-btn is-small is-ghost" data-act="noshow" data-id="' + b.id + '">No vino</button>');
       if (!cancelled && b.status !== 'completed') a.push('<button class="ad-btn is-small is-ghost" data-act="edit" data-id="' + b.id + '">Editar / ampliar</button>');
@@ -186,8 +192,8 @@
       if (b.payment_status === 'guaranteed' && (b.status === 'no_show' || b.late_cancel || (b.status === 'confirmed' && new Date(b.starts_at).getTime() < Date.now()))) a.push('<button class="ad-btn is-small is-danger" data-act="charge" data-id="' + b.id + '">Cobrar ' + eur(b.deposit_cents) + ' a la tarjeta</button>');
       if ((b.payment_status === 'paid' || b.payment_status === 'retained' || b.payment_status === 'charged') && b.deposit_cents > 0) a.push('<button class="ad-btn is-small is-ghost" data-act="refund" data-id="' + b.id + '">Devolver fianza</button>');
       return '<li class="ad-card mt-bk' + (cancelled ? ' is-past' : '') + '"><div class="ad-date"><b>' + hm(b.starts_at) + '</b><span>' + b.party + ' p.</span></div>' +
-        '<div><div class="ad-name">' + (b.name ? esc(b.name) : '<i>Sin nombre</i>') + ' <span class="ad-tag ' + (b.status === 'seated' ? 'is-green' : b.status === 'cancelled' || b.status === 'no_show' ? 'is-red' : '') + '">' + esc(ST[b.status] || b.status) + '</span>' + pay + '</div>' +
-        '<div class="ad-meta">' + esc(zoneName(b.zone_id)) + (tn ? ' · mesa ' + esc(tn) : '') + ' · ' + esc(b.ambience === 'night' ? 'Restaurant & Cocktails' : 'Coffee, Bakery & Kitchen') + (b.source === 'admin' ? ' · creada en el panel' : '') + '</div>' +
+        '<div><div class="ad-name">' + (b.name ? esc(b.name) : '<i>Sin nombre</i>') + ' <span class="ad-tag ' + (b.status === 'seated' ? 'is-green' : b.status === 'cancelled' || b.status === 'no_show' ? 'is-red' : '') + '">' + esc(ST[b.status] || b.status) + '</span>' + (b.arrived_at && b.status !== 'cancelled' ? '<span class="ad-tag is-green">Llegó ' + hm(b.arrived_at) + '</span>' : '') + (b.dessert_at && b.status === 'seated' ? '<span class="ad-tag">Postre ' + hm(b.dessert_at) + '</span>' : '') + pay + '</div>' +
+        '<div class="ad-meta">' + esc(zoneName(b.zone_id)) + (tn ? ' · mesa ' + esc(tn) + ' (' + seatsOf(b) + ' plazas' + (b.party > seatsOf(b) ? ' · faltan ' + (b.party - seatsOf(b)) : '') + ')' : '') + ' · ' + esc(b.ambience === 'night' ? 'Restaurant & Cocktails' : 'Coffee, Bakery & Kitchen') + (b.source === 'admin' ? ' · creada en el panel' : '') + '</div>' +
         '<div class="ad-meta">' + esc(b.phone) + (b.email ? ' · ' + esc(b.email) : '') + ' · ' + esc(b.ref) + '</div>' +
         (b.notes ? '<div class="ad-meta">“' + esc(b.notes) + '”</div>' : '') + '</div>' +
         '<div class="ad-actions">' + a.join('') + '</div></li>';
@@ -350,8 +356,10 @@
     var b = bk(id); if (!b) return;
     if (act === 'seat') {
       if (b.status === 'pending' && b.deposit_cents > 0 && !confirm('La fianza de ' + eur(b.deposit_cents) + ' no está pagada. ¿Sentarlos igualmente? Se confirma la reserva sin fianza.')) return;
-      patch(id, { status: 'seated', hold_until: new Date(Date.now() + 864e5).toISOString() }).then(function () { return done(); }).catch(fail);
+      patch(id, { status: 'seated', arrived_at: b.arrived_at || new Date().toISOString(), hold_until: new Date(Date.now() + 864e5).toISOString() }).then(function () { return done(); }).catch(fail);
     }
+    else if (act === 'arrive') patch(id, { arrived_at: new Date().toISOString() }).then(function () { return done('Llegada anotada.'); }).catch(fail);
+    else if (act === 'dessert') patch(id, { dessert_at: new Date().toISOString() }).then(function () { return done('Anotado: van por el postre.'); }).catch(fail);
     else if (act === 'edit') openEdit(b);
     else if (act === 'done') patch(id, { status: 'completed' }).then(function () { return done(); }).catch(fail);
     else if (act === 'noshow') {
