@@ -20,7 +20,7 @@
       dows: ['L', 'M', 'X', 'J', 'V', 'S', 'D'],
       prev: 'Mes anterior', next: 'Mes siguiente',
       pick_date: 'Elige un día para ver las horas disponibles.',
-      loading: 'Buscando mesas…', none: 'No quedan mesas ese día para {n}. Prueba otro día o escríbenos por WhatsApp.',
+      loading: 'Buscando mesas…', none: 'No quedan mesas ese día para {n}. Prueba otro día o escríbenos por {wa}.', wa_msg: 'Hola, quería reservar mesa para {n} el {date}.',
       err_load: 'No hemos podido consultar las mesas. Inténtalo de nuevo en un momento.',
       day: 'Coffee, Bakery & Kitchen', night: 'Restaurant & Cocktails',
       deposit_h: 'Fianza de {m}', deposit_free_until: 'Se devuelve si cancelas con al menos {h} h de antelación.',
@@ -45,7 +45,7 @@
       wl_err: 'No hemos podido apuntarte. Revisa el nombre y el email.', wl_close: 'Cerrar', alt_h: 'Prueba con…', alt_days: 'Otros días con mesa', alt_space: 'Ese día sí hay mesa en {space}',
       alt_from: 'desde las {t}', alt_wait: 'Si prefieres este día, apúntate a la lista de espera.',
       card_h: 'Garantía con tarjeta', card_free: 'No se cobra nada ahora',
-      card_note: 'Para confirmar la reserva te pediremos los datos de una tarjeta como garantía. No se cobra nada ahora. Si no te presentas o anulas con menos de {h} h de antelación, se cobrarán {m} automáticamente a esa tarjeta.',
+      card_note: 'Para confirmar la reserva te pediremos los datos de una tarjeta como garantía. Si no te presentas o anulas con menos de {h} h de antelación, se cobrarán {m} automáticamente a esa tarjeta.',
       card_consent: 'Autorizo a ROCE a cobrar automáticamente {m} a mi tarjeta si no me presento o anulo con menos de {h} h de antelación',
       go_card: 'Continuar y dar la tarjeta', e_card: 'Debes autorizar la garantía con tarjeta.', day_notice: 'Aviso'
     },
@@ -55,7 +55,7 @@
       dows: ['M', 'T', 'W', 'T', 'F', 'S', 'S'],
       prev: 'Previous month', next: 'Next month',
       pick_date: 'Pick a day to see the available times.',
-      loading: 'Looking for tables…', none: 'No tables left that day for {n}. Try another day or message us on WhatsApp.',
+      loading: 'Looking for tables…', none: 'No tables left that day for {n}. Try another day or message us on {wa}.', wa_msg: 'Hi, I would like to book a table for {n} on {date}.',
       err_load: "We couldn't check the tables. Please try again in a moment.",
       day: 'Coffee, Bakery & Kitchen', night: 'Restaurant & Cocktails',
       deposit_h: '{m} deposit', deposit_free_until: 'Refunded if you cancel at least {h} h in advance.',
@@ -80,7 +80,7 @@
       wl_err: "We couldn't add you. Please check your name and email.", wl_close: 'Close', alt_h: 'Try…', alt_days: 'Other days with tables', alt_space: 'That day there is a table at {space}',
       alt_from: 'from {t}', alt_wait: 'If you prefer this day, join the waiting list.',
       card_h: 'Card guarantee', card_free: 'Nothing is charged now',
-      card_note: "To confirm the booking we will ask for your card details as a guarantee. Nothing is charged now. If you don't show up or cancel less than {h} h in advance, {m} will be charged automatically to that card.",
+      card_note: "To confirm the booking we will ask for your card details as a guarantee. If you don't show up or cancel less than {h} h in advance, {m} will be charged automatically to that card.",
       card_consent: "I authorise ROCE to automatically charge {m} to my card if I don't show up or cancel less than {h} h in advance",
       go_card: 'Continue and enter card', e_card: 'You must authorise the card guarantee.', day_notice: 'Notice'
     }
@@ -90,6 +90,7 @@
   var st = { alt: null, wait: null, waitDone: false, grid: [], pr: '', notices: [], pending: '', party: 2, date: '', month: null, ambience: 'all', slots: null, loading: false, loadErr: false, chosen: null, busy: false, error: '' };
 
   function lang() { return window.ROCE_I18N && window.ROCE_I18N.getLang ? window.ROCE_I18N.getLang() : 'es'; }
+  var WA_NUMBER = '34614073163'; // WhatsApp de ROCE (el mismo que el de grupos)
   function t(k, v) {
     var s = (STR[lang()] || STR.es)[k]; if (s == null) s = STR.es[k] || k;
     if (typeof s !== 'string') return s;
@@ -176,7 +177,10 @@
     if (st.loading) return '<p class="mz-hint">' + esc(t('loading')) + '</p>';
     if (st.loadErr) return '<p class="mz-error">' + esc(t('err_load')) + '</p>';
     var h = '';
-    if (!st.slots || !st.slots.length) h += '<p class="mz-hint">' + esc(t('none', { n: partyLabel(st.party) })) + '</p>';
+    if (!st.slots || !st.slots.length) {
+      var waUrl = 'https://wa.me/' + WA_NUMBER + '?text=' + encodeURIComponent(t('wa_msg', { n: partyLabel(st.party), date: dateLabel(st.date) }));
+      h += '<p class="mz-hint">' + esc(t('none', { n: partyLabel(st.party), wa: '@@WA@@' })).replace('@@WA@@', '<a class="mz-wa" href="' + esc(waUrl) + '" target="_blank" rel="noopener">WhatsApp</a>') + '</p>';
+    }
     var groups = {}, order = [];
     (st.grid || []).forEach(function (s) { if (!groups[s.o_ambience]) { groups[s.o_ambience] = []; order.push(s.o_ambience); } groups[s.o_ambience].push(s); });
     order.forEach(function (a) {
@@ -184,7 +188,7 @@
       if (!rows.some(function (r) { return r.o_free; }) && st.slots.length === 0 && order.length > 1) { /* se muestra igualmente para poder apuntarse */ }
       h += '<div class="mz-group"><div class="mz-group-h"><span class="mz-group-name">' + esc(t(a)) + '</span>' +
         (a === 'night' ? '<span class="mz-tag">+18</span>' : '') +
-        '<span class="mz-group-note">' + (dep > 0 && mode === 'card' ? esc(t('card_free')) : dep > 0 ? esc(t('deposit_h', { m: money(dep) })) : esc(t('free_h'))) + '</span></div><div class="mz-slots">';
+        '<span class="mz-group-note">' + (dep > 0 && mode === 'card' ? '' : dep > 0 ? esc(t('deposit_h', { m: money(dep) })) : esc(t('free_h'))) + '</span></div><div class="mz-slots">';
       rows.forEach(function (s) {
         if (s.o_free) h += '<button type="button" class="mz-slot' + (st.chosen && st.chosen.o_starts_at === s.o_starts_at ? ' is-on' : '') + '" data-start="' + esc(s.o_starts_at) + '">' + esc(s.o_time) + '</button>';
         else h += '<button type="button" class="mz-slot is-full" data-wl="' + esc(s.o_time) + '" data-amb="' + esc(s.o_ambience) + '" title="' + esc(t('wl_cta')) + '"><span>' + esc(s.o_time) + '</span><small>' + esc(t('full')) + '</small></button>';

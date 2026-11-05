@@ -10,5 +10,6 @@
 8. `mesas_espera.sql` — lista de espera, parrilla completa y próximos días
 9. `mesas_servicio.sql` — llegada y postre
 10. `mesas_nombres.sql` — nombres de los dos espacios
+11. `mesas_antelacion.sql` — antelación mínima de 30 minutos para reservar por la web
 
 Todos se pueden ejecutar más de una vez. Si se vuelve a ejecutar `mesas.sql` o `mesas_tarjeta.sql`, hay que volver a ejecutar los de después.

@@ -89,3 +89,4 @@ body.zone-day #mesasApp { --mz-fg: var(--black); --mz-bg: var(--white); --mz-lin
 .mz-al-hint { margin: 0.6rem 0 0; font-size: 0.8rem; color: var(--mz-soft); }
 .mz-input + .mz-input, .mz-allergies + .mz-input { margin-top: 0.5rem; }
 .mz-allergies { margin: 1.4rem 0 1rem; }
+.mz-wa { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
