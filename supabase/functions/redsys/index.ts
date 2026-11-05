@@ -455,7 +455,7 @@ async function handleTableCharge(req: Request, body: { booking_id?: string; toke
       global: { headers: { Authorization: req.headers.get("Authorization") ?? "" } },
       auth: { persistSession: false },
     });
-    const { data: ok } = await caller.rpc("has_tab", { t: "tables" });
+    const { data: ok } = await caller.rpc("has_tab", { t: "tables_charge" });
     if (ok !== true) return json({ error: "forbidden" }, 403);
     const { data: me } = await caller.auth.getUser();
     who = (me.user?.email ?? "").toLowerCase();
