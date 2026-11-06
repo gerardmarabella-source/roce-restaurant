@@ -1213,7 +1213,7 @@
       ((S.tags || []).length ? S.tags.map(function (t) { return '<span class="mt-tagcfg">' + esc(t.name) + ' <button type="button" class="mt-x" data-deltag="' + esc(t.code) + '" aria-label="Quitar etiqueta ' + esc(t.name) + '">×</button></span>'; }).join('') : '<span class="ad-meta">Todavía no has creado ninguna.</span>') + '</div>';
   }
   function prescribersHtml() {
-    var base = location.origin + "/fuck-who-doesn't-like-this-place/";
+    var base = location.origin + "/reservas/";
     return '<p class="ad-meta" style="margin-bottom:0.6rem">Un prescriptor es quien trae o recomienda reservas (RR. PP., conserjes, agencias). Cada uno tiene su enlace: las reservas que entren por él quedan marcadas con su nombre.</p><ul class="ad-list">' +
       (S.prescribers.length ? S.prescribers.map(function (p) {
         return '<li class="ad-card mt-cfg" data-pres-row="' + esc(p.code) + '"><div><div class="ad-name">' + esc(p.name) + (p.email ? ' <span class="ad-tag">Equipo</span>' : '') + (p.active ? '' : ' <span class="ad-tag is-red">inactivo</span>') + '</div><div class="ad-meta">Enlace: <input class="mt-linkin" readonly value="' + esc(base + '?pr=' + p.code) + '" onclick="this.select()"></div></div>' +
