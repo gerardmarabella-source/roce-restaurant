@@ -281,3 +281,7 @@ body.has-filter .is-pending .cv-pend { display: inline; }
 .cv-menu-foot .cv-lang { justify-content: flex-start; margin: 0 0 0.3rem; font-size: 0.9rem; }
 .cv-menu-foot .cv-lang button { padding: 0.3rem 0.5rem 0.3rem 0; }
 .cv-m-word { display: block; flex: none; width: 100%; height: auto; max-height: none; object-fit: fill; margin-top: 0; padding-top: 1rem; border-top: 1.5px solid var(--black); }
+
+/* botón de ayuda con su estrellita */
+.cv-chef-btn::before { content: "✦"; margin-right: 0.5rem; }
+.cv-chef-btn { font-weight: 700; letter-spacing: 0.1em; }
