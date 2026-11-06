@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Carta · ROCE</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#0a0a0a">
+<link rel="icon" href="/favicon.ico">
+<link rel="stylesheet" href="/carta/carta.css?v=1">
+</head>
+<body>
+<header class="cv-bar" id="top">
+  <div class="cv-bar-row">
+    <a class="cv-logo" href="#top" aria-label="ROCE"><img src="/assets/logo/roce-horizontal-white.png" alt="ROCE"></a>
+    <div class="cv-bar-actions">
+      <button type="button" class="cv-allergy-btn" id="cvAlBtn" aria-haspopup="dialog"><span id="cvAlLabel">Alergias</span><b id="cvAlCount" hidden>0</b></button>
+      <div class="cv-lang" role="group" aria-label="Idioma"><button type="button" data-lang="es">ES</button><button type="button" data-lang="en">EN</button></div>
+    </div>
+  </div>
+  <nav class="cv-tabs" id="cvTabs" aria-label="Secciones"></nav>
+</header>
+
+<main>
+  <section class="cv-hero">
+    <p class="cv-kicker" id="cvKicker">Carta</p>
+    <div class="cv-tiles" id="cvTiles"></div>
+  </section>
+  <div class="cv-filter" id="cvFilter" hidden></div>
+  <div id="cvSections"></div>
+</main>
+
+<footer class="cv-foot">
+  <p id="cvDisclaimer"></p>
+  <p class="cv-foot-line"><span>ROCE · Valencia</span><span>Est. 2026</span></p>
+</footer>
+
+<dialog class="cv-sheet" id="cvSheet" aria-labelledby="cvSheetTitle">
+  <div class="cv-sheet-in">
+    <h2 id="cvSheetTitle"></h2>
+    <p id="cvSheetText"></p>
+    <div class="cv-als" id="cvAlList"></div>
+    <div class="cv-sheet-actions"><button type="button" class="cv-ghost" id="cvAlClear"></button><button type="button" class="cv-solid" id="cvAlDone"></button></div>
+  </div>
+</dialog>
+
+<script src="/carta/menu.js?v=1"></script>
+<script src="/carta/carta.js?v=1"></script>
+</body>
+</html>
