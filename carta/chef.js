@@ -8,9 +8,9 @@
       es: {
         btn: 'Ayuda del chef', h: 'Ayuda del chef', p: 'Cuéntame qué te apetece y te preparo una propuesta con lo que hay en la carta.',
         ph: 'Ej: algo ligero con aguacate y un zumo', ex_h: 'Ideas', ex: ['Algo ligero y fresco', 'Tengo mucha hambre', 'Algo dulce', 'Un zumo para despertar', 'Vegetariano sin gluten', 'Con pollo, sin cebolla'],
-        q_when: 'Para cuándo', when: [['breakfast', 'Desayuno'], ['lunch', 'Comida'], ['drink', 'Solo bebida']],
-        q_hunger: '¿Cuánta hambre?', hunger: [['light', 'Poca'], ['normal', 'Normal'], ['hungry', 'Mucha']],
-        q_taste: 'Gusto', taste: [['sweet', 'Dulce'], ['salty', 'Salado'], ['', 'Me da igual']],
+        q_what: 'Cuéntame qué te apetece', q_when: '¿Para cuándo?', opt: 'opcional', when: [['breakfast', 'Desayuno'], ['lunch', 'Comida'], ['drink', 'Solo bebida']],
+        q_hunger: '¿Cuánta hambre tienes?', hunger: [['light', 'Poca'], ['normal', 'Normal'], ['hungry', 'Mucha']],
+        q_taste: '¿Dulce o salado?', taste: [['sweet', 'Dulce'], ['salty', 'Salado'], ['', 'Me da igual']],
         go: 'Recomiéndame', again: 'Otra propuesta', close: 'Cerrar', edit: 'Cambiar respuestas',
         filters: 'Respeto tus filtros activos', filters_edit: 'Cambiar filtros', hint: 'Escribe lo que te apetece o responde a las preguntas.',
         none: 'No he encontrado nada que encaje con tus filtros. Prueba a quitar alguno.', total: 'Total aproximado', see: 'Ver en la carta',
@@ -22,9 +22,9 @@
       en: {
         btn: 'Chef\'s help', h: 'Chef\'s help', p: 'Tell me what you fancy and I will put together a suggestion from our menu.',
         ph: 'E.g. something light with avocado and a juice', ex_h: 'Ideas', ex: ['Something light and fresh', 'I am very hungry', 'Something sweet', 'A juice to wake up', 'Vegetarian gluten-free', 'With chicken, no onion'],
-        q_when: 'When', when: [['breakfast', 'Breakfast'], ['lunch', 'Lunch'], ['drink', 'Just a drink']],
-        q_hunger: 'How hungry?', hunger: [['light', 'A little'], ['normal', 'Normal'], ['hungry', 'Very']],
-        q_taste: 'Taste', taste: [['sweet', 'Sweet'], ['salty', 'Savoury'], ['', 'Either']],
+        q_what: 'Tell me what you fancy', q_when: 'When?', opt: 'optional', when: [['breakfast', 'Breakfast'], ['lunch', 'Lunch'], ['drink', 'Just a drink']],
+        q_hunger: 'How hungry are you?', hunger: [['light', 'A little'], ['normal', 'Normal'], ['hungry', 'Very']],
+        q_taste: 'Sweet or savoury?', taste: [['sweet', 'Sweet'], ['salty', 'Savoury'], ['', 'Either']],
         go: 'Suggest', again: 'Another suggestion', close: 'Close', edit: 'Change answers',
         filters: 'Respecting your active filters', filters_edit: 'Change filters', hint: 'Type what you fancy or answer the questions.',
         none: 'I found nothing that fits your filters. Try removing one.', total: 'Approx. total', see: 'See on the menu',
@@ -163,19 +163,22 @@
     }
 
     /* ── Pantalla ── */
-    function chips(key, list) { return '<div class="cv-opts" data-q="' + key + '">' + list.map(function (o) { return '<button type="button" class="cv-opt" data-v="' + o[0] + '" aria-pressed="' + (st[key] === o[0]) + '">' + esc(o[1]) + '</button>'; }).join('') + '</div>'; }
+    function chips(key, list) { return '<div class="cv-opts" data-q="' + key + '">' + list.map(function (o) { return '<button type="button" class="cv-opt" data-v="' + o[0] + '" aria-pressed="' + (st[key] === o[0]) + '"><i></i>' + esc(o[1]) + '</button>'; }).join('') + '</div>'; }
+    function step(n, title, body, optional) {
+      return '<section class="cv-step"><div class="cv-step-h"><span class="cv-step-n">' + n + '</span><h3>' + esc(title) + (optional ? ' <small>' + esc(t('opt')) + '</small>' : '') + '</h3></div>' + body + '</section>';
+    }
     function form() {
       var G = A.F(), n = G.al.length + G.diet.length + G.ing.k.length;
-      return '<h2 id="cvChefTitle">' + esc(t('h')) + '</h2><p>' + esc(t('p')) + '</p>' +
-        '<textarea id="cvChefText" rows="2" placeholder="' + esc(t('ph')) + '">' + esc(st.text) + '</textarea>' +
-        '<div class="cv-ideas">' + t('ex').map(function (x) { return '<button type="button" class="cv-chip" data-ex="' + esc(x) + '">' + esc(x) + '</button>'; }).join('') + '</div>' +
-        '<section class="cv-fs"><h3>' + esc(t('q_when')) + '</h3>' + chips('when', t('when')) + '</section>' +
-        '<section class="cv-fs"><h3>' + esc(t('q_hunger')) + '</h3>' + chips('hunger', t('hunger')) + '</section>' +
-        '<section class="cv-fs"><h3>' + esc(t('q_taste')) + '</h3>' + chips('taste', t('taste')) + '</section>' +
+      return '<h2 id="cvChefTitle">' + esc(t('h')) + '</h2><p class="cv-chef-p">' + esc(t('p')) + '</p>' +
+        step(1, t('q_what'), '<textarea id="cvChefText" rows="2" placeholder="' + esc(t('ph')) + '">' + esc(st.text) + '</textarea>' +
+          '<div class="cv-ideas">' + t('ex').map(function (x) { return '<button type="button" class="cv-chip" data-ex="' + esc(x) + '">' + esc(x) + '</button>'; }).join('') + '</div>') +
+        step(2, t('q_when'), chips('when', t('when')), true) +
+        step(3, t('q_hunger'), chips('hunger', t('hunger')), true) +
+        step(4, t('q_taste'), chips('taste', t('taste')), true) +
         (n ? '<p class="cv-fs-note">' + esc(t('filters')) + ' · <button type="button" class="cv-link" id="cvChefFilters">' + esc(t('filters_edit')) + '</button></p>' : '');
     }
     function results() {
-      var R = st.result, total = 0;
+      var R = st.result, total = 0, idx = 0;
       var h = '<h2 id="cvChefTitle">' + esc(t('res_h')) + '</h2>';
       if (!R.slots.length) return h + '<p>' + esc(t('none')) + '</p>';
       if (R.miss.length) h += '<p class="cv-fs-note">' + esc(t('miss')(R.miss.join(', '))) + '</p>';
@@ -183,7 +186,7 @@
       R.slots.forEach(function (s) {
         s.items.forEach(function (c) {
           total += price(c);
-          h += '<li><p class="cv-pl-slot">' + esc(t('slots')[s.label]) + '</p><div class="cv-pl-top"><b>' + esc((c.it.code && c.it.code !== c.it.name ? c.it.code + ' ' : '') + c.it.name) + '</b><span>' + esc(A.money(c.it.price)) + '</span></div>' +
+          h += '<li><p class="cv-pl-slot"><span class="cv-pl-n">' + (++idx) + '</span>' + esc(t('slots')[s.label]) + '</p><div class="cv-pl-top"><b>' + esc((c.it.code && c.it.code !== c.it.name ? c.it.code + ' ' : '') + c.it.name) + '</b><span>' + esc(A.money(c.it.price)) + '</span></div>' +
             (c.it.es ? '<p class="cv-pl-desc">' + esc(A.tx({ es: c.it.es, en: c.it.en })) + '</p>' : '') +
             (reason(c, R) ? '<p class="cv-pl-why">' + esc(reason(c, R)) + '</p>' : '') + (pendTxt(c) ? '<p class="cv-fs-note">' + esc(pendTxt(c)) + '</p>' : '') + allergenLine(c) +
             '<button type="button" class="cv-link" data-go="' + c.sec + '|' + c.id + '">' + esc(t('see')) + ' →</button></li>';
