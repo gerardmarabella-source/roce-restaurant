@@ -18,6 +18,7 @@ import { PDFDocument, StandardFonts, rgb } from "npm:pdf-lib@1.17.1";
 
 const BREVO_API_KEY = Deno.env.get("BREVO_API_KEY") ?? "";
 const WEBHOOK_SECRET = Deno.env.get("WEBHOOK_SECRET") ?? "";
+const SWEEP_SECRET = Deno.env.get("SWEEP_SECRET") ?? "";   // protege los barridos table_sweep / list_sweep (los envía pg_cron)
 const FROM = Deno.env.get("MAIL_FROM") ?? "no-reply@roce.es"; // debe ser un remitente verificado en Brevo
 const REPLY_TO = Deno.env.get("MAIL_REPLY_TO") ?? "reservas@roce.es";
 const LIST_ATTENDEES = Number(Deno.env.get("BREVO_LIST_ATTENDEES") ?? "0");
@@ -600,7 +601,7 @@ ${button}${extra}
   const res = await fetch("https://api.brevo.com/v3/smtp/email", {
     method: "POST",
     headers: brevoHeaders,
-    body: JSON.stringify({ sender: { name: "ROCE", email: FROM }, replyTo: { email: REPLY_TO, name: "ROCE" }, to: [b.name ? { email: b.email, name: b.name } : { email: b.email }], subject: PREVIEW_TAG + subject, htmlContent: html }),
+    body: JSON.stringify({ sender: { name: "ROCE", email: FROM }, replyTo: { email: REPLY_TO, name: "ROCE" }, to: [b.name ? { email: b.email, name: b.name } : { email: b.email }], subject: subject, htmlContent: html }),
   });
   if (!res.ok) return new Response("brevo error: " + (await res.text()), { status: 502 });
 
@@ -818,7 +819,7 @@ ${btnHtml(`${page}&c=1`, t.remBtn)}
 <tr><td style="padding:14px 24px 0;color:#aaa;font:13px/1.5 Arial,sans-serif">${esc(t.remLate(z?.free_cancel_hours ?? 24))}</td></tr>
 <tr><td style="padding:24px 24px 32px;color:#777;font:11px/1.5 Arial,sans-serif">${esc(TT[l].privacy)}</td></tr>`);
   const res = await fetch("https://api.brevo.com/v3/smtp/email", { method: "POST", headers: brevoHeaders,
-    body: JSON.stringify({ sender: { name: "ROCE", email: FROM }, replyTo: { email: REPLY_TO, name: "ROCE" }, to: [b.name ? { email: b.email, name: b.name } : { email: b.email }], subject: PREVIEW_TAG + t.remSubject(`${day} · ${hm}`), htmlContent: html }) });
+    body: JSON.stringify({ sender: { name: "ROCE", email: FROM }, replyTo: { email: REPLY_TO, name: "ROCE" }, to: [b.name ? { email: b.email, name: b.name } : { email: b.email }], subject: t.remSubject(`${day} · ${hm}`), htmlContent: html }) });
   return res.ok;
 }
 async function sendTableReview(b: any): Promise<boolean> {
@@ -832,7 +833,7 @@ ${btnHtml(GOOGLE_REVIEW_URL, t.revBtn)}
 <tr><td align="center" style="padding:16px 24px 0"><a href="${INSTAGRAM_URL}" style="color:#aaa;font:13px Arial,sans-serif">${esc(t.revIg)}</a></td></tr>
 <tr><td style="padding:24px 24px 32px;color:#777;font:11px/1.5 Arial,sans-serif">${esc(TT[l].privacy)}</td></tr>`);
   const res = await fetch("https://api.brevo.com/v3/smtp/email", { method: "POST", headers: brevoHeaders,
-    body: JSON.stringify({ sender: { name: "ROCE", email: FROM }, replyTo: { email: REPLY_TO, name: "ROCE" }, to: [b.name ? { email: b.email, name: b.name } : { email: b.email }], subject: PREVIEW_TAG + t.revSubject, htmlContent: html }) });
+    body: JSON.stringify({ sender: { name: "ROCE", email: FROM }, replyTo: { email: REPLY_TO, name: "ROCE" }, to: [b.name ? { email: b.email, name: b.name } : { email: b.email }], subject: t.revSubject, htmlContent: html }) });
   return res.ok;
 }
 // ─── Carritos abandonados ───────────────────────────────────────────────────────────────────────────
@@ -863,7 +864,7 @@ const AB = {
 };
 async function brevoSend(to: { email: string; name?: string }, subject: string, html: string): Promise<boolean> {
   const res = await fetch("https://api.brevo.com/v3/smtp/email", { method: "POST", headers: brevoHeaders,
-    body: JSON.stringify({ sender: { name: "ROCE", email: FROM }, replyTo: { email: REPLY_TO, name: "ROCE" }, to: [to.name ? { email: to.email, name: to.name } : { email: to.email }], subject: PREVIEW_TAG + subject, htmlContent: html }) });
+    body: JSON.stringify({ sender: { name: "ROCE", email: FROM }, replyTo: { email: REPLY_TO, name: "ROCE" }, to: [to.name ? { email: to.email, name: to.name } : { email: to.email }], subject: subject, htmlContent: html }) });
   return res.ok;
 }
 async function sendAbandonedTable(b: any): Promise<boolean> {
@@ -956,38 +957,9 @@ async function sweepTableMails(): Promise<Response> {
   return new Response(JSON.stringify({ reminders, reviews, skipped, abandoned, review_url: !!GOOGLE_REVIEW_URL }), { headers: { "content-type": "application/json" } });
 }
 
-// ─── Vista previa de los emails de una reserva (solo se envía a direcciones @roce.es) ───────────────
-let PREVIEW_TAG = "";
-async function sendTablePreview(to: string): Promise<Response> {
-  const sample = (over: Record<string, unknown> = {}) => {
-    const starts = new Date(Date.now() + 26 * 3600e3); starts.setMinutes(0, 0, 0);
-    return { ref: "MESA-DEMO01", token: "0123456789abcdef0123456789abcdef", service_id: "night", zone_id: "alta", ambience: "night", starts_at: starts.toISOString(),
-      ends_at: new Date(starts.getTime() + 90 * 60000).toISOString(), party: 4, name: "Gerard Marabella", email: to, lang: "es", marketing_optin: false, status: "confirmed",
-      payment_status: "guaranteed", pay_mode: "card", deposit_cents: 2000, hold_until: new Date(Date.now() + 24 * 3600e3).toISOString(), late_cancel: false, refund_due: false, fee_charged_cents: 0, ...over };
-  };
-  const steps: [string, () => Promise<unknown>][] = [
-    ["1/7 Solicitud de tarjeta (reserva creada desde el panel)", () => sendTableEmail("pay", sample({ status: "pending", payment_status: "pending", source: "admin" }))],
-    ["2/7 Confirmacion de la reserva", () => sendTableEmail("ok", sample())],
-    ["3/7 Recordatorio 24 h antes", () => sendTableReminder(sample())],
-    ["4/7 Valoracion tras la visita", () => sendTableReview(sample({ status: "completed" }))],
-    ["5/7 Anulacion a tiempo (tarjeta liberada)", () => sendTableEmail("cancel", sample({ status: "cancelled", payment_status: "released" }))],
-    ["6/7 Anulacion tardia (se cobrara la penalizacion)", () => sendTableEmail("cancel", sample({ status: "cancelled", late_cancel: true }))],
-    ["7/7 Cobro por no presentarse", () => sendTableEmail("charge", sample({ status: "no_show", payment_status: "charged", fee_charged_cents: 2000 }))],
-  ];
-  const sent: string[] = [];
-  for (const [tag, run] of steps) {
-    PREVIEW_TAG = "[PRUEBA " + tag + "] ";
-    const r: any = await run();
-    sent.push(tag + (r instanceof Response ? (r.ok ? " ok" : " ERROR " + r.status) : r ? " ok" : " ERROR"));
-    await new Promise((res) => setTimeout(res, 900));
-  }
-  PREVIEW_TAG = "";
-  return new Response(JSON.stringify({ to, sent }), { headers: { "content-type": "application/json" } });
-}
-
 const CORS = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-webhook-secret",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-webhook-secret, x-sweep-secret",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
@@ -995,11 +967,9 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
   let payload: any = {};
   try { payload = await req.json(); } catch { /* sin cuerpo */ }
-  if (payload.action === "table_preview") {
-    const to = String(payload.to ?? "").toLowerCase();
-    if (!/^[a-z0-9._+-]+@roce\.es$/.test(to)) return new Response("forbidden", { status: 403, headers: CORS });
-    const r = await sendTablePreview(to);
-    return new Response(await r.text(), { status: r.status, headers: CORS });
+  // Los barridos los lanza solo el programador de la base de datos, con la cabecera x-sweep-secret (secreto SWEEP_SECRET).
+  if ((payload.action === "table_sweep" || payload.action === "list_sweep") && (!SWEEP_SECRET || req.headers.get("x-sweep-secret") !== SWEEP_SECRET)) {
+    return new Response("forbidden", { status: 403, headers: CORS });
   }
   if (payload.action === "table_sweep") {
     const r = await sweepTableMails();
