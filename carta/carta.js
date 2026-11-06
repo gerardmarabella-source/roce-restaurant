@@ -4,12 +4,12 @@
   'use strict';
   var D = window.CARTA;
   var UI = {
-    es: { allergies: 'Alergias', filters: 'Filtros', f_h: 'Filtra la carta', f_p: 'Marca alérgenos, tipo de dieta o ingredientes y te mostramos solo lo que encaja.', diet_h: 'Tipo de dieta', al_t: 'Alérgenos (ocultamos los platos que los llevan)', ing_h: 'Ingredientes', clear: 'Quitar', done: 'Ver carta', without: 'Sin', with_: 'Con', pending: 'Consúltalo con el equipo', soon: 'Muy pronto', soon_p: 'Estamos preparando esta carta.',
+    es: { allergies: 'Alergias', al_leg: 'Alérgenos', filters: 'Filtros', f_h: 'Filtra la carta', f_p: 'Marca alérgenos, tipo de dieta o ingredientes y te mostramos solo lo que encaja.', diet_h: 'Tipo de dieta', al_t: 'Alérgenos (ocultamos los platos que los llevan)', ing_h: 'Ingredientes', clear: 'Quitar todo', clear_sec: 'Borrar', done: 'Ver carta', without: 'Sin', with_: 'Con', pending: 'Consúltalo con el equipo', soon: 'Muy pronto', soon_p: 'Estamos preparando esta carta.',
       b_al: 'Sin alérgenos', b_diet: 'Dieta', diet_note: 'La dieta y los ingredientes son orientativos según lo que figura en la carta. Si tienes dudas, pregunta al equipo.',
-      note: 'Si tienes alguna alergia o intolerancia, avisa a nuestro equipo antes de pedir. Pueden existir trazas de otros alérgenos. Los alérgenos de las bebidas los confirma el equipo.', remove: 'Quitar filtros', menu: 'Carta', menu_btn: 'Menú', close: 'Cerrar', cats: 'Categorías' },
-    en: { allergies: 'Allergies', filters: 'Filters', f_h: 'Filter the menu', f_p: 'Tick allergens, diet or ingredients and we will show only what fits.', diet_h: 'Diet', al_t: 'Allergens (we hide dishes containing them)', ing_h: 'Ingredients', clear: 'Clear', done: 'See menu', without: 'Without', with_: 'With', pending: 'Ask our team', soon: 'Coming soon', soon_p: 'We are preparing this menu.',
+      note: 'Si tienes alguna alergia o intolerancia, avisa a nuestro equipo antes de pedir. Pueden existir trazas de otros alérgenos. Los alérgenos de las bebidas los confirma el equipo.', remove: 'Quitar filtros', next: 'Sigue bajando para ver', menu: 'Carta', menu_btn: 'Menú', close: 'Cerrar', cats: 'Categorías' },
+    en: { allergies: 'Allergies', al_leg: 'Allergens', filters: 'Filters', f_h: 'Filter the menu', f_p: 'Tick allergens, diet or ingredients and we will show only what fits.', diet_h: 'Diet', al_t: 'Allergens (we hide dishes containing them)', ing_h: 'Ingredients', clear: 'Clear all', clear_sec: 'Clear', done: 'See menu', without: 'Without', with_: 'With', pending: 'Ask our team', soon: 'Coming soon', soon_p: 'We are preparing this menu.',
       b_al: 'Without allergens', b_diet: 'Diet', diet_note: 'Diet and ingredients are indicative, based on what the menu lists. If in doubt, ask our team.',
-      note: 'If you have any allergy or intolerance, please tell our team before ordering. Traces of other allergens may be present. Allergens in drinks are confirmed by our team.', remove: 'Clear filters', menu: 'Menu', menu_btn: 'Menu', close: 'Close', cats: 'Categories' }
+      note: 'If you have any allergy or intolerance, please tell our team before ordering. Traces of other allergens may be present. Allergens in drinks are confirmed by our team.', remove: 'Clear filters', next: 'Keep scrolling to see', menu: 'Menu', menu_btn: 'Menu', close: 'Close', cats: 'Categories' }
   };
   var DIETS = [
     { k: 'veg', es: 'Vegetariano', en: 'Vegetarian' }, { k: 'vegan', es: 'Vegano', en: 'Vegan' }, { k: 'pesc', es: 'Pescetariano', en: 'Pescatarian' },
@@ -40,8 +40,9 @@
   var F = { al: [], diet: [], ing: { m: 'sin', k: [] } };
   try { var s0 = JSON.parse(sessionStorage.getItem('roce_carta_f') || 'null'); if (s0) F = { al: s0.al || [], diet: s0.diet || [], ing: s0.ing || { m: 'sin', k: [] } }; } catch (e) {}
   var cur = (location.hash || '').replace('#', '');
+  cur = { brunch: 'kitchen', bebidas: 'coffee' }[cur] || cur;   // enlaces antiguos
   var landing = !D.sections.some(function (s) { return s.id === cur; });   // el QR abre primero el menú; desde ahí se elige la carta
-  if (landing) cur = D.sections[0].id;
+  if (landing) cur = 'kitchen';
 
   var $ = function (id) { return document.getElementById(id); };
   var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
@@ -77,9 +78,9 @@
   var secById = function (id) { return D.sections.filter(function (s) { return s.id === id; })[0]; };
 
   /* ── Platos y listas ── */
-  function item(it, blk) {
+  function item(it, blk, n) {
     var dup = it.code && it.code === it.name;
-    var h = '<li class="cv-item"' + attrs(it, blk) + '><div class="cv-i-main"><div class="cv-i-top"><span class="cv-i-name">' +
+    var h = '<li class="cv-item" id="it-' + blk._id + '-' + n + '"' + attrs(it, blk) + '><div class="cv-i-main"><div class="cv-i-top"><span class="cv-i-name">' +
       (it.code && !dup ? '<em>' + esc(it.code) + '</em>' : '') + esc(it.name) + (it.note ? ' <small>' + esc(tx(it.note)) + '</small>' : '') + als(it.al) +
       (blk.alPending ? '<span class="cv-pend">' + esc(ui('pending')) + '</span>' : '') + '</span><span class="cv-price">' + money(it.price) + '</span></div>';
     if (it.es) h += '<p class="cv-i-desc">' + esc(tx({ es: it.es, en: it.en })) + '</p>';
@@ -95,22 +96,25 @@
     }).join('') + '</ul></div>';
   }
   function cat(id, b) {
+    b._id = id;
     return '<section class="cv-cat" id="' + id + '"><button type="button" class="cv-cat-h" aria-expanded="true" data-toggle="' + id + '"><span class="cv-cat-t"><h3>' + esc(tx(b.title)) + '</h3>' +
       (b.note ? '<small>' + esc(tx(b.note)) + '</small>' : '') + '</span><svg class="cv-chev" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M6 15l6-6 6 6"/></svg></button>' +
-      '<div class="cv-cat-body"><ul class="cv-items">' + b.items.map(function (i) { return item(i, b); }).join('') + '</ul>' + extras(b) + '</div></section>';
+      '<div class="cv-cat-body"><ul class="cv-items">' + b.items.map(function (i, n) { return item(i, b, n); }).join('') + '</ul>' + extras(b) + '</div></section>';
   }
+  // el título vertical se adapta a su longitud (así cabe entero aunque sea largo: COFFEE & MATCHA)
+  function spineStyle(s) { var n = tx(s.title).length, len = Math.max(4.6, n * 0.64); return '--len:' + len.toFixed(1) + (n > 8 ? ';--sp:8svh' : ''); }
   function page(s, si) {
-    var h = '<article class="cv-paper is-' + s.color + '" id="pg-' + s.id + '" data-sec="' + s.id + '"' + (s.id === cur ? '' : ' hidden') + '><div class="cv-paper-in"><h1 class="cv-sr">' + esc(tx(s.title)) + '</h1>';
+    var h = '<article class="cv-paper is-' + s.color + (s.soon ? ' is-soon' : '') + '" id="pg-' + s.id + '" data-sec="' + s.id + '"' + (s.id === cur ? '' : ' hidden') + '><div class="cv-paper-in"><h1 class="cv-sr">' + esc(tx(s.title)) + '</h1>';
     var body = '';
-    if (s.soon) body += '<div class="cv-soon"><b>' + esc(ui('soon')) + '</b><p>' + esc(ui('soon_p')) + '</p></div>';
+    if (s.soon) body += '<div class="cv-soon"><b>' + esc(ui('soon')) + '</b><p>' + esc(s.desc ? tx(s.desc) : ui('soon_p')) + '</p></div>';
     else s.groups.forEach(function (g, gi) {
-      var same = tx(g.title) === tx(s.title);
+      var same = tx(g.title) === tx(s.title) && !g.force;
       body += '<div class="cv-group">';
       if (!same || g.note) body += '<div class="cv-gh">' + (same ? '' : '<h2>' + esc(tx(g.title)) + '</h2>') + (g.note ? '<span>' + esc(tx(g.note)) + '</span>' : '') + '</div>';
       g.blocks.forEach(function (b, bi) { var id = 'c' + si + gi + bi; body += cat(id, b); });
       body += '</div>';
     });
-    return h + body + '</div><div class="cv-spine" aria-hidden="true"><span><i>' + esc(tx(s.title)) + '</i></span></div></article>';
+    return h + body + '</div><div class="cv-spine" aria-hidden="true" style="' + spineStyle(s) + '"><span><i>' + esc(tx(s.title)) + '</i></span></div></article>';
   }
 
   function render() {
@@ -118,9 +122,10 @@
     $('cvAlLabel').textContent = ui('filters'); $('cvMenuLabel').textContent = ui('menu_btn'); $('cvCloseLabel').textContent = ui('close');
     $('cvDisclaimer').textContent = ui('note');
     $('cvSheetTitle').textContent = ui('f_h'); $('cvSheetText').textContent = ui('f_p'); $('cvAlClear').textContent = ui('clear'); $('cvAlDone').textContent = ui('done');
-    $('cvDietH').textContent = ui('diet_h'); $('cvAlH').textContent = ui('al_t'); $('cvIngH').textContent = ui('ing_h'); $('cvDietNote').textContent = ui('diet_note');
+    $('cvDietH').textContent = ui('diet_h'); $('cvAlH').textContent = ui('al_t'); $('cvIngH').textContent = ui('ing_h');
+    ['cvDietClear', 'cvAlClearSec', 'cvIngClear'].forEach(function (id) { $(id).textContent = ui('clear_sec'); }); $('cvDietNote').textContent = ui('diet_note');
     $('cvSections').innerHTML = D.sections.map(page).join('');
-    buildSheet(); applyFilter(); endFlip(); sheetState(); measure(); onScroll();
+    buildSheet(); applyFilter(); endFlip(); sheetState(); measure(); onScroll(); paintNext();
   }
 
   /* ── Cambiar de hoja: la hoja se abre / se cierra como en una carpeta ── */
@@ -130,6 +135,7 @@
     clearTimeout(flipping.t);
     [].forEach.call(document.querySelectorAll('.cv-paper'), function (p) { p.classList.remove('flip-away', 'flip-in'); p.hidden = p.dataset.sec !== cur; });
     flipping = null;
+    window.scrollTo({ top: 0, behavior: 'instant' });
   }
   function sheetState(keep) {
     var s = secById(cur);
@@ -144,11 +150,91 @@
     window.scrollTo({ top: 0, behavior: 'instant' });
     cur = id; sheetState(old); measure();
     try { history.replaceState(null, '', '#' + id); } catch (e) {}
-    current = ''; onScroll();
+    current = ''; onScroll(); paintNext();
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) { endFlip(); return; }
     (forward ? from : to).classList.add(forward ? 'flip-away' : 'flip-in');
     flipping = { t: setTimeout(endFlip, 1000) };
   }
+
+  /* ── Tirar de la página más allá del borde = cambiar de hoja ──
+     Al llegar al final (o al principio) y seguir tirando, la página sigue al dedo con resistencia (como un muelle), la barra se llena
+     (de azul a rojo) y, al llegar al máximo, la hoja cambia. Si sueltas antes, vuelve a su sitio. */
+  function nextSheet() { var ids = D.sections.map(function (s) { return s.id; }), i = ids.indexOf(cur); return i >= 0 && i < ids.length - 1 ? D.sections[i + 1] : null; }
+  function prevSheet() { var ids = D.sections.map(function (s) { return s.id; }), i = ids.indexOf(cur); return i > 0 ? D.sections[i - 1] : null; }
+  function paintNext() { /* sin barra: el logo del pie hace de indicador */ }
+  function heat(t) {
+    var S = [[50, 110, 255], [40, 215, 240], [255, 220, 60], [255, 140, 40], [255, 40, 40]], x = Math.min(0.9999, Math.max(0, t)) * (S.length - 1), i = Math.floor(x), f = x - i;
+    return 'rgb(' + [0, 1, 2].map(function (k) { return Math.round(S[i][k] + (S[i + 1][k] - S[i][k]) * f); }).join(',') + ')';
+  }
+  var THR = 100, MAXP = 150, still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var pull = { v: 0, dir: 0, wacc: 0, timer: 0, lock: false, lastScroll: 0, t: null };
+  function atBottom() { return window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 2; }
+  function atTop() { return window.scrollY <= 1; }
+  function edgeOk(dir) { return dir > 0 ? atBottom() && !!nextSheet() : atTop() && !!prevSheet(); }
+  function blocked() { return pull.lock || !$('cvMenu').hidden || !!document.querySelector('dialog[open]'); }
+  function setPull(v, dir) {
+    pull.v = v; pull.dir = v > 0 ? dir : 0;
+    var p = Math.min(1, v / THR), st = document.documentElement.style;
+    document.body.classList.toggle('is-pulling', v > 0);
+    st.setProperty('--pull', still ? '0px' : (dir > 0 ? -v : v) + 'px');
+    // el logo del pie crece de su tamaño normal al gigante; al llegar al tamaño completo, cambia de hoja (arriba: logo que crece en el hueco)
+    st.setProperty('--lpb', dir > 0 ? p.toFixed(3) : '0'); st.setProperty('--lpt', dir < 0 ? p.toFixed(3) : '0');
+    var tf = $('cvTopFill'); if (tf) tf.style.width = (dir < 0 ? Math.round(p * 100) : 0) + '%';
+  }
+  function springBack() { clearTimeout(pull.timer); pull.wacc = 0; document.body.classList.remove('is-pulling'); setPull(0, pull.dir || 1); document.body.classList.remove('is-pulling'); }
+  function go(dir) {
+    var n = dir > 0 ? nextSheet() : prevSheet(); if (!n) return springBack();
+    pull.lock = true; clearTimeout(pull.timer); pull.wacc = 0;
+    try { if (navigator.vibrate) navigator.vibrate(14); } catch (e) { /* sin vibración */ }
+    document.body.classList.add('is-pulling'); setPull(0, dir); setSheet(n.id);
+    setTimeout(function () { pull.lock = false; document.body.classList.remove('is-pulling'); }, 1300);
+  }
+  window.addEventListener('scroll', function () { pull.lastScroll = Date.now(); }, { passive: true });
+
+  // rueda / trackpad: cada empujón estira un poco; si dejas de empujar, vuelve
+  window.addEventListener('wheel', function (e) {
+    if (blocked() || !e.deltaY) return;
+    var dir = e.deltaY > 0 ? 1 : -1;
+    if (!edgeOk(dir)) { if (pull.v) springBack(); return; }
+    if (Date.now() - pull.lastScroll < 300) return;                 // inercia del gesto con el que llegaste al borde
+    if (pull.dir !== dir) pull.wacc = 0;
+    pull.wacc = Math.min(MAXP, pull.wacc + Math.abs(e.deltaY) * 0.4);
+    setPull(pull.wacc, dir);
+    clearTimeout(pull.timer); pull.timer = setTimeout(springBack, 420);
+    if (pull.wacc >= THR) go(dir);
+  }, { passive: true });
+
+  // táctil: la página sigue al dedo (con resistencia) desde que llegas al borde
+  window.addEventListener('touchstart', function (e) { pull.t = { y: e.touches[0].clientY, last: e.touches[0].clientY, a: null, dir: 0, buzz: false }; }, { passive: true });
+  window.addEventListener('touchmove', function (e) {
+    var t = pull.t; if (!t || blocked()) return;
+    var y = e.touches[0].clientY, up = y < t.last; t.last = y;
+    if (t.a == null) {
+      var dir = up ? 1 : -1;
+      if (!edgeOk(dir)) return;
+      t.a = y; t.dir = dir;
+    }
+    var d = t.dir > 0 ? t.a - y : y - t.a;
+    if (d <= 0) { if (pull.v) setPull(0, t.dir); t.a = y; return; }       // vuelves a mover en sentido contrario
+    if (e.cancelable) e.preventDefault();
+    var v = Math.min(MAXP, d * 0.55);
+    setPull(v, t.dir);
+    if (v >= THR && !t.buzz) { t.buzz = true; try { if (navigator.vibrate) navigator.vibrate(8); } catch (x) { /* sin vibración */ } }
+  }, { passive: false });
+  function touchDone() {
+    var t = pull.t; pull.t = null; if (!t || t.a == null) return;
+    if (pull.v >= THR) go(t.dir); else springBack();
+  }
+  window.addEventListener('touchend', touchDone, { passive: true });
+  window.addEventListener('touchcancel', touchDone, { passive: true });
+  window.addEventListener('keydown', function (e) {
+    var dir = ['ArrowDown', 'PageDown', ' ', 'End'].indexOf(e.key) !== -1 ? 1 : ['ArrowUp', 'PageUp', 'Home'].indexOf(e.key) !== -1 ? -1 : 0;
+    if (!dir || blocked() || !edgeOk(dir) || Date.now() - pull.lastScroll < 300) return;
+    if (pull.dir !== dir) pull.wacc = 0;
+    pull.wacc = Math.min(MAXP, pull.wacc + 28); setPull(pull.wacc, dir);
+    clearTimeout(pull.timer); pull.timer = setTimeout(springBack, 600);
+    if (pull.wacc >= THR) go(dir);
+  });
 
   /* ── Filtros: alérgenos + dieta + ingredientes ── */
   var presentIng = null;
@@ -193,6 +279,7 @@
     });
     [].forEach.call(document.querySelectorAll('.cv-group'), function (g) { g.classList.toggle('is-hidden', !!g.querySelector('.cv-cat') && !g.querySelector('.cv-cat:not(.is-hidden)')); });
     var c = $('cvAlCount'); c.textContent = n; c.hidden = !n;
+    $('cvDietClear').disabled = !F.diet.length; $('cvAlClearSec').disabled = !F.al.length; $('cvIngClear').disabled = !F.ing.k.length;
     var f = $('cvFilter'), parts = [];
     if (F.al.length) parts.push(ui('b_al') + ': <b>' + F.al.map(function (x) { return esc(tx(D.allergens[x - 1])); }).join(', ') + '</b>');
     if (F.diet.length) parts.push(ui('b_diet') + ': <b>' + F.diet.map(function (k) { return esc(tx(DIETS.filter(function (d) { return d.k === k; })[0])); }).join(', ') + '</b>');
@@ -235,9 +322,6 @@
     var h = '<ul class="cv-m-list">' + D.sections.map(function (s) {
       return '<li><button type="button" class="cv-m-sheet' + (s.id === cur ? ' is-on' : '') + '" data-sec="' + s.id + '" style="--c:var(--' + s.color + ')"><span>' + esc(tx(s.title)) + '</span><span class="cv-m-side">' + (s.soon ? '<small>' + esc(ui('soon')) + '</small>' : '') + '</span></button></li>';
     }).join('') + '</ul>';
-    var cats = [].slice.call(document.querySelectorAll('#pg-' + cur + ' .cv-cat:not(.is-hidden)'));
-    if (cats.length && !landing) h += '<p class="cv-m-h">' + esc(ui('cats')) + '</p><ul class="cv-m-list is-sub">' + cats.map(function (c) { return '<li><a class="cv-m-cat" href="#' + c.id + '" data-cat="' + c.id + '">' + esc(c.querySelector('h3').textContent) + '</a></li>'; }).join('') + '</ul>';
-    h += '<ul class="cv-m-list is-sub is-last"><li><button type="button" class="cv-m-cat" id="cvMenuAl">' + esc(ui('filters')) + (F.al.length + F.diet.length + F.ing.k.length ? ' (' + (F.al.length + F.diet.length + F.ing.k.length) + ')' : '') + '</button></li></ul>';
     $('cvMenuBody').innerHTML = h;
   }
   function openMenu() { renderMenu(); $('cvMenu').hidden = false; document.body.style.overflow = 'hidden'; $('cvMenuBtn').setAttribute('aria-expanded', 'true'); $('cvMenu').scrollTop = 0; $('cvMenuClose').focus(); }
@@ -257,6 +341,8 @@
   $('cvAlClear').addEventListener('click', function () { setF({ al: [], diet: [], ing: { m: F.ing.m, k: [] } }); });
   $('cvSheet').addEventListener('click', function (e) {
     if (e.target === this) { this.close(); return; }
+    var cl = e.target.closest('[data-clear]');
+    if (cl) { var w = cl.dataset.clear; setF({ al: w === 'al' ? [] : F.al, diet: w === 'diet' ? [] : F.diet, ing: { m: F.ing.m, k: w === 'ing' ? [] : F.ing.k } }); return; }
     var d = e.target.closest('[data-d]'), n = e.target.closest('[data-n]'), i = e.target.closest('[data-i]'), m = e.target.closest('[data-m]');
     if (d) setF({ al: F.al, diet: toggle(F.diet, d.dataset.d), ing: F.ing });
     else if (n) setF({ al: toggle(F.al, +n.dataset.n), diet: F.diet, ing: F.ing });
@@ -267,6 +353,19 @@
     var l = window.ROCE_I18N && window.ROCE_I18N.getLang();
     if (l && l !== L) { L = l; current = ''; render(); }
   });
+  function goTo(secId, itemId) {
+    closeMenu();
+    if (secId !== cur) setSheet(secId);
+    setTimeout(function () {
+      var el = $(itemId); if (!el) return;
+      var c = el.closest('.cv-cat'); if (c) openCat(c);
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      el.classList.remove('is-flash'); void el.offsetWidth; el.classList.add('is-flash');
+      setTimeout(function () { el.classList.remove('is-flash'); }, 2600);
+    }, 80);
+  }
+  window.CARTA_API = { D: D, ING: ING, DIETS: DIETS, RE: RE, F: function () { return F; }, L: function () { return L; }, tx: tx, esc: esc, money: money, als: als, norm: norm, analyze: analyze, goTo: goTo, openFilters: openAl };
   render();
   if (landing) openMenu();
+  document.dispatchEvent(new Event('carta:ready'));
 })();

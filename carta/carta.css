@@ -35,7 +35,7 @@ img { max-width: 100%; display: block; }
 .cv-lang button.is-active { color: var(--black); text-decoration: underline; text-underline-offset: 4px; }
 
 /* ── Menú a pantalla completa (como una lista tipográfica con filetes) ── */
-.cv-menu { position: fixed; inset: 0; z-index: 70; overflow-y: auto; background: var(--paper); color: var(--black); animation: cvMenuIn 0.3s cubic-bezier(0.2, 0.7, 0.2, 1); }
+.cv-menu { position: fixed; inset: 0; z-index: 70; overflow: hidden; background: var(--paper); color: var(--black); animation: cvMenuIn 0.3s cubic-bezier(0.2, 0.7, 0.2, 1); }
 @keyframes cvMenuIn { from { opacity: 0; transform: translateY(-1.2rem); } to { opacity: 1; transform: none; } }
 .cv-menu-in { display: flex; flex-direction: column; min-height: 100%; max-width: 46rem; margin: 0 auto; padding: env(safe-area-inset-top) var(--pad) calc(1.4rem + env(safe-area-inset-bottom)); }
 .cv-menu-top { display: flex; align-items: center; justify-content: flex-end; padding: 0.75rem 0 0.65rem; border-bottom: 1.5px solid var(--black); }
@@ -73,7 +73,7 @@ img { max-width: 100%; display: block; }
 .cv-paper-in { --lpad: calc(var(--pad) + 0.7rem); position: relative; z-index: 2; flex: 1; min-width: 0; padding: 0.4rem 1.5rem 3rem var(--lpad); }
 /* título vertical en el lomo, como en las cartas impresas */
 .cv-spine { position: relative; z-index: 2; flex: 0 0 var(--spine); align-self: stretch; }
-.cv-spine span { position: sticky; top: calc(var(--bar) + 1.1rem); display: block; }
+.cv-spine span { position: sticky; top: calc(var(--bar) + 30vh); top: calc(var(--bar) + 30svh); display: block; }
 .cv-spine i { display: block; font-style: normal; writing-mode: vertical-rl; transform: rotate(180deg); font-size: clamp(2.8rem, 12vw, 3.6rem); line-height: 1; letter-spacing: -0.02em; text-transform: uppercase; white-space: nowrap; }
 /* hoja que se abre / se cierra */
 .cv-paper.flip-away { z-index: 3; animation: cvAway 0.95s cubic-bezier(0.55, 0.05, 0.3, 1) forwards; }
@@ -107,7 +107,7 @@ img { max-width: 100%; display: block; }
 .cv-i-name small { font-size: 0.7rem; letter-spacing: 0.08em; opacity: 0.65; }
 .cv-price { font-size: 1.02rem; white-space: nowrap; }
 .cv-i-desc { margin: 0.25rem 0 0; max-width: 36rem; font-size: 0.92rem; line-height: 1.4; opacity: 0.62; }
-.cv-i-tag { font-style: italic; }
+.cv-i-tag { }
 .cv-thumb { flex: 0 0 auto; width: 4.6rem; height: 4.6rem; object-fit: cover; }
 .cv-variants { list-style: none; margin: 0.6rem 0 0; padding: 0.5rem 0 0; border-top: 1px dashed color-mix(in srgb, var(--ink) 40%, transparent); display: grid; gap: 0.45rem; }
 .cv-variants li { display: grid; grid-template-columns: 5rem 1fr; gap: 0.5rem; font-size: 0.85rem; }
@@ -154,7 +154,7 @@ body.has-filter .is-pending .cv-pend { display: inline; }
 .cv-sheet-in { padding: 1.1rem var(--pad) calc(1rem + env(safe-area-inset-bottom)); }
 .cv-sheet h2 { margin: 0 0 0.35rem; padding-bottom: 0.7rem; border-bottom: 1.5px solid var(--black); font-size: 1.15rem; line-height: 1.15; font-weight: 700; letter-spacing: -0.01em; }
 .cv-sheet p { margin: 0 0 0.9rem; font-size: 0.88rem; opacity: 0.7; }
-.cv-sheet .cv-als { display: grid; grid-template-columns: 1fr 1fr; gap: 0 1.4rem; margin: 0 0 0.6rem; padding-top: 0.2rem; border-top: 1.5px solid var(--black); }
+.cv-sheet #cvDietList, .cv-sheet #cvAlList { display: grid; grid-template-columns: 1fr 1fr; gap: 0 1.4rem; margin: 0 0 0.6rem; padding-top: 0.2rem; border-top: 1.5px solid var(--black); }
 .cv-sheet .cv-al { width: 1.25rem; height: 1.25rem; margin-left: auto; border: 1px solid var(--black); color: var(--black); font-size: 0.65rem; opacity: 0.55; }
 .cv-pick { display: flex; align-items: center; gap: 0.6rem; padding: 0.65rem 0; border: 0; border-bottom: 1px solid rgba(10, 10, 10, 0.18); background: transparent; color: var(--black); text-align: left; font-size: 0.95rem; font-weight: 700; }
 .cv-radio { flex: 0 0 auto; width: 0.95rem; height: 0.95rem; border: 1.5px solid var(--black); border-radius: 50%; }
@@ -170,3 +170,236 @@ body.has-filter .is-pending .cv-pend { display: inline; }
 .cv-chips .cv-chip[aria-pressed="true"] { background: var(--black); color: #fff; }
 .cv-sheet-actions { position: sticky; bottom: calc(-1rem - env(safe-area-inset-bottom)); display: flex; justify-content: space-between; gap: 0.6rem; margin-top: 1rem; padding-top: 0.5rem; border-top: 1.5px solid var(--black); background: #fff; }
 .cv-ghost, .cv-solid { padding: 0.8rem 0; border: 0; background: transparent; color: var(--black); font-size: 0.95rem; font-weight: 700; text-decoration: underline; text-underline-offset: 4px; }
+
+/* ── Panel de filtros y ayuda del chef: cuerpo con scroll + botones siempre visibles ── */
+.cv-sheet[open] { display: flex; flex-direction: column; overflow: hidden; }
+.cv-sheet-in { display: flex; flex-direction: column; min-height: 0; flex: 1; max-height: 88vh; }
+.cv-sheet-body { flex: 1; min-height: 0; overflow-y: auto; padding-bottom: 0.4rem; -webkit-overflow-scrolling: touch; }
+.cv-sheet-actions { position: static; flex: 0 0 auto; display: flex; gap: 0.6rem; margin-top: 0.8rem; padding-top: 0.8rem; border-top: 1.5px solid var(--black); background: #fff; }
+.cv-ghost, .cv-solid { flex: 1; padding: 0.85rem 0.6rem; border: 1.5px solid var(--black); text-decoration: none; font-size: 0.85rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
+.cv-ghost { background: transparent; color: var(--black); }
+.cv-solid { background: var(--black); color: #fff; }
+.cv-fs-h { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; margin-bottom: 0.3rem; }
+.cv-fs-h h3 { margin: 0; }
+.cv-fs-clear { padding: 0.25rem 0.7rem; border: 1.5px solid var(--black); background: #fff; color: var(--black); font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
+.cv-fs-clear:disabled { opacity: 0.3; border-color: rgba(10, 10, 10, 0.4); }
+.cv-link { padding: 0; border: 0; background: transparent; color: var(--black); font-size: 0.85rem; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
+
+/* botón flotante */
+.cv-chef-btn { position: fixed; z-index: 35; right: var(--pad); bottom: calc(1rem + env(safe-area-inset-bottom)); padding: 0.8rem 1.1rem; border: 1.5px solid #fff; border-radius: 999px; background: var(--black); color: #fff; box-shadow: 0 6px 22px rgba(0, 0, 0, 0.5); font-size: 0.85rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+.cv-chef-btn::before { content: "✦"; margin-right: 0.5rem; }
+.cv-foot { padding-bottom: calc(5rem + env(safe-area-inset-bottom)); }
+
+/* ayuda del chef */
+.cv-chef h2 { margin-bottom: 0.4rem; }
+.cv-chef textarea { width: 100%; padding: 0.7rem 0.8rem; border: 1.5px solid var(--black); border-radius: 0; background: #fff; color: var(--black); font: inherit; font-size: 1rem; resize: vertical; }
+.cv-ideas { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0.7rem 0 0.2rem; }
+.cv-ideas .cv-chip { padding: 0.35rem 0.75rem; border: 1.5px solid var(--black); border-radius: 999px; background: transparent; color: var(--black); font-size: 0.8rem; font-weight: 700; }
+.cv-opts { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.cv-opt { padding: 0.5rem 0.9rem; border: 1.5px solid var(--black); background: transparent; color: var(--black); font-size: 0.9rem; font-weight: 700; }
+.cv-opt[aria-pressed="true"] { background: var(--black); color: #fff; }
+.cv-pick-list { list-style: none; margin: 0.6rem 0 0; padding: 0; }
+.cv-pick-list li { padding: 0.8rem 0; border-top: 1.5px solid var(--black); }
+.cv-pl-slot { margin: 0 0 0.3rem; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; opacity: 0.6; }
+.cv-pl-top { display: flex; justify-content: space-between; gap: 1rem; font-size: 1.1rem; text-transform: uppercase; }
+.cv-pl-desc { margin: 0.25rem 0 0; font-size: 0.88rem; opacity: 0.7; }
+.cv-pl-why { margin: 0.3rem 0 0.2rem; font-size: 0.85rem; }
+.cv-pick-list .cv-als { margin: 0.2rem 0; }
+.cv-pick-list .cv-al { border-color: var(--black); color: var(--black); }
+.cv-pl-total { margin: 0.6rem 0 0; padding-top: 0.6rem; border-top: 1.5px solid var(--black); font-size: 1rem; }
+
+/* resaltar el plato al saltar desde la propuesta */
+.cv-item.is-flash { animation: cvFlash 2.6s ease; }
+@keyframes cvFlash { 0%, 60% { background: color-mix(in srgb, var(--ink) 22%, transparent); } 100% { background: transparent; } }
+
+/* menú fijo: cabe en una pantalla, sin scroll */
+.cv-menu-in { height: 100%; min-height: 0; }
+.cv-menu-body { flex: 0 0 auto; }
+.cv-menu-foot { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; margin-top: 1rem; }
+.cv-menu-foot .cv-lang { justify-content: center; }
+.cv-menu-foot .cv-lang button { padding: 0.3rem 0.6rem; }
+.cv-m-word { flex: 1 1 auto; min-height: 0; width: 100%; height: auto; max-height: 26vh; object-fit: contain; object-position: left bottom; }
+.cv-m-word { flex: 0 1 auto; margin-top: auto; }
+
+/* ayuda del chef: resultados y adaptación a pantallas pequeñas */
+.cv-sheet { width: min(30rem, calc(100vw - 1.5rem)); }
+.cv-sheet-in { padding-left: 1rem; padding-right: 1rem; }
+.cv-sheet-body { padding-right: 0.7rem; scrollbar-gutter: stable; }
+.cv-pl-top { align-items: baseline; }
+.cv-pl-top b { min-width: 0; overflow-wrap: anywhere; }
+.cv-pl-top span { flex: 0 0 auto; white-space: nowrap; }
+.cv-pick-list .cv-als { display: inline-flex; border: 0; padding: 0; margin: 0; }
+.cv-pl-al { margin: 0.35rem 0 0.3rem; font-size: 0.82rem; line-height: 1.7; }
+.cv-pl-al .cv-al { width: 1.1rem; height: 1.1rem; margin-right: 0.15rem; vertical-align: middle; border-color: var(--black); color: var(--black); opacity: 0.75; }
+@media (max-width: 380px) { .cv-sheet-in { padding-left: 0.8rem; padding-right: 0.8rem; } .cv-ghost, .cv-solid { font-size: 0.78rem; letter-spacing: 0.06em; } }
+
+/* leyenda de alérgenos al final de la carta */
+.cv-legend { max-width: 46rem; margin: 0 auto 1.4rem; text-align: left; }
+.cv-legend h3 { margin: 0 0 0.7rem; font-size: 0.74rem; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(255, 255, 255, 0.85); }
+.cv-legend ul { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem 1rem; }
+.cv-legend li { display: flex; align-items: center; gap: 0.55rem; font-size: 0.78rem; color: rgba(255, 255, 255, 0.8); }
+.cv-legend .cv-al { flex: 0 0 auto; width: 1.4rem; height: 1.4rem; font-size: 0.68rem; color: #fff; border-color: rgba(255, 255, 255, 0.7); opacity: 1; }
+@media (min-width: 640px) { .cv-legend ul { grid-template-columns: repeat(4, 1fr); } }
+
+/* ayuda del chef: cada bloque bien identificado */
+.cv-chef-p { margin: 0 0 0.9rem; }
+.cv-step { margin: 0 0 0.8rem; padding: 0.8rem 0.9rem 0.9rem; border: 1.5px solid var(--black); background: #fff; }
+.cv-step-h { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.6rem; }
+.cv-step-n { flex: 0 0 auto; display: inline-grid; place-items: center; width: 1.6rem; height: 1.6rem; border-radius: 50%; background: var(--black); color: #fff; font-size: 0.8rem; font-weight: 700; }
+.cv-step-h h3 { margin: 0; font-size: 1rem; font-weight: 700; letter-spacing: 0; text-transform: none; opacity: 1; }
+.cv-step-h h3 small { margin-left: 0.3rem; font-size: 0.72rem; font-weight: 400; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.55; }
+.cv-chef .cv-opts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.4rem; }
+.cv-chef .cv-opt { display: flex; align-items: center; justify-content: center; gap: 0.4rem; padding: 0.65rem 0.3rem; font-size: 0.85rem; }
+.cv-chef .cv-opt i { flex: 0 0 auto; width: 0.8rem; height: 0.8rem; border: 1.5px solid currentColor; border-radius: 50%; }
+.cv-chef .cv-opt[aria-pressed="true"] i { background: #fff; box-shadow: inset 0 0 0 2px var(--black); }
+.cv-chef .cv-pick-list li { margin: 0 0 0.7rem; padding: 0.8rem 0.9rem; border: 1.5px solid var(--black); background: #fff; }
+.cv-chef .cv-pick-list { margin-top: 0.8rem; }
+.cv-chef .cv-pl-slot { display: flex; align-items: center; gap: 0.5rem; margin: -0.8rem -0.9rem 0.7rem; padding: 0.45rem 0.9rem; background: var(--black); color: #fff; opacity: 1; font-size: 0.72rem; letter-spacing: 0.16em; }
+.cv-pl-n { display: inline-grid; place-items: center; width: 1.2rem; height: 1.2rem; border-radius: 50%; background: #fff; color: var(--black); font-size: 0.7rem; letter-spacing: 0; }
+
+/* cada tipo de plato con su color */
+.cv-chef .cv-pick-list li { border-width: 2px; }
+.cv-chef .cv-slot-starter { border-color: var(--kraft); } .cv-chef .cv-slot-starter .cv-pl-slot { background: var(--kraft); color: var(--black); } .cv-chef .cv-slot-starter .cv-pl-n { background: var(--black); color: #fff; }
+.cv-chef .cv-slot-main, .cv-chef .cv-slot-light, .cv-chef .cv-slot-breakfast { border-color: var(--black); } .cv-chef .cv-slot-main .cv-pl-slot, .cv-chef .cv-slot-light .cv-pl-slot, .cv-chef .cv-slot-breakfast .cv-pl-slot { background: var(--black); }
+.cv-chef .cv-slot-side { border-color: var(--olive); } .cv-chef .cv-slot-side .cv-pl-slot { background: var(--olive); } .cv-chef .cv-slot-side .cv-pl-n { color: var(--olive); }
+.cv-chef .cv-slot-drink { border-color: var(--red); } .cv-chef .cv-slot-drink .cv-pl-slot { background: var(--red); } .cv-chef .cv-slot-drink .cv-pl-n { color: var(--red); }
+.cv-chef .cv-slot-sweet { border-color: var(--gold); } .cv-chef .cv-slot-sweet .cv-pl-slot { background: var(--gold); } .cv-chef .cv-slot-sweet .cv-pl-n { color: var(--gold); }
+
+/* ayuda: botón discreto */
+.cv-chef-btn { right: var(--pad); bottom: calc(0.9rem + env(safe-area-inset-bottom)); padding: 0.45rem 0.95rem; border: 1px solid rgba(255, 255, 255, 0.55); background: rgba(10, 10, 10, 0.88); box-shadow: none; font-size: 0.72rem; font-weight: 400; letter-spacing: 0.12em; }
+.cv-chef-btn::before { content: none; }
+.cv-foot { padding-bottom: calc(3.5rem + env(safe-area-inset-bottom)); }
+.cv-chef .cv-pick-list li { border-width: 1.5px; }
+
+/* menú: ES/EN pegado a la línea del logo grande */
+.cv-menu-foot { justify-content: flex-end; margin-top: 0; }
+.cv-menu-foot .cv-lang { margin-bottom: 0.25rem; }
+.cv-m-word { margin-top: 0; padding-top: 0.9rem; }
+
+/* menú: logo grande y ES/EN como estaban, ES/EN pegado a la línea del logo */
+.cv-menu-foot { display: block; flex: 0 0 auto; margin-top: auto; justify-content: initial; padding-top: 1rem; }
+.cv-menu-foot .cv-lang { justify-content: flex-start; margin: 0 0 0.3rem; font-size: 0.9rem; }
+.cv-menu-foot .cv-lang button { padding: 0.3rem 0.5rem 0.3rem 0; }
+.cv-m-word { display: block; flex: none; width: 100%; height: auto; max-height: none; object-fit: fill; margin-top: 0; padding-top: 1rem; border-top: 1.5px solid var(--black); }
+
+/* botón de ayuda con su estrellita */
+.cv-chef-btn::before { content: "✦"; margin-right: 0.5rem; }
+.cv-chef-btn { font-weight: 700; letter-spacing: 0.1em; }
+
+/* títulos de grupo (Desayunos & Meriendas, Comidas…): Helvetica Neue en mayúsculas, como la carta impresa */
+.cv-gh { opacity: 1; }
+.cv-gh h2 { font-family: var(--display); font-weight: 700; font-size: clamp(1.15rem, 4.6vw, 1.6rem); line-height: 1.1; letter-spacing: 0.22em; text-transform: uppercase; }
+
+/* título lateral: siempre entero en cualquier alto de pantalla y texto más ancho, pegado a él */
+.cv-paper { --sp: 30vh; --sp: 30svh; }
+.cv-spine span { top: calc(var(--bar) + var(--sp)); }
+.cv-spine i { font-size: min(clamp(2.8rem, 12vw, 3.6rem), calc((100vh - var(--bar) - var(--sp) - 2rem) / var(--len, 4.6))); font-size: min(clamp(2.8rem, 12vw, 3.6rem), calc((100svh - var(--bar) - var(--sp) - 2rem) / var(--len, 4.6))); }
+@media (min-width: 900px) {
+  .cv-paper { --sp: 14vh; --sp: 14svh; }
+  .cv-spine i { font-size: min(clamp(4.4rem, 8vw, 6.6rem), calc((100vh - var(--bar) - var(--sp) - 2rem) / var(--len, 4.6))); font-size: min(clamp(4.4rem, 8vw, 6.6rem), calc((100svh - var(--bar) - var(--sp) - 2rem) / var(--len, 4.6))); }
+  .cv-paper-in > * { max-width: none; }
+  .cv-paper-in { padding-right: 2.2rem; }
+}
+
+/* nuevas hojas */
+.cv-paper.is-cream { --sheet: var(--cream); --ink: #0a0a0a; }
+.cv-paper.is-dark { --sheet: #262624; --ink: var(--cream); }
+html[data-sheet="cream"] { --sheet: var(--cream); --ink: #0a0a0a; }
+html[data-sheet="dark"] { --sheet: #262624; --ink: var(--cream); }
+.cv-m-sheet { font-size: clamp(1.9rem, 8.2vw, 3.4rem); }
+.cv-spine i { white-space: nowrap; }
+
+/* aviso: seguir bajando = siguiente hoja */
+.cv-next { margin: 1.6rem auto 0; text-align: center; font-size: 0.72rem; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(255, 255, 255, 0.75); }
+.cv-next i { display: block; width: 0; height: 2px; max-width: 12rem; margin: 0.6rem auto 0; background: #fff; }
+
+/* título lateral más grande */
+.cv-paper { --spine: 4.8rem; }
+.cv-spine i { font-size: min(clamp(3.4rem, 15vw, 4.6rem), calc((100vh - var(--bar) - var(--sp) - 2rem) / var(--len, 4.6))); font-size: min(clamp(3.4rem, 15vw, 4.6rem), calc((100svh - var(--bar) - var(--sp) - 2rem) / var(--len, 4.6))); }
+@media (min-width: 900px) {
+  .cv-paper { --spine: 11rem; --sp: 8vh; --sp: 8svh; }
+  .cv-spine i { font-size: min(clamp(5.6rem, 10vw, 9rem), calc((100vh - var(--bar) - var(--sp) - 2rem) / var(--len, 4.6))); font-size: min(clamp(5.6rem, 10vw, 9rem), calc((100svh - var(--bar) - var(--sp) - 2rem) / var(--len, 4.6))); }
+}
+
+/* ES/EN del menú centrado, pegado a la línea del logo */
+.cv-menu-foot .cv-lang { justify-content: center; }
+.cv-menu-foot .cv-lang button { padding: 0.3rem 0.6rem; }
+
+/* la línea que se llena para pasar de hoja: siempre visible al llegar abajo */
+.cv-next i { display: block; width: 0; height: 100%; margin: 0; background: #fff; }
+.cv-next-track { display: block; width: 100%; max-width: 12rem; height: 2px; margin: 0.7rem auto 0; background: rgba(255, 255, 255, 0.28); }
+.cv-next { margin-top: 2.2rem; }
+
+/* pie: solo el logo ROCE gigante y, encima, la barra para pasar de hoja */
+.cv-foot { padding: 3.5rem var(--pad) calc(2rem + env(safe-area-inset-bottom)); text-align: left; }
+.cv-foot-logo { display: block; width: 100%; max-width: 78rem; height: auto; margin: 0 auto; }
+.cv-next { max-width: 78rem; margin: 0 auto 2.4rem; text-align: left; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.18em; color: #fff; }
+.cv-next-track { display: block; width: 100%; max-width: none; height: 10px; margin: 0.9rem 0 0; border: 1.5px solid rgba(255, 255, 255, 0.7); background: transparent; }
+.cv-next i { display: block; width: 0; height: 100%; margin: 0; background: #fff; transition: width 0.12s linear; }
+@media (min-width: 900px) { .cv-foot { padding-inline: 2.2rem; } }
+.cv-foot { padding-bottom: calc(4.5rem + env(safe-area-inset-bottom)); }
+
+/* pie limpio: línea fina de "siguiente hoja" y el logo gigante */
+.cv-foot { padding: 3rem var(--pad) calc(4.5rem + env(safe-area-inset-bottom)); }
+.cv-next { max-width: 78rem; margin: 0 auto 2.2rem; font-size: 0.7rem; font-weight: 400; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(255, 255, 255, 0.6); }
+.cv-next-track { display: block; width: 100%; height: 2px; margin: 0.8rem 0 0; border: 0; background: rgba(255, 255, 255, 0.18); overflow: hidden; }
+.cv-next i { display: block; width: 0; height: 100%; margin: 0; background: #fff; transition: width 0.18s ease-out; }
+/* hoja anterior: línea fina bajo la cabecera */
+.cv-topbar { position: fixed; z-index: 29; left: 0; right: 0; top: var(--bar); height: 3px; pointer-events: none; }
+.cv-topbar i { display: block; width: 0; height: 100%; background: #fff; transition: width 0.18s ease-out; }
+
+/* barra de cambio de hoja: sin letrero, solo la barra que va de azul (frío) a rojo (caliente) */
+.cv-next { margin-bottom: 2rem; }
+.cv-next-track { height: 6px; margin: 0; border-radius: 3px; background: rgba(255, 255, 255, 0.14); }
+.cv-next i { border-radius: 3px; transition: width 0.15s ease-out, background-color 0.15s linear; }
+.cv-topbar i { transition: width 0.15s ease-out; }
+
+/* menú: sin la raya entre ES/EN y el logo */
+.cv-m-word { border-top: 0; padding-top: 0.5rem; }
+
+/* tirar de la página: sigue al dedo con resistencia y vuelve como un muelle */
+html { overscroll-behavior-y: none; }
+main, .cv-foot { transform: translateY(var(--pull, 0px)); transition: transform 0.38s cubic-bezier(0.2, 0.9, 0.25, 1); will-change: transform; }
+body.is-pulling main, body.is-pulling .cv-foot { transition: none; }
+.cv-next-track { height: 8px; border-radius: 4px; }
+.cv-next i { transition: none; border-radius: 4px; }
+.cv-topbar { height: 4px; } .cv-topbar i { transition: none; }
+@media (prefers-reduced-motion: reduce) { main, .cv-foot { transform: none; transition: none; } }
+
+/* el título lateral no se pega al borde de abajo de la hoja (p. ej. en Bakery, que es corta) */
+.cv-spine { padding-bottom: 3rem; }
+
+/* títulos de grupo (Desayunos, Comidas): mismo gris claro que los ingredientes */
+.cv-gh { opacity: 1; }
+.cv-gh h2 { opacity: 0.62; }
+.cv-gh span { opacity: 0.62; }
+
+/* título lateral: fijo en pantalla hasta que llega el pie (solo en hojas cortas se deja aire abajo) */
+.cv-spine { padding-bottom: 0; }
+.cv-paper.is-soon .cv-spine { padding-bottom: 3rem; }
+
+/* pie: logo en tamaño normal que crece al tirar hasta el tamaño gigante (entonces cambia de hoja) */
+.cv-next, .cv-topbar { display: none !important; }
+.cv-foot { padding: 3rem var(--pad) calc(3.5rem + env(safe-area-inset-bottom)); }
+.cv-foot-logo { display: block; width: 100%; max-width: 60rem; height: auto; margin: 0 auto; transform-origin: 50% 100%; transform: scale(calc(0.36 + 0.64 * var(--lpb, 0))); transition: transform 0.38s cubic-bezier(0.2, 0.9, 0.25, 1); will-change: transform; }
+body.is-pulling .cv-foot-logo { transition: none; }
+/* hoja anterior: el logo aparece y crece en el hueco de arriba */
+.cv-toplogo { position: fixed; z-index: 5; left: 0; right: 0; top: var(--bar); height: 150px; display: flex; align-items: center; justify-content: center; pointer-events: none; opacity: min(1, calc(var(--lpt, 0) * 3)); }
+.cv-toplogo img { width: calc(26% + 40% * var(--lpt, 0)); max-width: 30rem; height: auto; }
+@media (prefers-reduced-motion: reduce) { .cv-foot-logo { transform: scale(0.5); transition: none; } }
+
+/* hoja anterior (arriba): barra blanca fina bajo la cabecera; abajo se queda el logo que crece */
+.cv-topbar { display: block !important; position: fixed; z-index: 29; left: 0; right: 0; top: var(--bar); height: 4px; pointer-events: none; }
+.cv-topbar i { display: block; width: 0; height: 100%; background: #fff; transition: none; }
+.cv-toplogo { display: none; }
+
+/* título lateral: siempre con sangría sobre el borde de abajo de la hoja; fijo en pantalla y, al llegar el fin de hoja, la acompaña con ese margen */
+.cv-spine, .cv-paper.is-soon .cv-spine { padding-bottom: 3.4rem; }
+
+/* botón Filtros con su icono de líneas */
+.cv-allergy-btn { gap: 0.5rem; text-decoration: none; }
+.cv-allergy-btn span { text-decoration: underline; text-underline-offset: 4px; }
+.cv-allergy-btn svg { flex: 0 0 auto; display: block; }
+
+/* Filtros sin subrayado */
+.cv-allergy-btn, .cv-allergy-btn span { text-decoration: none; }
