@@ -15,7 +15,6 @@ window.CARTA = {
       groups: [
         {
           title: { es: 'Desayunos & Meriendas', en: 'Breakfast & Afternoon' },
-          note: { es: 'Tostadas hasta las 12:00 · Açaí, yogur y sándwiches todo el día', en: 'Toasts until 12:00 · Açaí, yogurt and sandwiches all day' },
           blocks: [
             {
               title: { es: 'Tostadas', en: 'Toasts' }, note: { es: 'Hasta las 12:00 · pan de masa madre', en: 'Until 12:00 · sourdough bread' },
