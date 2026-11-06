@@ -22,5 +22,6 @@
 20. `cron_mesas.sql` — recordatorio de 24 h y email de valoración (barrido cada 15 min; ejecutar una vez)
 21. `mesas_calendario2.sql` — el calendario marca también los turnos cerrados (p. ej. la cena de un domingo)
 22. `mesas_cena_dias.sql` — la cena abre de miércoles a sábado
+23. `mesas_plano_editor.sql` — giro de mesas en el plano («Editar plano») y las baldas V1 y V2 de la planta alta
 
 Todos se pueden ejecutar más de una vez. Si se vuelve a ejecutar `mesas.sql` o `mesas_tarjeta.sql`, hay que volver a ejecutar los de después.
