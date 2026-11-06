@@ -403,3 +403,10 @@ body.is-pulling .cv-foot-logo { transition: none; }
 
 /* Filtros sin subrayado */
 .cv-allergy-btn, .cv-allergy-btn span { text-decoration: none; }
+
+/* paneles en iPhone: usan el alto visible real (con teclado también) y quedan arriba, no aplastados */
+.cv-sheet { max-height: 88vh; max-height: 88dvh; }
+.cv-sheet-in { max-height: 88vh; max-height: 88dvh; }
+.cv-chef[open] { margin: calc(var(--vvt, 0px) + 0.75rem) auto auto; max-height: calc(var(--vvh, 100dvh) - 1.5rem); }
+.cv-chef .cv-sheet-in { max-height: calc(var(--vvh, 100dvh) - 1.5rem); }
+.cv-chef textarea { font-size: 16px; scroll-margin: 1rem; }
