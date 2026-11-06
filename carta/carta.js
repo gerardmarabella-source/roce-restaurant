@@ -272,7 +272,7 @@
     }).join('') + '</ul>';
     $('cvMenuBody').innerHTML = h;
   }
-  function openMenu() { renderMenu(); $('cvMenu').hidden = false; document.body.style.overflow = 'hidden'; $('cvMenuBtn').setAttribute('aria-expanded', 'true'); $('cvMenu').scrollTop = 0; $('cvMenuClose').focus(); }
+  function openMenu() { renderMenu(); $('cvMenu').hidden = false; document.body.style.overflow = 'hidden'; $('cvMenuBtn').setAttribute('aria-expanded', 'true'); $('cvMenu').scrollTop = 0; $('cvMenu').focus({ preventScroll: true }); }
   function closeMenu() { landing = false; if ($('cvMenu').hidden) return; $('cvMenu').hidden = true; document.body.style.overflow = ''; $('cvMenuBtn').setAttribute('aria-expanded', 'false'); }
   function openAl() { var d = $('cvSheet'); if (d.showModal) d.showModal(); else d.setAttribute('open', ''); }
   $('cvFootNav').addEventListener('click', function (e) { var b = e.target.closest('.cv-fn'); if (b && b.dataset.sec !== cur) setSheet(b.dataset.sec); else if (b) window.scrollTo({ top: 0, behavior: 'smooth' }); });
