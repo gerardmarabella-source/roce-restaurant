@@ -289,3 +289,14 @@ body.has-filter .is-pending .cv-pend { display: inline; }
 /* títulos de grupo (Desayunos & Meriendas, Comidas…): Helvetica Neue en mayúsculas, como la carta impresa */
 .cv-gh { opacity: 1; }
 .cv-gh h2 { font-family: var(--display); font-weight: 700; font-size: clamp(1.15rem, 4.6vw, 1.6rem); line-height: 1.1; letter-spacing: 0.22em; text-transform: uppercase; }
+
+/* título lateral: siempre entero en cualquier alto de pantalla y texto más ancho, pegado a él */
+.cv-paper { --sp: 30vh; --sp: 30svh; }
+.cv-spine span { top: calc(var(--bar) + var(--sp)); }
+.cv-spine i { font-size: min(clamp(2.8rem, 12vw, 3.6rem), calc((100vh - var(--bar) - var(--sp) - 2rem) / 5.4)); font-size: min(clamp(2.8rem, 12vw, 3.6rem), calc((100svh - var(--bar) - var(--sp) - 2rem) / 5.4)); }
+@media (min-width: 900px) {
+  .cv-paper { --sp: 14vh; --sp: 14svh; }
+  .cv-spine i { font-size: min(clamp(4.4rem, 8vw, 6.6rem), calc((100vh - var(--bar) - var(--sp) - 2rem) / 5.4)); font-size: min(clamp(4.4rem, 8vw, 6.6rem), calc((100svh - var(--bar) - var(--sp) - 2rem) / 5.4)); }
+  .cv-paper-in > * { max-width: none; }
+  .cv-paper-in { padding-right: 2.2rem; }
+}
