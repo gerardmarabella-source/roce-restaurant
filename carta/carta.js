@@ -55,15 +55,17 @@
   }
   function page(s, si) {
     var h = '<article class="cv-paper is-' + s.color + '" id="pg-' + s.id + '" data-sec="' + s.id + '"' + (s.id === cur ? '' : ' hidden') + '><span class="cv-hole" aria-hidden="true"></span><span class="cv-hole is-2" aria-hidden="true"></span><div class="cv-paper-in"><h1 class="cv-sr">' + esc(tx(s.title)) + '</h1>';
-    if (s.soon) h += '<div class="cv-soon"><b>' + esc(ui('soon')) + '</b><p>' + esc(ui('soon_p')) + '</p></div>';
+    var tabs = [], body = '';
+    if (s.soon) body += '<div class="cv-soon"><b>' + esc(ui('soon')) + '</b><p>' + esc(ui('soon_p')) + '</p></div>';
     else s.groups.forEach(function (g, gi) {
       var same = tx(g.title) === tx(s.title);
-      h += '<div class="cv-group">';
-      if (!same || g.note) h += '<div class="cv-gh">' + (same ? '' : '<h2>' + esc(tx(g.title)) + '</h2>') + (g.note ? '<span>' + esc(tx(g.note)) + '</span>' : '') + '</div>';
-      g.blocks.forEach(function (b, bi) { h += cat('c' + si + gi + bi, b); });
-      h += '</div>';
+      body += '<div class="cv-group">';
+      if (!same || g.note) body += '<div class="cv-gh">' + (same ? '' : '<h2>' + esc(tx(g.title)) + '</h2>') + (g.note ? '<span>' + esc(tx(g.note)) + '</span>' : '') + '</div>';
+      g.blocks.forEach(function (b, bi) { var id = 'c' + si + gi + bi; tabs.push('<a class="cv-tab" href="#' + id + '" data-cat="' + id + '">' + esc(tx(b.title)) + '</a>'); body += cat(id, b); });
+      body += '</div>';
     });
-    return h + '</div><div class="cv-spine" aria-hidden="true"><span>' + esc(tx(s.title)) + '</span></div></article>';
+    if (tabs.length) h += '<nav class="cv-index" aria-label="' + esc(ui('menu')) + '">' + tabs.join('') + '</nav>';
+    return h + body + '</div><div class="cv-spine" aria-hidden="true"><span>' + esc(tx(s.title)) + '</span></div></article>';
   }
 
   function render() {
@@ -92,9 +94,8 @@
     document.documentElement.setAttribute('data-sheet', s.color);
     [].forEach.call(document.querySelectorAll('.cv-paper'), function (p) { p.hidden = p.dataset.sec !== cur && p.dataset.sec !== keep; });
     [].forEach.call(document.querySelectorAll('.cv-leaf'), function (b) { b.setAttribute('aria-pressed', String(b.dataset.sec === cur)); });
-    var catsOf = [].slice.call(document.querySelectorAll('#pg-' + cur + ' .cv-cat'));
-    $('cvTabs').innerHTML = catsOf.map(function (c) { return '<a class="cv-tab" href="#' + c.id + '" data-cat="' + c.id + '">' + esc(c.querySelector('h3').textContent) + '</a>'; }).join('');
-    $('cvTabs').hidden = !catsOf.length;
+    var k = 0;
+    [].forEach.call(document.querySelectorAll('.cv-leaf'), function (b) { if (b.dataset.sec !== cur) b.style.setProperty('--o', k++); });
     syncTabs();
   }
   function setSheet(id) {
@@ -151,11 +152,11 @@
     if (ticking) return; ticking = true;
     requestAnimationFrame(function () {
       ticking = false;
-      var line = document.getElementById('top').offsetHeight + 24, id = '';
+      var line = document.getElementById('top').offsetHeight + 80, id = '';
       [].forEach.call(document.querySelectorAll('#pg-' + cur + ' .cv-cat:not(.is-hidden)'), function (s) { if (s.getBoundingClientRect().top <= line) id = s.id; });
       if (!id) { var f = document.querySelector('#pg-' + cur + ' .cv-cat:not(.is-hidden)'); id = f ? f.id : ''; }
       if (id === current) return; current = id;
-      var nav = $('cvTabs');
+      var nav = document.querySelector('#pg-' + cur + ' .cv-index'); if (!nav) return;
       [].forEach.call(nav.querySelectorAll('.cv-tab'), function (t) {
         var on = t.dataset.cat === id; t.classList.toggle('is-on', on);
         if (on) nav.scrollTo({ left: t.offsetLeft - (nav.clientWidth - t.offsetWidth) / 2, behavior: 'smooth' });
@@ -168,13 +169,11 @@
   /* ── Eventos ── */
   $('cvBook').addEventListener('click', function (e) { var b = e.target.closest('.cv-leaf'); if (b) setSheet(b.dataset.sec); });
   $('cvSections').addEventListener('click', function (e) {
+    var t = e.target.closest('.cv-tab');
+    if (t) { var cc = $(t.dataset.cat); if (cc && cc.classList.contains('is-closed')) { cc.classList.remove('is-closed'); cc.querySelector('.cv-cat-h').setAttribute('aria-expanded', 'true'); } return; }
     var b = e.target.closest('[data-toggle]'); if (!b) return;
     var c = $(b.dataset.toggle), open = c.classList.toggle('is-closed') === false;
     b.setAttribute('aria-expanded', String(open));
-  });
-  $('cvTabs').addEventListener('click', function (e) {
-    var t = e.target.closest('.cv-tab'); if (!t) return;
-    var c = $(t.dataset.cat); if (c && c.classList.contains('is-closed')) { c.classList.remove('is-closed'); c.querySelector('.cv-cat-h').setAttribute('aria-expanded', 'true'); }
   });
   $('cvAlBtn').addEventListener('click', function () { var d = $('cvSheet'); if (d.showModal) d.showModal(); else d.setAttribute('open', ''); });
   $('cvAlDone').addEventListener('click', function () { $('cvSheet').close ? $('cvSheet').close() : $('cvSheet').removeAttribute('open'); });
