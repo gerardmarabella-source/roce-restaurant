@@ -400,3 +400,6 @@ body.is-pulling .cv-foot-logo { transition: none; }
 .cv-allergy-btn { gap: 0.5rem; text-decoration: none; }
 .cv-allergy-btn span { text-decoration: underline; text-underline-offset: 4px; }
 .cv-allergy-btn svg { flex: 0 0 auto; display: block; }
+
+/* Filtros sin subrayado */
+.cv-allergy-btn, .cv-allergy-btn span { text-decoration: none; }
