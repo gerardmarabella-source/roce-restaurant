@@ -104,7 +104,7 @@
   // el título vertical se adapta a su longitud (así cabe entero aunque sea largo: COFFEE & MATCHA)
   function spineStyle(s) { var n = tx(s.title).length, len = Math.max(4.6, n * 0.64); return '--len:' + len.toFixed(1) + (n > 8 ? ';--sp:8svh' : ''); }
   function page(s, si) {
-    var h = '<article class="cv-paper is-' + s.color + '" id="pg-' + s.id + '" data-sec="' + s.id + '"' + (s.id === cur ? '' : ' hidden') + '><div class="cv-paper-in"><h1 class="cv-sr">' + esc(tx(s.title)) + '</h1>';
+    var h = '<article class="cv-paper is-' + s.color + (s.soon ? ' is-soon' : '') + '" id="pg-' + s.id + '" data-sec="' + s.id + '"' + (s.id === cur ? '' : ' hidden') + '><div class="cv-paper-in"><h1 class="cv-sr">' + esc(tx(s.title)) + '</h1>';
     var body = '';
     if (s.soon) body += '<div class="cv-soon"><b>' + esc(ui('soon')) + '</b><p>' + esc(s.desc ? tx(s.desc) : ui('soon_p')) + '</p></div>';
     else s.groups.forEach(function (g, gi) {
@@ -161,7 +161,7 @@
      (de azul a rojo) y, al llegar al máximo, la hoja cambia. Si sueltas antes, vuelve a su sitio. */
   function nextSheet() { var ids = D.sections.map(function (s) { return s.id; }), i = ids.indexOf(cur); return i >= 0 && i < ids.length - 1 ? D.sections[i + 1] : null; }
   function prevSheet() { var ids = D.sections.map(function (s) { return s.id; }), i = ids.indexOf(cur); return i > 0 ? D.sections[i - 1] : null; }
-  function paintNext() { var p = $('cvNext'); if (p) p.hidden = !nextSheet(); }
+  function paintNext() { /* sin barra: el logo del pie hace de indicador */ }
   function heat(t) {
     var S = [[50, 110, 255], [40, 215, 240], [255, 220, 60], [255, 140, 40], [255, 40, 40]], x = Math.min(0.9999, Math.max(0, t)) * (S.length - 1), i = Math.floor(x), f = x - i;
     return 'rgb(' + [0, 1, 2].map(function (k) { return Math.round(S[i][k] + (S[i + 1][k] - S[i][k]) * f); }).join(',') + ')';
@@ -174,11 +174,11 @@
   function blocked() { return pull.lock || !$('cvMenu').hidden || !!document.querySelector('dialog[open]'); }
   function setPull(v, dir) {
     pull.v = v; pull.dir = v > 0 ? dir : 0;
-    var pct = Math.min(100, v / THR * 100), col = heat(pct / 100), d = $('cvNextBar'), u = $('cvTopFill');
+    var p = Math.min(1, v / THR), st = document.documentElement.style;
     document.body.classList.toggle('is-pulling', v > 0);
-    document.documentElement.style.setProperty('--pull', still ? '0px' : (dir > 0 ? -v : v) + 'px');
-    if (d) { d.style.width = (dir > 0 ? pct : 0) + '%'; d.style.background = col; }
-    if (u) { u.style.width = (dir < 0 ? pct : 0) + '%'; u.style.background = col; }
+    st.setProperty('--pull', still ? '0px' : (dir > 0 ? -v : v) + 'px');
+    // el logo del pie crece de su tamaño normal al gigante; al llegar al tamaño completo, cambia de hoja (arriba: logo que crece en el hueco)
+    st.setProperty('--lpb', dir > 0 ? p.toFixed(3) : '0'); st.setProperty('--lpt', dir < 0 ? p.toFixed(3) : '0');
   }
   function springBack() { clearTimeout(pull.timer); pull.wacc = 0; document.body.classList.remove('is-pulling'); setPull(0, pull.dir || 1); document.body.classList.remove('is-pulling'); }
   function go(dir) {

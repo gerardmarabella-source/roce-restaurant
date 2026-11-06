@@ -373,3 +373,17 @@ body.is-pulling main, body.is-pulling .cv-foot { transition: none; }
 .cv-gh { opacity: 1; }
 .cv-gh h2 { opacity: 0.62; }
 .cv-gh span { opacity: 0.62; }
+
+/* título lateral: fijo en pantalla hasta que llega el pie (solo en hojas cortas se deja aire abajo) */
+.cv-spine { padding-bottom: 0; }
+.cv-paper.is-soon .cv-spine { padding-bottom: 3rem; }
+
+/* pie: logo en tamaño normal que crece al tirar hasta el tamaño gigante (entonces cambia de hoja) */
+.cv-next, .cv-topbar { display: none !important; }
+.cv-foot { padding: 3rem var(--pad) calc(3.5rem + env(safe-area-inset-bottom)); }
+.cv-foot-logo { display: block; width: 100%; max-width: 60rem; height: auto; margin: 0 auto; transform-origin: 50% 100%; transform: scale(calc(0.36 + 0.64 * var(--lpb, 0))); transition: transform 0.38s cubic-bezier(0.2, 0.9, 0.25, 1); will-change: transform; }
+body.is-pulling .cv-foot-logo { transition: none; }
+/* hoja anterior: el logo aparece y crece en el hueco de arriba */
+.cv-toplogo { position: fixed; z-index: 5; left: 0; right: 0; top: var(--bar); height: 150px; display: flex; align-items: center; justify-content: center; pointer-events: none; opacity: min(1, calc(var(--lpt, 0) * 3)); }
+.cv-toplogo img { width: calc(26% + 40% * var(--lpt, 0)); max-width: 30rem; height: auto; }
+@media (prefers-reduced-motion: reduce) { .cv-foot-logo { transform: scale(0.5); transition: none; } }
