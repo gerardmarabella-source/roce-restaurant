@@ -7,25 +7,39 @@
 <meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#0a0a0a">
 <link rel="icon" href="/favicon.ico">
-<link rel="stylesheet" href="/carta/carta.css?v=13">
+<link rel="stylesheet" href="/carta/carta.css?v=16">
 </head>
 <body>
 <header class="cv-bar" id="top">
   <div class="cv-bar-row">
     <a class="cv-logo" href="#top" aria-label="ROCE"><img src="/assets/logo/roce-horizontal-white.png" alt="ROCE"></a>
-    <div class="cv-bar-actions">
-      <button type="button" class="cv-allergy-btn" id="cvAlBtn" aria-haspopup="dialog"><span id="cvAlLabel">Alergias</span><b id="cvAlCount" hidden>0</b></button>
-      <div class="cv-lang" role="group" aria-label="Idioma"><button type="button" data-lang="es">ES</button><button type="button" data-lang="en">EN</button></div>
-    </div>
+    <button type="button" class="cv-menu-btn" id="cvMenuBtn" aria-haspopup="dialog" aria-expanded="false" aria-controls="cvMenu"><span id="cvMenuLabel">Menú</span><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 7h18M3 12h18M3 17h18"/></svg></button>
+  </div>
+  <div class="cv-crumb-row">
+    <span class="cv-crumb" id="cvCrumb"></span>
+    <button type="button" class="cv-allergy-btn" id="cvAlBtn" aria-haspopup="dialog"><span id="cvAlLabel">Alergias</span><b id="cvAlCount" hidden>0</b></button>
   </div>
 </header>
+
+<div class="cv-menu" id="cvMenu" role="dialog" aria-modal="true" aria-label="Menú" hidden>
+  <div class="cv-menu-in">
+    <div class="cv-menu-top">
+      <a class="cv-logo" href="#top" aria-label="ROCE"><img src="/assets/logo/roce-horizontal-black.png" alt="ROCE"></a>
+      <button type="button" class="cv-menu-btn" id="cvMenuClose"><span id="cvCloseLabel">Cerrar</span><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19"/></svg></button>
+    </div>
+    <div class="cv-menu-body" id="cvMenuBody"></div>
+    <div class="cv-menu-foot">
+      <div class="cv-lang" role="group" aria-label="Idioma"><button type="button" data-lang="es">ES</button><button type="button" data-lang="en">EN</button></div>
+      <img class="cv-m-word" src="/assets/logo/roce-horizontal-black.png" alt="ROCE">
+      <p class="cv-m-line"><span>ROCE · Valencia</span><span>Est. 2026</span></p>
+    </div>
+  </div>
+</div>
 
 <main>
   <div class="cv-filter" id="cvFilter" hidden></div>
   <div class="cv-stage" id="cvSections"></div>
 </main>
-
-<nav class="cv-book" id="cvBook" aria-label="Menú"></nav>
 
 <footer class="cv-foot">
   <p id="cvDisclaimer"></p>
@@ -42,6 +56,6 @@
 </dialog>
 
 <script src="/carta/menu.js?v=1"></script>
-<script src="/carta/carta.js?v=7"></script>
+<script src="/carta/carta.js?v=8"></script>
 </body>
 </html>
