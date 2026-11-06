@@ -58,6 +58,7 @@
     <div class="tc-when" id="rvWhen"></div>
     <div class="tc-state" id="rvState"></div>
     <div class="tc-rows" id="rvRows"></div>
+    <p class="tc-hint" id="rvThanks" hidden></p>
     <p class="tc-hint" id="rvHint"></p>
     <p class="tc-err" id="rvErr" hidden></p>
     <button type="button" class="tc-btn" id="rvPay" hidden></button>
@@ -107,7 +108,7 @@
       hint_dep_paid: 'Fianza de {m} pagada. Es a cuenta de tu consumición.',
       hint_refund_ok: 'Tu fianza de {m} se devolverá a tu tarjeta en unos días.', hint_retained: 'Como la anulación llegó con menos de {h} h de antelación, la fianza de {m} no se devuelve.',
       hint_refunded: 'Fianza de {m} devuelta a tu tarjeta.',
-      pay: 'Pagar {m} y confirmar', cal: 'Añadir al calendario', map: 'Cómo llegar', cancel: 'Anular reserva',
+      thanks: '¡Gracias! Hemos anotado que vienes.', pay: 'Pagar {m} y confirmar', cal: 'Añadir al calendario', map: 'Cómo llegar', cancel: 'Anular reserva',
       sure_free: '¿Seguro que quieres anular esta reserva?', sure_in_time: '¿Seguro que quieres anular? Como faltan más de {h} h, te devolvemos la fianza de {m}.',
       sure_late: '¿Seguro que quieres anular? Faltan menos de {h} h, así que la fianza de {m} no se devuelve.',
       yes_cancel: 'Sí, anular', no_cancel: 'No, mantener',
@@ -134,7 +135,7 @@
       hint_dep_paid: 'Deposit of {m} paid. It goes towards your bill.',
       hint_refund_ok: 'Your {m} deposit will be refunded to your card within a few days.', hint_retained: 'Because you cancelled less than {h} h in advance, the {m} deposit is not refunded.',
       hint_refunded: '{m} deposit refunded to your card.',
-      pay: 'Pay {m} and confirm', cal: 'Add to calendar', map: 'Get directions', cancel: 'Cancel booking',
+      thanks: 'Thank you! We have noted that you are coming.', pay: 'Pay {m} and confirm', cal: 'Add to calendar', map: 'Get directions', cancel: 'Cancel booking',
       sure_free: 'Are you sure you want to cancel this booking?', sure_in_time: 'Are you sure? Since there are more than {h} h to go, we refund the {m} deposit.',
       sure_late: 'Are you sure? There are less than {h} h to go, so the {m} deposit is not refunded.',
       yes_cancel: 'Yes, cancel', no_cancel: 'No, keep it',
@@ -285,7 +286,13 @@
   function init() {
     $('rvLoading').textContent = t('loading');
     if (!/^[a-f0-9]{32}$/.test(token) || !B.url) { $('rvNotFound').textContent = t('notfound'); show('rvNotFound'); return; }
-    load().then(function (d) { if (d && params.get('status')) afterBank(); }).catch(function () { $('rvNotFound').textContent = t('e_generic'); show('rvNotFound'); });
+    load().then(function (d) {
+      if (d && params.get('status')) afterBank();
+      // Enlace "Confirmo que vengo" del recordatorio de 24 h.
+      if (d && params.get('c') === '1' && d.can_cancel) {
+        rpc('table_booking_reconfirm', { p_token: token }).then(function (r) { if (r && r.ok) { $('rvThanks').textContent = t('thanks'); $('rvThanks').hidden = false; } }).catch(function () {});
+      }
+    }).catch(function () { $('rvNotFound').textContent = t('e_generic'); show('rvNotFound'); });
   }
   document.addEventListener('roce:lang', function () { $('rvLoading').textContent = t('loading'); paint(); });
   init();

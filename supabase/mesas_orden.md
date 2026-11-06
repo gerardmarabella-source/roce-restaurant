@@ -18,5 +18,7 @@
 16. `mesas_calendario.sql` — calendario de la web con días cerrados / completos / con un turno completo, y cierres de tipo "completo"
 17. `mesas_limite_reservas.sql` — hasta 10 reservas activas por email
 18. `mesas_aperturas.sql` — aperturas especiales (abrir un día cerrado de base) y horizonte de reservas de la web
+19. `mesas_servicio2.sql` — cuenta/limpiar/barra, tipos de reserva, fidelización, historial, 14 alérgenos, etiquetas VIP/No paga/Partner
+20. `cron_mesas.sql` — recordatorio de 24 h y email de valoración (barrido cada 15 min; ejecutar una vez)
 
 Todos se pueden ejecutar más de una vez. Si se vuelve a ejecutar `mesas.sql` o `mesas_tarjeta.sql`, hay que volver a ejecutar los de después.
