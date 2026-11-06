@@ -450,3 +450,12 @@ body.is-spring main { transform: translateY(0); transition: transform 0.4s cubic
 /* MENÚ y FILTROS: misma tipografía, mayúsculas y sin negrita */
 .cv-menu-btn, .cv-allergy-btn { font-family: var(--display); font-size: 0.8rem; font-weight: 400; letter-spacing: 0.12em; text-transform: uppercase; }
 .cv-allergy-btn span, .cv-menu-btn span { font-weight: 400; }
+
+/* ── Paneles (Filtros y Ayuda) SIN flex ni alturas encadenadas: bloque normal con scroll en el propio panel y botones pegados abajo.
+   Así no puede colapsar en ningún navegador del móvil (Safari ni Chrome). ── */
+.cv-sheet[open] { display: block !important; height: auto !important; max-height: 88vh; max-height: 88dvh; overflow-x: hidden; overflow-y: auto !important; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
+.cv-sheet .cv-sheet-in { display: block !important; flex: none !important; height: auto !important; min-height: 0 !important; max-height: none !important; padding-bottom: 0 !important; }
+.cv-sheet .cv-sheet-body { display: block !important; flex: none !important; height: auto !important; max-height: none !important; overflow: visible !important; padding-right: 0; scrollbar-gutter: auto; }
+.cv-sheet .cv-sheet-actions { position: sticky !important; bottom: 0 !important; z-index: 3; display: flex !important; gap: 0.6rem; margin: 0.9rem 0 0 !important; padding: 0.8rem 0 calc(1rem + env(safe-area-inset-bottom)) !important; border-top: 1.5px solid var(--black); background: #fff; }
+.cv-chef[open] { max-height: calc(var(--vvh, 100dvh) - 1.5rem); }
+#cvSheet[open] { min-height: min(26rem, 70vh); min-height: min(26rem, 70dvh); }
