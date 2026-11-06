@@ -64,7 +64,8 @@
 .mt-tick { position: absolute; top: 0; bottom: 0; display: flex; align-items: center; padding-left: 0.35rem; border-left: 1px solid var(--line); font-size: 0.75rem; letter-spacing: 0.03em; }
 .mt-body { position: relative; }
 .mt-track { position: relative; flex: 0 0 auto; height: 2.7rem; cursor: copy; background-image: repeating-linear-gradient(90deg, var(--line) 0 1px, transparent 1px 102px); background-size: 102px 100%; }
-.mt-now { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--red); z-index: 3; margin-left: 78px; pointer-events: none; }
+.mt-now { position: absolute; top: 0; bottom: 0; width: 3px; margin-left: 77px; background: var(--red); box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.55); z-index: 6; pointer-events: none; }
+.mt-now-lbl { position: absolute; top: 0.2rem; transform: translateX(-50%); z-index: 6; padding: 0.1rem 0.4rem; background: var(--red); color: #fff; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.04em; border-radius: 2px; white-space: nowrap; pointer-events: none; }
 .mt-bar { position: absolute; top: 0.25rem; bottom: 0.25rem; display: flex; align-items: center; gap: 0.35rem; padding: 0 0.5rem; overflow: hidden; white-space: nowrap; border: 1.5px solid var(--fg); background: var(--fg); color: var(--bg); font-size: 0.78rem; cursor: pointer; text-align: left; font-family: inherit; z-index: 2; }
 .mt-bar b { font-weight: 600; text-overflow: ellipsis; overflow: hidden; }
 .mt-bar span { opacity: 0.8; font-size: 0.72rem; }
@@ -134,3 +135,34 @@
 
 /* Casillas de verificación dentro de un campo: tamaño normal (no heredan el ancho de los campos de texto). */
 .mt-check input[type="checkbox"], .ad-field .mt-check input { width: 1.1rem; height: 1.1rem; padding: 0; border: 0; margin: 0.15rem 0 0; flex-shrink: 0; }
+
+/* Estadísticas */
+.st-bar { align-items: center; gap: 0.6rem; }
+.st-presets { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.st-dates { display: flex; align-items: center; gap: 0.4rem; }
+.st-dates input, .st-bar select { padding: 0.45rem 0.55rem; border: 1px solid var(--fg); background: transparent; border-radius: 0; }
+.st-kpis { display: grid; grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr)); gap: 0.6rem; margin-bottom: 1rem; }
+.st-kpi { display: flex; flex-direction: column; gap: 0.15rem; padding: 0.8rem; border: 1px solid var(--fg); }
+.st-kpi span { font-size: 0.72rem; letter-spacing: 0.05em; text-transform: uppercase; opacity: 0.65; }
+.st-kpi b { font-family: var(--display); font-weight: 400; font-size: 1.7rem; line-height: 1.1; }
+.st-kpi small { font-size: 0.78rem; opacity: 0.7; }
+.st-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(19rem, 1fr)); gap: 0.8rem; margin-bottom: 0.8rem; }
+.st-card { border: 1px solid var(--fg); padding: 0.9rem; margin-bottom: 0.8rem; min-width: 0; }
+.st-grid .st-card { margin-bottom: 0; }
+.st-card h3 { margin: 0 0 0.7rem; font-size: 0.8rem; font-weight: 400; letter-spacing: 0.06em; text-transform: uppercase; opacity: 0.75; }
+.st-h { display: grid; grid-template-columns: minmax(6rem, 38%) 1fr auto; align-items: center; gap: 0.5rem; margin: 0.3rem 0; font-size: 0.85rem; }
+.st-hl { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.st-hb { display: block; height: 0.7rem; background: var(--line); }
+.st-hb i { display: block; height: 100%; background: var(--fg); }
+.st-cols { display: flex; align-items: flex-end; gap: 3px; height: 11rem; padding-top: 1rem; overflow-x: auto; }
+.st-c { flex: 1 0 1.4rem; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; height: 100%; min-width: 0; }
+.st-c i { display: block; width: 100%; background: var(--fg); min-height: 1px; }
+.st-c b { font-size: 0.68rem; font-weight: 400; margin-bottom: 2px; }
+.st-c span { font-size: 0.68rem; opacity: 0.7; margin-top: 3px; min-height: 0.9rem; }
+.st-cols.is-dense .st-c { flex-basis: 0.5rem; }
+.mt-log { font-size: 0.82rem; }
+.mt-loglist { list-style: none; margin: 0; padding: 0; max-height: 18rem; overflow: auto; }
+.mt-loglist li { padding: 0.35rem 0; border-top: 1px solid var(--line); line-height: 1.4; }
+.mt-tier.is-oro { background: #d4af37; color: #0a0a0a; border-color: #d4af37; }
+.mt-tier.is-plata { background: #c9ccd1; color: #0a0a0a; border-color: #c9ccd1; }
+.mt-tier.is-bronce { background: #b9814a; color: #fff; border-color: #b9814a; }

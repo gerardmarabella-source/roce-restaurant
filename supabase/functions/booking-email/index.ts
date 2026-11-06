@@ -594,7 +594,7 @@ ${button}${extra}
   const res = await fetch("https://api.brevo.com/v3/smtp/email", {
     method: "POST",
     headers: brevoHeaders,
-    body: JSON.stringify({ sender: { name: "ROCE", email: FROM }, replyTo: { email: REPLY_TO, name: "ROCE" }, to: [b.name ? { email: b.email, name: b.name } : { email: b.email }], subject, htmlContent: html }),
+    body: JSON.stringify({ sender: { name: "ROCE", email: FROM }, replyTo: { email: REPLY_TO, name: "ROCE" }, to: [b.name ? { email: b.email, name: b.name } : { email: b.email }], subject: PREVIEW_TAG + subject, htmlContent: html }),
   });
   if (!res.ok) return new Response("brevo error: " + (await res.text()), { status: 502 });
 
@@ -759,6 +759,133 @@ async function handleTableBooking(p: any): Promise<Response> {
   return new Response("ignored");
 }
 
+// ─── Recordatorio de 24 h y email de valoración tras la visita ──────────────
+// Los dispara un programador cada 15 minutos ({action:"table_sweep"}, ver supabase/cron_mesas.sql).
+// Cada reserva recibe un solo recordatorio y una sola petición de valoración (columnas reminder_sent_at / review_sent_at).
+const GOOGLE_REVIEW_URL = Deno.env.get("GOOGLE_REVIEW_URL") ?? "";   // enlace "Dejar una reseña" de la ficha de Google
+const INSTAGRAM_URL = Deno.env.get("INSTAGRAM_URL") ?? "https://www.instagram.com/somosroce";
+const TM = {
+  es: {
+    locale: "es-ES", ref: "Referencia", date: "Día", time: "Hora", party: "Personas", zone: "Zona",
+    remSubject: (w: string) => `Te esperamos · ROCE · ${w}`, remTitle: "Te esperamos", remIntro: "Te recordamos tu reserva en ROCE. ¿Nos confirmas que vienes?",
+    remBtn: "Confirmo que vengo", remCancel: "Anular o cambiar mi reserva",
+    remLate: (h: number) => `Si no puedes venir, anula con al menos ${h} h de antelación desde el enlace (o escríbenos a reservas@roce.es).`,
+    revSubject: "¿Qué tal en ROCE?", revTitle: "Gracias por venir",
+    revIntro: "Esperamos que lo hayas pasado bien. Si te ha gustado, una reseña nos ayuda muchísimo a que más gente nos encuentre. Son 30 segundos.",
+    revBtn: "Dejar una reseña en Google", revPrivate: "Prefiero contároslo en privado", revIg: "Y si subes una historia, etiquétanos en Instagram: @somosroce",
+    revMailSubject: "Mi visita a ROCE",
+  },
+  en: {
+    locale: "en-GB", ref: "Reference", date: "Day", time: "Time", party: "Guests", zone: "Area",
+    remSubject: (w: string) => `See you soon · ROCE · ${w}`, remTitle: "See you soon", remIntro: "A reminder of your booking at ROCE. Can you confirm you are coming?",
+    remBtn: "I'm coming", remCancel: "Cancel or change my booking",
+    remLate: (h: number) => `If you can't make it, please cancel at least ${h} h in advance from the link (or write to reservas@roce.es).`,
+    revSubject: "How was ROCE?", revTitle: "Thanks for coming",
+    revIntro: "We hope you had a great time. If you enjoyed it, a review really helps more people find us. It takes 30 seconds.",
+    revBtn: "Leave a Google review", revPrivate: "I'd rather tell you privately", revIg: "And if you post a story, tag us on Instagram: @somosroce",
+    revMailSubject: "My visit to ROCE",
+  },
+};
+const madridHour = (d: Date) => Number(new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/Madrid", hour: "2-digit", hourCycle: "h23" }).format(d));
+// La valoración sale ~2 h después de terminar la visita y nunca de noche (de 23:00 a 10:00 espera a la mañana).
+function reviewAt(finished: Date): number {
+  let c = finished.getTime() + 2 * 3600e3;
+  for (let i = 0; i < 60; i++) { const h = madridHour(new Date(c)); if (h >= 10 && h <= 22) break; c += 30 * 60e3; }
+  return c;
+}
+async function sendTableReminder(b: any): Promise<boolean> {
+  const l = b.lang === "en" ? "en" : "es"; const t = TM[l];
+  const { data: z } = await serviceClient().from("dining_zones").select("name_es, name_en, free_cancel_hours").eq("id", b.zone_id).maybeSingle();
+  const starts = new Date(b.starts_at);
+  const day = new Intl.DateTimeFormat(t.locale, { timeZone: "Europe/Madrid", weekday: "long", day: "numeric", month: "long" }).format(starts);
+  const hm = new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/Madrid", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(starts);
+  const zone = z ? (l === "en" && z.name_en ? z.name_en : z.name_es) : "";
+  const amb = TT[l].ambience[b.ambience] ?? "";
+  const page = `${SITE}/reserva/?t=${b.token}`;
+  const rows = [[t.ref, b.ref], [t.date, day], [t.time, hm], [t.party, String(b.party)], ...(zone ? [[t.zone, zone]] : [])];
+  const html = mailShell(`
+<tr><td style="padding:28px 24px 8px;color:#fff;font:32px Arial,sans-serif;text-transform:uppercase">${esc(t.remTitle)}</td></tr>
+<tr><td style="padding:0 24px 20px;color:#ddd;font:16px/1.5 Arial,sans-serif">${esc(t.remIntro)}</td></tr>
+<tr><td style="padding:0 24px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0">${rowsHtml(rows)}</table></td></tr>
+${btnHtml(`${page}&c=1`, t.remBtn)}
+<tr><td align="center" style="padding:12px 24px 0"><a href="${page}" style="color:#aaa;font:13px Arial,sans-serif">${esc(t.remCancel)}</a></td></tr>
+<tr><td style="padding:14px 24px 0;color:#aaa;font:13px/1.5 Arial,sans-serif">${esc(t.remLate(z?.free_cancel_hours ?? 24))}</td></tr>
+<tr><td style="padding:24px 24px 32px;color:#777;font:11px/1.5 Arial,sans-serif">${esc(TT[l].privacy)}</td></tr>`);
+  const res = await fetch("https://api.brevo.com/v3/smtp/email", { method: "POST", headers: brevoHeaders,
+    body: JSON.stringify({ sender: { name: "ROCE", email: FROM }, replyTo: { email: REPLY_TO, name: "ROCE" }, to: [b.name ? { email: b.email, name: b.name } : { email: b.email }], subject: PREVIEW_TAG + t.remSubject(`${day} · ${hm}`), htmlContent: html }) });
+  return res.ok;
+}
+async function sendTableReview(b: any): Promise<boolean> {
+  const l = b.lang === "en" ? "en" : "es"; const t = TM[l];
+  const mailto = `mailto:${REPLY_TO}?subject=${encodeURIComponent(t.revMailSubject + " · " + b.ref)}`;
+  const html = mailShell(`
+<tr><td style="padding:28px 24px 8px;color:#fff;font:32px Arial,sans-serif;text-transform:uppercase">${esc(t.revTitle)}${b.name ? ", " + esc(String(b.name).trim().split(/\s+/)[0]) : ""}</td></tr>
+<tr><td style="padding:0 24px 20px;color:#ddd;font:16px/1.5 Arial,sans-serif">${esc(t.revIntro)}</td></tr>
+${btnHtml(GOOGLE_REVIEW_URL, t.revBtn)}
+<tr><td align="center" style="padding:12px 24px 0"><a href="${mailto}" style="color:#aaa;font:13px Arial,sans-serif">${esc(t.revPrivate)}</a></td></tr>
+<tr><td align="center" style="padding:16px 24px 0"><a href="${INSTAGRAM_URL}" style="color:#aaa;font:13px Arial,sans-serif">${esc(t.revIg)}</a></td></tr>
+<tr><td style="padding:24px 24px 32px;color:#777;font:11px/1.5 Arial,sans-serif">${esc(TT[l].privacy)}</td></tr>`);
+  const res = await fetch("https://api.brevo.com/v3/smtp/email", { method: "POST", headers: brevoHeaders,
+    body: JSON.stringify({ sender: { name: "ROCE", email: FROM }, replyTo: { email: REPLY_TO, name: "ROCE" }, to: [b.name ? { email: b.email, name: b.name } : { email: b.email }], subject: PREVIEW_TAG + t.revSubject, htmlContent: html }) });
+  return res.ok;
+}
+async function sweepTableMails(): Promise<Response> {
+  const sb = serviceClient();
+  const now = Date.now();
+  let reminders = 0, reviews = 0, skipped = 0;
+  // 1) Recordatorio: reservas confirmadas que empiezan dentro de 24 h (y no antes de 3 h). Las hechas con menos de 26 h de antelación
+  //    acaban de recibir su confirmación: no se les recuerda.
+  const { data: rem } = await sb.from("table_bookings").select("*").eq("status", "confirmed").is("reminder_sent_at", null).neq("email", "")
+    .gt("starts_at", new Date(now + 3 * 3600e3).toISOString()).lte("starts_at", new Date(now + 24 * 3600e3).toISOString()).limit(40);
+  for (const b of rem ?? []) {
+    const mark = () => sb.from("table_bookings").update({ reminder_sent_at: new Date().toISOString() }).eq("id", b.id);
+    if (new Date(b.starts_at).getTime() - new Date(b.created_at).getTime() < 26 * 3600e3) { await mark(); skipped++; continue; }
+    if (await sendTableReminder(b)) { await mark(); reminders++; }
+  }
+  // 2) Valoración: visitas terminadas en los últimos 3 días, en el momento calculado por reviewAt(); a nadie se le pide dos veces en 21 días.
+  if (GOOGLE_REVIEW_URL) {
+    const { data: rev } = await sb.from("table_bookings").select("*").eq("status", "completed").is("review_sent_at", null).neq("email", "")
+      .not("finished_at", "is", null).gt("finished_at", new Date(now - 3 * 86400e3).toISOString()).limit(40);
+    for (const b of rev ?? []) {
+      if (now < reviewAt(new Date(b.finished_at))) continue;
+      const { data: dup } = await sb.from("table_bookings").select("id").ilike("email", b.email).gt("review_sent_at", new Date(now - 21 * 86400e3).toISOString()).limit(1);
+      const stamp = (d: Date) => sb.from("table_bookings").update({ review_sent_at: d.toISOString() }).eq("id", b.id);
+      if (dup && dup.length) { await stamp(new Date(0)); skipped++; continue; }
+      if (await sendTableReview(b)) { await stamp(new Date()); reviews++; }
+    }
+  }
+  return new Response(JSON.stringify({ reminders, reviews, skipped, review_url: !!GOOGLE_REVIEW_URL }), { headers: { "content-type": "application/json" } });
+}
+
+// ─── Vista previa de los emails de una reserva (solo se envía a direcciones @roce.es) ───────────────
+let PREVIEW_TAG = "";
+async function sendTablePreview(to: string): Promise<Response> {
+  const sample = (over: Record<string, unknown> = {}) => {
+    const starts = new Date(Date.now() + 26 * 3600e3); starts.setMinutes(0, 0, 0);
+    return { ref: "MESA-DEMO01", token: "0123456789abcdef0123456789abcdef", service_id: "night", zone_id: "alta", ambience: "night", starts_at: starts.toISOString(),
+      ends_at: new Date(starts.getTime() + 90 * 60000).toISOString(), party: 4, name: "Gerard Marabella", email: to, lang: "es", marketing_optin: false, status: "confirmed",
+      payment_status: "guaranteed", pay_mode: "card", deposit_cents: 2000, hold_until: new Date(Date.now() + 24 * 3600e3).toISOString(), late_cancel: false, refund_due: false, fee_charged_cents: 0, ...over };
+  };
+  const steps: [string, () => Promise<unknown>][] = [
+    ["1/7 Solicitud de tarjeta (reserva creada desde el panel)", () => sendTableEmail("pay", sample({ status: "pending", payment_status: "pending", source: "admin" }))],
+    ["2/7 Confirmacion de la reserva", () => sendTableEmail("ok", sample())],
+    ["3/7 Recordatorio 24 h antes", () => sendTableReminder(sample())],
+    ["4/7 Valoracion tras la visita", () => sendTableReview(sample({ status: "completed" }))],
+    ["5/7 Anulacion a tiempo (tarjeta liberada)", () => sendTableEmail("cancel", sample({ status: "cancelled", payment_status: "released" }))],
+    ["6/7 Anulacion tardia (se cobrara la penalizacion)", () => sendTableEmail("cancel", sample({ status: "cancelled", late_cancel: true }))],
+    ["7/7 Cobro por no presentarse", () => sendTableEmail("charge", sample({ status: "no_show", payment_status: "charged", fee_charged_cents: 2000 }))],
+  ];
+  const sent: string[] = [];
+  for (const [tag, run] of steps) {
+    PREVIEW_TAG = "[PRUEBA " + tag + "] ";
+    const r: any = await run();
+    sent.push(tag + (r instanceof Response ? (r.ok ? " ok" : " ERROR " + r.status) : r ? " ok" : " ERROR"));
+    await new Promise((res) => setTimeout(res, 900));
+  }
+  PREVIEW_TAG = "";
+  return new Response(JSON.stringify({ to, sent }), { headers: { "content-type": "application/json" } });
+}
+
 const CORS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-webhook-secret",
@@ -769,6 +896,16 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
   let payload: any = {};
   try { payload = await req.json(); } catch { /* sin cuerpo */ }
+  if (payload.action === "table_preview") {
+    const to = String(payload.to ?? "").toLowerCase();
+    if (!/^[a-z0-9._+-]+@roce\.es$/.test(to)) return new Response("forbidden", { status: 403, headers: CORS });
+    const r = await sendTablePreview(to);
+    return new Response(await r.text(), { status: r.status, headers: CORS });
+  }
+  if (payload.action === "table_sweep") {
+    const r = await sweepTableMails();
+    return new Response(await r.text(), { status: r.status, headers: CORS });
+  }
   if (payload.action === "list_sweep") {
     const r = await sweepLists();
     return new Response(await r.text(), { status: r.status, headers: CORS });

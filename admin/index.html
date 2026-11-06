@@ -194,7 +194,7 @@
   .ad-hint { font-size: 0.78rem; opacity: 0.6; margin-top: 0.25rem; }
   @media (max-width: 560px) { .ad-grid { grid-template-columns: 1fr; } .ad-table { font-size: 0.8rem; } }
 </style>
-<link rel="stylesheet" href="/admin/mesas.css?v=14">
+<link rel="stylesheet" href="/admin/mesas.css?v=16">
 </head>
 <body>
 
@@ -496,7 +496,7 @@
     { group: 'Reservas de eventos', items: [['bookings', 'Ver reservas'], ['bookings_manage', 'Cancelar, marcar cobrado y cambiar email', 'bookings']] },
     { group: 'Asistencia', items: [['checkin', 'Marcar llegadas en la puerta']] },
     { group: 'Listas', items: [['lists', 'Listas de invitados']] },
-    { group: 'RoceCover', items: [['tables', 'Día: ver, crear y editar reservas de mesa'], ['tables_wait', 'Lista de espera', 'tables'], ['tables_crm', 'Clientes: fichas, notas y bloqueo de clientes', 'tables'], ['tables_accounts', 'Cuentas empresa: saldos, datos fiscales y cargos', 'tables'], ['tables_blocks', 'Bloqueos de mesas', 'tables'], ['tables_config', 'Configuración: zonas, horarios, mesas, prescriptores, cierres', 'tables'], ['tables_charge', 'Cobrar tarjetas (no vino / anulación tardía)', 'tables']] }
+    { group: 'RoceCover', items: [['tables', 'Día: ver, crear y editar reservas de mesa'], ['tables_wait', 'Lista de espera', 'tables'], ['tables_crm', 'Clientes: fichas, notas y bloqueo de clientes', 'tables'], ['tables_accounts', 'Cuentas empresa: saldos, datos fiscales y cargos', 'tables'], ['tables_blocks', 'Bloqueos de mesas', 'tables'], ['tables_stats', 'Estadísticas y actividad (no se da por defecto)', 'tables'], ['tables_config', 'Configuración: zonas, horarios, mesas, prescriptores, cierres', 'tables'], ['tables_charge', 'Cobrar tarjetas (no vino / anulación tardía)', 'tables']] }
   ];
   var ALL_PERMS = [].concat.apply([], PERMS.map(function (g) { return g.items.map(function (i) { return i[0]; }); }));
   var ALL_TABS = ['events', 'bookings', 'checkin', 'lists', 'tables'];
@@ -1467,6 +1467,7 @@
   window.ROCE_ADMIN = { can: can, api: api, flash: flash, esc: esc, $: $, madridToISO: madridToISO, toInputValue: toInputValue, fmtDate: fmtDate, money: money, cfg: cfg, TZ: TZ, session: function () { return session; } };
 })();
 </script>
-<script src="/admin/mesas.js?v=22"></script>
+<script src="/admin/mesas.js?v=25"></script>
+<script src="/admin/mesas-stats.js?v=1"></script>
 </body>
 </html>

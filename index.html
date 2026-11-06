@@ -299,9 +299,11 @@
     color: rgba(10, 10, 10, 0.55);
   }
   .home-foot a { color: inherit; text-decoration: none; }
-  .home-foot .home-insta { display: inline-flex; align-items: center; gap: 0.4rem; margin-bottom: 0.5rem; color: var(--black); font-family: var(--display); font-size: 0.9rem; letter-spacing: 0.04em; text-transform: uppercase; }
+  .home-foot .home-insta { display: inline-flex; align-items: baseline; gap: 0.35rem; margin-bottom: 0.5rem; color: var(--black); font-family: var(--display); font-size: 0.95rem; letter-spacing: 0.02em; }
   html[data-mode="night"] .home-foot .home-insta { color: var(--white); }
-  .home-insta svg { width: 1.2rem; height: 1.2rem; }
+  .home-insta-arrow { display: inline-block; transition: transform 0.2s ease; }
+  .home-insta svg { width: 1em; height: 1em; vertical-align: -0.02em; }
+  .home-foot a.home-insta:hover .home-insta-arrow { transform: translate(3px, -3px); }
   .home-foot a.home-insta:hover { text-decoration: none; opacity: 0.7; }
   .home-foot a:hover { text-decoration: underline; }
   .home-foot .lang-switch { display: flex; justify-content: center; margin-bottom: 0.25rem; }
@@ -323,11 +325,14 @@
      cuadrados apilados a la derecha. */
   @media (min-aspect-ratio: 5/4) {
     /* En horizontal el menú ocupa su franja arriba (si no, taparía el cuadrado de la derecha). */
-    .home { --pad: 2.5rem; --head: 56px; }
+    .home { --pad: 2.5rem; --head: 56px; --foot: 108px; position: relative; }
     .home-head { position: static; height: var(--head); flex-shrink: 0; }
     .home-main {
+      padding-bottom: var(--foot); /* el pie flota abajo: los cuadrados no lo pisan */
       --s: min(calc((var(--avail) - var(--gap) - var(--ev-x)) / 2), 30vw);
-      --sw: min(calc(var(--s) * 1.9), 38vw);
+      /* Los cuadrados ceden ancho (hasta un mínimo) para que la frase pueda crecer hasta tocar el suelo. */
+      --hcap: calc((100dvh - 0.9rem) / 4.45);
+      --sw: max(24rem, min(calc(var(--s) * 1.9), 38vw, calc(100vw - 2 * var(--pad) - 2rem - 4.4 * var(--hcap))));
       --sh: var(--s);
       flex-direction: row;
       align-items: center;
@@ -337,13 +342,22 @@
     /* La frase sube bajo la franja del menú (el menú está a la derecha, no choca). */
     .home-top { flex: 1; min-width: 0; width: auto; align-self: flex-start; margin-top: calc(-1 * var(--head)); }
     .home-statement {
-      font-size: min(14rem, calc((var(--avail) + var(--head) - 0.5rem) / 4.45), calc((100vw - 2 * var(--pad) - var(--sw) - 2rem) / 4.4));
+      /* La frase ocupa TODO el alto de la pantalla: el logo ROCE toca el suelo. */
+      font-size: min(22rem, var(--hcap), calc((100vw - 2 * var(--pad) - var(--sw) - 2rem) / 4.4));
     }
     /* Cuadrados más anchos: el nombre de cada espacio cabe entero en una línea. */
     .home-square strong.home-name { white-space: nowrap; font-size: clamp(0.8rem, min(5.3cqw, calc(var(--sh) * 0.16)), 2.4rem); }
     .home-name span { display: inline; }
     .home-squares { display: flex; flex-direction: column; justify-content: flex-start; }
+    /* El pie (Instagram, idioma y avisos legales) flota abajo, bajo los cuadrados, para que la frase llegue hasta el borde. */
+    .home-foot { position: absolute; right: var(--pad); bottom: 0; height: auto; align-items: flex-end; text-align: right; padding: 0 0 0.7rem; white-space: nowrap; z-index: 3; }
+    .home-foot .lang-switch { justify-content: flex-end; }
     .home-square-day, .home-square-night, .home-square-event { align-self: flex-end; }
+  }
+
+  @media (min-aspect-ratio: 9/5) {
+    .home-foot { right: auto; left: 50%; transform: translateX(-50%); align-items: center; text-align: center; padding: 0 1rem 0.7rem; }
+    .home-foot .lang-switch { justify-content: center; }
   }
 
   /* Menú a pantalla completa: el mismo que el de Reservas de Night
@@ -512,7 +526,7 @@
   </main>
 
   <div class="home-foot">
-    <a class="home-insta" href="https://www.instagram.com/somosroce" target="_blank" rel="noopener" aria-label="Instagram @somosroce"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1.1" fill="currentColor" stroke="none"/></svg><span>@somosroce</span></a>
+    <a class="home-insta" href="https://www.instagram.com/somosroce" target="_blank" rel="noopener" aria-label="Instagram @somosroce">@somosroce <span class="home-insta-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7M8 7h9v9"/></svg></span></a>
     <div class="lang-switch">
       <button type="button" data-lang="es">ES</button>
       <button type="button" data-lang="en">EN</button>

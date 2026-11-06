@@ -18,7 +18,7 @@
       party: 'Personas', date: 'Fecha', time: 'Hora', person: 'persona', people: 'personas',
       months: ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'],
       dows: ['L', 'M', 'X', 'J', 'V', 'S', 'D'],
-      prev: 'Mes anterior', next: 'Mes siguiente', meal_lunch: 'Comida', meal_dinner: 'Cena', cal_closed: 'Cerrado', cal_full: 'Completo', cal_partial: 'Algún turno completo', cal_full_in: 'Completo: {n}',
+      prev: 'Mes anterior', next: 'Mes siguiente', meal_lunch: 'Comida', meal_dinner: 'Cena', cal_closed: 'Cerrado', cal_full: 'Completo', cal_partial: 'Algún turno completo o cerrado', cal_full_in: 'Completo: {n}', cal_closed_in: 'Cerrado: {n}',
       pick_date: 'Elige un día para ver las horas disponibles.',
       loading: 'Buscando mesas…', none: 'No quedan mesas ese día para {n}. Prueba otro día o escríbenos por {wa}.', wa_msg: 'Hola, quería reservar mesa para {n} el {date}.',
       err_load: 'No hemos podido consultar las mesas. Inténtalo de nuevo en un momento.',
@@ -37,7 +37,7 @@
       e_closed: 'Ese día no abrimos para reservas.', e_too_many: 'Has llegado al máximo de 10 reservas activas con este email.',
       e_network: 'No hemos podido completar la reserva. Inténtalo de nuevo.', e_pay: 'No hemos podido abrir el pago. Tu mesa queda retenida unos minutos: vuelve a pulsar el botón.',
       night_tag: 'Solo mayores de 18 años',
-      allergies: 'Alergias o intolerancias', al: { gluten: 'Gluten', lactosa: 'Lactosa', 'frutos-secos': 'Frutos secos', marisco: 'Marisco', pescado: 'Pescado', huevo: 'Huevo', soja: 'Soja', sesamo: 'Sésamo', vegetariano: 'Vegetariano', vegano: 'Vegano', otras: 'Otras' }, yes: 'Sí', no: 'No', al_hint: 'Si es otra, cuéntanosla en comentarios.',
+      allergies: 'Alergias o intolerancias', al: { gluten: 'Gluten', lactosa: 'Lácteos / lactosa', 'frutos-secos': 'Frutos secos', cacahuetes: 'Cacahuetes', huevo: 'Huevo', pescado: 'Pescado', marisco: 'Crustáceos', moluscos: 'Moluscos', soja: 'Soja', sesamo: 'Sésamo', apio: 'Apio', mostaza: 'Mostaza', altramuz: 'Altramuz', sulfitos: 'Sulfitos', vegetariano: 'Vegetariano', vegano: 'Vegano', otras: 'Otras' }, yes: 'Sí', no: 'No', al_hint: 'Si es otra, cuéntanosla en comentarios.',
       info_dur: 'Tu mesa estará disponible {d}.', info_grace: 'La mantenemos {g} min desde la hora reservada: pasado ese tiempo la damos por no presentada.',
       full: 'Completo', wl_cta: 'No encuentro hora: avisadme si se libera una mesa', wl_h: 'Lista de espera',
       wl_intro: 'Déjanos tus datos y te escribiremos si se libera una mesa para {n} el {date}.', wl_time: 'Hora preferida', wl_any: 'Cualquier hora',
@@ -53,7 +53,7 @@
       party: 'Guests', date: 'Date', time: 'Time', person: 'guest', people: 'guests',
       months: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
       dows: ['M', 'T', 'W', 'T', 'F', 'S', 'S'],
-      prev: 'Previous month', next: 'Next month', meal_lunch: 'Lunch', meal_dinner: 'Dinner', cal_closed: 'Closed', cal_full: 'Fully booked', cal_partial: 'One service fully booked', cal_full_in: 'Fully booked: {n}',
+      prev: 'Previous month', next: 'Next month', meal_lunch: 'Lunch', meal_dinner: 'Dinner', cal_closed: 'Closed', cal_full: 'Fully booked', cal_partial: 'A service is full or closed', cal_full_in: 'Fully booked: {n}', cal_closed_in: 'Closed: {n}',
       pick_date: 'Pick a day to see the available times.',
       loading: 'Looking for tables…', none: 'No tables left that day for {n}. Try another day or message us on {wa}.', wa_msg: 'Hi, I would like to book a table for {n} on {date}.',
       err_load: "We couldn't check the tables. Please try again in a moment.",
@@ -72,7 +72,7 @@
       e_closed: "We're not taking bookings that day.", e_too_many: 'You have reached the maximum of 10 active bookings with this email.',
       e_network: "We couldn't complete the booking. Please try again.", e_pay: "We couldn't open the payment. Your table is held for a few minutes: press the button again.",
       night_tag: 'Over 18s only',
-      allergies: 'Allergies or intolerances', al: { gluten: 'Gluten', lactosa: 'Lactose', 'frutos-secos': 'Nuts', marisco: 'Shellfish', pescado: 'Fish', huevo: 'Egg', soja: 'Soy', sesamo: 'Sesame', vegetariano: 'Vegetarian', vegano: 'Vegan', otras: 'Other' }, yes: 'Yes', no: 'No', al_hint: 'If it is something else, tell us in the comments.',
+      allergies: 'Allergies or intolerances', al: { gluten: 'Gluten', lactosa: 'Dairy / lactose', 'frutos-secos': 'Tree nuts', cacahuetes: 'Peanuts', huevo: 'Egg', pescado: 'Fish', marisco: 'Crustaceans', moluscos: 'Molluscs', soja: 'Soy', sesamo: 'Sesame', apio: 'Celery', mostaza: 'Mustard', altramuz: 'Lupin', sulfitos: 'Sulphites', vegetariano: 'Vegetarian', vegano: 'Vegan', otras: 'Other' }, yes: 'Yes', no: 'No', al_hint: 'If it is something else, tell us in the comments.',
       info_dur: 'Your table will be available for {d}.', info_grace: 'We hold it for {g} min after the booked time: after that we treat it as a no-show.',
       full: 'Full', wl_cta: "Can't find a time: let me know if a table opens up", wl_h: 'Waiting list',
       wl_intro: 'Leave your details and we will write to you if a table opens up for {n} on {date}.', wl_time: 'Preferred time', wl_any: 'Any time',
@@ -176,7 +176,7 @@
     for (var i = 0; i < startDow; i++) h += '<span></span>';
     for (var d = 1; d <= dim; d++) {
       var s = ymd(m.y, m.m, d), off = s < today || s > last, cs = (st.cal[calKey()] || {})[s], stt = cs ? cs.o_state : '';
-      var tip = stt === 'closed' ? t('cal_closed') : stt === 'full' ? t('cal_full') : stt === 'partial' ? t('cal_full_in', { n: (lang() === 'en' ? cs.o_full_en : cs.o_full_es).join(', ') }) : '';
+      var tip = stt === 'closed' ? t('cal_closed') : stt === 'full' ? t('cal_full') : stt === 'partial' ? [(lang() === 'en' ? cs.o_full_en : cs.o_full_es) || [], (lang() === 'en' ? cs.o_closed_en : cs.o_closed_es) || []].map(function (l, i) { return l.length ? t(i ? 'cal_closed_in' : 'cal_full_in', { n: l.join(', ') }) : ''; }).filter(Boolean).join(' · ') : '';
       h += '<button type="button" class="mz-day' + (s === st.date ? ' is-on' : '') + (s === today ? ' is-today' : '') + (stt === 'closed' ? ' is-closed' : stt === 'full' ? ' is-full' : stt === 'partial' ? ' is-partial' : '') + '" data-date="' + s + '"' + (tip ? ' title="' + esc(tip) + '" aria-label="' + d + ' · ' + esc(tip) + '"' : '') + (off || stt === 'closed' ? ' disabled' : '') + '>' + d + '</button>';
     }
     var seen = st.cal[calKey()] || {}, kinds = {};
@@ -422,4 +422,6 @@
   } catch (x) {}
   document.addEventListener('roce:lang', function () { keepForm(); render(); });
   render();
+  // Hasta dónde se puede reservar lo decide la configuración (días vista de los turnos), no un número fijo en la web.
+  rpc('dining_horizon', {}).then(function (n) { n = parseInt(n, 10); if (n >= 1 && n <= 400 && n !== DAYS_AHEAD) { DAYS_AHEAD = n; st.cal = {}; render(); } }).catch(function () {});
 })();
