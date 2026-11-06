@@ -54,7 +54,7 @@
       '<div class="cv-cat-body"><ul class="cv-items">' + b.items.map(function (i) { return item(i, b); }).join('') + '</ul>' + extras(b) + '</div></section>';
   }
   function page(s, si) {
-    var h = '<article class="cv-paper is-' + s.color + '" id="pg-' + s.id + '" data-sec="' + s.id + '"' + (s.id === cur ? '' : ' hidden') + '><span class="cv-hole" aria-hidden="true"></span><span class="cv-hole is-2" aria-hidden="true"></span><div class="cv-paper-in"><h1 class="cv-sr">' + esc(tx(s.title)) + '</h1>';
+    var h = '<article class="cv-paper is-' + s.color + '" id="pg-' + s.id + '" data-sec="' + s.id + '"' + (s.id === cur ? '' : ' hidden') + '><div class="cv-paper-in"><h1 class="cv-sr">' + esc(tx(s.title)) + '</h1>';
     var body = '';
     if (s.soon) body += '<div class="cv-soon"><b>' + esc(ui('soon')) + '</b><p>' + esc(ui('soon_p')) + '</p></div>';
     else s.groups.forEach(function (g, gi) {
