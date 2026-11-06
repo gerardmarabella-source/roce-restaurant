@@ -14,7 +14,7 @@ window.CARTA = {
       id: 'kitchen', color: 'kraft', title: { es: 'Kitchen', en: 'Kitchen' },
       groups: [
         {
-          title: { es: 'Desayunos', en: 'Breakfast' },
+          title: { es: 'Kitchen', en: 'Kitchen' }, force: true,
           blocks: [
             {
               title: { es: 'Tostadas', en: 'Toasts' }, note: { es: 'Hasta las 12:00 · pan de masa madre', en: 'Until 12:00 · sourdough bread' },

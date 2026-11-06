@@ -108,7 +108,7 @@
     var body = '';
     if (s.soon) body += '<div class="cv-soon"><b>' + esc(ui('soon')) + '</b><p>' + esc(s.desc ? tx(s.desc) : ui('soon_p')) + '</p></div>';
     else s.groups.forEach(function (g, gi) {
-      var same = tx(g.title) === tx(s.title);
+      var same = tx(g.title) === tx(s.title) && !g.force;
       body += '<div class="cv-group">';
       if (!same || g.note) body += '<div class="cv-gh">' + (same ? '' : '<h2>' + esc(tx(g.title)) + '</h2>') + (g.note ? '<span>' + esc(tx(g.note)) + '</span>' : '') + '</div>';
       g.blocks.forEach(function (b, bi) { var id = 'c' + si + gi + bi; body += cat(id, b); });
