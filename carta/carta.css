@@ -459,3 +459,15 @@ body.is-spring main { transform: translateY(0); transition: transform 0.4s cubic
 .cv-sheet .cv-sheet-actions { position: sticky !important; bottom: 0 !important; z-index: 3; display: flex !important; gap: 0.6rem; margin: 0.9rem 0 0 !important; padding: 0.8rem 0 calc(1rem + env(safe-area-inset-bottom)) !important; border-top: 1.5px solid var(--black); background: #fff; }
 .cv-chef[open] { max-height: calc(var(--vvh, 100dvh) - 1.5rem); }
 #cvSheet[open] { min-height: min(26rem, 70vh); min-height: min(26rem, 70dvh); }
+
+/* ── Título lateral fijo (no sticky) y tramo de scroll extra al final del pie ── */
+.cv-spine i { display: none !important; }          /* los de dentro de cada hoja solo reservan la columna */
+:root { --sp: 30vh; --sp: 30svh; }
+.cv-spine-fixed { position: fixed; z-index: 6; top: calc(var(--bar) + var(--sp)); left: 0; width: 4.8rem; pointer-events: none; color: var(--ink); will-change: transform; transform: translate3d(0, 0, 0); }
+.cv-spine-fixed i { display: block; font-style: normal; writing-mode: vertical-rl; transform: rotate(180deg); line-height: 1; letter-spacing: -0.02em; text-transform: uppercase; white-space: nowrap; font-size: min(clamp(3.4rem, 15vw, 4.6rem), calc((100vh - var(--bar) - var(--sp) - 2rem) / var(--len, 4.6))); font-size: min(clamp(3.4rem, 15vw, 4.6rem), calc((100svh - var(--bar) - var(--sp) - 2rem) / var(--len, 4.6))); }
+@media (min-width: 900px) {
+  :root { --sp: 8vh; --sp: 8svh; }
+  .cv-spine-fixed i { font-size: min(clamp(5.6rem, 10vw, 9rem), calc((100vh - var(--bar) - var(--sp) - 2rem) / var(--len, 4.6))); font-size: min(clamp(5.6rem, 10vw, 9rem), calc((100svh - var(--bar) - var(--sp) - 2rem) / var(--len, 4.6))); }
+}
+.cv-foot-pull { height: 22vh; height: 22svh; }
+.cv-foot-pull[hidden] { display: none; }
