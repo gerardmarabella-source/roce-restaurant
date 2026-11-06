@@ -392,3 +392,6 @@ body.is-pulling .cv-foot-logo { transition: none; }
 .cv-topbar { display: block !important; position: fixed; z-index: 29; left: 0; right: 0; top: var(--bar); height: 4px; pointer-events: none; }
 .cv-topbar i { display: block; width: 0; height: 100%; background: #fff; transition: none; }
 .cv-toplogo { display: none; }
+
+/* título lateral: siempre con sangría sobre el borde de abajo de la hoja; fijo en pantalla y, al llegar el fin de hoja, la acompaña con ese margen */
+.cv-spine, .cv-paper.is-soon .cv-spine { padding-bottom: 3.4rem; }
