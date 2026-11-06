@@ -186,7 +186,7 @@
       R.slots.forEach(function (s) {
         s.items.forEach(function (c) {
           total += price(c);
-          h += '<li><p class="cv-pl-slot"><span class="cv-pl-n">' + (++idx) + '</span>' + esc(t('slots')[s.label]) + '</p><div class="cv-pl-top"><b>' + esc((c.it.code && c.it.code !== c.it.name ? c.it.code + ' ' : '') + c.it.name) + '</b><span>' + esc(A.money(c.it.price)) + '</span></div>' +
+          h += '<li class="cv-slot-' + s.label + '"><p class="cv-pl-slot"><span class="cv-pl-n">' + (++idx) + '</span>' + esc(t('slots')[s.label]) + '</p><div class="cv-pl-top"><b>' + esc((c.it.code && c.it.code !== c.it.name ? c.it.code + ' ' : '') + c.it.name) + '</b><span>' + esc(A.money(c.it.price)) + '</span></div>' +
             (c.it.es ? '<p class="cv-pl-desc">' + esc(A.tx({ es: c.it.es, en: c.it.en })) + '</p>' : '') +
             (reason(c, R) ? '<p class="cv-pl-why">' + esc(reason(c, R)) + '</p>' : '') + (pendTxt(c) ? '<p class="cv-fs-note">' + esc(pendTxt(c)) + '</p>' : '') + allergenLine(c) +
             '<button type="button" class="cv-link" data-go="' + c.sec + '|' + c.id + '">' + esc(t('see')) + ' →</button></li>';
