@@ -498,15 +498,9 @@
     </div>
 
     <div class="home-squares">
-      <a class="home-square home-square-day" id="chooseDay" href="/day/">
-        <div class="home-square-top"></div>
-        <div class="home-square-bottom">
-          <div>
-            <strong class="home-name"><span>Coffee, Bakery</span> <span>&amp; Kitchen</span></strong>
-            <small>10:00 – 20:00</small>
-          </div>
-          <span class="home-square-arrow" aria-hidden="true">→</span>
-        </div>
+      <a class="home-square home-square-event" id="homeEvent" href="/eventos/" hidden>
+        <div class="he-text"><span class="mq"></span></div>
+        <span class="home-square-arrow" aria-hidden="true">→</span>
       </a>
       <a class="home-square home-square-night" id="chooseNight" href="/night/">
         <div class="home-square-top"><svg class="age-badge" viewBox="0 0 100 100" role="img" aria-label="+18"><circle cx="50" cy="50" r="44" fill="#ffffff" stroke="#e5453a" stroke-width="9"/><text x="44" y="65" text-anchor="middle" font-family="'Helvetica Neue Web','Helvetica Neue',Arial,sans-serif" font-weight="700" font-size="46" letter-spacing="-3" fill="#0a0a0a">18</text><text x="77" y="52" text-anchor="middle" font-family="'Helvetica Neue Web','Helvetica Neue',Arial,sans-serif" font-weight="700" font-size="30" fill="#0a0a0a">+</text></svg></div>
@@ -518,9 +512,15 @@
           <span class="home-square-arrow" aria-hidden="true">→</span>
         </div>
       </a>
-      <a class="home-square home-square-event" id="homeEvent" href="/eventos/" hidden>
-        <div class="he-text"><span class="mq"></span></div>
-        <span class="home-square-arrow" aria-hidden="true">→</span>
+      <a class="home-square home-square-day" id="chooseDay" href="/day/">
+        <div class="home-square-top"></div>
+        <div class="home-square-bottom">
+          <div>
+            <strong class="home-name"><span>Coffee, Bakery</span> <span>&amp; Kitchen</span></strong>
+            <small>10:00 – 20:00</small>
+          </div>
+          <span class="home-square-arrow" aria-hidden="true">→</span>
+        </div>
       </a>
     </div>
   </main>
@@ -628,7 +628,20 @@
       // Una sola línea: título en grande y fecha pequeña; si el título no cabe, gira en bucle.
       heMarquee(cube, e.title[l] || e.title.es, when);
     }
-    var rz; window.addEventListener('resize', function () { clearTimeout(rz); rz = setTimeout(renderLive, 120); });
+    // Seguro de encaje: en horizontal la frase llega al suelo, pero si por lo que sea (ventana más alta que la pantalla, barras del
+    // navegador…) se saliera de la página, se reduce justo lo necesario para que quepa entera.
+    function fitStatement() {
+      var st = document.querySelector('.home-statement'), home = document.querySelector('.home');
+      if (!st || !home) return;
+      st.style.fontSize = '';
+      if (!window.matchMedia('(min-aspect-ratio: 5/4)').matches) return;
+      var floor = Math.min(home.getBoundingClientRect().bottom, window.innerHeight) - 6, r = st.getBoundingClientRect(), room = floor - r.top;
+      if (room > 40 && r.height > room) st.style.fontSize = (parseFloat(getComputedStyle(st).fontSize) * room / r.height) + 'px';
+    }
+    var rz; window.addEventListener('resize', function () { clearTimeout(rz); rz = setTimeout(function () { fitStatement(); renderLive(); }, 120); });
+    window.addEventListener('load', fitStatement);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitStatement);
+    fitStatement();
     if (window.ROCE_EVENTS_READY) window.ROCE_EVENTS_READY.then(function (list) { EVENTS = list; renderLive(); });
     document.addEventListener('roce:lang', renderLive);
 
