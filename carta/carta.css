@@ -395,3 +395,8 @@ body.is-pulling .cv-foot-logo { transition: none; }
 
 /* título lateral: siempre con sangría sobre el borde de abajo de la hoja; fijo en pantalla y, al llegar el fin de hoja, la acompaña con ese margen */
 .cv-spine, .cv-paper.is-soon .cv-spine { padding-bottom: 3.4rem; }
+
+/* botón Filtros con su icono de líneas */
+.cv-allergy-btn { gap: 0.5rem; text-decoration: none; }
+.cv-allergy-btn span { text-decoration: underline; text-underline-offset: 4px; }
+.cv-allergy-btn svg { flex: 0 0 auto; display: block; }
