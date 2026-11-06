@@ -439,3 +439,10 @@ body.is-spring main { transform: translateY(0); transition: transform 0.4s cubic
 .cv-spine span { transform: translate3d(0, 0, 0); -webkit-transform: translate3d(0, 0, 0); backface-visibility: hidden; -webkit-backface-visibility: hidden; }
 /* Filtros: nunca más bajo que esto, aunque Safari calcule mal el alto */
 #cvSheet[open] { min-height: min(30rem, 76vh); min-height: min(30rem, 76dvh); }
+
+/* ── Safari: paneles con altura propia, sin flex en el <dialog> (ahí Safari los dejaba como una franja de ~70 px) ── */
+.cv-sheet[open] { display: block !important; overflow: hidden; height: auto; }
+.cv-sheet-in { display: flex; flex-direction: column; flex: none !important; height: auto; min-height: 0; max-height: 88vh; max-height: 88dvh; }
+.cv-sheet-body { flex: 1 1 auto !important; min-height: 0; max-height: calc(88vh - 7.5rem); max-height: calc(88dvh - 7.5rem); overflow-y: auto; -webkit-overflow-scrolling: touch; }
+.cv-chef .cv-sheet-body { max-height: calc(var(--vvh, 100dvh) - 1.5rem - 7.5rem); }
+.cv-sheet-actions { flex: 0 0 auto; }
