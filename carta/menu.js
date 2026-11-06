@@ -154,11 +154,11 @@ window.CARTA = {
         }
       ]
     },
-    { id: 'bakery', color: 'red', soon: true, title: { es: 'Bakery', en: 'Bakery' }, desc: { es: 'Bollería, cookies, bizcochos y demás productos del horno.', en: 'Pastries, cookies, cakes and other baked goods.' }, groups: [] }
+    { id: 'bakery', color: 'red', soon: true, title: { es: 'Bakery', en: 'Bakery' }, desc: { es: 'Bollería, dulces y horno.', en: 'Pastries, sweets and bakery.' }, groups: [] }
   ]
 };
 
-/* Las cinco cartas: Coffee & Matcha · Kitchen · Bakery · Fresh Drinks · Drinks & More.
+/* Las cinco cartas, en este orden: Kitchen · Bakery · Coffee & Matcha · Fresh Drinks · Drinks.
    Se componen a partir de los bloques de arriba (el bloque "Drinks" se reparte entre Coffee & Matcha y Fresh Drinks). */
 (function () {
   var C = window.CARTA, by = {};
@@ -166,10 +166,10 @@ window.CARTA = {
   var drinks = by.bebidas.groups[0].blocks;
   function sheet(id, color, es, en, blocks) { return { id: id, color: color, title: { es: es, en: en }, groups: [{ title: { es: es, en: en }, blocks: blocks }] }; }
   C.sections = [
-    sheet('coffee', 'olive', 'Coffee & Matcha', 'Coffee & Matcha', [drinks[0], drinks[1]]),
     by.kitchen,
     by.bakery,
+    sheet('coffee', 'olive', 'Coffee & Matcha', 'Coffee & Matcha', [drinks[0], drinks[1]]),
     sheet('fresh', 'cream', 'Fresh Drinks', 'Fresh Drinks', [drinks[2], drinks[3]]),
-    { id: 'more', color: 'dark', soon: true, title: { es: 'Drinks & More', en: 'Drinks & More' }, desc: { es: 'Aguas, refrescos, cervezas y otras bebidas.', en: 'Water, soft drinks, beers and other drinks.' }, groups: [] }
+    { id: 'drinks', color: 'dark', soon: true, title: { es: 'Drinks', en: 'Drinks' }, desc: { es: 'Refrescos, aguas y cervezas.', en: 'Soft drinks, water and beers.' }, groups: [] }
   ];
 })();
