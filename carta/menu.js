@@ -52,7 +52,7 @@ window.CARTA = {
         },
         {
           title: { es: 'Comidas', en: 'Lunch' },
-          note: { es: 'Desde las 12:00 · Platos completos, ingredientes reales, sabores internacionales', en: 'From 12:00 · Complete dishes, real ingredients, international flavours' },
+          note: { es: 'Desde las 12:00 · Platos complejos, ingredientes reales, sabores internacionales', en: 'From 12:00 · Complex dishes, real ingredients, international flavours' },
           blocks: [
             {
               title: { es: 'Starters', en: 'Starters' },
@@ -66,7 +66,7 @@ window.CARTA = {
                     { name: 'Costilla', al: [3], es: 'Costilla de vaca a baja temperatura, aguacate y mayonesa ahumada.', en: 'Slow-cooked beef rib, avocado and smoked mayo.' }
                   ]
                 },
-                { name: 'Patatas Artesana', al: [3, 7], price: 9.5, es: 'Patata agria en doble cocción, crujiente al centro, con 4 salsas ROCE (las más icónicas).', en: 'Double-cooked potato, crispy in the centre, with 4 ROCE sauces (the most iconic).' }
+                { name: 'Patatas Artesana', al: [3, 7], price: 9.5, es: 'Patata agria en doble cocción, crujiente al centro, con 4 salsas ROCE (más icónicas).', en: 'Double-cooked potato, crispy in the centre, with 4 ROCE sauces (the most iconic).' }
               ]
             },
             {
@@ -102,7 +102,7 @@ window.CARTA = {
               items: [
                 { name: 'Huevo campero', al: [3], price: 2 }, { name: 'Falafel', al: [11], price: 3.5 }, { name: 'Cottage', al: [7], price: 2.5 },
                 { name: 'Pollo marinado', price: 3.5 }, { name: 'Atún rojo', al: [4], price: 5.5 }, { name: 'Salmón', al: [4], price: 5.5 },
-                { name: 'Filete de ternera', price: 9.5 }, { name: 'Entrecot madurado', price: [15, 18] }, { name: 'Bacon crujiente', price: 2.5 }, { name: 'Hummus de remolacha', al: [11], price: 2.5 }
+                { name: 'Filete de ternera', price: 9.5 }, { name: 'Entrecot madurado', price: 15 }, { name: 'Bacon crujiente', price: 2.5 }, { name: 'Hummus de remolacha', al: [11], price: 2.5 }
               ]
             }
           ]
