@@ -154,7 +154,7 @@ body.has-filter .is-pending .cv-pend { display: inline; }
 .cv-sheet-in { padding: 1.1rem var(--pad) calc(1rem + env(safe-area-inset-bottom)); }
 .cv-sheet h2 { margin: 0 0 0.35rem; padding-bottom: 0.7rem; border-bottom: 1.5px solid var(--black); font-size: 1.15rem; line-height: 1.15; font-weight: 700; letter-spacing: -0.01em; }
 .cv-sheet p { margin: 0 0 0.9rem; font-size: 0.88rem; opacity: 0.7; }
-.cv-sheet .cv-als { display: grid; grid-template-columns: 1fr 1fr; gap: 0 1.4rem; margin: 0 0 0.6rem; padding-top: 0.2rem; border-top: 1.5px solid var(--black); }
+.cv-sheet #cvDietList, .cv-sheet #cvAlList { display: grid; grid-template-columns: 1fr 1fr; gap: 0 1.4rem; margin: 0 0 0.6rem; padding-top: 0.2rem; border-top: 1.5px solid var(--black); }
 .cv-sheet .cv-al { width: 1.25rem; height: 1.25rem; margin-left: auto; border: 1px solid var(--black); color: var(--black); font-size: 0.65rem; opacity: 0.55; }
 .cv-pick { display: flex; align-items: center; gap: 0.6rem; padding: 0.65rem 0; border: 0; border-bottom: 1px solid rgba(10, 10, 10, 0.18); background: transparent; color: var(--black); text-align: left; font-size: 0.95rem; font-weight: 700; }
 .cv-radio { flex: 0 0 auto; width: 0.95rem; height: 0.95rem; border: 1.5px solid var(--black); border-radius: 50%; }
@@ -220,3 +220,23 @@ body.has-filter .is-pending .cv-pend { display: inline; }
 .cv-menu-foot .cv-lang button { padding: 0.3rem 0.6rem; }
 .cv-m-word { flex: 1 1 auto; min-height: 0; width: 100%; height: auto; max-height: 26vh; object-fit: contain; object-position: left bottom; }
 .cv-m-word { flex: 0 1 auto; margin-top: auto; }
+
+/* ayuda del chef: resultados y adaptación a pantallas pequeñas */
+.cv-sheet { width: min(30rem, calc(100vw - 1.5rem)); }
+.cv-sheet-in { padding-left: 1rem; padding-right: 1rem; }
+.cv-sheet-body { padding-right: 0.7rem; scrollbar-gutter: stable; }
+.cv-pl-top { align-items: baseline; }
+.cv-pl-top b { min-width: 0; overflow-wrap: anywhere; }
+.cv-pl-top span { flex: 0 0 auto; white-space: nowrap; }
+.cv-pick-list .cv-als { display: inline-flex; border: 0; padding: 0; margin: 0; }
+.cv-pl-al { margin: 0.35rem 0 0.3rem; font-size: 0.82rem; line-height: 1.7; }
+.cv-pl-al .cv-al { width: 1.1rem; height: 1.1rem; margin-right: 0.15rem; vertical-align: middle; border-color: var(--black); color: var(--black); opacity: 0.75; }
+@media (max-width: 380px) { .cv-sheet-in { padding-left: 0.8rem; padding-right: 0.8rem; } .cv-ghost, .cv-solid { font-size: 0.78rem; letter-spacing: 0.06em; } }
+
+/* leyenda de alérgenos al final de la carta */
+.cv-legend { max-width: 46rem; margin: 0 auto 1.4rem; text-align: left; }
+.cv-legend h3 { margin: 0 0 0.7rem; font-size: 0.74rem; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(255, 255, 255, 0.85); }
+.cv-legend ul { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem 1rem; }
+.cv-legend li { display: flex; align-items: center; gap: 0.55rem; font-size: 0.78rem; color: rgba(255, 255, 255, 0.8); }
+.cv-legend .cv-al { flex: 0 0 auto; width: 1.4rem; height: 1.4rem; font-size: 0.68rem; color: #fff; border-color: rgba(255, 255, 255, 0.7); opacity: 1; }
+@media (min-width: 640px) { .cv-legend ul { grid-template-columns: repeat(4, 1fr); } }

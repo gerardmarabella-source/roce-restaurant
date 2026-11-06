@@ -15,7 +15,7 @@
         filters: 'Respeto tus filtros activos', filters_edit: 'Cambiar filtros', hint: 'Escribe lo que te apetece o responde a las preguntas.',
         none: 'No he encontrado nada que encaje con tus filtros. Prueba a quitar alguno.', total: 'Total aproximado', see: 'Ver en la carta',
         slots: { starter: 'Para picar', main: 'Plato principal', light: 'Plato ligero', side: 'Acompañamiento', breakfast: 'Para desayunar', sweet: 'Algo dulce', drink: 'Para beber' },
-        r_has: 'Lleva ', r_light: 'Ligero y fresco', r_hungry: 'Para ir con hambre', r_sweet: 'Dulce', r_protein: 'Con proteína', r_veg: 'Sin carne ni pescado', r_pend: 'Los alérgenos de esta bebida los confirma el equipo.',
+        r_has: 'Lleva ', r_light: 'Ligero y fresco', r_hungry: 'Para ir con hambre', r_sweet: 'Dulce', r_protein: 'Con proteína', r_veg: 'Sin carne ni pescado', al_has: 'Alérgenos:', al_none: 'Sin alérgenos declarados.', r_pend: 'Los alérgenos de esta bebida los confirma el equipo.',
         miss: function (x) { return 'No encuentro «' + x + '» en esta parte de la carta; te propongo lo más parecido.'; },
         note: 'Propuesta orientativa. Comprueba los alérgenos con nuestro equipo.', res_h: 'Tu propuesta'
       },
@@ -29,7 +29,7 @@
         filters: 'Respecting your active filters', filters_edit: 'Change filters', hint: 'Type what you fancy or answer the questions.',
         none: 'I found nothing that fits your filters. Try removing one.', total: 'Approx. total', see: 'See on the menu',
         slots: { starter: 'To share', main: 'Main dish', light: 'Light dish', side: 'Side', breakfast: 'For breakfast', sweet: 'Something sweet', drink: 'To drink' },
-        r_has: 'Contains ', r_light: 'Light and fresh', r_hungry: 'For a big appetite', r_sweet: 'Sweet', r_protein: 'With protein', r_veg: 'No meat or fish', r_pend: 'Our team confirms the allergens of this drink.',
+        r_has: 'Contains ', r_light: 'Light and fresh', r_hungry: 'For a big appetite', r_sweet: 'Sweet', r_protein: 'With protein', r_veg: 'No meat or fish', al_has: 'Allergens:', al_none: 'No declared allergens.', r_pend: 'Our team confirms the allergens of this drink.',
         miss: function (x) { return 'I cannot find "' + x + '" in this part of the menu; here is the closest.'; },
         note: 'Indicative suggestion. Please check allergens with our team.', res_h: 'Your suggestion'
       }
@@ -154,6 +154,11 @@
       if (R.hungry && ['main', 'sandwich'].indexOf(c.kind) !== -1) return t('r_hungry');
       var tg = c.it.tag && A.tx(c.it.tag); return tg || '';
     }
+    function allergenLine(c) {
+      var al = c.it.al || [];
+      if (!al.length) return c.blk.alPending ? '' : '<p class="cv-pl-al">' + esc(t('al_none')) + '</p>';
+      return '<p class="cv-pl-al"><b>' + esc(t('al_has')) + '</b> ' + al.map(function (n) { return '<span class="cv-al">' + n + '</span> ' + esc(A.tx(A.D.allergens[n - 1])); }).join(' · ') + '</p>';
+    }
     function pendTxt(c) { return c.pend ? t('r_pend') : '';
     }
 
@@ -180,7 +185,7 @@
           total += price(c);
           h += '<li><p class="cv-pl-slot">' + esc(t('slots')[s.label]) + '</p><div class="cv-pl-top"><b>' + esc((c.it.code && c.it.code !== c.it.name ? c.it.code + ' ' : '') + c.it.name) + '</b><span>' + esc(A.money(c.it.price)) + '</span></div>' +
             (c.it.es ? '<p class="cv-pl-desc">' + esc(A.tx({ es: c.it.es, en: c.it.en })) + '</p>' : '') +
-            (reason(c, R) ? '<p class="cv-pl-why">' + esc(reason(c, R)) + '</p>' : '') + (pendTxt(c) ? '<p class="cv-fs-note">' + esc(pendTxt(c)) + '</p>' : '') + A.als(c.it.al) +
+            (reason(c, R) ? '<p class="cv-pl-why">' + esc(reason(c, R)) + '</p>' : '') + (pendTxt(c) ? '<p class="cv-fs-note">' + esc(pendTxt(c)) + '</p>' : '') + allergenLine(c) +
             '<button type="button" class="cv-link" data-go="' + c.sec + '|' + c.id + '">' + esc(t('see')) + ' →</button></li>';
         });
       });
