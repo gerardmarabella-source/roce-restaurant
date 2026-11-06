@@ -1,0 +1,162 @@
+@font-face { font-family: "Helvetica Neue Web"; src: url("/assets/fonts/HelveticaNeue-Regular.woff2") format("woff2"); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: "Helvetica Neue Web"; src: url("/assets/fonts/HelveticaNeue-Bold.woff2") format("woff2"); font-weight: 700; font-style: normal; font-display: swap; }
+
+:root {
+  --black: #0a0a0a; --paper: #f6f3ec; --cream: #ece7dd;
+  --kraft: #a78d5b; --red: #832f2f; --olive: #5b5a32; --gold: #9f7a2e;
+  --display: "Helvetica Neue Web", "Helvetica Neue", Arial, sans-serif;
+  --pad: clamp(1.1rem, 4.5vw, 2.4rem);
+  --bar: 5.4rem;
+  --grain-lite: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .1  0 0 0 0 .07  0 0 0 0 .03  0 0 0 .32 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  --sheet: var(--kraft); --ink: #0a0a0a;
+}
+html[data-sheet="kraft"] { --sheet: var(--kraft); --ink: #0a0a0a; }
+html[data-sheet="olive"] { --sheet: var(--olive); --ink: var(--cream); }
+html[data-sheet="red"] { --sheet: var(--red); --ink: var(--cream); }
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: calc(var(--bar) + 0.6rem); -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: #0a0a0a; color: #fff; font-family: var(--display); font-size: 16px; line-height: 1.4; }
+button { font-family: inherit; color: inherit; cursor: pointer; }
+img { max-width: 100%; display: block; }
+[hidden] { display: none !important; }
+.is-hidden { display: none !important; }
+
+/* ── Barra superior fija ── */
+.cv-bar { position: sticky; top: 0; z-index: 30; background: var(--black); color: #fff; padding-top: env(safe-area-inset-top); }
+.cv-bar-row { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 0.75rem var(--pad) 0.65rem; }
+.cv-logo img { height: 1.6rem; width: auto; }
+.cv-menu-btn { display: inline-flex; align-items: center; gap: 0.55rem; padding: 0.2rem 0; border: 0; background: transparent; color: inherit; font-size: 0.95rem; font-weight: 700; letter-spacing: 0.02em; }
+.cv-crumb-row { display: flex; align-items: center; padding: 0.5rem var(--pad); border-top: 1px solid rgba(255, 255, 255, 0.3); }
+.cv-crumb { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
+.cv-allergy-btn { display: inline-flex; align-items: center; gap: 0.45rem; padding: 0.15rem 0; border: 0; background: transparent; color: inherit; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; text-decoration: underline; text-underline-offset: 4px; white-space: nowrap; }
+.cv-allergy-btn b { display: inline-grid; place-items: center; min-width: 1.2rem; height: 1.2rem; padding: 0 0.3rem; border-radius: 999px; background: #fff; color: var(--black); font-size: 0.7rem; text-decoration: none; }
+.cv-lang { display: flex; gap: 0.1rem; font-size: 0.9rem; font-weight: 700; letter-spacing: 0.08em; }
+.cv-lang button { padding: 0.3rem 0.5rem 0.3rem 0; border: 0; background: transparent; color: rgba(10, 10, 10, 0.4); }
+.cv-lang button.is-active { color: var(--black); text-decoration: underline; text-underline-offset: 4px; }
+
+/* ── Menú a pantalla completa (como una lista tipográfica con filetes) ── */
+.cv-menu { position: fixed; inset: 0; z-index: 70; overflow-y: auto; background: var(--paper); color: var(--black); animation: cvMenuIn 0.3s cubic-bezier(0.2, 0.7, 0.2, 1); }
+@keyframes cvMenuIn { from { opacity: 0; transform: translateY(-1.2rem); } to { opacity: 1; transform: none; } }
+.cv-menu-in { display: flex; flex-direction: column; min-height: 100%; max-width: 46rem; margin: 0 auto; padding: env(safe-area-inset-top) var(--pad) calc(1.4rem + env(safe-area-inset-bottom)); }
+.cv-menu-top { display: flex; align-items: center; justify-content: flex-end; padding: 0.75rem 0 0.65rem; border-bottom: 1.5px solid var(--black); }
+.cv-menu-top .cv-menu-btn { color: var(--black); }
+.cv-menu-body { flex: 1; }
+.cv-m-list { list-style: none; margin: 0; padding: 0; }
+.cv-m-list li { border-bottom: 1.5px solid var(--black); }
+.cv-m-sheet { display: flex; align-items: center; justify-content: space-between; gap: 1rem; width: 100%; padding: 0.4rem 0 0.55rem; border: 0; background: transparent; text-align: left; font-size: clamp(2.8rem, 12.5vw, 4.8rem); font-weight: 700; line-height: 1; letter-spacing: -0.04em; }
+.cv-m-side { display: inline-flex; align-items: center; gap: 0.8rem; }
+.cv-m-side small { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; }
+.cv-m-sheet:not(.is-on) { opacity: 0.55; }
+.cv-m-h { margin: 1.6rem 0 0.5rem; font-size: 0.74rem; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; opacity: 0.6; }
+.cv-m-list.is-sub li:first-child { border-top: 1.5px solid var(--black); }
+.cv-m-list.is-last { margin-top: 0; }
+.cv-m-list.is-last li:first-child { border-top: 0; }
+.cv-m-cat { display: block; width: 100%; padding: 0.55rem 0 0.6rem; border: 0; background: transparent; color: var(--black); text-align: left; text-decoration: none; font-size: clamp(1.3rem, 5.4vw, 1.7rem); font-weight: 700; letter-spacing: -0.015em; }
+.cv-menu-foot { margin-top: 2rem; }
+.cv-m-word { width: 100%; height: auto; margin-top: 1rem; padding-top: 1rem; border-top: 1.5px solid var(--black); }
+
+/* ── Filtro de alérgenos activo ── */
+.cv-filter { position: sticky; top: calc(var(--bar) + 0.5rem); z-index: 25; display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin: 0.8rem var(--pad) 0; padding: 0.6rem 0.9rem; background: #fff; color: var(--black); border: 1.5px solid var(--black); font-size: 0.85rem; }
+.cv-filter button { border: 0; background: transparent; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; white-space: nowrap; }
+
+
+/* ── Hoja de papel ── */
+.cv-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.cv-stage { position: relative; display: grid; grid-template-columns: minmax(0, 1fr); perspective: 2600px; perspective-origin: 18% 40%; padding: 0.9rem 0 0; overflow-x: clip; }
+.cv-paper { --spine: 3.5rem; grid-area: 1 / 1; position: relative; display: flex; align-items: flex-start; min-height: calc(100vh - var(--bar) - 1rem); background: var(--sheet); color: var(--ink); transform-origin: 0 50%; backface-visibility: hidden; box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.25), 0 10px 40px rgba(0, 0, 0, 0.55); }
+.cv-paper.is-kraft { --sheet: var(--kraft); --ink: #0a0a0a; }
+.cv-paper.is-olive { --sheet: var(--olive); --ink: var(--cream); }
+.cv-paper.is-red { --sheet: var(--red); --ink: var(--cream); }
+/* grano del papel + sombra del lomo */
+.cv-paper::before { content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 1; mix-blend-mode: multiply; opacity: 0.5; background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .1  0 0 0 0 .07  0 0 0 0 .03  0 0 0 .6 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>"); }
+.cv-paper::after { content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 1; background: linear-gradient(90deg, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0) 1.6rem), linear-gradient(270deg, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0) 1rem); }
+.cv-paper-in { --lpad: calc(var(--pad) + 0.7rem); position: relative; z-index: 2; flex: 1; min-width: 0; padding: 0.4rem 1.5rem 3rem var(--lpad); }
+/* título vertical en el lomo, como en las cartas impresas */
+.cv-spine { position: relative; z-index: 2; flex: 0 0 var(--spine); align-self: stretch; }
+.cv-spine span { position: sticky; top: calc(var(--bar) + 0.8rem); display: block; height: calc(100vh - var(--bar) - 1.6rem); writing-mode: vertical-rl; transform: rotate(180deg); text-align: left; font-size: clamp(2.8rem, 12vw, 3.6rem); line-height: 1; letter-spacing: -0.02em; text-transform: uppercase; white-space: nowrap; }
+/* hoja que se abre / se cierra */
+.cv-paper.flip-away { z-index: 3; animation: cvAway 0.95s cubic-bezier(0.55, 0.05, 0.3, 1) forwards; }
+.cv-paper.flip-in { z-index: 3; animation: cvIn 0.95s cubic-bezier(0.3, 0.05, 0.55, 1) forwards; }
+@keyframes cvAway { from { transform: rotateY(0); filter: brightness(1); } to { transform: rotateY(-112deg); filter: brightness(0.55); } }
+@keyframes cvIn { from { transform: rotateY(-112deg); filter: brightness(0.55); } to { transform: rotateY(0); filter: brightness(1); } }
+@media (prefers-reduced-motion: reduce) { .cv-paper.flip-away, .cv-paper.flip-in { animation: none; } }
+.cv-soon { margin-top: 3rem; }
+.cv-group { margin-top: 2.6rem; }
+.cv-gh { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; flex-wrap: wrap; opacity: 0.5; }
+.cv-gh h2 { margin: 0; font-weight: 400; font-size: clamp(1.8rem, 6.4vw, 2.7rem); line-height: 1; letter-spacing: -0.02em; }
+.cv-gh span { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.08em; }
+
+/* categoría desplegable */
+.cv-cat { margin-top: 1.4rem; }
+.cv-cat-h { display: flex; align-items: center; justify-content: space-between; gap: 1rem; width: 100%; padding: 1rem 0 0.7rem; border: 0; border-top: 1.5px solid var(--ink); background: transparent; text-align: left; }
+.cv-cat-t { display: flex; align-items: baseline; flex-wrap: wrap; gap: 0.15rem 0.9rem; }
+.cv-cat-h h3 { margin: 0; font-size: clamp(1.3rem, 5vw, 1.7rem); font-weight: 700; line-height: 1.1; letter-spacing: -0.005em; text-transform: uppercase; }
+.cv-cat-h small { font-size: 0.74rem; letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.6; }
+.cv-chev { flex: 0 0 auto; transition: transform 0.25s; }
+.cv-cat.is-closed .cv-chev { transform: rotate(180deg); }
+.cv-cat.is-closed .cv-cat-body { display: none; }
+
+/* platos: lista tipográfica */
+.cv-items { list-style: none; margin: 0; padding: 0; }
+.cv-item { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; padding: 0.85rem 0; border-bottom: 1px solid color-mix(in srgb, var(--ink) 18%, transparent); }
+.cv-i-main { flex: 1; min-width: 0; }
+.cv-i-top { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; }
+.cv-i-name { display: inline-flex; align-items: center; flex-wrap: wrap; gap: 0.2rem 0.5rem; font-size: 1.02rem; letter-spacing: 0.02em; text-transform: uppercase; }
+.cv-i-name em { font-style: normal; opacity: 0.5; }
+.cv-i-name small { font-size: 0.7rem; letter-spacing: 0.08em; opacity: 0.65; }
+.cv-price { font-size: 1.02rem; white-space: nowrap; }
+.cv-i-desc { margin: 0.25rem 0 0; max-width: 36rem; font-size: 0.92rem; line-height: 1.4; opacity: 0.62; }
+.cv-i-tag { font-style: italic; }
+.cv-thumb { flex: 0 0 auto; width: 4.6rem; height: 4.6rem; object-fit: cover; }
+.cv-variants { list-style: none; margin: 0.6rem 0 0; padding: 0.5rem 0 0; border-top: 1px dashed color-mix(in srgb, var(--ink) 40%, transparent); display: grid; gap: 0.45rem; }
+.cv-variants li { display: grid; grid-template-columns: 5rem 1fr; gap: 0.5rem; font-size: 0.85rem; }
+.cv-variants b { text-transform: uppercase; letter-spacing: 0.05em; font-size: 0.76rem; }
+.cv-variants .cv-als { grid-column: 2; }
+
+/* alérgenos: círculos numerados */
+.cv-als { display: inline-flex; flex-wrap: wrap; gap: 0.22rem; }
+.cv-al { display: inline-grid; place-items: center; width: 1.2rem; height: 1.2rem; border-radius: 50%; border: 1px solid currentColor; font-size: 0.62rem; font-weight: 700; line-height: 1; opacity: 0.8; }
+.cv-pend { display: none; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.06em; opacity: 0.8; }
+.is-pending { opacity: 0.55; }
+body.has-filter .is-pending .cv-pend { display: inline; }
+
+/* extras (add-ons) */
+.cv-extras h4 { margin: 1.3rem 0 0.2rem; font-size: 0.74rem; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; opacity: 0.7; }
+.cv-extras ul { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr; column-gap: 2.4rem; }
+.cv-extras li { display: flex; justify-content: space-between; gap: 1rem; padding: 0.55rem 0; border-bottom: 1px solid color-mix(in srgb, var(--ink) 18%, transparent); font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.02em; }
+@media (min-width: 720px) { .cv-extras ul { grid-template-columns: 1fr 1fr; } }
+
+.cv-soon b { display: block; font-weight: 400; font-size: clamp(2.2rem, 10vw, 4.5rem); line-height: 0.95; letter-spacing: -0.03em; text-transform: uppercase; }
+.cv-soon p { margin: 0.8rem 0 0; opacity: 0.7; }
+
+/* ── Pantalla ancha ── */
+@media (min-width: 900px) {
+  .cv-stage { max-width: 78rem; margin: 0 auto; padding: 1.2rem 2.2rem 1.4rem; }
+  .cv-paper { --spine: 8rem; }
+  .cv-paper-in { --lpad: calc(var(--pad) + 1.4rem); padding-bottom: 3rem; padding-right: 3rem; }
+  .cv-paper-in > * { max-width: 46rem; }
+  .cv-spine span { font-size: clamp(4.4rem, 8vw, 6.6rem); }
+  }
+
+/* ── Pie (el normal de la web) ── */
+.cv-foot { padding: 1.5rem var(--pad) calc(2rem + env(safe-area-inset-bottom)); text-align: center; font-size: 0.68rem; line-height: 1.4; letter-spacing: 0.03em; color: rgba(255, 255, 255, 0.6); }
+.cv-foot p { max-width: 40rem; margin: 0 auto 1rem; }
+.cv-foot a { color: inherit; text-decoration: none; }
+.cv-foot a:hover { text-decoration: underline; }
+.cv-foot .lang-switch { display: flex; justify-content: center; gap: 0.2rem; margin-bottom: 0.5rem; }
+.cv-foot .lang-switch button { padding: 0.2rem 0.4rem; border: 0; background: transparent; color: rgba(255, 255, 255, 0.45); font-size: 0.7rem; letter-spacing: 0.08em; }
+.cv-foot .lang-switch button.is-active { color: #fff; text-decoration: underline; text-underline-offset: 3px; }
+
+/* ── Alérgenos: lista de filtros con filetes ── */
+.cv-sheet { width: min(30rem, calc(100vw - 2rem)); max-width: none; max-height: 88vh; margin: auto; padding: 0; border: 2px solid var(--black); background: #fff; color: var(--black); }
+.cv-sheet::backdrop { background: rgba(10, 10, 10, 0.6); }
+.cv-sheet-in { padding: 1.1rem var(--pad) calc(1rem + env(safe-area-inset-bottom)); }
+.cv-sheet h2 { margin: 0 0 0.35rem; padding-bottom: 0.7rem; border-bottom: 1.5px solid var(--black); font-size: 1.15rem; line-height: 1.15; font-weight: 700; letter-spacing: -0.01em; }
+.cv-sheet p { margin: 0 0 0.9rem; font-size: 0.88rem; opacity: 0.7; }
+.cv-sheet .cv-als { display: grid; grid-template-columns: 1fr 1fr; gap: 0 1.4rem; margin: 0 0 0.6rem; padding-top: 0.2rem; border-top: 1.5px solid var(--black); }
+.cv-sheet .cv-al { width: 1.25rem; height: 1.25rem; margin-left: auto; border: 1px solid var(--black); color: var(--black); font-size: 0.65rem; opacity: 0.55; }
+.cv-pick { display: flex; align-items: center; gap: 0.6rem; padding: 0.65rem 0; border: 0; border-bottom: 1px solid rgba(10, 10, 10, 0.18); background: transparent; color: var(--black); text-align: left; font-size: 0.95rem; font-weight: 700; }
+.cv-radio { flex: 0 0 auto; width: 0.95rem; height: 0.95rem; border: 1.5px solid var(--black); border-radius: 50%; }
+.cv-pick[aria-pressed="true"] .cv-radio { background: var(--black); box-shadow: inset 0 0 0 2.5px #fff; }
+.cv-sheet-actions { display: flex; justify-content: space-between; gap: 0.6rem; padding-top: 0.5rem; border-top: 1.5px solid var(--black); }
+.cv-ghost, .cv-solid { padding: 0.8rem 0; border: 0; background: transparent; color: var(--black); font-size: 0.95rem; font-weight: 700; text-decoration: underline; text-underline-offset: 4px; }
