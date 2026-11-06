@@ -51,7 +51,6 @@ window.CARTA = {
         },
         {
           title: { es: 'Comidas', en: 'Lunch' },
-          note: { es: 'Desde las 12:00 · Platos complejos, ingredientes reales, sabores internacionales', en: 'From 12:00 · Complex dishes, real ingredients, international flavours' },
           blocks: [
             {
               title: { es: 'Starters', en: 'Starters' },

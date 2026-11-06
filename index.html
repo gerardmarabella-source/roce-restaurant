@@ -284,6 +284,13 @@
   @keyframes heLoop { from { transform: translateX(0); } to { transform: translateX(calc(-1 * var(--mq-cycle))); } }
   @media (prefers-reduced-motion: reduce) { .home-square-event.mq-on .mq { animation: none; } }
   
+
+  /* Cubo del evento: letrero LED (siempre en movimiento). */
+  .home-square-event, .home-square-event[data-env="day"], .home-square-event[data-env="night"] { background: #050505; color: var(--white); border: 2px solid var(--black); }
+  html[data-mode="night"] .home-square-event { border-color: var(--white); }
+  .home-square-event .he-text { align-self: stretch; display: flex; align-items: center; padding: 0.4rem 0; overflow: hidden; }
+  .home-square-event .he-led { display: block; flex: none; }
+
   .home-foot {
     flex-shrink: 0;
     height: var(--foot);
@@ -598,20 +605,46 @@
       return U && EVENTS.filter(function (x) { return U.bounds(x)[1] > now; }).sort(function (a, b) { return U.bounds(a)[0] - U.bounds(b)[0]; })[0];
     }
     // Cubo del evento más cercano (o en marcha), de día o de noche: blanco o negro según su ambiente, sin cartel.
-    function heMarquee(cube, title, when) {
-      var box = cube.querySelector('.he-text'), inner = box.querySelector('.mq');
-      var unit = function () { var u = document.createElement('span'); u.className = 'he-unit'; var st = document.createElement('strong'); st.className = 'home-name'; st.textContent = title; var sm = document.createElement('small'); sm.textContent = when; u.appendChild(st); u.appendChild(sm); return u; };
-      function measure() {
-        cube.classList.remove('mq-on'); inner.style.removeProperty('--mq-cycle'); inner.textContent = ''; inner.appendChild(unit());
-        var one = inner.firstChild.offsetWidth;
-        if (one <= box.clientWidth + 2 || (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches)) return;
-        cube.classList.add('mq-on');            // con el hueco final, una vuelta exacta = un bloque
-        var first = inner.firstChild, cycle = first.offsetWidth;
-        inner.appendChild(unit());
-        cube.style.setProperty('--mq-cycle', cycle + 'px'); cube.style.setProperty('--mq-dur', Math.max(6, cycle / 38).toFixed(1) + 's');
+    // Letrero LED (matriz de puntos, con la tipografía de la marca): el texto SIEMPRE se mueve, quepa o no quepa.
+    var LED = { cv: null, text: '', bits: null, total: 0, cols: 0, rows: 0, pitch: 0, off: 0, last: 0, run: false, still: false };
+    function ledLayout() {
+      var cv = LED.cv; if (!cv || !LED.text) return;
+      var box = cv.parentNode, bs = getComputedStyle(box), W = box.clientWidth - parseFloat(bs.paddingLeft) - parseFloat(bs.paddingRight), H = box.clientHeight - parseFloat(bs.paddingTop) - parseFloat(bs.paddingBottom); if (W < 20 || H < 10) return;
+      var dpr = Math.min(2, window.devicePixelRatio || 1), rows = Math.max(9, Math.min(13, Math.floor(H / 3.8)));
+      LED.rows = rows; LED.pitch = H / rows; LED.cols = Math.floor(W / LED.pitch);
+      cv.width = Math.round(LED.cols * LED.pitch * dpr); cv.height = Math.round(H * dpr);
+      cv.style.width = (LED.cols * LED.pitch) + 'px'; cv.style.height = H + 'px';
+      var o = document.createElement('canvas'), x = o.getContext('2d'), fs = Math.round(rows * 0.88), font = '700 ' + fs + 'px "Helvetica Neue Web", "Helvetica Neue", Arial, sans-serif';
+      try { x.letterSpacing = '1px'; } catch (e) { /* sin espaciado */ }
+      x.font = font; var w = Math.ceil(x.measureText(LED.text).width) + 2; o.width = w; o.height = rows;
+      try { x.letterSpacing = '1px'; } catch (e2) { /* sin espaciado */ }
+      x.font = font; x.fillStyle = '#fff'; x.textBaseline = 'alphabetic'; x.fillText(LED.text, 0, Math.round(rows * 0.8));
+      var d = x.getImageData(0, 0, w, rows).data; LED.bits = []; LED.total = w;
+      for (var cI = 0; cI < w; cI++) { var col = []; for (var r = 0; r < rows; r++) col.push(d[(r * w + cI) * 4 + 3] > 120); LED.bits.push(col); }
+      cv.getContext('2d').setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+    function ledDraw(t) {
+      var cv = LED.cv; if (!cv || !cv.isConnected) { LED.run = false; return; }
+      var dt = Math.min(0.1, (t - LED.last) / 1000 || 0); LED.last = t; if (!LED.still) LED.off += 13 * dt;
+      var ctx = cv.getContext('2d'), p = LED.pitch, rr = p * 0.36, k = Math.floor(LED.off), i, j;
+      if (LED.bits) {
+        ctx.clearRect(0, 0, LED.cols * p, LED.rows * p); ctx.fillStyle = '#2a0805';
+        for (i = 0; i < LED.cols; i++) for (j = 0; j < LED.rows; j++) { ctx.beginPath(); ctx.arc(i * p + p / 2, j * p + p / 2, rr, 0, 6.2832); ctx.fill(); }
+        ctx.shadowColor = '#ff2a1f'; ctx.shadowBlur = p * 0.9; ctx.fillStyle = '#ff2a1f';
+        for (i = 0; i < LED.cols; i++) { var c1 = LED.bits[(i + k) % LED.total]; for (j = 0; j < LED.rows; j++) if (c1[j]) { ctx.beginPath(); ctx.arc(i * p + p / 2, j * p + p / 2, rr, 0, 6.2832); ctx.fill(); } }
+        ctx.shadowBlur = 0; ctx.fillStyle = '#ff6a4a';
+        for (i = 0; i < LED.cols; i++) { var c2 = LED.bits[(i + k) % LED.total]; for (j = 0; j < LED.rows; j++) if (c2[j]) { ctx.beginPath(); ctx.arc(i * p + p / 2, j * p + p / 2, rr * 0.45, 0, 6.2832); ctx.fill(); } }
       }
-      measure();
-      if (document.fonts && document.fonts.ready) document.fonts.ready.then(measure);
+      requestAnimationFrame(ledDraw);
+    }
+    function heLed(cube, title, when) {
+      var box = cube.querySelector('.he-text'), cv = box.querySelector('canvas.he-led');
+      if (!cv) { box.textContent = ''; cv = document.createElement('canvas'); cv.className = 'he-led'; cv.setAttribute('role', 'img'); box.appendChild(cv); if (window.ResizeObserver) new ResizeObserver(function () { ledLayout(); }).observe(box); }
+      cv.setAttribute('aria-label', title + ' · ' + when);
+      LED.cv = cv; LED.text = (title + '   ·   ' + when + '          ').toUpperCase(); LED.still = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+      ledLayout();
+      if (document.fonts && document.fonts.ready) document.fonts.ready.then(ledLayout);
+      if (!LED.run) { LED.run = true; requestAnimationFrame(ledDraw); }
     }
     function renderLive() {
       var main = document.querySelector('.home-main'), cube = document.getElementById('homeEvent');
@@ -626,7 +659,7 @@
       var when = live ? hm(b[0]) + ' – ' + hm(b[1]) :
         new Intl.DateTimeFormat(l === 'en' ? 'en-GB' : 'es-ES', { timeZone: TZ, weekday: 'short', day: 'numeric', month: 'short' }).format(b[0]).replace('.', '') + ' · ' + hm(b[0]);
       // Una sola línea: título en grande y fecha pequeña; si el título no cabe, gira en bucle.
-      heMarquee(cube, e.title[l] || e.title.es, when);
+      heLed(cube, e.title[l] || e.title.es, when);
     }
     // Seguro de encaje: en horizontal la frase llega al suelo, pero si por lo que sea (ventana más alta que la pantalla, barras del
     // navegador…) se saliera de la página, se reduce justo lo necesario para que quepa entera.
