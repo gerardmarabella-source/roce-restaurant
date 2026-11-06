@@ -471,3 +471,14 @@ body.is-spring main { transform: translateY(0); transition: transform 0.4s cubic
 }
 .cv-foot-pull { height: 22vh; height: 22svh; }
 .cv-foot-pull[hidden] { display: none; }
+
+/* ── Sin cambios de hoja automáticos: el pie tiene una leyenda para elegir a qué carta ir ── */
+.cv-next, .cv-foot-pull, .cv-topbar, .cv-toplogo { display: none !important; }
+main, body.is-pulling main, body.is-spring main { transform: none !important; transition: none !important; }
+.cv-foot { padding: 2.2rem var(--pad) calc(2.5rem + env(safe-area-inset-bottom)); }
+.cv-foot-nav { max-width: 60rem; margin: 0 auto 2rem; border-top: 1px solid rgba(255, 255, 255, 0.35); }
+.cv-fn { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; width: 100%; padding: 0.95rem 0; border: 0; border-bottom: 1px solid rgba(255, 255, 255, 0.35); background: transparent; color: rgba(255, 255, 255, 0.6); text-align: left; font-family: var(--display); font-size: clamp(1.3rem, 5.6vw, 1.9rem); font-weight: 400; letter-spacing: -0.01em; text-transform: uppercase; cursor: pointer; }
+.cv-fn small { font-size: 0.72rem; letter-spacing: 0.14em; }
+.cv-fn.is-on { color: #fff; }
+.cv-fn:hover, .cv-fn:focus-visible { color: #fff; }
+.cv-foot { padding-bottom: calc(4.5rem + env(safe-area-inset-bottom)); }

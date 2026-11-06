@@ -156,56 +156,15 @@
     flipping = { t: setTimeout(endFlip, 1000) };
   }
 
-  /* ── Tirar de la página más allá del borde = cambiar de hoja ──
-     Al llegar al final (o al principio) y seguir tirando, la página sigue al dedo con resistencia (como un muelle), la barra se llena
-     (de azul a rojo) y, al llegar al máximo, la hoja cambia. Si sueltas antes, vuelve a su sitio. */
-  function nextSheet() { var ids = D.sections.map(function (s) { return s.id; }), i = ids.indexOf(cur); return i >= 0 && i < ids.length - 1 ? D.sections[i + 1] : null; }
-  function prevSheet() { var ids = D.sections.map(function (s) { return s.id; }), i = ids.indexOf(cur); return i > 0 ? D.sections[i - 1] : null; }
-  function paintNext() { var n = !!nextSheet(), p = $('cvNext'), sp = $('cvFootPull'); if (p) p.hidden = !n; if (sp) sp.hidden = !n; bottomSync(); }
-  function heat(t) {
-    var S = [[50, 110, 255], [40, 215, 240], [255, 220, 60], [255, 140, 40], [255, 40, 40]], x = Math.min(0.9999, Math.max(0, t)) * (S.length - 1), i = Math.floor(x), f = x - i;
-    return 'rgb(' + [0, 1, 2].map(function (k) { return Math.round(S[i][k] + (S[i + 1][k] - S[i][k]) * f); }).join(',') + ')';
+  /* ── Pie: leyenda para elegir a qué carta ir (nada automático al llegar abajo ni arriba) ── */
+  function renderFootNav() {
+    var n = $('cvFootNav'); if (!n) return;
+    n.innerHTML = D.sections.map(function (s) {
+      return '<button type="button" class="cv-fn' + (s.id === cur ? ' is-on' : '') + '" data-sec="' + s.id + '"><span>' + esc(tx(s.title)) + '</span>' + (s.soon ? '<small>' + esc(ui('soon')) + '</small>' : s.id === cur ? '<small>●</small>' : '<small>→</small>') + '</button>';
+    }).join('');
   }
-  var THR = 100, MAXP = 150, still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var pull = { v: 0, dir: 0, wacc: 0, timer: 0, lock: false, lastScroll: 0, t: null };
-  function atBottom() { return window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 2; }
-  function atTop() { return window.scrollY <= 1; }
-  function edgeOk(dir) { return dir < 0 && atTop() && !!prevSheet(); }   // arriba: se tira; abajo: la barra sigue el scroll nativo (bottomSync)
-  function blocked() { return pull.lock || !$('cvMenu').hidden || !!document.querySelector('dialog[open]'); }
-  function setPull(v, dir) {
-    pull.v = v; pull.dir = v > 0 ? dir : 0;
-    var p = Math.min(1, v / THR), st = document.documentElement.style;
-    document.body.classList.toggle('is-pulling', v > 0);
-    st.setProperty('--pull', still ? '0px' : (dir > 0 ? -v : v) + 'px');
-    // el logo del pie crece de su tamaño normal al gigante; al llegar al tamaño completo, cambia de hoja (arriba: logo que crece en el hueco)
-    st.setProperty('--lpb', dir > 0 ? p.toFixed(3) : '0'); st.setProperty('--lpt', dir < 0 ? p.toFixed(3) : '0');
-    var tf = $('cvTopFill'); if (tf) tf.style.width = (dir < 0 ? Math.round(p * 100) : 0) + '%';
-    var nb = $('cvNextBar'); if (nb) nb.style.width = (dir > 0 ? Math.round(p * 100) : 0) + '%';
-  }
-  function springBack() {
-    clearTimeout(pull.timer); pull.wacc = 0;
-    var b = document.body, had = b.classList.contains('is-pulling');
-    if (had) { b.classList.add('is-spring'); setTimeout(function () { b.classList.remove('is-spring'); }, 480); }
-    b.classList.remove('is-pulling'); setPull(0, pull.dir || 1); b.classList.remove('is-pulling');
-  }
-  function go(dir) {
-    var n = dir > 0 ? nextSheet() : prevSheet(); if (!n) return springBack();
-    pull.lock = true; armed = false; clearTimeout(pull.timer); pull.wacc = 0;
-    try { if (navigator.vibrate) navigator.vibrate(14); } catch (e) { /* sin vibración */ }
-    document.body.classList.add('is-pulling'); setPull(0, dir); setSheet(n.id);
-    setTimeout(function () { pull.lock = false; document.body.classList.remove('is-pulling'); }, 1300);
-  }
-  // Abajo: al final del pie hay un tramo de scroll extra; la barra blanca se llena según lo que bajas y, al llegar al 100 %, cambia de hoja
-  var dwell = 0, armed = false;   // armed: solo cuenta si desde el último cambio de hoja has estado claramente fuera de la zona de cambio (evita saltos dobles)
-  function bottomSync() {
-    var n = nextSheet(), sp = $('cvFootPull'), bar = $('cvNextBar'); if (!bar) return;
-    if (!n || !sp) { bar.style.width = '0%'; return; }
-    var H = sp.offsetHeight || 1, max = document.documentElement.scrollHeight - window.innerHeight, p = Math.min(1, Math.max(0, (window.scrollY - (max - H)) / H));
-    bar.style.width = Math.round(p * 100) + '%';
-    if (p < 0.5) armed = true;
-    if (p >= 0.985 && armed && !pull.lock) { if (!dwell) dwell = setTimeout(function () { dwell = 0; var s2 = $('cvFootPull'), m2 = document.documentElement.scrollHeight - window.innerHeight; if (!pull.lock && armed && nextSheet() && s2 && window.scrollY >= m2 - 3) go(1); }, 320); }
-    else if (dwell && p < 0.985) { clearTimeout(dwell); dwell = 0; }
-  }
+  function paintNext() { renderFootNav(); }
+
   // Título lateral FIJO en pantalla (sin sticky, que tiembla en móvil): solo se mueve al llegar el final de la hoja, manteniendo su sangría
   function spineSet() { var f = $('cvSpineFix'), t = $('cvSpineTxt'), s = secById(cur); if (!f || !t || !s) return; t.textContent = tx(s.title); f.setAttribute('style', spineStyle(s)); spinePos(true); }
   var spLast = null;
@@ -216,55 +175,8 @@
     var shift = Math.min(0, pr.bottom - 54 - (f.offsetTop + f.offsetHeight));
     if (spLast !== shift) { spLast = shift; f.style.transform = 'translate3d(0,' + shift + 'px,0)'; }
   }
-  var tickS = false;
-  function onScrollSync() { bottomSync(); spinePos(); }
-  window.addEventListener('scroll', function () { pull.lastScroll = Date.now(); onScrollSync(); }, { passive: true });
-  window.addEventListener('resize', function () { spinePos(true); bottomSync(); });
-
-  // rueda / trackpad: cada empujón estira un poco; si dejas de empujar, vuelve
-  window.addEventListener('wheel', function (e) {
-    if (blocked() || !e.deltaY) return;
-    var dir = e.deltaY > 0 ? 1 : -1;
-    if (!edgeOk(dir)) { if (pull.v) springBack(); return; }
-    if (Date.now() - pull.lastScroll < 300) return;                 // inercia del gesto con el que llegaste al borde
-    if (pull.dir !== dir) pull.wacc = 0;
-    pull.wacc = Math.min(MAXP, pull.wacc + Math.abs(e.deltaY) * 0.4);
-    setPull(pull.wacc, dir);
-    clearTimeout(pull.timer); pull.timer = setTimeout(springBack, 420);
-    if (pull.wacc >= THR) go(dir);
-  }, { passive: true });
-
-  // táctil: la página sigue al dedo (con resistencia) desde que llegas al borde
-  window.addEventListener('touchstart', function (e) { pull.t = { y: e.touches[0].clientY, last: e.touches[0].clientY, a: null, dir: 0, buzz: false }; }, { passive: true });
-  window.addEventListener('touchmove', function (e) {
-    var t = pull.t; if (!t || blocked()) return;
-    var y = e.touches[0].clientY, up = y < t.last; t.last = y;
-    if (t.a == null) {
-      var dir = up ? 1 : -1;
-      if (!edgeOk(dir)) return;
-      t.a = y; t.dir = dir;
-    }
-    var d = t.dir > 0 ? t.a - y : y - t.a;
-    if (d <= 0) { if (pull.v) setPull(0, t.dir); t.a = y; return; }       // vuelves a mover en sentido contrario
-    if (e.cancelable) e.preventDefault();
-    var v = Math.min(MAXP, d * 0.55);
-    setPull(v, t.dir);
-    if (v >= THR && !t.buzz) { t.buzz = true; try { if (navigator.vibrate) navigator.vibrate(8); } catch (x) { /* sin vibración */ } }
-  }, { passive: false });
-  function touchDone() {
-    var t = pull.t; pull.t = null; if (!t || t.a == null) return;
-    if (pull.v >= THR) go(t.dir); else springBack();
-  }
-  window.addEventListener('touchend', touchDone, { passive: true });
-  window.addEventListener('touchcancel', touchDone, { passive: true });
-  window.addEventListener('keydown', function (e) {
-    var dir = ['ArrowDown', 'PageDown', ' ', 'End'].indexOf(e.key) !== -1 ? 1 : ['ArrowUp', 'PageUp', 'Home'].indexOf(e.key) !== -1 ? -1 : 0;
-    if (!dir || blocked() || !edgeOk(dir) || Date.now() - pull.lastScroll < 300) return;
-    if (pull.dir !== dir) pull.wacc = 0;
-    pull.wacc = Math.min(MAXP, pull.wacc + 28); setPull(pull.wacc, dir);
-    clearTimeout(pull.timer); pull.timer = setTimeout(springBack, 600);
-    if (pull.wacc >= THR) go(dir);
-  });
+  window.addEventListener('scroll', function () { spinePos(); }, { passive: true });
+  window.addEventListener('resize', function () { spinePos(true); });
 
   /* ── Filtros: alérgenos + dieta + ingredientes ── */
   var presentIng = null;
@@ -357,6 +269,7 @@
   function openMenu() { renderMenu(); $('cvMenu').hidden = false; document.body.style.overflow = 'hidden'; $('cvMenuBtn').setAttribute('aria-expanded', 'true'); $('cvMenu').scrollTop = 0; $('cvMenuClose').focus(); }
   function closeMenu() { landing = false; if ($('cvMenu').hidden) return; $('cvMenu').hidden = true; document.body.style.overflow = ''; $('cvMenuBtn').setAttribute('aria-expanded', 'false'); }
   function openAl() { var d = $('cvSheet'); if (d.showModal) d.showModal(); else d.setAttribute('open', ''); }
+  $('cvFootNav').addEventListener('click', function (e) { var b = e.target.closest('.cv-fn'); if (b && b.dataset.sec !== cur) setSheet(b.dataset.sec); else if (b) window.scrollTo({ top: 0, behavior: 'smooth' }); });
   $('cvMenuBtn').addEventListener('click', openMenu);
   $('cvMenuClose').addEventListener('click', closeMenu);
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeMenu(); });
