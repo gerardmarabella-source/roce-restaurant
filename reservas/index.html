@@ -61,7 +61,7 @@
           "closes": "02:00"
         }
       ],
-      "acceptsReservations": "https://roce.es/reservas/#night",
+      "acceptsReservations": "https://roce.es/reservas/#restaurant-cocktails",
       "sameAs": [
         "https://www.instagram.com/somosroce"
       ]
@@ -103,7 +103,7 @@
           "closes": "20:00"
         }
       ],
-      "acceptsReservations": "https://roce.es/reservas/#day",
+      "acceptsReservations": "https://roce.es/reservas/#coffee-bakery-kitchen",
       "sameAs": [
         "https://www.instagram.com/somosroce"
       ]
@@ -484,7 +484,7 @@
   document.addEventListener('DOMContentLoaded', updateGroupLink);
   new MutationObserver(updateGroupLink).observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
 
-  // Selector Day / Night: cada ambiente tiene su motor. #day y #night en la URL
+  // Selector de espacio: cada ambiente tiene su motor. #coffee-bakery-kitchen y #restaurant-cocktails en la URL
   // abren ese ambiente; sin ellos se ve el motor conjunto.
   const zoneTabs = document.querySelectorAll('.reserve-zone');
   const backLink = document.querySelector('.reserve-back');
@@ -495,6 +495,11 @@
     zoneTabs.forEach((b) => b.setAttribute('aria-pressed', b.dataset.zone === zone ? 'true' : 'false'));
     backLink.setAttribute('href', zone === 'all' ? '/' : '/' + (zone === 'day' ? 'coffee-bakery-kitchen' : 'restaurant-cocktails') + '/');
     document.body.classList.toggle('zone-day', zone === 'day');
+    // La dirección refleja el espacio elegido (sin recargar ni ensuciar el historial).
+    if (zone === 'day' || zone === 'night') {
+      const h = '#' + (zone === 'day' ? 'coffee-bakery-kitchen' : 'restaurant-cocktails');
+      if (/^(#day|#night|#coffee-bakery-kitchen|#restaurant-cocktails|)$/.test(location.hash) && location.hash !== h) history.replaceState(null, '', location.pathname + location.search + h);
+    }
     document.getElementById('nightNotice').hidden = zone === 'day';
     const day = zone === 'day';
     document.querySelector('.footer-headline').textContent = day ? 'Coffee, Bakery & Kitchen' : 'Restaurant & Cocktails';
@@ -504,8 +509,9 @@
   }
   zoneTabs.forEach((b) => b.addEventListener('click', () => setZone(b.dataset.zone)));
   document.addEventListener('mesas:ambience', (e) => setZone(e.detail));
-  if (location.hash === '#day') setZone('day');
-  else if (location.hash === '#night') setZone('night');
+  // En la dirección: #restaurant-cocktails / #coffee-bakery-kitchen (los antiguos #night y #day siguen valiendo).
+  if (location.hash === '#coffee-bakery-kitchen' || location.hash === '#day') setZone('day');
+  else if (location.hash === '#restaurant-cocktails' || location.hash === '#night') setZone('night');
 
   const alquilerDetails = document.getElementById('alquilerDetails');
   function openAlquilerIfTargeted() {

@@ -666,7 +666,7 @@ async function sendWaitlistEmail(kind: "join" | "free", w: any): Promise<Respons
   const t = TW[w.lang === "en" ? "en" : "es"];
   const day = new Intl.DateTimeFormat(t.locale, { timeZone: "UTC", weekday: "long", day: "numeric", month: "long" }).format(new Date(w.want_date + "T12:00:00Z"));
   const rows = [[t.date, day], [t.party, String(w.party)], [t.time, w.want_time || t.any]];
-  const link = `${SITE}/reservas/?d=${w.want_date}&p=${w.party}${w.ambience ? "#" + w.ambience : ""}`;
+  const link = `${SITE}/reservas/?d=${w.want_date}&p=${w.party}${w.ambience ? "#" + (w.ambience === "day" ? "coffee-bakery-kitchen" : "restaurant-cocktails") : ""}`;
   const html = mailShell(`
 <tr><td style="padding:28px 24px 8px;color:#fff;font:32px Arial,sans-serif;text-transform:uppercase">${esc(kind === "free" ? t.freeTitle : t.joinTitle)}</td></tr>
 <tr><td style="padding:0 24px 20px;color:#ddd;font:16px/1.5 Arial,sans-serif">${esc(kind === "free" ? t.freeIntro : t.joinIntro)}</td></tr>
