@@ -160,14 +160,24 @@
   function nextSheet() { var ids = D.sections.map(function (s) { return s.id; }), i = ids.indexOf(cur); return i >= 0 && i < ids.length - 1 ? D.sections[i + 1] : null; }
   function paintNext() {
     var n = nextSheet(), p = $('cvNext'); if (!p) return;
-    p.hidden = !n; if (n) $('cvNextTxt').textContent = ui('next') + ' ' + tx(n.title) + ' ↓';
+    p.hidden = !n;
   }
   function prevSheet() { var ids = D.sections.map(function (s) { return s.id; }), i = ids.indexOf(cur); return i > 0 ? D.sections[i - 1] : null; }
   var over = { acc: 0, t: 0, y0: null, lock: false, dir: 0, edgeDir: 0, edgeT: 0, atEdge: false };
   function atBottom() { return window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 3; }
   function atTop() { return window.scrollY <= 1; }
-  function overBar(v) { var b = $('cvNextBar'); if (b) b.style.width = Math.min(100, Math.max(0, Math.round(v))) + '%'; }
-  function overReset() { over.acc = 0; over.dir = 0; overBar(0); }
+  // color de temperatura: azul (frío) → amarillo → rojo (caliente)
+  function heat(t) {
+    var S = [[50, 110, 255], [40, 215, 240], [255, 220, 60], [255, 140, 40], [255, 40, 40]], x = Math.min(0.9999, Math.max(0, t)) * (S.length - 1), i = Math.floor(x), f = x - i;
+    return 'rgb(' + [0, 1, 2].map(function (k) { return Math.round(S[i][k] + (S[i + 1][k] - S[i][k]) * f); }).join(',') + ')';
+  }
+  var overTimer = 0;
+  function overBar(v, dir) {
+    var pct = Math.min(100, Math.max(0, Math.round(v))), p = pct + '%', b = $((dir || over.dir) < 0 ? 'cvTopFill' : 'cvNextBar');
+    if (b) { b.style.width = p; b.style.background = heat(pct / 100); }
+    clearTimeout(overTimer); if (v > 0) overTimer = setTimeout(function () { over.acc = 0; over.dir = 0; var d = $('cvNextBar'), u = $('cvTopFill'); if (d) d.style.width = '0%'; if (u) u.style.width = '0%'; }, 900);
+  }
+  function overReset() { over.acc = 0; over.dir = 0; clearTimeout(overTimer); var d = $('cvNextBar'), u = $('cvTopFill'); if (d) d.style.width = '0%'; if (u) u.style.width = '0%'; }
   function blocked() { return over.lock || !$('cvMenu').hidden || !!document.querySelector('dialog[open]'); }
   function overGo(dir) {
     var n = dir > 0 ? nextSheet() : prevSheet(); if (!n) return;
@@ -180,18 +190,18 @@
     var now = Date.now();
     // el empujón con el que llegas al borde (y su inercia) no cuenta: hay que quedarse en el borde y volver a insistir
     if (over.edgeDir !== dir) { over.edgeDir = dir; over.edgeT = now; }
-    if (now - over.edgeT < 450) { over.t = now; return; }
+    if (now - over.edgeT < (dir > 0 ? 350 : 600)) { over.t = now; return; }
     if (now - over.t > 700 || over.dir !== dir) over.acc = 0; over.t = now; over.dir = dir;
-    over.acc += d; if (dir > 0) overBar(over.acc * 100 / need);
+    over.acc += d; overBar(over.acc * 100 / need, dir);
     if (over.acc >= need) overGo(dir);
   }
-  window.addEventListener('wheel', function (e) { if (e.deltaY > 0) overPush(e.deltaY, 450, 1); else if (e.deltaY < 0) overPush(-e.deltaY, 520, -1); }, { passive: true });
+  window.addEventListener('wheel', function (e) { if (e.deltaY > 0) overPush(e.deltaY, 450, 1); else if (e.deltaY < 0) overPush(-e.deltaY, 600, -1); }, { passive: true });
   window.addEventListener('touchstart', function (e) { over.y0 = e.touches[0].clientY; over.edgeStart = atBottom() ? 1 : atTop() ? -1 : 0; }, { passive: true });
   window.addEventListener('touchmove', function (e) {
     if (over.y0 == null || blocked()) return;
     var dy = over.y0 - e.touches[0].clientY;
     if (dy > 0 && over.edgeStart === 1 && atBottom() && nextSheet()) { over.acc = dy; over.dir = 1; overBar(dy * 100 / 150); if (dy >= 150) { over.y0 = null; overGo(1); } }
-    else if (dy < 0 && over.edgeStart === -1 && atTop() && prevSheet()) { if (-dy >= 170) { over.y0 = null; overGo(-1); } }
+    else if (dy < 0 && over.edgeStart === -1 && atTop() && prevSheet()) { over.dir = -1; overBar(-dy * 100 / 190, -1); if (-dy >= 190) { over.y0 = null; overGo(-1); } }
     else overReset();
   }, { passive: true });
   window.addEventListener('touchend', function () { over.y0 = null; overReset(); }, { passive: true });

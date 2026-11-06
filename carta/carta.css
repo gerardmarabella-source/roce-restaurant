@@ -338,3 +338,18 @@ html[data-sheet="dark"] { --sheet: #262624; --ink: var(--cream); }
 .cv-next i { display: block; width: 0; height: 100%; margin: 0; background: #fff; transition: width 0.12s linear; }
 @media (min-width: 900px) { .cv-foot { padding-inline: 2.2rem; } }
 .cv-foot { padding-bottom: calc(4.5rem + env(safe-area-inset-bottom)); }
+
+/* pie limpio: línea fina de "siguiente hoja" y el logo gigante */
+.cv-foot { padding: 3rem var(--pad) calc(4.5rem + env(safe-area-inset-bottom)); }
+.cv-next { max-width: 78rem; margin: 0 auto 2.2rem; font-size: 0.7rem; font-weight: 400; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(255, 255, 255, 0.6); }
+.cv-next-track { display: block; width: 100%; height: 2px; margin: 0.8rem 0 0; border: 0; background: rgba(255, 255, 255, 0.18); overflow: hidden; }
+.cv-next i { display: block; width: 0; height: 100%; margin: 0; background: #fff; transition: width 0.18s ease-out; }
+/* hoja anterior: línea fina bajo la cabecera */
+.cv-topbar { position: fixed; z-index: 29; left: 0; right: 0; top: var(--bar); height: 3px; pointer-events: none; }
+.cv-topbar i { display: block; width: 0; height: 100%; background: #fff; transition: width 0.18s ease-out; }
+
+/* barra de cambio de hoja: sin letrero, solo la barra que va de azul (frío) a rojo (caliente) */
+.cv-next { margin-bottom: 2rem; }
+.cv-next-track { height: 6px; margin: 0; border-radius: 3px; background: rgba(255, 255, 255, 0.14); }
+.cv-next i { border-radius: 3px; transition: width 0.15s ease-out, background-color 0.15s linear; }
+.cv-topbar i { transition: width 0.15s ease-out; }
