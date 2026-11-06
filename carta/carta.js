@@ -121,7 +121,6 @@
     document.documentElement.lang = L;
     $('cvAlLabel').textContent = ui('filters'); $('cvMenuLabel').textContent = ui('menu_btn'); $('cvCloseLabel').textContent = ui('close');
     $('cvDisclaimer').textContent = ui('note');
-    $('cvLegend').innerHTML = '<h3>' + esc(ui('al_leg')) + '</h3><ul>' + D.allergens.map(function (x) { return '<li><span class="cv-al">' + x.n + '</span>' + esc(tx(x)) + '</li>'; }).join('') + '</ul>';
     $('cvSheetTitle').textContent = ui('f_h'); $('cvSheetText').textContent = ui('f_p'); $('cvAlClear').textContent = ui('clear'); $('cvAlDone').textContent = ui('done');
     $('cvDietH').textContent = ui('diet_h'); $('cvAlH').textContent = ui('al_t'); $('cvIngH').textContent = ui('ing_h');
     ['cvDietClear', 'cvAlClearSec', 'cvIngClear'].forEach(function (id) { $(id).textContent = ui('clear_sec'); }); $('cvDietNote').textContent = ui('diet_note');

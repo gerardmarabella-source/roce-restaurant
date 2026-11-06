@@ -324,3 +324,8 @@ html[data-sheet="dark"] { --sheet: #262624; --ink: var(--cream); }
 /* ES/EN del menú centrado, pegado a la línea del logo */
 .cv-menu-foot .cv-lang { justify-content: center; }
 .cv-menu-foot .cv-lang button { padding: 0.3rem 0.6rem; }
+
+/* la línea que se llena para pasar de hoja: siempre visible al llegar abajo */
+.cv-next i { display: block; width: 0; height: 100%; margin: 0; background: #fff; }
+.cv-next-track { display: block; width: 100%; max-width: 12rem; height: 2px; margin: 0.7rem auto 0; background: rgba(255, 255, 255, 0.28); }
+.cv-next { margin-top: 2.2rem; }
