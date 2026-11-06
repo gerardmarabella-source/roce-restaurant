@@ -239,7 +239,6 @@
     var h = '<ul class="cv-m-list">' + D.sections.map(function (s) {
       return '<li><button type="button" class="cv-m-sheet' + (s.id === cur ? ' is-on' : '') + '" data-sec="' + s.id + '" style="--c:var(--' + s.color + ')"><span>' + esc(tx(s.title)) + '</span><span class="cv-m-side">' + (s.soon ? '<small>' + esc(ui('soon')) + '</small>' : '') + '</span></button></li>';
     }).join('') + '</ul>';
-    h += '<ul class="cv-m-list is-sub is-last"><li><button type="button" class="cv-m-cat" id="cvMenuAl">' + esc(ui('filters')) + (F.al.length + F.diet.length + F.ing.k.length ? ' (' + (F.al.length + F.diet.length + F.ing.k.length) + ')' : '') + '</button></li></ul>';
     $('cvMenuBody').innerHTML = h;
   }
   function openMenu() { renderMenu(); $('cvMenu').hidden = false; document.body.style.overflow = 'hidden'; $('cvMenuBtn').setAttribute('aria-expanded', 'true'); $('cvMenu').scrollTop = 0; $('cvMenuClose').focus(); }

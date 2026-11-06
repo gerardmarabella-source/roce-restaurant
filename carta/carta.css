@@ -270,3 +270,8 @@ body.has-filter .is-pending .cv-pend { display: inline; }
 .cv-chef-btn::before { content: none; }
 .cv-foot { padding-bottom: calc(3.5rem + env(safe-area-inset-bottom)); }
 .cv-chef .cv-pick-list li { border-width: 1.5px; }
+
+/* menú: ES/EN pegado a la línea del logo grande */
+.cv-menu-foot { justify-content: flex-end; margin-top: 0; }
+.cv-menu-foot .cv-lang { margin-bottom: 0.25rem; }
+.cv-m-word { margin-top: 0; padding-top: 0.9rem; }
