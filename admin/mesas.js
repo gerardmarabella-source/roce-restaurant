@@ -9,7 +9,7 @@
   var can = function (k) { return A.can ? A.can(k) : true; };
 
   var ST = { pending: 'Pendiente de pago', confirmed: 'Confirmada', seated: 'En mesa', completed: 'Completada', cancelled: 'Anulada', no_show: 'No vino' };
-  var SHAPE = { bench: [2.1, 2.3], square: [4.4, 4.4], rect: [6.2, 4.4], long: [10, 4.4], bar: [8, 3.2], sofa: [7, 5], round: [5.4, 5.4] };
+  var SHAPE = { bench: [2.1, 2.3], square: [4.4, 4.4], rect: [6.2, 4.4], long: [10, 4.4], bar: [8, 3.2], sofa: [7, 5], round: [5.4, 5.4], balda: [7, 2.2] };
   var PLAN_RATIO = 1660 / 1175;
 
   // Elementos fijos del local (barras, cocina, escaleras, aseos, columnas…) en gris claro, solo para situarse.
@@ -47,7 +47,7 @@
 
   var ZONE_NAME = { baja: 'Planta baja', alta: 'Planta alta', prive: 'Sala privé' };
 
-  var S = { view: 'day', date: '', zone: 'baja', time: '', zones: [], tables: [], services: [], loadedCfg: false, bookings: [], blocks: [], closures: [], busy: false, join: false, sel: [], zoom: 1, px: 0, py: 0, justMoved: false, mode: 'timeline', joinTime: '', prescribers: [], notes: {}, waitlist: [], crm: [], crmQ: '', crmSort: 'last', crmType: '', crmMap: {}, loyalty: null };
+  var S = { view: 'day', date: '', zone: 'baja', time: '', zones: [], tables: [], services: [], loadedCfg: false, bookings: [], blocks: [], closures: [], busy: false, join: false, sel: [], zoom: 1, px: 0, py: 0, justMoved: false, mode: 'timeline', joinTime: '', prescribers: [], notes: {}, waitlist: [], crm: [], crmQ: '', crmSort: 'last', crmType: '', crmMap: {}, loyalty: null, edit: null };
 
   function today() { return new Intl.DateTimeFormat('en-CA', { timeZone: TZ }).format(new Date()); }
   function addDays(d, n) { var x = new Date(d + 'T12:00:00Z'); x.setUTCDate(x.getUTCDate() + n); return x.toISOString().slice(0, 10); }
@@ -249,6 +249,64 @@
       [['day', 'Día', 'tables'], ['wait', 'Lista de espera', 'tables_wait'], ['crm', 'Clientes', 'tables_crm'], ['accounts', 'Cuentas empresa', 'tables_accounts'], ['stats', 'Estadísticas', 'tables_stats'], ['blocks', 'Bloqueos', 'tables_blocks'], ['config', 'Configuración', 'tables_config']].filter(function (v) { return can(v[2]); }).map(function (v) { return '<button type="button" class="ck-chip" data-view="' + v[0] + '" aria-pressed="' + (S.view === v[0]) + '">' + v[1] + '</button>'; }).join('') +
       '</div><div id="mtBody"></div>';
   }
+  // ─── Editar el plano: mover y girar mesas ─────────────────────────
+  function tcur(id) { var t = tableById(id), c = S.edit && S.edit.ch[id]; return { pos_x: c ? c.pos_x : t.pos_x, pos_y: c ? c.pos_y : t.pos_y, rot: c && c.rot != null ? c.rot : (t.rot || 0) }; }
+  function setCh(id, patch) { S.edit.ch[id] = Object.assign(tcur(id), patch); }
+  function changedIds() {
+    if (!S.edit) return [];
+    return Object.keys(S.edit.ch).filter(function (id) { var t = tableById(id), c = S.edit.ch[id]; return t && (Math.abs(c.pos_x - t.pos_x) > 0.005 || Math.abs(c.pos_y - t.pos_y) > 0.005 || (c.rot || 0) !== (t.rot || 0)); });
+  }
+  function editBar(E) {
+    if (S.mode !== 'map' || !can('tables_config')) return '';
+    if (!E) return '<div class="mt-edit"><button type="button" class="ad-btn is-small is-ghost" id="mtEdit">Editar plano</button></div>';
+    var sel = E.sel && tableById(E.sel), n = changedIds().length, r = sel ? Math.round(tcur(E.sel).rot) : 0, dis = sel ? '' : ' disabled';
+    return '<div class="mt-edit is-on"><p class="ad-meta">Arrastra las mesas para moverlas. Toca una para girarla. Los cambios no se guardan hasta que pulses «Guardar plano».</p>' +
+      '<div class="mt-edit-row"><b class="mt-edit-sel">' + (sel ? 'Mesa ' + esc(sel.name) + ' · ' + r + '°' : 'Ninguna mesa seleccionada') + '</b>' +
+      '<button type="button" class="ad-btn is-small is-ghost" data-rot="-15"' + dis + '>⟲ 15°</button><button type="button" class="ad-btn is-small is-ghost" data-rot="15"' + dis + '>⟳ 15°</button>' +
+      '<button type="button" class="ad-btn is-small is-ghost" data-rot="90"' + dis + '>Girar 90°</button><button type="button" class="ad-btn is-small is-ghost" data-rot="0"' + dis + '>Recta</button></div>' +
+      '<div class="mt-edit-row"><button type="button" class="ad-btn" id="mtEditSave">Guardar plano' + (n ? ' (' + n + ' mesa' + (n === 1 ? '' : 's') + ')' : '') + '</button><button type="button" class="ad-btn is-ghost" id="mtEditCancel">' + (n ? 'Descartar cambios' : 'Salir') + '</button></div></div>';
+  }
+  function saveEdit(btn) {
+    var ids = changedIds(); if (!ids.length) { S.edit = null; return render(); }
+    btn.disabled = true;
+    return Promise.all(ids.map(function (id) {
+      var t = tableById(id), c = S.edit.ch[id], body = { pos_x: Math.round(c.pos_x * 100) / 100, pos_y: Math.round(c.pos_y * 100) / 100 };
+      if ((c.rot || 0) !== (t.rot || 0)) body.rot = c.rot;
+      return api('dining_tables?id=eq.' + id, { method: 'PATCH', body: body, prefer: 'return=minimal' });
+    })).then(function () { return loadConfig(true); }).then(function () { S.edit = null; render(); flash('Plano guardado.', 'ok'); })
+      .catch(function (x) { btn.disabled = false; var s = String((x && x.message) || x); flash(/rot/i.test(s) ? 'Falta ejecutar mesas_plano_editor.sql en Supabase (crea la columna del giro).' : 'No se ha podido guardar el plano: ' + s, 'error'); });
+  }
+  // Arrastrar una mesa (solo en modo edición)
+  var tdrag = null;
+  root.addEventListener('pointerdown', function (e) {
+    if (!S.edit) return;
+    var tb = e.target.closest && e.target.closest('.mt-t'), mp = root.querySelector('.mt-map'); if (!tb || !mp) return;
+    var r = mp.getBoundingClientRect(), L = parseFloat(tb.style.left), T = parseFloat(tb.style.top);
+    tdrag = { id: tb.dataset.table, el: tb, pid: e.pointerId, r: r, gx: (e.clientX - r.left) / r.width * 100 - L, gy: (e.clientY - r.top) / r.height * 100 - T, moved: false, sx: e.clientX, sy: e.clientY, l: L, t: T };
+    try { tb.setPointerCapture(e.pointerId); } catch (x) { /* sin captura */ }
+    e.stopPropagation();
+  }, true);
+  document.addEventListener('pointermove', function (e) {
+    if (!tdrag || e.pointerId !== tdrag.pid) return;
+    if (!tdrag.moved && Math.hypot(e.clientX - tdrag.sx, e.clientY - tdrag.sy) < 4) return;
+    tdrag.moved = true; S.justMoved = true;
+    tdrag.l = Math.min(100, Math.max(0, (e.clientX - tdrag.r.left) / tdrag.r.width * 100 - tdrag.gx));
+    tdrag.t = Math.min(100, Math.max(0, (e.clientY - tdrag.r.top) / tdrag.r.height * 100 - tdrag.gy));
+    tdrag.el.style.left = tdrag.l.toFixed(2) + '%'; tdrag.el.style.top = tdrag.t.toFixed(2) + '%';
+  });
+  function endTdrag(e) {
+    if (!tdrag || e.pointerId !== tdrag.pid) return;
+    var d = tdrag; tdrag = null;
+    if (S.edit) {
+      S.edit.sel = d.id;
+      if (d.moved) { var b = S.edit.boxes[S.zone]; setCh(d.id, { pos_x: (d.l / 100 * b.bw + b.minx - b.PAD) / 1660 * 100, pos_y: (d.t / 100 * b.bh + b.oy) / 1175 * 100 }); }
+      render();
+    }
+    setTimeout(function () { S.justMoved = false; }, 80);
+  }
+  document.addEventListener('pointerup', endTdrag); document.addEventListener('pointercancel', endTdrag);
+  A.editing = function () { return !!S.edit; };
+
   function render() {
     if (!document.getElementById('mtBody')) shell();
     [].forEach.call(root.querySelectorAll('[data-view]'), function (b) { b.setAttribute('aria-pressed', String(b.dataset.view === S.view)); });
@@ -260,10 +318,10 @@
     if (v) { S.view = v.dataset.view; enter(); }
   });
 
-  function enter() {
+  function enter(quiet) {
     if (!S.date) S.date = today();
-    var b = document.getElementById('mtBody'); if (b) b.innerHTML = '<p class="ad-empty">Cargando…</p>';
-    return loadConfig().then(function () {
+    var b = document.getElementById('mtBody'); if (b && !quiet) b.innerHTML = '<p class="ad-empty">Cargando…</p>';
+    return loadConfig(quiet === true).then(function () {
       if (S.view === 'day') return loadDay();
       if (S.view === 'wait') return api('dining_waitlist?select=*&status=in.(waiting,notified)&want_date=gte.' + today() + '&order=want_date,created_at').then(function (r) { S.waitlist = r || []; });
       if (S.view === 'crm') return Promise.all([A.api('rpc/dining_crm', { method: 'POST', body: {} }), api('dining_customer_notes?select=*').catch(function () { return []; })]).then(function (r) { S.crm = r[0] || []; (r[1] || []).forEach(function (n) { S.notes[n.customer_key] = n; }); });
@@ -274,6 +332,7 @@
     }).then(render).catch(function (e) { flash('No se han podido cargar las mesas: ' + e.message, 'error'); });
   }
   A.openTables = function () { shell(); enter(); };
+  A.refreshTables = function () { if (S.edit || !document.getElementById('mtBody')) return Promise.resolve(); return enter(true); };
   A.mesasState = function () { return S; };
   A.mesasHelpers = { eur: eur, hm: hm, tierOf: tierOf, ckey: ckey, AL: AL, LBL: LBL, BK_KIND: BK_KIND, zoneName: function (id) { return zoneName(id); }, ST: ST };
 
@@ -362,12 +421,24 @@
     // El plano se recorta a donde hay mesas (con un margen) para que se vean grandes.
     var PW = 1660, PH = 1175, PAD = (CTX[S.zone] || []).length ? 110 : 45;
     var zt = S.tables.filter(function (t) { return t.zone_id === S.zone && t.pos_x != null; });
-    var boxes = zt.map(function (t) { var sz = SHAPE[t.shape] || SHAPE.square; return { t: t, cx: t.pos_x / 100 * PW, cy: t.pos_y / 100 * PH, w: sz[0] / 100 * PW, h: sz[1] / 100 * PW }; });
+    var E = S.edit && S.mode === 'map' ? S.edit : null;   // modo "Editar plano"
+    var boxes = zt.map(function (t) { var sz = SHAPE[t.shape] || SHAPE.square, c = E && E.ch[t.id], px = c ? c.pos_x : t.pos_x, py = c ? c.pos_y : t.pos_y; return { t: t, cx: px / 100 * PW, cy: py / 100 * PH, w: sz[0] / 100 * PW, h: sz[1] / 100 * PW, r: c && c.rot != null ? c.rot : (t.rot || 0) }; });
     var minx = Math.min.apply(null, boxes.map(function (b) { return b.cx - b.w / 2; })), maxx = Math.max.apply(null, boxes.map(function (b) { return b.cx + b.w / 2; }));
     var miny = Math.min.apply(null, boxes.map(function (b) { return b.cy - b.h / 2; })), maxy = Math.max.apply(null, boxes.map(function (b) { return b.cy + b.h / 2; }));
     if (!boxes.length) { minx = 0; maxx = PW; miny = 0; maxy = PH; }
     var bw = maxx - minx + 2 * PAD, bh = Math.max(maxy - miny + 2 * PAD, bw / 2.4), oy = miny - PAD - (bh - (maxy - miny + 2 * PAD)) / 2;
-    var map = '<div class="mt-map-wrap"><div class="mt-viewport" style="aspect-ratio:' + (bw / bh).toFixed(3) + '"><div class="mt-zoom"><button type="button" data-zoom="1" aria-label="Acercar">+</button><button type="button" data-zoom="-1" aria-label="Alejar">−</button><button type="button" data-zoom="0" aria-label="Ver todo">⤢</button></div><div class="mt-map">' +
+    if (E) {
+      // Al editar, el encuadre queda fijo (sin saltos al mover) e incluye también los elementos del local.
+      if (!E.boxes[S.zone]) {
+        var ex = [minx, maxx], ey = [miny, maxy];
+        (CTX[S.zone] || []).forEach(function (c) { if (c.k === 'col') { ex.push(c.x - c.s / 2, c.x + c.s / 2); ey.push(c.y - c.s / 2, c.y + c.s / 2); } else { ex.push(c.x0, c.x1); ey.push(c.y0, c.y1); } });
+        var ax = Math.min.apply(null, ex), bx = Math.max.apply(null, ex), ay = Math.min.apply(null, ey), by = Math.max.apply(null, ey), p2 = 70;
+        var w2 = bx - ax + 2 * p2, h2 = Math.max(by - ay + 2 * p2, w2 / 2.4);
+        E.boxes[S.zone] = { minx: ax, PAD: p2, bw: w2, bh: h2, oy: ay - p2 - (h2 - (by - ay + 2 * p2)) / 2 };
+      }
+      var eb = E.boxes[S.zone]; minx = eb.minx; PAD = eb.PAD; bw = eb.bw; bh = eb.bh; oy = eb.oy;
+    }
+    var map = '<div class="mt-map-wrap"><div class="mt-viewport" style="aspect-ratio:' + (bw / bh).toFixed(3) + '"><div class="mt-zoom"><button type="button" data-zoom="1" aria-label="Acercar">+</button><button type="button" data-zoom="-1" aria-label="Alejar">−</button><button type="button" data-zoom="0" aria-label="Ver todo">⤢</button></div><div class="mt-map' + (E ? ' is-edit' : '') + '">' +
       (CTX[S.zone] || []).map(function (c) {
         if (c.k === 'col') { var cl = ((c.x - c.s / 2 - minx + PAD) / bw * 100).toFixed(2), ct = ((c.y - c.s / 2 - oy) / bh * 100).toFixed(2); return '<i class="mt-ctx is-col" style="left:' + cl + '%;top:' + ct + '%;width:' + (c.s / bw * 100).toFixed(2) + '%;height:' + (c.s / bh * 100).toFixed(2) + '%"></i>'; }
         return '<div class="mt-ctx' + (c.dash ? ' is-dash' : '') + (c.hatch ? ' is-hatch' : '') + (c.round ? ' is-round' : '') + '" style="left:' + ((c.x0 - minx + PAD) / bw * 100).toFixed(2) + '%;top:' + ((c.y0 - oy) / bh * 100).toFixed(2) + '%;width:' + ((c.x1 - c.x0) / bw * 100).toFixed(2) + '%;height:' + ((c.y1 - c.y0) / bh * 100).toFixed(2) + '%"><span>' + esc(c.l) + '</span></div>';
@@ -375,9 +446,10 @@
       boxes.map(function (b) {
         var t = b.t, o = occupancy(t, iso);
         var tip = t.name + ' · ' + t.seats_max + ' p.' + (o.booking ? ' · ' + o.booking.name + ' (' + o.booking.party + ')' : o.block ? ' · bloqueada' + (o.block.note ? ': ' + o.block.note : '') : '');
-        return '<button type="button" class="mt-t is-' + o.state + (S.sel.indexOf(t.id) !== -1 ? ' is-sel' : '') + ' sh-' + esc(t.shape) + '" data-table="' + t.id + '" title="' + esc(tip) + '" style="left:' + ((b.cx - minx + PAD) / bw * 100).toFixed(2) + '%;top:' + ((b.cy - oy) / bh * 100).toFixed(2) + '%;width:' + (b.w / bw * 100).toFixed(2) + '%;height:' + (b.h / bh * 100).toFixed(2) + '%">' +
+        return '<button type="button" class="mt-t is-' + o.state + (S.sel.indexOf(t.id) !== -1 ? ' is-sel' : '') + (E && E.sel === t.id ? ' is-esel' : '') + ' sh-' + esc(t.shape) + '" data-table="' + t.id + '" title="' + esc(tip) + '" style="--rot:' + b.r + 'deg;left:' + ((b.cx - minx + PAD) / bw * 100).toFixed(2) + '%;top:' + ((b.cy - oy) / bh * 100).toFixed(2) + '%;width:' + (b.w / bw * 100).toFixed(2) + '%;height:' + (b.h / bh * 100).toFixed(2) + '%">' +
           '<b>' + esc(t.name) + '</b>' + (o.booking ? '<i>' + esc(o.booking.name.split(' ')[0]) + '</i>' : '') + '</button>';
       }).join('') + '</div></div>' +
+      editBar(E) +
       '<p class="ad-meta mt-legend"><span class="mt-dot is-free"></span>Libre <span class="mt-dot is-booked"></span>Reservada <span class="mt-dot is-pending"></span>Pendiente de pago <span class="mt-dot is-seated"></span>En mesa <span class="mt-dot is-blocked"></span>Bloqueada</p></div>';
 
     var list = S.bookings.length ? S.bookings.map(function (b) {
@@ -554,11 +626,16 @@
       var rid = t.dataset.rowtable, ri = S.sel.indexOf(rid); if (ri === -1) S.sel.push(rid); else S.sel.splice(ri, 1);
       return void render();
     }
-    if (t.id === 'mtJoin') { S.join = !S.join; S.sel = []; return void render(); }
+    if (t.id === 'mtJoin') { if (S.edit) return void flash('Termina de editar el plano antes de juntar mesas.', 'error'); S.join = !S.join; S.sel = []; return void render(); }
     if (t.id === 'mtJoinClear') { S.sel = []; return void render(); }
     if (t.id === 'mtJoinGo') { var picked = S.sel.map(tableById).filter(Boolean), jt = S.joinTime; S.join = false; S.sel = []; S.joinTime = ''; render(); return void openNew({ tables: picked, time: jt }); }
+    if (t.id === 'mtEdit') { S.edit = { ch: {}, sel: '', boxes: {} }; S.join = false; S.sel = []; return void render(); }
+    if (t.id === 'mtEditCancel') { S.edit = null; return void render(); }
+    if (t.id === 'mtEditSave') return void saveEdit(t);
+    if (t.dataset.rot != null && S.edit && S.edit.sel) { var cr = tcur(S.edit.sel).rot, dd = +t.dataset.rot, nr = t.dataset.rot === '0' ? 0 : (((cr + dd) % 360) + 360) % 360; setCh(S.edit.sel, { rot: nr }); return void render(); }
     if (t.id === 'mtNew') return void openNew({});
     if (t.id === 'mtPrint') return void printDay();
+    if (t.dataset.table && S.edit) { S.edit.sel = t.dataset.table; return void render(); }
     if (t.dataset.table) {
       var tb = tableById(t.dataset.table), o = occupancy(tb, at(S.date, S.time));
       if (S.join) {

@@ -511,7 +511,7 @@ const TT = {
     cxRefund: (m: string) => `Te devolvemos la fianza de ${m} a tu tarjeta; según tu banco puede tardar unos días.`, cxKept: (m: string) => `Como la anulación se hizo con poca antelación, la fianza de ${m} no se devuelve.`,
     rfSubject: "Fianza devuelta · ROCE", rfTitle: "Fianza devuelta", rfIntro: (m: string) => `Hemos devuelto la fianza de ${m} a tu tarjeta. Según tu banco puede tardar unos días en verse reflejada.`,
     privacy: "BRUNCH DINNER ETC. SL (ROCE) trata tus datos para gestionar tu reserva. Más información y tus derechos en https://roce.es/privacidad.html o escribiendo a reservas@roce.es.",
-    guarantee: "Garantía", guaranteeVal: (m: string) => `${m} solo si no vienes`,
+    guarantee: "Garantía", guaranteeVal: (m: string) => `${m} solo si no vienes`, penalty: "Penalización", charged: "Cobrado a tu tarjeta",
     duration: "Duración de la mesa", durTxt: (d: string, g: number) => `Tu mesa estará disponible ${d}. La mantenemos ${g} min desde la hora reservada: pasado ese tiempo la damos por no presentada.`,
     cardPayIntro: (m: string, until: string, h: number) => `Hemos guardado tu mesa. Para confirmarla, añade una tarjeta como garantía antes del ${until}. No se cobra nada ahora: solo si no vienes o anulas con menos de ${h} h de antelación se cobrarán ${m} automáticamente. Si no la añades, la mesa se liberará.`,
     cardPayBtn: "Añadir tarjeta (no se cobra nada)",
@@ -531,7 +531,7 @@ const TT = {
     cxRefund: (m: string) => `We are refunding the ${m} deposit to your card; depending on your bank it can take a few days.`, cxKept: (m: string) => `As the cancellation was made at short notice, the ${m} deposit is not refunded.`,
     rfSubject: "Deposit refunded · ROCE", rfTitle: "Deposit refunded", rfIntro: (m: string) => `We have refunded the ${m} deposit to your card. Depending on your bank it can take a few days to show up.`,
     privacy: "BRUNCH DINNER ETC. SL (ROCE) processes your data to manage your booking. More information and your rights at https://roce.es/privacidad.html or by writing to reservas@roce.es.",
-    guarantee: "Guarantee", guaranteeVal: (m: string) => `${m} only if you do not show up`,
+    guarantee: "Guarantee", guaranteeVal: (m: string) => `${m} only if you do not show up`, penalty: "Penalty", charged: "Charged to your card",
     duration: "Table time", durTxt: (d: string, g: number) => `Your table will be available for ${d}. We hold it for ${g} min after the booked time: after that we treat it as a no-show.`,
     cardPayIntro: (m: string, until: string, h: number) => `We are holding your table. To confirm it, add a card as a guarantee before ${until}. Nothing is charged now: only if you don't show up or cancel less than ${h} h in advance will ${m} be charged automatically. If you don't add it, the table will be released.`,
     cardPayBtn: "Add card (nothing is charged)",
@@ -565,7 +565,7 @@ async function sendTableEmail(kind: "ok" | "pay" | "cancel" | "refund" | "charge
 
   const durMin = Math.round((new Date(b.ends_at).getTime() - starts.getTime()) / 60000);
   const fmtD = (m: number) => { const h = Math.floor(m / 60), r = m % 60; return (h ? `${h} h` : "") + (h && r ? " " : "") + (r ? `${r} min` : ""); };
-  const rows = [[t.ref, b.ref], [t.date, day], [t.time, hm], [t.party, String(b.party)], ...(zone ? [[t.zone, zone]] : []), ...(dep > 0 ? [card ? [t.guarantee, t.guaranteeVal(money(dep))] : [t.deposit, money(dep)]] : []), ...(durMin > 0 ? [[t.duration, fmtD(durMin)]] : [])];
+  let rows: string[][] = [[t.ref, b.ref], [t.date, day], [t.time, hm], [t.party, String(b.party)], ...(zone ? [[t.zone, zone]] : []), ...(dep > 0 ? [card ? [t.guarantee, t.guaranteeVal(money(dep))] : [t.deposit, money(dep)]] : []), ...(durMin > 0 ? [[t.duration, fmtD(durMin)]] : [])];
   let title = t.okTitle, intro: string = t.okIntro, subject = t.okSubject(amb, when), extra = "", button = btnHtml(page, t.manageBtn);
   if (kind === "pay") {
     title = t.payTitle; intro = card ? t.cardPayIntro(money(dep), until, hours) : t.payIntro(money(dep), until); subject = t.paySubject(amb, when); button = btnHtml(page, card ? t.cardPayBtn : t.payBtn);
@@ -577,6 +577,12 @@ async function sendTableEmail(kind: "ok" | "pay" | "cancel" | "refund" | "charge
     title = t.rfTitle; intro = t.rfIntro(money(dep)); subject = t.rfSubject; button = "";
   } else if (kind === "charge") {
     title = t.chTitle; intro = t.chIntro(money(Number(b.fee_charged_cents || dep))); subject = t.chSubject; button = "";
+  }
+  // La fila "Garantía · solo si no vienes" solo vale mientras la reserva sigue en pie. En los avisos de anulación y de cobro
+  // se sustituye por lo que de verdad pasa con el dinero (penalización o importe cobrado) o se quita si no hay cobro.
+  if (card && (kind === "cancel" || kind === "charge")) {
+    const fee = Number(b.fee_charged_cents || dep);
+    rows = rows.flatMap((r) => r[0] !== t.guarantee ? [r] : kind === "charge" ? [[t.charged, money(fee)]] : (b.late_cancel && b.payment_status !== "released" ? [[t.penalty, money(dep)]] : []));
   }
   if (kind === "ok" || kind === "pay") {
     if (durMin > 0) extra += `<tr><td style="padding:14px 24px 0;color:#ddd;font:13px/1.5 Arial,sans-serif">${esc(t.durTxt(fmtD(durMin), sv?.grace_min ?? 15) + ((l === "en" ? sv?.end_note_en : sv?.end_note_es) ? " " + (l === "en" ? sv?.end_note_en : sv?.end_note_es) : ""))}</td></tr>`;

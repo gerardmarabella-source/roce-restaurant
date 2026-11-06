@@ -15,7 +15,7 @@
 .mt-zoom { position: absolute; top: 0.5rem; right: 0.5rem; z-index: 5; display: flex; flex-direction: column; gap: 4px; }
 .mt-zoom button { width: 2.1rem; height: 2.1rem; border: 1px solid var(--fg); background: var(--bg); font-size: 1.1rem; line-height: 1; cursor: pointer; }
 .mt-map { position: absolute; inset: 0; transform-origin: 0 0; border: 0; background: repeating-linear-gradient(45deg, transparent 0 14px, rgba(10, 10, 10, 0.03) 14px 15px); overflow: hidden; }
-.mt-t { position: absolute; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0; border: 1.5px solid var(--fg); background: var(--bg); color: var(--fg); cursor: pointer; overflow: hidden; line-height: 1.05; }
+.mt-t { position: absolute; transform: translate(-50%, -50%) rotate(var(--rot, 0deg)); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0; border: 1.5px solid var(--fg); background: var(--bg); color: var(--fg); cursor: pointer; overflow: hidden; line-height: 1.05; }
 .mt-t b { font-family: var(--display); font-weight: 400; font-size: clamp(0.5rem, 1.1vw, 0.8rem); }
 .mt-t i { font-style: normal; font-size: clamp(0.45rem, 0.9vw, 0.65rem); opacity: 0.85; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .mt-t.sh-round { border-radius: 50%; }
@@ -166,3 +166,14 @@
 .mt-tier.is-oro { background: #d4af37; color: #0a0a0a; border-color: #d4af37; }
 .mt-tier.is-plata { background: #c9ccd1; color: #0a0a0a; border-color: #c9ccd1; }
 .mt-tier.is-bronce { background: #b9814a; color: #fff; border-color: #b9814a; }
+
+/* Editar plano: mover y girar mesas */
+.mt-t b, .mt-t i { transform: rotate(calc(-1 * var(--rot, 0deg))); }
+.mt-t.sh-balda { border-radius: 3px; }
+.mt-map.is-edit .mt-t { cursor: grab; touch-action: none; user-select: none; }
+.mt-map.is-edit .mt-t:active { cursor: grabbing; }
+.mt-t.is-esel { outline: 3px solid var(--fg); outline-offset: 2px; z-index: 4; }
+.mt-edit { margin: 0.7rem 0 0.2rem; }
+.mt-edit.is-on { padding: 0.8rem 1rem; border: 1.5px solid var(--fg); }
+.mt-edit-row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; margin-top: 0.6rem; }
+.mt-edit-sel { min-width: 11rem; }

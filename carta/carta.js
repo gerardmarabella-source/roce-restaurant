@@ -4,17 +4,44 @@
   'use strict';
   var D = window.CARTA;
   var UI = {
-    es: { allergies: 'Alergias', al_h: '¿Alguna alergia o intolerancia?', al_p: 'Marca lo que debes evitar y ocultamos los platos que lo llevan.', clear: 'Quitar', done: 'Ver carta', without: 'Sin', pending: 'Consulta alérgenos', soon: 'Muy pronto', soon_p: 'Estamos preparando esta carta.',
-      note: 'Si tienes alguna alergia o intolerancia, avisa a nuestro equipo antes de pedir. Pueden existir trazas de otros alérgenos. Los alérgenos de las bebidas los confirma el equipo.', remove: 'Quitar filtro', menu: 'Carta', menu_btn: 'Menú', close: 'Cerrar', cats: 'Categorías' },
-    en: { allergies: 'Allergies', al_h: 'Any allergy or intolerance?', al_p: 'Tick what you must avoid and we will hide the dishes that contain it.', clear: 'Clear', done: 'See menu', without: 'Without', pending: 'Ask about allergens', soon: 'Coming soon', soon_p: 'We are preparing this menu.',
-      note: 'If you have any allergy or intolerance, please tell our team before ordering. Traces of other allergens may be present. Allergens in drinks are confirmed by our team.', remove: 'Remove filter', menu: 'Menu', menu_btn: 'Menu', close: 'Close', cats: 'Categories' }
+    es: { allergies: 'Alergias', filters: 'Filtros', f_h: 'Filtra la carta', f_p: 'Marca alérgenos, tipo de dieta o ingredientes y te mostramos solo lo que encaja.', diet_h: 'Tipo de dieta', al_t: 'Alérgenos (ocultamos los platos que los llevan)', ing_h: 'Ingredientes', clear: 'Quitar', done: 'Ver carta', without: 'Sin', with_: 'Con', pending: 'Consúltalo con el equipo', soon: 'Muy pronto', soon_p: 'Estamos preparando esta carta.',
+      b_al: 'Sin alérgenos', b_diet: 'Dieta', diet_note: 'La dieta y los ingredientes son orientativos según lo que figura en la carta. Si tienes dudas, pregunta al equipo.',
+      note: 'Si tienes alguna alergia o intolerancia, avisa a nuestro equipo antes de pedir. Pueden existir trazas de otros alérgenos. Los alérgenos de las bebidas los confirma el equipo.', remove: 'Quitar filtros', menu: 'Carta', menu_btn: 'Menú', close: 'Cerrar', cats: 'Categorías' },
+    en: { allergies: 'Allergies', filters: 'Filters', f_h: 'Filter the menu', f_p: 'Tick allergens, diet or ingredients and we will show only what fits.', diet_h: 'Diet', al_t: 'Allergens (we hide dishes containing them)', ing_h: 'Ingredients', clear: 'Clear', done: 'See menu', without: 'Without', with_: 'With', pending: 'Ask our team', soon: 'Coming soon', soon_p: 'We are preparing this menu.',
+      b_al: 'Without allergens', b_diet: 'Diet', diet_note: 'Diet and ingredients are indicative, based on what the menu lists. If in doubt, ask our team.',
+      note: 'If you have any allergy or intolerance, please tell our team before ordering. Traces of other allergens may be present. Allergens in drinks are confirmed by our team.', remove: 'Clear filters', menu: 'Menu', menu_btn: 'Menu', close: 'Close', cats: 'Categories' }
+  };
+  var DIETS = [
+    { k: 'veg', es: 'Vegetariano', en: 'Vegetarian' }, { k: 'vegan', es: 'Vegano', en: 'Vegan' }, { k: 'pesc', es: 'Pescetariano', en: 'Pescatarian' },
+    { k: 'gf', es: 'Sin gluten', en: 'Gluten-free' }, { k: 'lf', es: 'Sin lácteos', en: 'Dairy-free' }
+  ];
+  var ING = [
+    { k: 'pollo', es: 'Pollo', en: 'Chicken', re: /\bpollo\b/ }, { k: 'ternera', es: 'Ternera / vacuno', en: 'Beef', re: /ternera|\bvaca\b|entrecot|pastrami|costilla/ },
+    { k: 'pato', es: 'Pato', en: 'Duck', re: /\bpato\b|magret/ }, { k: 'bacon', es: 'Bacon', en: 'Bacon', re: /bacon/ }, { k: 'jamon', es: 'Jamón', en: 'Ham', re: /jamon/ },
+    { k: 'cecina', es: 'Cecina', en: 'Cured beef', re: /cecina/ }, { k: 'salmon', es: 'Salmón', en: 'Salmon', re: /salmon/ }, { k: 'atun', es: 'Atún', en: 'Tuna', re: /\batun\b|ventresca/ },
+    { k: 'huevo', es: 'Huevo', en: 'Egg', re: /huevo/ }, { k: 'queso', es: 'Queso', en: 'Cheese', re: /queso|burrata|cottage|cheddar|\bedam\b|\bfeta\b|parmesano/ },
+    { k: 'yogur', es: 'Yogur / kéfir', en: 'Yogurt / kefir', re: /yogur|kefir/ }, { k: 'aguacate', es: 'Aguacate', en: 'Avocado', re: /aguacate|guacamole/ },
+    { k: 'tomate', es: 'Tomate', en: 'Tomato', re: /tomate/ }, { k: 'cebolla', es: 'Cebolla', en: 'Onion', re: /cebolla/ }, { k: 'pepino', es: 'Pepino', en: 'Cucumber', re: /pepino/ },
+    { k: 'hummus', es: 'Hummus', en: 'Hummus', re: /hummus/ }, { k: 'berenjena', es: 'Berenjena', en: 'Aubergine', re: /berenjena/ }, { k: 'calabacin', es: 'Calabacín', en: 'Courgette', re: /calabacin/ },
+    { k: 'rucula', es: 'Rúcula', en: 'Rocket', re: /rucula/ }, { k: 'espinaca', es: 'Espinaca', en: 'Spinach', re: /espinaca/ }, { k: 'apio', es: 'Apio', en: 'Celery', re: /\bapio\b/ },
+    { k: 'ajo', es: 'Ajo', en: 'Garlic', re: /\bajo\b/ }, { k: 'sesamo', es: 'Sésamo', en: 'Sesame', re: /sesamo/ }, { k: 'quinoa', es: 'Quinoa', en: 'Quinoa', re: /quinoa/ },
+    { k: 'arroz', es: 'Arroz', en: 'Rice', re: /arroz/ }, { k: 'falafel', es: 'Falafel', en: 'Falafel', re: /falafel/ }, { k: 'remolacha', es: 'Remolacha', en: 'Beetroot', re: /remolacha/ },
+    { k: 'mango', es: 'Mango', en: 'Mango', re: /\bmango\b/ }, { k: 'platano', es: 'Plátano', en: 'Banana', re: /platano/ }, { k: 'pina', es: 'Piña', en: 'Pineapple', re: /\bpina\b/ },
+    { k: 'manzana', es: 'Manzana', en: 'Apple', re: /manzana/ }, { k: 'coco', es: 'Coco', en: 'Coconut', re: /\bcoco\b/ }, { k: 'cacahuete', es: 'Cacahuete', en: 'Peanut', re: /cacahuete/ },
+    { k: 'granola', es: 'Granola', en: 'Granola', re: /granola/ }, { k: 'miel', es: 'Miel', en: 'Honey', re: /\bmiel\b/ }, { k: 'jengibre', es: 'Jengibre', en: 'Ginger', re: /jengibre/ }
+  ];
+  var RE = {
+    meat: /pollo|\bpato\b|magret|costilla|bacon|jamon|cecina|ternera|\bvaca\b|entrecot|pastrami|filete|chorizo/, fish: /salmon|\batun\b|ventresca|pescado|anchoa/,
+    dairy: /queso|burrata|cottage|cheddar|\bedam\b|\bfeta\b|parmesano|yogur|kefir|mantequilla|leche|\bnata\b/, egg: /huevo|holandesa|mayonesa|\bmayo\b/, honey: /\bmiel\b/
   };
   var L = 'es';
   try { L = localStorage.getItem('roce_lang') || (/^en/i.test(navigator.language || '') ? 'en' : 'es'); } catch (e) {}
-  var sel = [];
-  try { sel = JSON.parse(sessionStorage.getItem('roce_carta_al') || '[]'); } catch (e) {}
+  /* Filtros activos: alérgenos a evitar, tipo de dieta e ingredientes (sin / con) */
+  var F = { al: [], diet: [], ing: { m: 'sin', k: [] } };
+  try { var s0 = JSON.parse(sessionStorage.getItem('roce_carta_f') || 'null'); if (s0) F = { al: s0.al || [], diet: s0.diet || [], ing: s0.ing || { m: 'sin', k: [] } }; } catch (e) {}
   var cur = (location.hash || '').replace('#', '');
-  if (!D.sections.some(function (s) { return s.id === cur; })) cur = D.sections[0].id;
+  var landing = !D.sections.some(function (s) { return s.id === cur; });   // el QR abre primero el menú; desde ahí se elige la carta
+  if (landing) cur = D.sections[0].id;
 
   var $ = function (id) { return document.getElementById(id); };
   var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
@@ -27,7 +54,26 @@
     return p.toFixed(2).replace('.', ',') + ' €';
   }
   function als(arr) { return arr && arr.length ? '<span class="cv-als" aria-label="' + esc(ui('allergies')) + '">' + arr.map(function (n) { return '<span class="cv-al" title="' + esc(tx(D.allergens[n - 1])) + '">' + n + '</span>'; }).join('') + '</span>' : ''; }
-  function attrs(it, blk) { return ' data-al="' + (it.al || []).join(',') + '"' + (blk.alPending ? ' data-pending="1"' : ''); }
+  function norm(s) { return String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''); }
+  /* Ingredientes (por texto) y dietas (por texto + alérgenos). y = cumple, n = no, u = sin datos (bebidas sin alérgenos confirmados). `diet: [...]` en menu.js lo fuerza a mano. */
+  function analyze(it, blk) {
+    if (it._a) return it._a;
+    var txt = norm([it.name, it.es, (it.variants || []).map(function (v) { return v.name + ' ' + v.es; }).join(' ')].join(' '));
+    var al = it.al || [], known = !blk.alPending || !!it.es, yn = function (b) { return b ? 'y' : 'n'; };
+    var meat = RE.meat.test(txt), fish = RE.fish.test(txt), dairy = RE.dairy.test(txt);
+    var dt = {
+      veg: known ? yn(!meat && !fish) : 'u', pesc: known ? yn(!meat) : 'u',
+      vegan: known ? yn(!meat && !fish && !dairy && !RE.egg.test(txt) && !RE.honey.test(txt) && al.indexOf(3) === -1 && al.indexOf(7) === -1) : 'u',
+      gf: blk.alPending ? 'u' : yn(al.indexOf(1) === -1), lf: blk.alPending ? 'u' : yn(al.indexOf(7) === -1 && !dairy)
+    };
+    if (Array.isArray(it.diet)) DIETS.forEach(function (d) { dt[d.k] = it.diet.indexOf(d.k) !== -1 ? 'y' : 'n'; });
+    it._a = { dt: dt, ing: ING.filter(function (g) { return g.re.test(txt); }).map(function (g) { return g.k; }), text: !!it.es };
+    return it._a;
+  }
+  function attrs(it, blk) {
+    var a = analyze(it, blk), dt = DIETS.map(function (d) { return d.k + ':' + a.dt[d.k]; }).join(',');
+    return ' data-al="' + (it.al || []).join(',') + '" data-dt="' + dt + '" data-ing="' + a.ing.join(',') + '"' + (blk.alPending ? ' data-pending="1"' : '') + (a.text ? ' data-text="1"' : '');
+  }
   var secById = function (id) { return D.sections.filter(function (s) { return s.id === id; })[0]; };
 
   /* ── Platos y listas ── */
@@ -64,14 +110,15 @@
       g.blocks.forEach(function (b, bi) { var id = 'c' + si + gi + bi; body += cat(id, b); });
       body += '</div>';
     });
-    return h + body + '</div><div class="cv-spine" aria-hidden="true"><span>' + esc(tx(s.title)) + '</span></div></article>';
+    return h + body + '</div><div class="cv-spine" aria-hidden="true"><span><i>' + esc(tx(s.title)) + '</i></span></div></article>';
   }
 
   function render() {
     document.documentElement.lang = L;
-    $('cvAlLabel').textContent = ui('allergies'); $('cvMenuLabel').textContent = ui('menu_btn'); $('cvCloseLabel').textContent = ui('close');
+    $('cvAlLabel').textContent = ui('filters'); $('cvMenuLabel').textContent = ui('menu_btn'); $('cvCloseLabel').textContent = ui('close');
     $('cvDisclaimer').textContent = ui('note');
-    $('cvSheetTitle').textContent = ui('al_h'); $('cvSheetText').textContent = ui('al_p'); $('cvAlClear').textContent = ui('clear'); $('cvAlDone').textContent = ui('done');
+    $('cvSheetTitle').textContent = ui('f_h'); $('cvSheetText').textContent = ui('f_p'); $('cvAlClear').textContent = ui('clear'); $('cvAlDone').textContent = ui('done');
+    $('cvDietH').textContent = ui('diet_h'); $('cvAlH').textContent = ui('al_t'); $('cvIngH').textContent = ui('ing_h'); $('cvDietNote').textContent = ui('diet_note');
     $('cvSections').innerHTML = D.sections.map(page).join('');
     buildSheet(); applyFilter(); endFlip(); sheetState(); measure(); onScroll();
   }
@@ -103,34 +150,59 @@
     flipping = { t: setTimeout(endFlip, 1000) };
   }
 
-  /* ── Alérgenos ── */
+  /* ── Filtros: alérgenos + dieta + ingredientes ── */
+  var presentIng = null;
+  function ingPresent() {
+    if (presentIng) return presentIng;
+    var seen = {};
+    D.sections.forEach(function (s) { s.groups.forEach(function (g) { g.blocks.forEach(function (b) { b.items.forEach(function (i) { analyze(i, b).ing.forEach(function (k) { seen[k] = 1; }); }); }); }); });
+    presentIng = ING.filter(function (g) { return seen[g.k]; });
+    return presentIng;
+  }
   function buildSheet() {
+    $('cvDietList').innerHTML = DIETS.map(function (d) {
+      return '<button type="button" class="cv-pick" data-d="' + d.k + '" aria-pressed="' + (F.diet.indexOf(d.k) !== -1) + '"><i class="cv-radio"></i><span>' + esc(tx(d)) + '</span></button>';
+    }).join('');
     $('cvAlList').innerHTML = D.allergens.map(function (a) {
-      return '<button type="button" class="cv-pick" data-n="' + a.n + '" aria-pressed="' + (sel.indexOf(a.n) !== -1) + '"><i class="cv-radio"></i><span>' + esc(tx(a)) + '</span><span class="cv-al">' + a.n + '</span></button>';
+      return '<button type="button" class="cv-pick" data-n="' + a.n + '" aria-pressed="' + (F.al.indexOf(a.n) !== -1) + '"><i class="cv-radio"></i><span>' + esc(tx(a)) + '</span><span class="cv-al">' + a.n + '</span></button>';
+    }).join('');
+    $('cvIngMode').innerHTML = ['sin', 'con'].map(function (m) { return '<button type="button" data-m="' + m + '" aria-pressed="' + (F.ing.m === m) + '">' + esc(m === 'sin' ? ui('without') : ui('with_')) + '</button>'; }).join('');
+    $('cvIngList').innerHTML = ingPresent().map(function (g) {
+      return '<button type="button" class="cv-chip" data-i="' + g.k + '" aria-pressed="' + (F.ing.k.indexOf(g.k) !== -1) + '">' + esc(tx(g)) + '</button>';
     }).join('');
   }
+  function dtOf(el) { var o = {}; (el.dataset.dt || '').split(',').forEach(function (p) { var x = p.split(':'); o[x[0]] = x[1]; }); return o; }
   function applyFilter() {
-    document.body.classList.toggle('has-filter', sel.length > 0);
+    var n = F.al.length + F.diet.length + F.ing.k.length;
+    document.body.classList.toggle('has-filter', n > 0);
     [].forEach.call(document.querySelectorAll('.cv-item'), function (el) {
-      var al = (el.dataset.al || '').split(',').filter(Boolean).map(Number);
-      var bad = sel.length && al.some(function (n) { return sel.indexOf(n) !== -1; });
-      el.classList.toggle('is-hidden', !!bad);
-      el.classList.toggle('is-pending', !!(sel.length && el.dataset.pending && !bad));
+      var al = (el.dataset.al || '').split(',').filter(Boolean).map(Number), hide = false, pend = false;
+      if (F.al.length) { if (al.some(function (x) { return F.al.indexOf(x) !== -1; })) hide = true; else if (el.dataset.pending) pend = true; }
+      var dt = dtOf(el);
+      F.diet.forEach(function (k) { if (dt[k] === 'n') hide = true; else if (dt[k] !== 'y') pend = true; });
+      if (F.ing.k.length) {
+        var ing = (el.dataset.ing || '').split(',').filter(Boolean), hit = F.ing.k.some(function (k) { return ing.indexOf(k) !== -1; });
+        if (F.ing.m === 'sin') { if (hit) hide = true; else if (el.dataset.pending && !el.dataset.text) pend = true; }
+        else if (!hit) hide = true;
+      }
+      el.classList.toggle('is-hidden', hide);
+      el.classList.toggle('is-pending', !hide && pend);
     });
     [].forEach.call(document.querySelectorAll('.cv-cat'), function (b) {
       b.classList.toggle('is-hidden', !!b.querySelector('.cv-item') && !b.querySelector('.cv-item:not(.is-hidden)'));
     });
     [].forEach.call(document.querySelectorAll('.cv-group'), function (g) { g.classList.toggle('is-hidden', !!g.querySelector('.cv-cat') && !g.querySelector('.cv-cat:not(.is-hidden)')); });
-    var c = $('cvAlCount'); c.textContent = sel.length; c.hidden = !sel.length;
-    var f = $('cvFilter');
-    if (sel.length) {
-      f.hidden = false;
-      f.innerHTML = '<span>' + esc(ui('without')) + ': <b>' + sel.map(function (n) { return esc(tx(D.allergens[n - 1])); }).join(', ') + '</b></span><button type="button" id="cvFilterOff">' + esc(ui('remove')) + '</button>';
-      $('cvFilterOff').onclick = function () { setSel([]); };
-    } else f.hidden = true;
-    try { sessionStorage.setItem('roce_carta_al', JSON.stringify(sel)); } catch (e) {}
+    var c = $('cvAlCount'); c.textContent = n; c.hidden = !n;
+    var f = $('cvFilter'), parts = [];
+    if (F.al.length) parts.push(ui('b_al') + ': <b>' + F.al.map(function (x) { return esc(tx(D.allergens[x - 1])); }).join(', ') + '</b>');
+    if (F.diet.length) parts.push(ui('b_diet') + ': <b>' + F.diet.map(function (k) { return esc(tx(DIETS.filter(function (d) { return d.k === k; })[0])); }).join(', ') + '</b>');
+    if (F.ing.k.length) parts.push((F.ing.m === 'sin' ? ui('without') : ui('with_')) + ': <b>' + F.ing.k.map(function (k) { return esc(tx(ING.filter(function (g) { return g.k === k; })[0])); }).join(', ') + '</b>');
+    if (n) { f.hidden = false; f.innerHTML = '<span>' + parts.join(' · ') + '</span><button type="button" id="cvFilterOff">' + esc(ui('remove')) + '</button>'; $('cvFilterOff').onclick = function () { setF({ al: [], diet: [], ing: { m: F.ing.m, k: [] } }); }; }
+    else f.hidden = true;
+    try { sessionStorage.setItem('roce_carta_f', JSON.stringify(F)); } catch (e) {}
   }
-  function setSel(a) { sel = a; buildSheet(); applyFilter(); }
+  function setF(x) { F = x; buildSheet(); applyFilter(); }
+  function toggle(arr, v) { var i = arr.indexOf(v); return i === -1 ? arr.concat(v) : arr.filter(function (y) { return y !== v; }); }
 
   /* ── Altura de la barra fija + pestaña activa según el scroll ── */
   function measure() { document.documentElement.style.setProperty('--bar', document.getElementById('top').offsetHeight + 'px'); }
@@ -164,12 +236,12 @@
       return '<li><button type="button" class="cv-m-sheet' + (s.id === cur ? ' is-on' : '') + '" data-sec="' + s.id + '" style="--c:var(--' + s.color + ')"><span>' + esc(tx(s.title)) + '</span><span class="cv-m-side">' + (s.soon ? '<small>' + esc(ui('soon')) + '</small>' : '') + '</span></button></li>';
     }).join('') + '</ul>';
     var cats = [].slice.call(document.querySelectorAll('#pg-' + cur + ' .cv-cat:not(.is-hidden)'));
-    if (cats.length) h += '<p class="cv-m-h">' + esc(ui('cats')) + '</p><ul class="cv-m-list is-sub">' + cats.map(function (c) { return '<li><a class="cv-m-cat" href="#' + c.id + '" data-cat="' + c.id + '">' + esc(c.querySelector('h3').textContent) + '</a></li>'; }).join('') + '</ul>';
-    h += '<ul class="cv-m-list is-sub is-last"><li><button type="button" class="cv-m-cat" id="cvMenuAl">' + esc(ui('allergies')) + (sel.length ? ' (' + sel.length + ')' : '') + '</button></li></ul>';
+    if (cats.length && !landing) h += '<p class="cv-m-h">' + esc(ui('cats')) + '</p><ul class="cv-m-list is-sub">' + cats.map(function (c) { return '<li><a class="cv-m-cat" href="#' + c.id + '" data-cat="' + c.id + '">' + esc(c.querySelector('h3').textContent) + '</a></li>'; }).join('') + '</ul>';
+    h += '<ul class="cv-m-list is-sub is-last"><li><button type="button" class="cv-m-cat" id="cvMenuAl">' + esc(ui('filters')) + (F.al.length + F.diet.length + F.ing.k.length ? ' (' + (F.al.length + F.diet.length + F.ing.k.length) + ')' : '') + '</button></li></ul>';
     $('cvMenuBody').innerHTML = h;
   }
   function openMenu() { renderMenu(); $('cvMenu').hidden = false; document.body.style.overflow = 'hidden'; $('cvMenuBtn').setAttribute('aria-expanded', 'true'); $('cvMenu').scrollTop = 0; $('cvMenuClose').focus(); }
-  function closeMenu() { if ($('cvMenu').hidden) return; $('cvMenu').hidden = true; document.body.style.overflow = ''; $('cvMenuBtn').setAttribute('aria-expanded', 'false'); }
+  function closeMenu() { landing = false; if ($('cvMenu').hidden) return; $('cvMenu').hidden = true; document.body.style.overflow = ''; $('cvMenuBtn').setAttribute('aria-expanded', 'false'); }
   function openAl() { var d = $('cvSheet'); if (d.showModal) d.showModal(); else d.setAttribute('open', ''); }
   $('cvMenuBtn').addEventListener('click', openMenu);
   $('cvMenuClose').addEventListener('click', closeMenu);
@@ -182,16 +254,19 @@
   });
   $('cvAlBtn').addEventListener('click', openAl);
   $('cvAlDone').addEventListener('click', function () { $('cvSheet').close ? $('cvSheet').close() : $('cvSheet').removeAttribute('open'); });
-  $('cvAlClear').addEventListener('click', function () { setSel([]); });
-  $('cvSheet').addEventListener('click', function (e) { if (e.target === this) this.close(); });
-  $('cvAlList').addEventListener('click', function (e) {
-    var b = e.target.closest('.cv-pick'); if (!b) return;
-    var n = +b.dataset.n, i = sel.indexOf(n);
-    setSel(i === -1 ? sel.concat(n) : sel.filter(function (x) { return x !== n; }));
+  $('cvAlClear').addEventListener('click', function () { setF({ al: [], diet: [], ing: { m: F.ing.m, k: [] } }); });
+  $('cvSheet').addEventListener('click', function (e) {
+    if (e.target === this) { this.close(); return; }
+    var d = e.target.closest('[data-d]'), n = e.target.closest('[data-n]'), i = e.target.closest('[data-i]'), m = e.target.closest('[data-m]');
+    if (d) setF({ al: F.al, diet: toggle(F.diet, d.dataset.d), ing: F.ing });
+    else if (n) setF({ al: toggle(F.al, +n.dataset.n), diet: F.diet, ing: F.ing });
+    else if (i) setF({ al: F.al, diet: F.diet, ing: { m: F.ing.m, k: toggle(F.ing.k, i.dataset.i) } });
+    else if (m) setF({ al: F.al, diet: F.diet, ing: { m: m.dataset.m, k: F.ing.k } });
   });
   document.addEventListener('roce:lang', function () {
     var l = window.ROCE_I18N && window.ROCE_I18N.getLang();
     if (l && l !== L) { L = l; current = ''; render(); }
   });
   render();
+  if (landing) openMenu();
 })();
