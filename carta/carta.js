@@ -171,15 +171,12 @@
   }
   function paintNext() { renderFootNav(); }
 
-  // Título lateral FIJO en pantalla (sin sticky, que tiembla en móvil): solo se mueve al llegar el final de la hoja, manteniendo su sangría
+  // Título lateral FIJO en pantalla (sin sticky ni desplazamientos por JS, que van con retraso): al llegar al final de la hoja lo tapa el pie, que sube por encima
   function spineSet() { var f = $('cvSpineFix'), t = $('cvSpineTxt'), s = secById(cur); if (!f || !t || !s) return; t.textContent = tx(s.title); f.setAttribute('style', spineStyle(s)); spinePos(true); }
-  var spLast = null;
   function spinePos(force) {
     var f = $('cvSpineFix'), paper = document.querySelector('.cv-paper:not([hidden])'); if (!f || !paper) return;
     var pr = paper.getBoundingClientRect(), sc = paper.querySelector('.cv-spine'), w = sc ? sc.getBoundingClientRect().width : 0;
     if (force || f._w !== w || f._l !== pr.right) { f.style.width = w + 'px'; f.style.left = (pr.right - w) + 'px'; f._w = w; f._l = pr.right; }
-    var shift = Math.min(0, pr.bottom - 54 - (f.offsetTop + f.offsetHeight));
-    if (spLast !== shift) { spLast = shift; f.style.transform = 'translate3d(0,' + shift + 'px,0)'; }
   }
   window.addEventListener('scroll', function () { spinePos(); }, { passive: true });
   window.addEventListener('resize', function () { spinePos(true); });

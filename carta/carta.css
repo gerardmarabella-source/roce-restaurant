@@ -315,6 +315,7 @@ html[data-sheet="dark"] { --sheet: #262624; --ink: var(--cream); }
 
 /* pie: solo el logo ROCE gigante y, encima, la barra para pasar de hoja */
 .cv-foot { padding: 3.5rem var(--pad) calc(2rem + env(safe-area-inset-bottom)); text-align: left; }
+.cv-foot { position: relative; z-index: 7; background: #0a0a0a; }
 .cv-foot-logo { display: block; width: 100%; max-width: 78rem; height: auto; margin: 0 auto; }
 @media (min-width: 900px) { .cv-foot { padding-inline: 2.2rem; } }
 .cv-foot { padding-bottom: calc(4.5rem + env(safe-area-inset-bottom)); }
