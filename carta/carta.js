@@ -54,7 +54,8 @@
     if (typeof p === 'string') return p;
     return p.toFixed(2).replace('.', ',') + ' €';
   }
-  function als(arr) { return arr && arr.length ? '<span class="cv-als" aria-label="' + esc(ui('allergies')) + '">' + arr.map(function (n) { return '<span class="cv-al" title="' + esc(tx(D.allergens[n - 1])) + '">' + n + '</span>'; }).join('') + '</span>' : ''; }
+  /* Alérgenos junto al nombre: números en color separados por comas (1,3,7); el nombre completo va en el título y para lectores de pantalla. */
+  function als(arr) { return arr && arr.length ? '<span class="cv-als" title="' + esc(arr.map(function (n) { return tx(D.allergens[n - 1]); }).join(', ')) + '" aria-label="' + esc(ui('allergies') + ': ' + arr.map(function (n) { return tx(D.allergens[n - 1]); }).join(', ')) + '">' + arr.join(',') + '</span>' : ''; }
   function norm(s) { return String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''); }
   /* Ingredientes (por texto) y dietas (por texto + alérgenos). y = cumple, n = no, u = sin datos (bebidas sin alérgenos confirmados). `diet: [...]` en menu.js lo fuerza a mano. */
   function analyze(it, blk) {
