@@ -54,16 +54,16 @@
       '<div class="cv-cat-body"><ul class="cv-items">' + b.items.map(function (i) { return item(i, b); }).join('') + '</ul>' + extras(b) + '</div></section>';
   }
   function page(s, si) {
-    var h = '<div class="cv-page" id="pg-' + s.id + '" data-sec="' + s.id + '"' + (s.id === cur ? '' : ' hidden') + '><h1 class="cv-sheet-title">' + esc(tx(s.title)) + '</h1>';
-    if (s.soon) return h + '<div class="cv-soon"><b>' + esc(ui('soon')) + '</b><p>' + esc(ui('soon_p')) + '</p></div></div>';
-    s.groups.forEach(function (g, gi) {
+    var h = '<article class="cv-paper is-' + s.color + '" id="pg-' + s.id + '" data-sec="' + s.id + '"' + (s.id === cur ? '' : ' hidden') + '><span class="cv-hole" aria-hidden="true"></span><span class="cv-hole is-2" aria-hidden="true"></span><div class="cv-paper-in"><h1 class="cv-sr">' + esc(tx(s.title)) + '</h1>';
+    if (s.soon) h += '<div class="cv-soon"><b>' + esc(ui('soon')) + '</b><p>' + esc(ui('soon_p')) + '</p></div>';
+    else s.groups.forEach(function (g, gi) {
       var same = tx(g.title) === tx(s.title);
       h += '<div class="cv-group">';
       if (!same || g.note) h += '<div class="cv-gh">' + (same ? '' : '<h2>' + esc(tx(g.title)) + '</h2>') + (g.note ? '<span>' + esc(tx(g.note)) + '</span>' : '') + '</div>';
       g.blocks.forEach(function (b, bi) { h += cat('c' + si + gi + bi, b); });
       h += '</div>';
     });
-    return h + '</div>';
+    return h + '</div><div class="cv-spine" aria-hidden="true"><span>' + esc(tx(s.title)) + '</span></div></article>';
   }
 
   function render() {
@@ -76,14 +76,21 @@
     $('cvBook').innerHTML = D.sections.map(function (s) {
       return '<button type="button" class="cv-leaf is-' + s.color + '" data-sec="' + s.id + '" style="--c:var(--' + s.color + ')" aria-pressed="' + (s.id === cur) + '"><span>' + esc(tx(s.title)) + '</span>' + (s.soon ? '<i>' + esc(ui('soon')) + '</i>' : '') + '</button>';
     }).join('');
-    buildSheet(); applyFilter(); sheetState(); measure(); onScroll();
+    buildSheet(); applyFilter(); endFlip(); sheetState(); measure(); onScroll();
   }
 
-  /* ── Cambiar de hoja ── */
-  function sheetState() {
+  /* ── Cambiar de hoja: la hoja se abre / se cierra como en una carpeta ── */
+  var flipping = null;
+  function endFlip() {
+    if (!flipping) return;
+    clearTimeout(flipping.t);
+    [].forEach.call(document.querySelectorAll('.cv-paper'), function (p) { p.classList.remove('flip-away', 'flip-in'); p.hidden = p.dataset.sec !== cur; });
+    flipping = null;
+  }
+  function sheetState(keep) {
     var s = secById(cur);
     document.documentElement.setAttribute('data-sheet', s.color);
-    [].forEach.call(document.querySelectorAll('.cv-page'), function (p) { p.hidden = p.dataset.sec !== cur; });
+    [].forEach.call(document.querySelectorAll('.cv-paper'), function (p) { p.hidden = p.dataset.sec !== cur && p.dataset.sec !== keep; });
     [].forEach.call(document.querySelectorAll('.cv-leaf'), function (b) { b.setAttribute('aria-pressed', String(b.dataset.sec === cur)); });
     var catsOf = [].slice.call(document.querySelectorAll('#pg-' + cur + ' .cv-cat'));
     $('cvTabs').innerHTML = catsOf.map(function (c) { return '<a class="cv-tab" href="#' + c.id + '" data-cat="' + c.id + '">' + esc(c.querySelector('h3').textContent) + '</a>'; }).join('');
@@ -91,12 +98,17 @@
     syncTabs();
   }
   function setSheet(id) {
+    endFlip();
     if (id === cur) return;
-    cur = id; sheetState(); measure();
-    try { history.replaceState(null, '', '#' + id); } catch (e) {}
+    var idx = function (x) { return D.sections.map(function (s) { return s.id; }).indexOf(x); };
+    var from = $('pg-' + cur), to = $('pg-' + id), forward = idx(id) > idx(cur), old = cur;
     window.scrollTo({ top: 0, behavior: 'instant' });
-    var p = $('pg-' + id); p.classList.remove('is-turning'); void p.offsetWidth; p.classList.add('is-turning');
+    cur = id; sheetState(old); measure();
+    try { history.replaceState(null, '', '#' + id); } catch (e) {}
     current = ''; onScroll();
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) { endFlip(); return; }
+    (forward ? from : to).classList.add(forward ? 'flip-away' : 'flip-in');
+    flipping = { t: setTimeout(endFlip, 1000) };
   }
 
   /* ── Alérgenos ── */
