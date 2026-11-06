@@ -573,13 +573,6 @@
   // 10:00 a 20:00, Night de miércoles a sábado) y se actualiza cada minuto.
   // No se recuerda nada: siempre se pregunta.
   (function () {
-    var DAYS = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
-    // Night abre de miércoles a sábado de 20:00 a 02:00 (la madrugada del
-    // domingo cuenta como la noche del sábado, etc.).
-    function nightOpen(weekday, hour) {
-      var open = function (d) { return d >= 3 && d <= 6; };
-      return hour >= 20 ? open(weekday) : hour < 2 && open((weekday + 6) % 7);
-    }
     function sync() {
       var p = {};
       new Intl.DateTimeFormat('en-GB', { weekday: 'short', hour: '2-digit', hourCycle: 'h23', timeZone: 'Europe/Madrid' })

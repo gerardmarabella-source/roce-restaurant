@@ -24,7 +24,6 @@ img { max-width: 100%; display: block; }
 /* ── Barra superior fija ── */
 .cv-bar { position: sticky; top: 0; z-index: 30; background: var(--black); color: #fff; padding-top: env(safe-area-inset-top); }
 .cv-bar-row { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 0.75rem var(--pad) 0.65rem; }
-.cv-logo img { height: 1.6rem; width: auto; }
 .cv-menu-btn { display: inline-flex; align-items: center; gap: 0.55rem; padding: 0.2rem 0; border: 0; background: transparent; color: inherit; font-size: 0.95rem; font-weight: 700; letter-spacing: 0.02em; }
 .cv-crumb-row { display: flex; align-items: center; padding: 0.5rem var(--pad); border-top: 1px solid rgba(255, 255, 255, 0.3); }
 .cv-crumb { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
@@ -47,10 +46,7 @@ img { max-width: 100%; display: block; }
 .cv-m-side { display: inline-flex; align-items: center; gap: 0.8rem; }
 .cv-m-side small { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; }
 .cv-m-sheet:not(.is-on) { opacity: 0.55; }
-.cv-m-h { margin: 1.6rem 0 0.5rem; font-size: 0.74rem; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; opacity: 0.6; }
 .cv-m-list.is-sub li:first-child { border-top: 1.5px solid var(--black); }
-.cv-m-list.is-last { margin-top: 0; }
-.cv-m-list.is-last li:first-child { border-top: 0; }
 .cv-m-cat { display: block; width: 100%; padding: 0.55rem 0 0.6rem; border: 0; background: transparent; color: var(--black); text-align: left; text-decoration: none; font-size: clamp(1.3rem, 5.4vw, 1.7rem); font-weight: 700; letter-spacing: -0.015em; }
 .cv-menu-foot { margin-top: 2rem; }
 .cv-m-word { width: 100%; height: auto; margin-top: 1rem; padding-top: 1rem; border-top: 1.5px solid var(--black); }
@@ -59,13 +55,10 @@ img { max-width: 100%; display: block; }
 .cv-filter { position: sticky; top: calc(var(--bar) + 0.5rem); z-index: 25; display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin: 0.8rem var(--pad) 0; padding: 0.6rem 0.9rem; background: #fff; color: var(--black); border: 1.5px solid var(--black); font-size: 0.85rem; }
 .cv-filter button { border: 0; background: transparent; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; white-space: nowrap; }
 
-
 /* ── Hoja de papel ── */
 .cv-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .cv-stage { position: relative; display: grid; grid-template-columns: minmax(0, 1fr); perspective: 2600px; perspective-origin: 18% 40%; padding: 0.9rem 0 0; overflow-x: clip; }
 .cv-paper { --spine: 3.5rem; grid-area: 1 / 1; position: relative; display: flex; align-items: flex-start; min-height: calc(100vh - var(--bar) - 1rem); background: var(--sheet); color: var(--ink); transform-origin: 0 50%; backface-visibility: hidden; box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.25), 0 10px 40px rgba(0, 0, 0, 0.55); }
-.cv-paper.is-kraft { --sheet: var(--kraft); --ink: #0a0a0a; }
-.cv-paper.is-olive { --sheet: var(--olive); --ink: var(--cream); }
 .cv-paper.is-red { --sheet: var(--red); --ink: var(--cream); }
 /* grano del papel + sombra del lomo */
 .cv-paper::before { content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 1; mix-blend-mode: multiply; opacity: 0.5; background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .1  0 0 0 0 .07  0 0 0 0 .03  0 0 0 .6 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>"); }
@@ -234,12 +227,6 @@ body.has-filter .is-pending .cv-pend { display: inline; }
 @media (max-width: 380px) { .cv-sheet-in { padding-left: 0.8rem; padding-right: 0.8rem; } .cv-ghost, .cv-solid { font-size: 0.78rem; letter-spacing: 0.06em; } }
 
 /* leyenda de alérgenos al final de la carta */
-.cv-legend { max-width: 46rem; margin: 0 auto 1.4rem; text-align: left; }
-.cv-legend h3 { margin: 0 0 0.7rem; font-size: 0.74rem; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(255, 255, 255, 0.85); }
-.cv-legend ul { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem 1rem; }
-.cv-legend li { display: flex; align-items: center; gap: 0.55rem; font-size: 0.78rem; color: rgba(255, 255, 255, 0.8); }
-.cv-legend .cv-al { flex: 0 0 auto; width: 1.4rem; height: 1.4rem; font-size: 0.68rem; color: #fff; border-color: rgba(255, 255, 255, 0.7); opacity: 1; }
-@media (min-width: 640px) { .cv-legend ul { grid-template-columns: repeat(4, 1fr); } }
 
 /* ayuda del chef: cada bloque bien identificado */
 .cv-chef-p { margin: 0 0 0.9rem; }
@@ -302,16 +289,12 @@ body.has-filter .is-pending .cv-pend { display: inline; }
 }
 
 /* nuevas hojas */
-.cv-paper.is-cream { --sheet: var(--cream); --ink: #0a0a0a; }
-.cv-paper.is-dark { --sheet: #262624; --ink: var(--cream); }
 html[data-sheet="cream"] { --sheet: var(--cream); --ink: #0a0a0a; }
 html[data-sheet="dark"] { --sheet: #262624; --ink: var(--cream); }
 .cv-m-sheet { font-size: clamp(1.9rem, 8.2vw, 3.4rem); }
 .cv-spine i { white-space: nowrap; }
 
 /* aviso: seguir bajando = siguiente hoja */
-.cv-next { margin: 1.6rem auto 0; text-align: center; font-size: 0.72rem; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(255, 255, 255, 0.75); }
-.cv-next i { display: block; width: 0; height: 2px; max-width: 12rem; margin: 0.6rem auto 0; background: #fff; }
 
 /* título lateral más grande */
 .cv-paper { --spine: 4.8rem; }
@@ -326,33 +309,18 @@ html[data-sheet="dark"] { --sheet: #262624; --ink: var(--cream); }
 .cv-menu-foot .cv-lang button { padding: 0.3rem 0.6rem; }
 
 /* la línea que se llena para pasar de hoja: siempre visible al llegar abajo */
-.cv-next i { display: block; width: 0; height: 100%; margin: 0; background: #fff; }
-.cv-next-track { display: block; width: 100%; max-width: 12rem; height: 2px; margin: 0.7rem auto 0; background: rgba(255, 255, 255, 0.28); }
-.cv-next { margin-top: 2.2rem; }
 
 /* pie: solo el logo ROCE gigante y, encima, la barra para pasar de hoja */
 .cv-foot { padding: 3.5rem var(--pad) calc(2rem + env(safe-area-inset-bottom)); text-align: left; }
 .cv-foot-logo { display: block; width: 100%; max-width: 78rem; height: auto; margin: 0 auto; }
-.cv-next { max-width: 78rem; margin: 0 auto 2.4rem; text-align: left; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.18em; color: #fff; }
-.cv-next-track { display: block; width: 100%; max-width: none; height: 10px; margin: 0.9rem 0 0; border: 1.5px solid rgba(255, 255, 255, 0.7); background: transparent; }
-.cv-next i { display: block; width: 0; height: 100%; margin: 0; background: #fff; transition: width 0.12s linear; }
 @media (min-width: 900px) { .cv-foot { padding-inline: 2.2rem; } }
 .cv-foot { padding-bottom: calc(4.5rem + env(safe-area-inset-bottom)); }
 
 /* pie limpio: línea fina de "siguiente hoja" y el logo gigante */
 .cv-foot { padding: 3rem var(--pad) calc(4.5rem + env(safe-area-inset-bottom)); }
-.cv-next { max-width: 78rem; margin: 0 auto 2.2rem; font-size: 0.7rem; font-weight: 400; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(255, 255, 255, 0.6); }
-.cv-next-track { display: block; width: 100%; height: 2px; margin: 0.8rem 0 0; border: 0; background: rgba(255, 255, 255, 0.18); overflow: hidden; }
-.cv-next i { display: block; width: 0; height: 100%; margin: 0; background: #fff; transition: width 0.18s ease-out; }
 /* hoja anterior: línea fina bajo la cabecera */
-.cv-topbar { position: fixed; z-index: 29; left: 0; right: 0; top: var(--bar); height: 3px; pointer-events: none; }
-.cv-topbar i { display: block; width: 0; height: 100%; background: #fff; transition: width 0.18s ease-out; }
 
 /* barra de cambio de hoja: sin letrero, solo la barra que va de azul (frío) a rojo (caliente) */
-.cv-next { margin-bottom: 2rem; }
-.cv-next-track { height: 6px; margin: 0; border-radius: 3px; background: rgba(255, 255, 255, 0.14); }
-.cv-next i { border-radius: 3px; transition: width 0.15s ease-out, background-color 0.15s linear; }
-.cv-topbar i { transition: width 0.15s ease-out; }
 
 /* menú: sin la raya entre ES/EN y el logo */
 .cv-m-word { border-top: 0; padding-top: 0.5rem; }
@@ -360,10 +328,6 @@ html[data-sheet="dark"] { --sheet: #262624; --ink: var(--cream); }
 /* tirar de la página: sigue al dedo con resistencia y vuelve como un muelle */
 html { overscroll-behavior-y: none; }
 main, .cv-foot { transform: translateY(var(--pull, 0px)); transition: transform 0.38s cubic-bezier(0.2, 0.9, 0.25, 1); will-change: transform; }
-body.is-pulling main, body.is-pulling .cv-foot { transition: none; }
-.cv-next-track { height: 8px; border-radius: 4px; }
-.cv-next i { transition: none; border-radius: 4px; }
-.cv-topbar { height: 4px; } .cv-topbar i { transition: none; }
 @media (prefers-reduced-motion: reduce) { main, .cv-foot { transform: none; transition: none; } }
 
 /* el título lateral no se pega al borde de abajo de la hoja (p. ej. en Bakery, que es corta) */
@@ -379,19 +343,12 @@ body.is-pulling main, body.is-pulling .cv-foot { transition: none; }
 .cv-paper.is-soon .cv-spine { padding-bottom: 3rem; }
 
 /* pie: logo en tamaño normal que crece al tirar hasta el tamaño gigante (entonces cambia de hoja) */
-.cv-next, .cv-topbar { display: none !important; }
 .cv-foot { padding: 3rem var(--pad) calc(3.5rem + env(safe-area-inset-bottom)); }
 .cv-foot-logo { display: block; width: 100%; max-width: 60rem; height: auto; margin: 0 auto; transform-origin: 50% 100%; transform: scale(calc(0.36 + 0.64 * var(--lpb, 0))); transition: transform 0.38s cubic-bezier(0.2, 0.9, 0.25, 1); will-change: transform; }
-body.is-pulling .cv-foot-logo { transition: none; }
 /* hoja anterior: el logo aparece y crece en el hueco de arriba */
-.cv-toplogo { position: fixed; z-index: 5; left: 0; right: 0; top: var(--bar); height: 150px; display: flex; align-items: center; justify-content: center; pointer-events: none; opacity: min(1, calc(var(--lpt, 0) * 3)); }
-.cv-toplogo img { width: calc(26% + 40% * var(--lpt, 0)); max-width: 30rem; height: auto; }
 @media (prefers-reduced-motion: reduce) { .cv-foot-logo { transform: scale(0.5); transition: none; } }
 
 /* hoja anterior (arriba): barra blanca fina bajo la cabecera; abajo se queda el logo que crece */
-.cv-topbar { display: block !important; position: fixed; z-index: 29; left: 0; right: 0; top: var(--bar); height: 4px; pointer-events: none; }
-.cv-topbar i { display: block; width: 0; height: 100%; background: #fff; transition: none; }
-.cv-toplogo { display: none; }
 
 /* título lateral: siempre con sangría sobre el borde de abajo de la hoja; fijo en pantalla y, al llegar el fin de hoja, la acompaña con ese margen */
 .cv-spine, .cv-paper.is-soon .cv-spine { padding-bottom: 3.4rem; }
@@ -413,16 +370,11 @@ body.is-pulling .cv-foot-logo { transition: none; }
 
 /* pie: logo ROCE gigante (fijo) y, encima, la barra blanca fina que se rellena al tirar (igual que arriba) */
 .cv-foot-logo { transform: none !important; transition: none; will-change: auto; }
-.cv-next { display: block !important; max-width: 60rem; margin: 0 auto 2rem; }
-.cv-next[hidden] { display: none !important; }
-.cv-next-track { display: block; width: 100%; height: 4px; margin: 0; border: 0; border-radius: 0; background: rgba(255, 255, 255, 0.18); overflow: hidden; }
-.cv-next i { display: block; width: 0; height: 100%; margin: 0; background: #fff; border-radius: 0; transition: none; }
 @media (prefers-reduced-motion: reduce) { .cv-foot-logo { transform: none; } }
 
 /* al tirar solo se mueve la hoja; el pie (logo gigante y barra blanca) se queda fijo abajo */
 .cv-foot { transform: none !important; transition: none !important; will-change: auto; }
 main { transform: translateY(var(--pull, 0px)); }
-body.is-pulling main { transition: none; }
 
 /* ── iPhone/Safari: paneles que no se encogen, y título lateral estable al hacer scroll ── */
 /* 1) el cuerpo con scroll de los paneles (Filtros y Ayuda) no se colapsa en Safari: base automática en vez de 0 */
@@ -431,8 +383,6 @@ body.is-pulling main { transition: none; }
 .cv-sheet-in { height: auto; }
 /* 2) la hoja no lleva transform (ni capa de composición) salvo mientras tiras de ella: un ancestro con transform hace vibrar a los elementos sticky en WebKit */
 main { transform: none; will-change: auto; transition: none; }
-body.is-pulling main { transform: translateY(var(--pull, 0px)); transition: none; }
-body.is-spring main { transform: translateY(0); transition: transform 0.4s cubic-bezier(0.2, 0.9, 0.25, 1); }
 /* 3) sin mezcla de color sobre toda la hoja (pesa y hace vibrar al hacer scroll en iOS) */
 .cv-paper::before { mix-blend-mode: normal; opacity: 0.32; }
 /* 4) el título lateral va en su propia capa para que no tiemble */
@@ -469,5 +419,13 @@ body.is-spring main { transform: translateY(0); transition: transform 0.4s cubic
   :root { --sp: 8vh; --sp: 8svh; }
   .cv-spine-fixed i { font-size: min(clamp(5.6rem, 10vw, 9rem), calc((100vh - var(--bar) - var(--sp) - 2rem) / var(--len, 4.6))); font-size: min(clamp(5.6rem, 10vw, 9rem), calc((100svh - var(--bar) - var(--sp) - 2rem) / var(--len, 4.6))); }
 }
-.cv-foot-pull { height: 22vh; height: 22svh; }
-.cv-foot-pull[hidden] { display: none; }
+
+/* ── Sin cambios de hoja automáticos: el pie tiene una leyenda para elegir a qué carta ir ── */
+main { transform: none !important; transition: none !important; }
+.cv-foot { padding: 2.2rem var(--pad) calc(2.5rem + env(safe-area-inset-bottom)); }
+.cv-foot-nav { max-width: 60rem; margin: 0 auto 2rem; border-top: 1px solid rgba(255, 255, 255, 0.35); }
+.cv-fn { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; width: 100%; padding: 0.95rem 0; border: 0; border-bottom: 1px solid rgba(255, 255, 255, 0.35); background: transparent; color: rgba(255, 255, 255, 0.6); text-align: left; font-family: var(--display); font-size: clamp(1.3rem, 5.6vw, 1.9rem); font-weight: 400; letter-spacing: -0.01em; text-transform: uppercase; cursor: pointer; }
+.cv-fn small { font-size: 0.72rem; letter-spacing: 0.14em; }
+.cv-fn.is-on { color: #fff; }
+.cv-fn:hover, .cv-fn:focus-visible { color: #fff; }
+.cv-foot { padding-bottom: calc(4.5rem + env(safe-area-inset-bottom)); }

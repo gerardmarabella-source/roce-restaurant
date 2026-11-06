@@ -18,6 +18,7 @@ import { PDFDocument, StandardFonts, rgb } from "npm:pdf-lib@1.17.1";
 
 const BREVO_API_KEY = Deno.env.get("BREVO_API_KEY") ?? "";
 const WEBHOOK_SECRET = Deno.env.get("WEBHOOK_SECRET") ?? "";
+const SWEEP_SECRET = Deno.env.get("SWEEP_SECRET") ?? "";   // protege los barridos table_sweep / list_sweep (los envía pg_cron)
 const FROM = Deno.env.get("MAIL_FROM") ?? "no-reply@roce.es"; // debe ser un remitente verificado en Brevo
 const REPLY_TO = Deno.env.get("MAIL_REPLY_TO") ?? "reservas@roce.es";
 const LIST_ATTENDEES = Number(Deno.env.get("BREVO_LIST_ATTENDEES") ?? "0");
@@ -600,7 +601,7 @@ ${button}${extra}
   const res = await fetch("https://api.brevo.com/v3/smtp/email", {
     method: "POST",
     headers: brevoHeaders,
-    body: JSON.stringify({ sender: { name: "ROCE", email: FROM }, replyTo: { email: REPLY_TO, name: "ROCE" }, to: [b.name ? { email: b.email, name: b.name } : { email: b.email }], subject: PREVIEW_TAG + subject, htmlContent: html }),
+    body: JSON.stringify({ sender: { name: "ROCE", email: FROM }, replyTo: { email: REPLY_TO, name: "ROCE" }, to: [b.name ? { email: b.email, name: b.name } : { email: b.email }], subject: subject, htmlContent: html }),
   });
   if (!res.ok) return new Response("brevo error: " + (await res.text()), { status: 502 });
 
@@ -766,7 +767,7 @@ async function handleTableBooking(p: any): Promise<Response> {
 }
 
 // ─── Recordatorio de 24 h y email de valoración tras la visita ──────────────
-// Los dispara un programador cada 15 minutos ({action:"table_sweep"}, ver supabase/cron_mesas.sql).
+// Los dispara un programador cada 5 minutos ({action:"table_sweep"}, ver supabase/cron_mesas.sql): recordatorio, valoración y carritos abandonados.
 // Cada reserva recibe un solo recordatorio y una sola petición de valoración (columnas reminder_sent_at / review_sent_at).
 const GOOGLE_REVIEW_URL = Deno.env.get("GOOGLE_REVIEW_URL") ?? "";   // enlace "Dejar una reseña" de la ficha de Google
 const INSTAGRAM_URL = Deno.env.get("INSTAGRAM_URL") ?? "https://www.instagram.com/somosroce";
@@ -818,7 +819,7 @@ ${btnHtml(`${page}&c=1`, t.remBtn)}
 <tr><td style="padding:14px 24px 0;color:#aaa;font:13px/1.5 Arial,sans-serif">${esc(t.remLate(z?.free_cancel_hours ?? 24))}</td></tr>
 <tr><td style="padding:24px 24px 32px;color:#777;font:11px/1.5 Arial,sans-serif">${esc(TT[l].privacy)}</td></tr>`);
   const res = await fetch("https://api.brevo.com/v3/smtp/email", { method: "POST", headers: brevoHeaders,
-    body: JSON.stringify({ sender: { name: "ROCE", email: FROM }, replyTo: { email: REPLY_TO, name: "ROCE" }, to: [b.name ? { email: b.email, name: b.name } : { email: b.email }], subject: PREVIEW_TAG + t.remSubject(`${day} · ${hm}`), htmlContent: html }) });
+    body: JSON.stringify({ sender: { name: "ROCE", email: FROM }, replyTo: { email: REPLY_TO, name: "ROCE" }, to: [b.name ? { email: b.email, name: b.name } : { email: b.email }], subject: t.remSubject(`${day} · ${hm}`), htmlContent: html }) });
   return res.ok;
 }
 async function sendTableReview(b: any): Promise<boolean> {
@@ -832,8 +833,100 @@ ${btnHtml(GOOGLE_REVIEW_URL, t.revBtn)}
 <tr><td align="center" style="padding:16px 24px 0"><a href="${INSTAGRAM_URL}" style="color:#aaa;font:13px Arial,sans-serif">${esc(t.revIg)}</a></td></tr>
 <tr><td style="padding:24px 24px 32px;color:#777;font:11px/1.5 Arial,sans-serif">${esc(TT[l].privacy)}</td></tr>`);
   const res = await fetch("https://api.brevo.com/v3/smtp/email", { method: "POST", headers: brevoHeaders,
-    body: JSON.stringify({ sender: { name: "ROCE", email: FROM }, replyTo: { email: REPLY_TO, name: "ROCE" }, to: [b.name ? { email: b.email, name: b.name } : { email: b.email }], subject: PREVIEW_TAG + t.revSubject, htmlContent: html }) });
+    body: JSON.stringify({ sender: { name: "ROCE", email: FROM }, replyTo: { email: REPLY_TO, name: "ROCE" }, to: [b.name ? { email: b.email, name: b.name } : { email: b.email }], subject: t.revSubject, htmlContent: html }) });
   return res.ok;
+}
+// ─── Carritos abandonados ───────────────────────────────────────────────────────────────────────────
+// A los 5 minutos de dejar a medias la tarjeta/fianza de una mesa o el pago de unas entradas se le escribe UNA vez
+// ("sigue con tu reserva" / "sigue con tu compra"). Columna abandon_mail_at en table_bookings y bookings (supabase/mails_abandono.sql).
+const ABANDON_MIN = 5;
+const AB = {
+  es: {
+    locale: "es-ES", ref: "Referencia", date: "Día", time: "Hora", party: "Personas", tickets: "Entradas", event: "Evento", total: "Total",
+    tTitle: "Sigue con tu reserva", tSubject: (w: string) => `Sigue con tu reserva · ROCE · ${w}`,
+    tCard: (u: string) => `Te has quedado a medias. Tu mesa sigue guardada: añade una tarjeta como garantía antes del ${u} para confirmarla. No se cobra nada ahora.`,
+    tDep: (m: string, u: string) => `Te has quedado a medias. Tu mesa sigue guardada: paga la fianza de ${m} antes del ${u} para confirmarla.`,
+    tBtnCard: "Añadir tarjeta y confirmar", tBtnDep: "Pagar fianza y confirmar",
+    eTitle: "Sigue con tu compra", eSubject: (t: string) => `Sigue con tu compra · ${t}`,
+    eIntro: (q: number, t: string) => `Has dejado a medias la compra de ${q} entrada${q === 1 ? "" : "s"} para ${t}. Aún puedes terminarla.`,
+    eBtn: "Terminar mi compra", tail: "Si ya lo has completado o no quieres seguir, ignora este mensaje.",
+  },
+  en: {
+    locale: "en-GB", ref: "Reference", date: "Day", time: "Time", party: "Guests", tickets: "Tickets", event: "Event", total: "Total",
+    tTitle: "Finish your booking", tSubject: (w: string) => `Finish your booking · ROCE · ${w}`,
+    tCard: (u: string) => `You left it halfway. Your table is still held: add a card as a guarantee before ${u} to confirm it. Nothing is charged now.`,
+    tDep: (m: string, u: string) => `You left it halfway. Your table is still held: pay the ${m} deposit before ${u} to confirm it.`,
+    tBtnCard: "Add card and confirm", tBtnDep: "Pay deposit and confirm",
+    eTitle: "Finish your purchase", eSubject: (t: string) => `Finish your purchase · ${t}`,
+    eIntro: (q: number, t: string) => `You left your purchase of ${q} ticket${q === 1 ? "" : "s"} for ${t} halfway. You can still complete it.`,
+    eBtn: "Finish my purchase", tail: "If you already completed it or don't want to continue, just ignore this message.",
+  },
+};
+async function brevoSend(to: { email: string; name?: string }, subject: string, html: string): Promise<boolean> {
+  const res = await fetch("https://api.brevo.com/v3/smtp/email", { method: "POST", headers: brevoHeaders,
+    body: JSON.stringify({ sender: { name: "ROCE", email: FROM }, replyTo: { email: REPLY_TO, name: "ROCE" }, to: [to.name ? { email: to.email, name: to.name } : { email: to.email }], subject: subject, htmlContent: html }) });
+  return res.ok;
+}
+async function sendAbandonedTable(b: any): Promise<boolean> {
+  const l = b.lang === "en" ? "en" : "es", a = AB[l];
+  const { data: z } = await serviceClient().from("dining_zones").select("name_es, name_en, payment_mode").eq("id", b.zone_id).maybeSingle();
+  const starts = new Date(b.starts_at), dep = Number(b.deposit_cents ?? 0);
+  const day = new Intl.DateTimeFormat(a.locale, { timeZone: "Europe/Madrid", weekday: "long", day: "numeric", month: "long" }).format(starts);
+  const hm = new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/Madrid", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(starts);
+  const until = b.hold_until ? new Intl.DateTimeFormat(a.locale, { timeZone: "Europe/Madrid", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" }).format(new Date(b.hold_until)) : "";
+  const money = (c: number) => (c / 100).toLocaleString(a.locale, { style: "currency", currency: "EUR", minimumFractionDigits: c % 100 ? 2 : 0 });
+  const card = (b.pay_mode || z?.payment_mode) === "card";
+  const rows = [[a.ref, b.ref], [a.date, day], [a.time, hm], [a.party, String(b.party)]];
+  const html = mailShell(`
+<tr><td style="padding:28px 24px 8px;color:#fff;font:32px Arial,sans-serif;text-transform:uppercase">${esc(a.tTitle)}</td></tr>
+<tr><td style="padding:0 24px 20px;color:#ddd;font:16px/1.5 Arial,sans-serif">${esc(card ? a.tCard(until) : a.tDep(money(dep), until))}</td></tr>
+<tr><td style="padding:0 24px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0">${rowsHtml(rows)}</table></td></tr>
+${btnHtml(`${SITE}/reserva/?t=${b.token}`, card ? a.tBtnCard : a.tBtnDep)}
+<tr><td style="padding:14px 24px 0;color:#aaa;font:13px/1.5 Arial,sans-serif">${esc(a.tail)}</td></tr>
+<tr><td style="padding:24px 24px 32px;color:#777;font:11px/1.5 Arial,sans-serif">${esc(TT[l].privacy)}</td></tr>`);
+  return await brevoSend({ email: b.email, name: b.name }, a.tSubject(`${day} · ${hm}`), html);
+}
+async function sendAbandonedEvent(b: any, ev: any): Promise<boolean> {
+  const l = b.lang === "en" ? "en" : "es", a = AB[l];
+  const title = l === "en" && ev.title_en ? ev.title_en : ev.title_es;
+  const when = new Intl.DateTimeFormat(a.locale, { timeZone: "Europe/Madrid", weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" }).format(new Date(ev.starts_at));
+  const total = (Number(b.total_cents ?? 0) / 100).toLocaleString(a.locale, { style: "currency", currency: "EUR" });
+  const rows = [[a.event, title], [a.date, when], [a.tickets, String(b.qty)], [a.total, total]];
+  const html = mailShell(`
+<tr><td style="padding:28px 24px 8px;color:#fff;font:32px Arial,sans-serif;text-transform:uppercase">${esc(a.eTitle)}</td></tr>
+<tr><td style="padding:0 24px 20px;color:#ddd;font:16px/1.5 Arial,sans-serif">${esc(a.eIntro(Number(b.qty), title))}</td></tr>
+<tr><td style="padding:0 24px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0">${rowsHtml(rows)}</table></td></tr>
+${btnHtml(`${SITE}/eventos/entradas/?e=${encodeURIComponent(b.event_id)}`, a.eBtn)}
+<tr><td style="padding:14px 24px 0;color:#aaa;font:13px/1.5 Arial,sans-serif">${esc(a.tail)}</td></tr>
+<tr><td style="padding:24px 24px 32px;color:#777;font:11px/1.5 Arial,sans-serif">${esc(T[l].privacy)}</td></tr>`);
+  return await brevoSend({ email: b.email, name: b.name }, a.eSubject(title), html);
+}
+async function sweepAbandoned(): Promise<{ tables: number; events: number; skipped: number }> {
+  const sb = serviceClient(), now = Date.now(), iso = (ms: number) => new Date(ms).toISOString();
+  let tables = 0, events = 0, skipped = 0;
+  // Mesas: pendientes de tarjeta/fianza, con la mesa todavía retenida.
+  const { data: tb } = await sb.from("table_bookings").select("*").eq("status", "pending").is("abandon_mail_at", null).neq("email", "")
+    .lte("created_at", iso(now - ABANDON_MIN * 60e3)).gt("created_at", iso(now - 6 * 3600e3)).gt("hold_until", iso(now)).limit(40);
+  for (const b of tb ?? []) {
+    const mark = () => sb.from("table_bookings").update({ abandon_mail_at: new Date().toISOString() }).eq("id", b.id);
+    const t0 = new Date(b.starts_at).getTime();
+    const { data: done } = await sb.from("table_bookings").select("id").ilike("email", b.email).in("status", ["confirmed", "seated", "completed"])
+      .gt("created_at", b.created_at).gte("starts_at", iso(t0 - 86400e3)).lte("starts_at", iso(t0 + 86400e3)).limit(1);
+    if (done && done.length) { await mark(); skipped++; continue; }    // ya terminó otra reserva ese día: no se le molesta
+    if (await sendAbandonedTable(b)) { await mark(); tables++; }
+  }
+  // Entradas: compra pendiente de pago (la plaza se retiene 30 min), de un evento que todavía no ha pasado.
+  const { data: eb } = await sb.from("bookings").select("*").eq("status", "pending").eq("payment_status", "pending").is("abandon_mail_at", null).neq("email", "")
+    .lte("created_at", iso(now - ABANDON_MIN * 60e3)).gt("created_at", iso(now - 30 * 60e3)).limit(40);
+  for (const b of eb ?? []) {
+    const mark = () => sb.from("bookings").update({ abandon_mail_at: new Date().toISOString() }).eq("id", b.id);
+    const { data: ev } = await sb.from("events").select("*").eq("id", b.event_id).maybeSingle();
+    if (!ev || new Date(ev.starts_at).getTime() + Number(ev.duration_h ?? 0) * 3600e3 < now) { await mark(); skipped++; continue; }
+    const { data: done } = await sb.from("bookings").select("id").ilike("email", b.email).eq("event_id", b.event_id).eq("status", "confirmed").gt("created_at", b.created_at).limit(1);
+    if (done && done.length) { await mark(); skipped++; continue; }
+    if (await sendAbandonedEvent(b, ev)) { await mark(); events++; }
+  }
+  return { tables, events, skipped };
 }
 async function sweepTableMails(): Promise<Response> {
   const sb = serviceClient();
@@ -860,41 +953,13 @@ async function sweepTableMails(): Promise<Response> {
       if (await sendTableReview(b)) { await stamp(new Date()); reviews++; }
     }
   }
-  return new Response(JSON.stringify({ reminders, reviews, skipped, review_url: !!GOOGLE_REVIEW_URL }), { headers: { "content-type": "application/json" } });
-}
-
-// ─── Vista previa de los emails de una reserva (solo se envía a direcciones @roce.es) ───────────────
-let PREVIEW_TAG = "";
-async function sendTablePreview(to: string): Promise<Response> {
-  const sample = (over: Record<string, unknown> = {}) => {
-    const starts = new Date(Date.now() + 26 * 3600e3); starts.setMinutes(0, 0, 0);
-    return { ref: "MESA-DEMO01", token: "0123456789abcdef0123456789abcdef", service_id: "night", zone_id: "alta", ambience: "night", starts_at: starts.toISOString(),
-      ends_at: new Date(starts.getTime() + 90 * 60000).toISOString(), party: 4, name: "Gerard Marabella", email: to, lang: "es", marketing_optin: false, status: "confirmed",
-      payment_status: "guaranteed", pay_mode: "card", deposit_cents: 2000, hold_until: new Date(Date.now() + 24 * 3600e3).toISOString(), late_cancel: false, refund_due: false, fee_charged_cents: 0, ...over };
-  };
-  const steps: [string, () => Promise<unknown>][] = [
-    ["1/7 Solicitud de tarjeta (reserva creada desde el panel)", () => sendTableEmail("pay", sample({ status: "pending", payment_status: "pending", source: "admin" }))],
-    ["2/7 Confirmacion de la reserva", () => sendTableEmail("ok", sample())],
-    ["3/7 Recordatorio 24 h antes", () => sendTableReminder(sample())],
-    ["4/7 Valoracion tras la visita", () => sendTableReview(sample({ status: "completed" }))],
-    ["5/7 Anulacion a tiempo (tarjeta liberada)", () => sendTableEmail("cancel", sample({ status: "cancelled", payment_status: "released" }))],
-    ["6/7 Anulacion tardia (se cobrara la penalizacion)", () => sendTableEmail("cancel", sample({ status: "cancelled", late_cancel: true }))],
-    ["7/7 Cobro por no presentarse", () => sendTableEmail("charge", sample({ status: "no_show", payment_status: "charged", fee_charged_cents: 2000 }))],
-  ];
-  const sent: string[] = [];
-  for (const [tag, run] of steps) {
-    PREVIEW_TAG = "[PRUEBA " + tag + "] ";
-    const r: any = await run();
-    sent.push(tag + (r instanceof Response ? (r.ok ? " ok" : " ERROR " + r.status) : r ? " ok" : " ERROR"));
-    await new Promise((res) => setTimeout(res, 900));
-  }
-  PREVIEW_TAG = "";
-  return new Response(JSON.stringify({ to, sent }), { headers: { "content-type": "application/json" } });
+  const abandoned = await sweepAbandoned();
+  return new Response(JSON.stringify({ reminders, reviews, skipped, abandoned, review_url: !!GOOGLE_REVIEW_URL }), { headers: { "content-type": "application/json" } });
 }
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-webhook-secret",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-webhook-secret, x-sweep-secret",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
@@ -902,11 +967,9 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
   let payload: any = {};
   try { payload = await req.json(); } catch { /* sin cuerpo */ }
-  if (payload.action === "table_preview") {
-    const to = String(payload.to ?? "").toLowerCase();
-    if (!/^[a-z0-9._+-]+@roce\.es$/.test(to)) return new Response("forbidden", { status: 403, headers: CORS });
-    const r = await sendTablePreview(to);
-    return new Response(await r.text(), { status: r.status, headers: CORS });
+  // Los barridos los lanza solo el programador de la base de datos, con la cabecera x-sweep-secret (secreto SWEEP_SECRET).
+  if ((payload.action === "table_sweep" || payload.action === "list_sweep") && (!SWEEP_SECRET || req.headers.get("x-sweep-secret") !== SWEEP_SECRET)) {
+    return new Response("forbidden", { status: 403, headers: CORS });
   }
   if (payload.action === "table_sweep") {
     const r = await sweepTableMails();
