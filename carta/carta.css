@@ -353,3 +353,6 @@ html[data-sheet="dark"] { --sheet: #262624; --ink: var(--cream); }
 .cv-next-track { height: 6px; margin: 0; border-radius: 3px; background: rgba(255, 255, 255, 0.14); }
 .cv-next i { border-radius: 3px; transition: width 0.15s ease-out, background-color 0.15s linear; }
 .cv-topbar i { transition: width 0.15s ease-out; }
+
+/* menú: sin la raya entre ES/EN y el logo */
+.cv-m-word { border-top: 0; padding-top: 0.5rem; }

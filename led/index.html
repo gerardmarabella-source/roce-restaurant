@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Letrero LED · ROCE</title>
+<meta name="robots" content="noindex, nofollow">
+<style>
+@font-face { font-family: "Helvetica Neue Web"; src: url("/assets/fonts/HelveticaNeue-Bold.woff2") format("woff2"); font-weight: 700; font-display: swap; }
+* { box-sizing: border-box; }
+body { margin: 0; min-height: 100vh; background: #0a0a0a; color: #fff; font-family: "Helvetica Neue Web", "Helvetica Neue", Arial, sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2rem; padding: 2rem 1rem; }
+.led-frame { width: min(100%, 78rem); padding: 0.9rem; background: linear-gradient(#1b1b1b, #0c0c0c); border: 2px solid #2a2a2a; border-radius: 8px; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.08); }
+.led-glass { position: relative; background: #060606; border-radius: 4px; overflow: hidden; }
+.led-glass::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(115deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0) 38%); }
+canvas { display: block; width: 100%; height: auto; }
+.led-ctl { display: flex; flex-wrap: wrap; gap: 0.6rem; justify-content: center; font-size: 0.8rem; letter-spacing: 0.12em; text-transform: uppercase; }
+.led-ctl button { padding: 0.5rem 0.9rem; border: 1.5px solid #fff; background: transparent; color: #fff; font: inherit; cursor: pointer; }
+.led-ctl button[aria-pressed="true"] { background: #fff; color: #0a0a0a; }
+.led-note { max-width: 40rem; text-align: center; font-size: 0.85rem; line-height: 1.5; color: rgba(255, 255, 255, 0.6); }
+</style>
+</head>
+<body>
+<div class="led-frame"><div class="led-glass"><canvas id="led"></canvas></div></div>
+<div class="led-ctl" id="ctl" role="group" aria-label="Color"></div>
+<p class="led-note">Prueba del letrero LED de ROCE (matriz de puntos con la tipografía de la marca). El texto, el color y la velocidad se cambian fácilmente.</p>
+<script>
+(function () {
+  var q = new URLSearchParams(location.search);
+  var TEXT = (q.get('t') || 'ROCE OPENING FRIDAY') + '      ';
+  var COLORS = { rojo: ['#ff2a1f', '#ff5a3c', '#2a0805'], ambar: ['#ffb000', '#ffd24d', '#2b1d00'], blanco: ['#f4f1e8', '#ffffff', '#1d1d1b'] };
+  var cur = q.get('c') && COLORS[q.get('c')] ? q.get('c') : 'rojo', ROWS = 16, SPEED = 14, cv = document.getElementById('led'), ctx = cv.getContext('2d'), bits = null, total = 0, cols = 0, pitch = 0, off = 0, last = 0;
+
+  function build() {
+    var off2 = document.createElement('canvas'), o = off2.getContext('2d'), fs = Math.round(ROWS * 0.86);
+    o.font = '700 ' + fs + 'px "Helvetica Neue Web", Arial, sans-serif';
+    var w = Math.ceil(o.measureText(TEXT).width) + 2; off2.width = w; off2.height = ROWS;
+    o.font = '700 ' + fs + 'px "Helvetica Neue Web", Arial, sans-serif'; o.textBaseline = 'alphabetic'; o.fillStyle = '#fff'; o.fillText(TEXT, 0, Math.round(ROWS * 0.8));
+    var d = o.getImageData(0, 0, w, ROWS).data; bits = []; total = w;
+    for (var x = 0; x < w; x++) { var col = []; for (var y = 0; y < ROWS; y++) col.push(d[(y * w + x) * 4 + 3] > 120); bits.push(col); }
+  }
+  function size() {
+    var W = cv.parentNode.clientWidth, dpr = Math.min(2, window.devicePixelRatio || 1);
+    pitch = Math.max(6, Math.round(W / 110)); cols = Math.floor(W / pitch);
+    cv.width = Math.round(cols * pitch * dpr); cv.height = Math.round(ROWS * pitch * dpr); cv.style.aspectRatio = (cols * pitch) + ' / ' + (ROWS * pitch);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  function draw(t) {
+    var dt = Math.min(0.1, (t - last) / 1000 || 0); last = t; off += SPEED * dt;
+    var C = COLORS[cur], r = pitch * 0.36, k = Math.floor(off), i, j;
+    ctx.clearRect(0, 0, cols * pitch, ROWS * pitch); ctx.fillStyle = C[2];
+    for (i = 0; i < cols; i++) for (j = 0; j < ROWS; j++) { ctx.beginPath(); ctx.arc(i * pitch + pitch / 2, j * pitch + pitch / 2, r, 0, 6.2832); ctx.fill(); }
+    ctx.shadowColor = C[0]; ctx.shadowBlur = pitch * 0.9; ctx.fillStyle = C[0];
+    for (i = 0; i < cols; i++) { var col = bits[(i + k) % total]; for (j = 0; j < ROWS; j++) if (col[j]) { ctx.beginPath(); ctx.arc(i * pitch + pitch / 2, j * pitch + pitch / 2, r, 0, 6.2832); ctx.fill(); } }
+    ctx.shadowBlur = 0; ctx.fillStyle = C[1];
+    for (i = 0; i < cols; i++) { var c2 = bits[(i + k) % total]; for (j = 0; j < ROWS; j++) if (c2[j]) { ctx.beginPath(); ctx.arc(i * pitch + pitch / 2, j * pitch + pitch / 2, r * 0.45, 0, 6.2832); ctx.fill(); } }
+    requestAnimationFrame(draw);
+  }
+  var ctl = document.getElementById('ctl');
+  Object.keys(COLORS).forEach(function (n) { var b = document.createElement('button'); b.type = 'button'; b.textContent = n; b.setAttribute('aria-pressed', String(n === cur)); b.onclick = function () { cur = n; [].forEach.call(ctl.children, function (x) { x.setAttribute('aria-pressed', String(x.textContent === n)); }); }; ctl.appendChild(b); });
+  (document.fonts && document.fonts.load ? document.fonts.load('700 20px "Helvetica Neue Web"') : Promise.resolve()).then(function () { build(); size(); requestAnimationFrame(draw); });
+  window.addEventListener('resize', size);
+})();
+</script>
+</body>
+</html>
