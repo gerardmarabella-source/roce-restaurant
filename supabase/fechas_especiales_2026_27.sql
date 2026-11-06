@@ -4,6 +4,9 @@
 -- "Abierto hasta las 17:00" = última reserva web a las 16:00 en Coffee, Bakery & Kitchen (la mesa dura 1 h); la comida de R&C acaba a las 16:00.
 -- Reyes (6 ene): la planta baja (Coffee, Bakery & Kitchen) cierra a las 12:00 y la planta alta (Restaurant & Cocktails) no abre.
 
+-- Primero se quitan los cierres de Reyes que pudieran existir de una versión anterior de este script.
+delete from public.dining_closures where date_from = '2027-01-06' and date_to = '2027-01-06' and note = 'Reyes';
+
 insert into public.dining_closures (date_from, date_to, service_id, start_min, end_min, message_es, note)
 select v.date_from, v.date_to, v.service_id, v.start_min, v.end_min, v.message_es, v.note
 from (values
