@@ -244,12 +244,6 @@
     return api('dining_customer_notes?on_conflict=customer_key', { method: 'POST', prefer: 'resolution=merge-duplicates,return=minimal', body: body })
       .then(function () { S.notes[key] = n; });
   }
-  function saveNote(key, note, blocked, why) { return saveCust(key, { note: note, blocked: blocked, blocked_reason: why }); }
-  function saveNoteOld(key, note, blocked, why) {
-    if (!key) return Promise.resolve();
-    return api('dining_customer_notes?on_conflict=customer_key', { method: 'POST', prefer: 'resolution=merge-duplicates,return=minimal', body: { customer_key: key, note: note || '', blocked: !!blocked, blocked_reason: blocked ? (why || '') : '', updated_by: A.session().email || '', updated_at: new Date().toISOString() } })
-      .then(function () { S.notes[key] = { customer_key: key, note: note || '', blocked: !!blocked, blocked_reason: blocked ? (why || '') : '' }; });
-  }
   function seatsOf(b) { return bookingTables(b).reduce(function (n, t) { return n + t.seats_max; }, 0); }
   function bookingTables(b) { return (b.table_booking_tables || []).map(function (x) { return tableById(x.table_id); }).filter(Boolean); }
 
@@ -853,7 +847,6 @@
         var s = !ofZone.length ? svc[0] : mn < 17 * 60 ? ofZone[0] : ofZone[ofZone.length - 1];
         q('nwSvc').value = s ? s.id : ''; q('nwSvcName').textContent = s ? s.name_es : '—';
       }
-      function pickZoneFromSvc() { /* la zona se elige a mano */ }
       function depRow() {
         var z = S.zones.filter(function (x) { return x.id === q('nwZone').value; })[0] || {};
         q('nwType').value = z.payment_mode === 'card' ? 'card' : z.payment_mode === 'deposit' ? 'deposit' : 'free';
@@ -1027,27 +1020,6 @@
       });
   }
 
-  function openMove(b) {
-    var cur = (b.table_booking_tables || []).map(function (x) { return x.table_id; });
-    var busy = S.tables.filter(function (t) { return S.bookings.some(function (o) { return o.id !== b.id && holds(o) && (o.table_booking_tables || []).some(function (x) { return x.table_id === t.id; }) && o.starts_at < b.ends_at && o.ends_at > b.starts_at; }); }).map(function (t) { return t.id; });
-    modal('<h2>Cambiar de mesa</h2><p class="ad-meta">' + esc(b.name) + ' · ' + b.party + ' personas · ' + hm(b.starts_at) + '</p><p class="ad-msg is-error" id="mvMsg" hidden></p>' +
-      '<div class="mt-picks" id="mvPicks">' + tablesPicker(b.zone_id, cur, busy) + '</div>' +
-      '<div class="ad-field"><span>Otra zona</span><select id="mvZone">' + S.zones.map(function (z) { return '<option value="' + z.id + '"' + (z.id === b.zone_id ? ' selected' : '') + '>' + esc(z.name_es) + '</option>'; }).join('') + '</select></div>' +
-      '<div class="mt-foot"><button type="button" class="ad-btn is-ghost" data-close>Cancelar</button><button type="button" class="ad-btn" id="mvGo">Guardar</button></div>',
-      function (m) {
-        var zone = b.zone_id;
-        m.querySelector('#mvZone').addEventListener('change', function () { zone = this.value; m.querySelector('#mvPicks').innerHTML = tablesPicker(zone, [], busy); });
-        m.querySelector('#mvGo').addEventListener('click', function () {
-          var ids = [].map.call(m.querySelectorAll('#mvPicks input:checked'), function (i) { return i.value; });
-          var msg = m.querySelector('#mvMsg'); msg.hidden = true;
-          if (!ids.length) { msg.textContent = 'Elige al menos una mesa.'; msg.hidden = false; return; }
-          api('rpc/dining_admin_move', { method: 'POST', body: { p_booking: b.id, p_tables: ids } })
-            .then(function () { return zone !== b.zone_id ? patch(b.id, { zone_id: zone }) : null; })
-            .then(function () { m.remove(); return done('Mesa cambiada.'); })
-            .catch(function (x) { msg.textContent = errText(x); msg.hidden = false; });
-        });
-      });
-  }
 
 
 
