@@ -1,17 +1,21 @@
-/* ROCE · Carta digital: pinta la carta de menu.js, filtra por alérgenos y cambia de idioma. Sin cookies ni rastreo. */
+/* ROCE · Carta digital: hojas (Brunch / Bebidas / Bakery) que se cambian como las de una carpeta, lista tipográfica,
+   filtro de alérgenos y ES/EN. Sin cookies ni rastreo. */
 (function () {
   'use strict';
   var D = window.CARTA;
   var UI = {
-    es: { kicker: 'Carta', allergies: 'Alergias', al_h: '¿Alguna alergia o intolerancia?', al_p: 'Marca lo que debes evitar y ocultamos los platos que lo llevan.', clear: 'Quitar', done: 'Ver carta', without: 'Sin', pending: 'Consulta alérgenos', soon: 'Muy pronto',
-      note: 'Si tienes alguna alergia o intolerancia, avisa a nuestro equipo antes de pedir. Pueden existir trazas de otros alérgenos. Los alérgenos de las bebidas los confirma el equipo.', remove: 'Quitar filtro' },
-    en: { kicker: 'Menu', allergies: 'Allergies', al_h: 'Any allergy or intolerance?', al_p: 'Tick what you must avoid and we will hide the dishes that contain it.', clear: 'Clear', done: 'See menu', without: 'Without', pending: 'Ask about allergens', soon: 'Coming soon',
-      note: 'If you have any allergy or intolerance, please tell our team before ordering. Traces of other allergens may be present. Allergens in drinks are confirmed by our team.', remove: 'Remove filter' }
+    es: { allergies: 'Alergias', al_h: '¿Alguna alergia o intolerancia?', al_p: 'Marca lo que debes evitar y ocultamos los platos que lo llevan.', clear: 'Quitar', done: 'Ver carta', without: 'Sin', pending: 'Consulta alérgenos', soon: 'Muy pronto', soon_p: 'Estamos preparando esta carta.',
+      note: 'Si tienes alguna alergia o intolerancia, avisa a nuestro equipo antes de pedir. Pueden existir trazas de otros alérgenos. Los alérgenos de las bebidas los confirma el equipo.', remove: 'Quitar filtro', menu: 'Carta' },
+    en: { allergies: 'Allergies', al_h: 'Any allergy or intolerance?', al_p: 'Tick what you must avoid and we will hide the dishes that contain it.', clear: 'Clear', done: 'See menu', without: 'Without', pending: 'Ask about allergens', soon: 'Coming soon', soon_p: 'We are preparing this menu.',
+      note: 'If you have any allergy or intolerance, please tell our team before ordering. Traces of other allergens may be present. Allergens in drinks are confirmed by our team.', remove: 'Remove filter', menu: 'Menu' }
   };
   var L = 'es';
   try { L = localStorage.getItem('roce_carta_lang') || (/^en/i.test(navigator.language || '') ? 'en' : 'es'); } catch (e) {}
   var sel = [];
   try { sel = JSON.parse(sessionStorage.getItem('roce_carta_al') || '[]'); } catch (e) {}
+  var cur = (location.hash || '').replace('#', '');
+  if (!D.sections.some(function (s) { return s.id === cur; })) cur = D.sections[0].id;
+
   var $ = function (id) { return document.getElementById(id); };
   var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
   var tx = function (o) { return o == null ? '' : typeof o === 'string' ? o : (o[L] || o.es || ''); };
@@ -24,63 +28,75 @@
   }
   function als(arr) { return arr && arr.length ? '<span class="cv-als" aria-label="' + esc(ui('allergies')) + '">' + arr.map(function (n) { return '<span class="cv-al" title="' + esc(tx(D.allergens[n - 1])) + '">' + n + '</span>'; }).join('') + '</span>' : ''; }
   function attrs(it, blk) { return ' data-al="' + (it.al || []).join(',') + '"' + (blk.alPending ? ' data-pending="1"' : ''); }
+  var secById = function (id) { return D.sections.filter(function (s) { return s.id === id; })[0]; };
 
-  function card(it, blk) {
+  /* ── Platos y listas ── */
+  function item(it, blk) {
     var dup = it.code && it.code === it.name;
-    var h = '<article class="cv-card cv-item ' + (it.img ? 'has-img' : 'no-img') + '"' + attrs(it, blk) + '>';
-    if (it.img) h += '<img class="cv-card-img" loading="lazy" src="' + esc(it.img) + '" alt="">';
-    h += '<div class="cv-card-top"><span>' + (it.al && it.al.length ? '<span class="cv-pill cv-pill-al">' + als(it.al) + '</span>' : '') + '</span>' + (it.price != null ? '<span class="cv-pill cv-pill-price">' + money(it.price) + '</span>' : '') + '</div>';
-    if (!it.img) h += it.code ? '<div class="cv-card-num">' + esc(it.code) + '</div>' : '<div class="cv-card-num is-logo" aria-hidden="true"></div>';
-    h += '<div class="cv-card-body">';
-    if (!dup) h += '<h4 class="cv-name">' + esc(it.name) + (it.note ? ' <small>' + esc(tx(it.note)) + '</small>' : '') + '</h4>';
-    if (it.es) h += '<p class="cv-desc">' + esc(tx({ es: it.es, en: it.en })) + '</p>';
-    if (it.tag) h += '<p class="cv-tag">' + esc(tx(it.tag)) + '</p>';
+    var h = '<li class="cv-item"' + attrs(it, blk) + '><div class="cv-i-main"><div class="cv-i-top"><span class="cv-i-name">' +
+      (it.code && !dup ? '<em>' + esc(it.code) + '</em>' : '') + esc(it.name) + (it.note ? ' <small>' + esc(tx(it.note)) + '</small>' : '') + als(it.al) +
+      (blk.alPending ? '<span class="cv-pend">' + esc(ui('pending')) + '</span>' : '') + '</span><span class="cv-price">' + money(it.price) + '</span></div>';
+    if (it.es) h += '<p class="cv-i-desc">' + esc(tx({ es: it.es, en: it.en })) + '</p>';
+    if (it.tag) h += '<p class="cv-i-desc cv-i-tag">' + esc(tx(it.tag)) + '</p>';
     if (it.variants) h += '<ul class="cv-variants">' + it.variants.map(function (v) { return '<li><b>' + esc(v.name) + '</b><span>' + esc(tx({ es: v.es, en: v.en })) + '</span>' + als(v.al) + '</li>'; }).join('') + '</ul>';
-    if (blk.alPending) h += '<span class="cv-pend">' + esc(ui('pending')) + '</span>';
-    return h + '</div></article>';
+    h += '</div>' + (it.img ? '<img class="cv-thumb" loading="lazy" src="' + esc(it.img) + '" alt="">' : '') + '</li>';
+    return h;
   }
-  function row(it, blk) {
-    return '<li class="cv-item"' + attrs(it, blk) + '><span class="cv-nm">' + esc(it.name) + als(it.al) + (blk.alPending ? '<span class="cv-pend">' + esc(ui('pending')) + '</span>' : '') + '</span><span class="cv-price">' + money(it.price) + '</span></li>';
+  function extras(b) {
+    if (!b.extras) return '';
+    return '<div class="cv-extras"><h4>' + esc(tx(b.extras.title)) + '</h4><ul>' + b.extras.list.map(function (e) {
+      return '<li><span>' + esc(tx(e[0])) + '</span><span class="cv-price">' + esc(money(e[1])) + '</span></li>';
+    }).join('') + '</ul></div>';
   }
-
-  /* Categorías planas (cada bloque de la carta), como las pestañas de Honest Greens */
-  function cats() {
-    var out = [];
-    D.sections.forEach(function (s, si) {
-      var first = true;
-      if (s.soon) { out.push({ soon: true, sec: s, first: true, id: s.id }); return; }
-      s.groups.forEach(function (g, gi) {
-        g.blocks.forEach(function (b, bi) { out.push({ sec: s, group: g, block: b, id: 'c' + si + gi + bi, first: first, gfirst: bi === 0 }); first = false; });
-      });
+  function cat(id, b) {
+    return '<section class="cv-cat" id="' + id + '"><button type="button" class="cv-cat-h" aria-expanded="true" data-toggle="' + id + '"><span class="cv-cat-t"><h3>' + esc(tx(b.title)) + '</h3>' +
+      (b.note ? '<small>' + esc(tx(b.note)) + '</small>' : '') + '</span><svg class="cv-chev" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M6 15l6-6 6 6"/></svg></button>' +
+      '<div class="cv-cat-body"><ul class="cv-items">' + b.items.map(function (i) { return item(i, b); }).join('') + '</ul>' + extras(b) + '</div></section>';
+  }
+  function page(s, si) {
+    var h = '<div class="cv-page" id="pg-' + s.id + '" data-sec="' + s.id + '"' + (s.id === cur ? '' : ' hidden') + '><h1 class="cv-sheet-title">' + esc(tx(s.title)) + '</h1>';
+    if (s.soon) return h + '<div class="cv-soon"><b>' + esc(ui('soon')) + '</b><p>' + esc(ui('soon_p')) + '</p></div></div>';
+    s.groups.forEach(function (g, gi) {
+      var same = tx(g.title) === tx(s.title);
+      h += '<div class="cv-group">';
+      if (!same || g.note) h += '<div class="cv-gh">' + (same ? '' : '<h2>' + esc(tx(g.title)) + '</h2>') + (g.note ? '<span>' + esc(tx(g.note)) + '</span>' : '') + '</div>';
+      g.blocks.forEach(function (b, bi) { h += cat('c' + si + gi + bi, b); });
+      h += '</div>';
     });
-    return out;
-  }
-  function catHtml(c) {
-    var b = c.block, s = c.sec;
-    var h = '<section class="cv-cat is-' + s.color + '" id="' + c.id + '" style="--c:var(--' + s.color + ')"><header class="cv-cat-h"><p class="cv-kicker">' + esc(tx(s.title)) + (tx(c.group.title) !== tx(s.title) ? ' · ' + esc(tx(c.group.title)) : '') + '</p><h2 class="cv-cat-title">' + esc(tx(b.title)) + '</h2>';
-    var note = [b.note ? tx(b.note) : (c.gfirst && c.group.note ? tx(c.group.note) : '')].filter(Boolean).join(' · ');
-    if (note) h += '<p class="cv-cat-note">' + esc(note) + '</p>';
-    h += '</header><div class="cv-cat-body">';
-    h += b.compact ? '<ul class="cv-list">' + b.items.map(function (i) { return row(i, b); }).join('') + '</ul>' : '<div class="cv-grid">' + b.items.map(function (i) { return card(i, b); }).join('') + '</div>';
-    if (b.extras) h += '<div class="cv-extras"><span class="cv-extras-t">' + esc(tx(b.extras.title)) + '</span>' + b.extras.list.map(function (e) { return '<span class="cv-chip">' + esc(tx(e[0])) + (e[1] !== '' ? ' <b>' + esc(money(e[1])) + '</b>' : '') + '</span>'; }).join('') + '</div>';
-    return h + '</div></section>';
+    return h + '</div>';
   }
 
-  var CATS = [];
   function render() {
     document.documentElement.lang = L;
     $('cvAlLabel').textContent = ui('allergies');
     $('cvDisclaimer').textContent = ui('note');
     $('cvSheetTitle').textContent = ui('al_h'); $('cvSheetText').textContent = ui('al_p'); $('cvAlClear').textContent = ui('clear'); $('cvAlDone').textContent = ui('done');
     [].forEach.call(document.querySelectorAll('.cv-lang button'), function (b) { b.setAttribute('aria-pressed', String(b.dataset.lang === L)); });
-    CATS = cats();
-    $('cvTabs').innerHTML = CATS.map(function (c, i) {
-      var cls = 'cv-tab' + (c.first && i ? ' is-split' : '') + (c.soon ? ' is-soon' : '');
-      var st = ' style="--c:var(--' + c.sec.color + ')"';
-      return c.soon ? '<span class="' + cls + '"' + st + '>' + esc(tx(c.sec.title)) + ' · ' + esc(ui('soon')) + '</span>' : '<a class="' + cls + '" href="#' + c.id + '" data-cat="' + c.id + '"' + st + '>' + esc(tx(c.block.title)) + '</a>';
+    $('cvSections').innerHTML = D.sections.map(page).join('');
+    $('cvBook').innerHTML = D.sections.map(function (s) {
+      return '<button type="button" class="cv-leaf is-' + s.color + '" data-sec="' + s.id + '" style="--c:var(--' + s.color + ')" aria-pressed="' + (s.id === cur) + '"><span>' + esc(tx(s.title)) + '</span>' + (s.soon ? '<i>' + esc(ui('soon')) + '</i>' : '') + '</button>';
     }).join('');
-    $('cvSections').innerHTML = CATS.filter(function (c) { return !c.soon; }).map(catHtml).join('');
-    current = ''; buildSheet(); applyFilter(); measure(); onScroll();
+    buildSheet(); applyFilter(); sheetState(); measure(); onScroll();
+  }
+
+  /* ── Cambiar de hoja ── */
+  function sheetState() {
+    var s = secById(cur);
+    document.documentElement.setAttribute('data-sheet', s.color);
+    [].forEach.call(document.querySelectorAll('.cv-page'), function (p) { p.hidden = p.dataset.sec !== cur; });
+    [].forEach.call(document.querySelectorAll('.cv-leaf'), function (b) { b.setAttribute('aria-pressed', String(b.dataset.sec === cur)); });
+    var catsOf = [].slice.call(document.querySelectorAll('#pg-' + cur + ' .cv-cat'));
+    $('cvTabs').innerHTML = catsOf.map(function (c) { return '<a class="cv-tab" href="#' + c.id + '" data-cat="' + c.id + '">' + esc(c.querySelector('h3').textContent) + '</a>'; }).join('');
+    $('cvTabs').hidden = !catsOf.length;
+    syncTabs();
+  }
+  function setSheet(id) {
+    if (id === cur) return;
+    cur = id; sheetState(); measure();
+    try { history.replaceState(null, '', '#' + id); } catch (e) {}
+    window.scrollTo({ top: 0, behavior: 'instant' });
+    var p = $('pg-' + id); p.classList.remove('is-turning'); void p.offsetWidth; p.classList.add('is-turning');
+    current = ''; onScroll();
   }
 
   /* ── Alérgenos ── */
@@ -98,10 +114,10 @@
       el.classList.toggle('is-pending', !!(sel.length && el.dataset.pending && !bad));
     });
     [].forEach.call(document.querySelectorAll('.cv-cat'), function (b) {
-      var gone = !!b.querySelector('.cv-item') && !b.querySelector('.cv-item:not(.is-hidden)');
-      b.classList.toggle('is-hidden', gone);
-      var t = document.querySelector('.cv-tab[data-cat="' + b.id + '"]'); if (t) t.classList.toggle('is-hidden', gone);
+      b.classList.toggle('is-hidden', !!b.querySelector('.cv-item') && !b.querySelector('.cv-item:not(.is-hidden)'));
     });
+    [].forEach.call(document.querySelectorAll('.cv-group'), function (g) { g.classList.toggle('is-hidden', !!g.querySelector('.cv-cat') && !g.querySelector('.cv-cat:not(.is-hidden)')); });
+    syncTabs();
     var c = $('cvAlCount'); c.textContent = sel.length; c.hidden = !sel.length;
     var f = $('cvFilter');
     if (sel.length) {
@@ -110,6 +126,9 @@
       $('cvFilterOff').onclick = function () { setSel([]); };
     } else f.hidden = true;
     try { sessionStorage.setItem('roce_carta_al', JSON.stringify(sel)); } catch (e) {}
+  }
+  function syncTabs() {
+    [].forEach.call(document.querySelectorAll('.cv-tab'), function (t) { var c = $(t.dataset.cat); t.classList.toggle('is-hidden', !c || c.classList.contains('is-hidden')); });
   }
   function setSel(a) { sel = a; buildSheet(); applyFilter(); }
 
@@ -121,8 +140,8 @@
     requestAnimationFrame(function () {
       ticking = false;
       var line = document.getElementById('top').offsetHeight + 24, id = '';
-      [].forEach.call(document.querySelectorAll('.cv-cat:not(.is-hidden)'), function (s) { if (s.getBoundingClientRect().top <= line) id = s.id; });
-      if (!id) { var f = document.querySelector('.cv-cat:not(.is-hidden)'); id = f ? f.id : ''; }
+      [].forEach.call(document.querySelectorAll('#pg-' + cur + ' .cv-cat:not(.is-hidden)'), function (s) { if (s.getBoundingClientRect().top <= line) id = s.id; });
+      if (!id) { var f = document.querySelector('#pg-' + cur + ' .cv-cat:not(.is-hidden)'); id = f ? f.id : ''; }
       if (id === current) return; current = id;
       var nav = $('cvTabs');
       [].forEach.call(nav.querySelectorAll('.cv-tab'), function (t) {
@@ -135,6 +154,16 @@
   window.addEventListener('resize', function () { measure(); onScroll(); });
 
   /* ── Eventos ── */
+  $('cvBook').addEventListener('click', function (e) { var b = e.target.closest('.cv-leaf'); if (b) setSheet(b.dataset.sec); });
+  $('cvSections').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-toggle]'); if (!b) return;
+    var c = $(b.dataset.toggle), open = c.classList.toggle('is-closed') === false;
+    b.setAttribute('aria-expanded', String(open));
+  });
+  $('cvTabs').addEventListener('click', function (e) {
+    var t = e.target.closest('.cv-tab'); if (!t) return;
+    var c = $(t.dataset.cat); if (c && c.classList.contains('is-closed')) { c.classList.remove('is-closed'); c.querySelector('.cv-cat-h').setAttribute('aria-expanded', 'true'); }
+  });
   $('cvAlBtn').addEventListener('click', function () { var d = $('cvSheet'); if (d.showModal) d.showModal(); else d.setAttribute('open', ''); });
   $('cvAlDone').addEventListener('click', function () { $('cvSheet').close ? $('cvSheet').close() : $('cvSheet').removeAttribute('open'); });
   $('cvAlClear').addEventListener('click', function () { setSel([]); });
@@ -145,7 +174,7 @@
     setSel(i === -1 ? sel.concat(n) : sel.filter(function (x) { return x !== n; }));
   });
   [].forEach.call(document.querySelectorAll('.cv-lang button'), function (b) {
-    b.addEventListener('click', function () { L = b.dataset.lang; try { localStorage.setItem('roce_carta_lang', L); } catch (e) {} render(); });
+    b.addEventListener('click', function () { L = b.dataset.lang; try { localStorage.setItem('roce_carta_lang', L); } catch (e) {} current = ''; render(); });
   });
   render();
 })();
