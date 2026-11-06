@@ -25,19 +25,19 @@
   function als(arr) { return arr && arr.length ? '<span class="cv-als" aria-label="' + esc(ui('allergies')) + '">' + arr.map(function (n) { return '<span class="cv-al" title="' + esc(tx(D.allergens[n - 1])) + '">' + n + '</span>'; }).join('') + '</span>' : ''; }
   function attrs(it, blk) { return ' data-al="' + (it.al || []).join(',') + '"' + (blk.alPending ? ' data-pending="1"' : ''); }
 
-  function media(it) {
-    return it.img ? '<div class="cv-media"><img loading="lazy" src="' + esc(it.img) + '" alt="' + esc(it.name) + '"></div>' : '<div class="cv-media is-ph" aria-hidden="true"></div>';
-  }
   function card(it, blk) {
-    var pend = blk.alPending ? '<span class="cv-pend">' + esc(ui('pending')) + '</span>' : '';
-    var h = '<article class="cv-card cv-item"' + attrs(it, blk) + '><div class="cv-card-body">';
-    if (it.code && it.code !== it.name) h += '<span class="cv-code">' + esc(it.code) + '</span>';
-    h += '<h4 class="cv-name">' + esc(it.name) + (it.note ? ' <small>' + esc(tx(it.note)) + '</small>' : '') + '</h4>';
+    var dup = it.code && it.code === it.name;
+    var h = '<article class="cv-card cv-item ' + (it.img ? 'has-img' : 'no-img') + '"' + attrs(it, blk) + '>';
+    if (it.img) h += '<img class="cv-card-img" loading="lazy" src="' + esc(it.img) + '" alt="">';
+    h += '<div class="cv-card-top"><span>' + (it.al && it.al.length ? '<span class="cv-pill cv-pill-al">' + als(it.al) + '</span>' : '') + '</span>' + (it.price != null ? '<span class="cv-pill cv-pill-price">' + money(it.price) + '</span>' : '') + '</div>';
+    if (!it.img) h += it.code ? '<div class="cv-card-num">' + esc(it.code) + '</div>' : '<div class="cv-card-num is-logo" aria-hidden="true"></div>';
+    h += '<div class="cv-card-body">';
+    if (!dup) h += '<h4 class="cv-name">' + esc(it.name) + (it.note ? ' <small>' + esc(tx(it.note)) + '</small>' : '') + '</h4>';
     if (it.es) h += '<p class="cv-desc">' + esc(tx({ es: it.es, en: it.en })) + '</p>';
     if (it.tag) h += '<p class="cv-tag">' + esc(tx(it.tag)) + '</p>';
     if (it.variants) h += '<ul class="cv-variants">' + it.variants.map(function (v) { return '<li><b>' + esc(v.name) + '</b><span>' + esc(tx({ es: v.es, en: v.en })) + '</span>' + als(v.al) + '</li>'; }).join('') + '</ul>';
-    h += '<div class="cv-card-foot">' + (it.price != null ? '<span class="cv-price">' + money(it.price) + '</span>' : '') + als(it.al) + pend + '</div>';
-    return h + '</div>' + media(it) + '</article>';
+    if (blk.alPending) h += '<span class="cv-pend">' + esc(ui('pending')) + '</span>';
+    return h + '</div></article>';
   }
   function row(it, blk) {
     return '<li class="cv-item"' + attrs(it, blk) + '><span class="cv-nm">' + esc(it.name) + als(it.al) + (blk.alPending ? '<span class="cv-pend">' + esc(ui('pending')) + '</span>' : '') + '</span><span class="cv-price">' + money(it.price) + '</span></li>';
@@ -57,7 +57,7 @@
   }
   function catHtml(c) {
     var b = c.block, s = c.sec;
-    var h = '<section class="cv-cat is-' + s.color + '" id="' + c.id + '" style="--c:var(--' + s.color + ')"><header class="cv-cat-h"><p class="cv-kicker">' + esc(tx(s.title)) + ' · ' + esc(tx(c.group.title)) + '</p><h2 class="cv-cat-title">' + esc(tx(b.title)) + '</h2>';
+    var h = '<section class="cv-cat is-' + s.color + '" id="' + c.id + '" style="--c:var(--' + s.color + ')"><header class="cv-cat-h"><p class="cv-kicker">' + esc(tx(s.title)) + (tx(c.group.title) !== tx(s.title) ? ' · ' + esc(tx(c.group.title)) : '') + '</p><h2 class="cv-cat-title">' + esc(tx(b.title)) + '</h2>';
     var note = [b.note ? tx(b.note) : (c.gfirst && c.group.note ? tx(c.group.note) : '')].filter(Boolean).join(' · ');
     if (note) h += '<p class="cv-cat-note">' + esc(note) + '</p>';
     h += '</header><div class="cv-cat-body">';
