@@ -423,3 +423,39 @@ body.is-pulling .cv-foot-logo { transition: none; }
 .cv-foot { transform: none !important; transition: none !important; will-change: auto; }
 main { transform: translateY(var(--pull, 0px)); }
 body.is-pulling main { transition: none; }
+
+/* ── iPhone/Safari: paneles que no se encogen, y título lateral estable al hacer scroll ── */
+/* 1) el cuerpo con scroll de los paneles (Filtros y Ayuda) no se colapsa en Safari: base automática en vez de 0 */
+.cv-sheet-body { flex: 1 1 auto; min-height: 0; }
+.cv-sheet[open] { height: auto; }
+.cv-sheet-in { height: auto; }
+/* 2) la hoja no lleva transform (ni capa de composición) salvo mientras tiras de ella: un ancestro con transform hace vibrar a los elementos sticky en WebKit */
+main { transform: none; will-change: auto; transition: none; }
+body.is-pulling main { transform: translateY(var(--pull, 0px)); transition: none; }
+body.is-spring main { transform: translateY(0); transition: transform 0.4s cubic-bezier(0.2, 0.9, 0.25, 1); }
+/* 3) sin mezcla de color sobre toda la hoja (pesa y hace vibrar al hacer scroll en iOS) */
+.cv-paper::before { mix-blend-mode: normal; opacity: 0.32; }
+/* 4) el título lateral va en su propia capa para que no tiemble */
+.cv-spine span { transform: translate3d(0, 0, 0); -webkit-transform: translate3d(0, 0, 0); backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+/* Filtros: nunca más bajo que esto, aunque Safari calcule mal el alto */
+#cvSheet[open] { min-height: min(30rem, 76vh); min-height: min(30rem, 76dvh); }
+
+/* ── Safari: paneles con altura propia, sin flex en el <dialog> (ahí Safari los dejaba como una franja de ~70 px) ── */
+.cv-sheet[open] { display: block !important; overflow: hidden; height: auto; }
+.cv-sheet-in { display: flex; flex-direction: column; flex: none !important; height: auto; min-height: 0; max-height: 88vh; max-height: 88dvh; }
+.cv-sheet-body { flex: 1 1 auto !important; min-height: 0; max-height: calc(88vh - 7.5rem); max-height: calc(88dvh - 7.5rem); overflow-y: auto; -webkit-overflow-scrolling: touch; }
+.cv-chef .cv-sheet-body { max-height: calc(var(--vvh, 100dvh) - 1.5rem - 7.5rem); }
+.cv-sheet-actions { flex: 0 0 auto; }
+
+/* MENÚ y FILTROS: misma tipografía, mayúsculas y sin negrita */
+.cv-menu-btn, .cv-allergy-btn { font-family: var(--display); font-size: 0.8rem; font-weight: 400; letter-spacing: 0.12em; text-transform: uppercase; }
+.cv-allergy-btn span, .cv-menu-btn span { font-weight: 400; }
+
+/* ── Paneles (Filtros y Ayuda) SIN flex ni alturas encadenadas: bloque normal con scroll en el propio panel y botones pegados abajo.
+   Así no puede colapsar en ningún navegador del móvil (Safari ni Chrome). ── */
+.cv-sheet[open] { display: block !important; height: auto !important; max-height: 88vh; max-height: 88dvh; overflow-x: hidden; overflow-y: auto !important; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
+.cv-sheet .cv-sheet-in { display: block !important; flex: none !important; height: auto !important; min-height: 0 !important; max-height: none !important; padding-bottom: 0 !important; }
+.cv-sheet .cv-sheet-body { display: block !important; flex: none !important; height: auto !important; max-height: none !important; overflow: visible !important; padding-right: 0; scrollbar-gutter: auto; }
+.cv-sheet .cv-sheet-actions { position: sticky !important; bottom: 0 !important; z-index: 3; display: flex !important; gap: 0.6rem; margin: 0.9rem 0 0 !important; padding: 0.8rem 0 calc(1rem + env(safe-area-inset-bottom)) !important; border-top: 1.5px solid var(--black); background: #fff; }
+.cv-chef[open] { max-height: calc(var(--vvh, 100dvh) - 1.5rem); }
+#cvSheet[open] { min-height: min(26rem, 70vh); min-height: min(26rem, 70dvh); }

@@ -182,7 +182,12 @@
     var tf = $('cvTopFill'); if (tf) tf.style.width = (dir < 0 ? Math.round(p * 100) : 0) + '%';
     var nb = $('cvNextBar'); if (nb) nb.style.width = (dir > 0 ? Math.round(p * 100) : 0) + '%';
   }
-  function springBack() { clearTimeout(pull.timer); pull.wacc = 0; document.body.classList.remove('is-pulling'); setPull(0, pull.dir || 1); document.body.classList.remove('is-pulling'); }
+  function springBack() {
+    clearTimeout(pull.timer); pull.wacc = 0;
+    var b = document.body, had = b.classList.contains('is-pulling');
+    if (had) { b.classList.add('is-spring'); setTimeout(function () { b.classList.remove('is-spring'); }, 480); }
+    b.classList.remove('is-pulling'); setPull(0, pull.dir || 1); b.classList.remove('is-pulling');
+  }
   function go(dir) {
     var n = dir > 0 ? nextSheet() : prevSheet(); if (!n) return springBack();
     pull.lock = true; clearTimeout(pull.timer); pull.wacc = 0;
