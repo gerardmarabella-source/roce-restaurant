@@ -97,6 +97,13 @@
 
     // reservar.html
     reservar_h1: { es: 'Reserva<br>tu mesa', en: 'Book<br>your table' },
+    rz_label: { es: '1 · Elige dónde quieres reservar', en: '1 · Choose where to book' },
+    rz_up: { es: 'Planta alta', en: 'Upstairs' },
+    rz_down: { es: 'Planta baja', en: 'Ground floor' },
+    rz_night_desc: { es: 'Comida 13:00–16:00 · Cena 20:00–02:00 (+18)', en: 'Lunch 13:00–16:00 · Dinner 20:00–02:00 (18+)' },
+    rz_day_desc: { es: 'Brunch, café y comidas · todos los días 10:00–20:00', en: 'Brunch, coffee and lunch · every day 10:00–20:00' },
+    rz_pick: { es: 'Elegir', en: 'Choose' },
+    rz_on: { es: '✓ Elegido', en: '✓ Chosen' },
     hours_day: { es: 'Coffee, Bakery & Kitchen · Todos los días, de 10:00 a 20:00', en: 'Coffee, Bakery & Kitchen · Every day, 10:00 – 20:00' },
     reservar_night: {
       es: 'Reservas de noche solo para mayores de 18 años',

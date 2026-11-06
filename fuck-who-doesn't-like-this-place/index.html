@@ -144,20 +144,25 @@
   /* Título a la izquierda y, al lado, el selector Day / Night. */
   .reserve-head { display: flex; flex-direction: column; align-items: flex-start; gap: 1rem; margin-bottom: 0.75rem; }
   .reserve-head h1 { margin-bottom: 0; }
-  /* Selector de espacio: dos botones con borde y un círculo de selección, para que se vea que se pulsan. */
+  /* Selector de espacio: dos "plantas" apiladas como en el local (alta arriba, baja abajo). Cada una dice qué es, su horario y que se pulsa. */
+  .reserve-zones-label { margin: 0 0 0.6rem; font-size: 0.8rem; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.7; }
   .reserve-zones { display: flex; flex-direction: column; align-items: stretch; gap: 0.6rem; width: 100%; max-width: 34rem; padding-bottom: 0.2rem; }
   .reserve-zone {
-    display: flex; align-items: center; justify-content: space-between; gap: 1rem;
-    width: 100%; box-sizing: border-box; padding: 0.95rem 1.1rem;
-    border: 2px solid currentColor; background: transparent; color: inherit;
-    font-family: var(--display); font-weight: 700; font-size: clamp(1rem, 4.4vw, 1.35rem);
-    line-height: 1.05; letter-spacing: 0.02em; text-align: left; text-transform: uppercase;
-    cursor: pointer; transition: background 0.2s ease, color 0.2s ease;
+    display: grid; grid-template-columns: 1fr auto; grid-template-areas: "floor cta" "name name" "desc desc"; row-gap: 0.35rem; column-gap: 1rem; align-items: center;
+    width: 100%; box-sizing: border-box; padding: 1rem 1.15rem 1.05rem;
+    border: 2px solid currentColor; background: transparent; color: inherit; text-align: left; cursor: pointer;
+    font-family: var(--display); text-transform: uppercase; transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
   }
-  .reserve-zone::after { content: ""; flex: 0 0 auto; width: 1.15rem; height: 1.15rem; border: 2px solid currentColor; border-radius: 50%; }
-  .reserve-zone:hover { background: rgba(127, 127, 127, 0.18); }
+  .reserve-zone:hover { background: rgba(127, 127, 127, 0.16); transform: translateY(-2px); }
+  .rz-floor { grid-area: floor; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.14em; opacity: 0.7; }
+  .rz-cta { grid-area: cta; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.1em; white-space: nowrap; }
+  .rz-off::after { content: " →"; }
+  .rz-on { display: none; }
+  .rz-name { grid-area: name; font-weight: 700; font-size: clamp(1.15rem, 5vw, 1.55rem); line-height: 1.05; letter-spacing: 0.02em; }
+  .rz-desc { grid-area: desc; font-size: 0.8rem; line-height: 1.3; letter-spacing: 0.03em; text-transform: none; opacity: 0.75; }
   .reserve-zone[aria-pressed="true"] { background: var(--white); color: var(--black); }
-  .reserve-zone[aria-pressed="true"]::after { background: radial-gradient(circle, currentColor 0 45%, transparent 50%); }
+  .reserve-zone[aria-pressed="true"] .rz-off { display: none; }
+  .reserve-zone[aria-pressed="true"] .rz-on { display: inline; }
   body.zone-day .reserve-zone[aria-pressed="true"] { background: var(--black); color: var(--white); }
   /* Day: cabecera y zona de reservas en blanco con letras negras. */
   .topbar, .reserve-form-page { transition: background 0.3s ease, color 0.3s ease; }
@@ -363,9 +368,20 @@
     <a class="reserve-back" href="/night/" data-i18n="back_to_home">&larr; Volver a ROCE</a>
     <div class="reserve-head">
       <h1 data-i18n-html="reservar_h1">Reserva<br>tu mesa</h1>
+      <p class="reserve-zones-label" data-i18n="rz_label">1 · Elige dónde quieres reservar</p>
       <div class="reserve-zones" role="group" aria-label="Restaurant &amp; Cocktails / Coffee, Bakery &amp; Kitchen">
-        <button type="button" class="reserve-zone" data-zone="night" aria-pressed="false">Restaurant &amp; Cocktails</button>
-        <button type="button" class="reserve-zone" data-zone="day" aria-pressed="false">Coffee, Bakery &amp; Kitchen</button>
+        <button type="button" class="reserve-zone" data-zone="night" aria-pressed="false">
+          <span class="rz-floor" data-i18n="rz_up">Planta alta</span>
+          <span class="rz-cta"><span class="rz-off" data-i18n="rz_pick">Elegir</span><span class="rz-on" data-i18n="rz_on">✓ Elegido</span></span>
+          <span class="rz-name">Restaurant &amp; Cocktails</span>
+          <span class="rz-desc" data-i18n="rz_night_desc">Comida 13:00–16:00 · Cena 20:00–02:00 (+18)</span>
+        </button>
+        <button type="button" class="reserve-zone" data-zone="day" aria-pressed="false">
+          <span class="rz-floor" data-i18n="rz_down">Planta baja</span>
+          <span class="rz-cta"><span class="rz-off" data-i18n="rz_pick">Elegir</span><span class="rz-on" data-i18n="rz_on">✓ Elegido</span></span>
+          <span class="rz-name">Coffee, Bakery &amp; Kitchen</span>
+          <span class="rz-desc" data-i18n="rz_day_desc">Brunch, café y comidas · todos los días 10:00–20:00</span>
+        </button>
       </div>
     </div>
 
@@ -452,7 +468,7 @@
   </div>
 </div>
 <script src="/cookies.js?v=4"></script>
-<script src="/i18n.js?v=104"></script>
+<script src="/i18n.js?v=105"></script>
 <script src="/agegate.js?v=5"></script>
 <script src="/eventos/config.js?v=2"></script>
 <script src="/mesas/mesas.js?v=17"></script>
