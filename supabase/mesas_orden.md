@@ -21,5 +21,6 @@
 19. `mesas_servicio2.sql` — cuenta/limpiar/barra, tipos de reserva, fidelización, historial, 14 alérgenos, etiquetas VIP/No paga/Partner
 20. `cron_mesas.sql` — recordatorio de 24 h y email de valoración (barrido cada 15 min; ejecutar una vez)
 21. `mesas_calendario2.sql` — el calendario marca también los turnos cerrados (p. ej. la cena de un domingo)
+22. `mesas_cena_dias.sql` — la cena abre de miércoles a sábado
 
 Todos se pueden ejecutar más de una vez. Si se vuelve a ejecutar `mesas.sql` o `mesas_tarjeta.sql`, hay que volver a ejecutar los de después.
