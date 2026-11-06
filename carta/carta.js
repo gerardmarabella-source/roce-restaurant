@@ -25,46 +25,62 @@
   function als(arr) { return arr && arr.length ? '<span class="cv-als" aria-label="' + esc(ui('allergies')) + '">' + arr.map(function (n) { return '<span class="cv-al" title="' + esc(tx(D.allergens[n - 1])) + '">' + n + '</span>'; }).join('') + '</span>' : ''; }
   function attrs(it, blk) { return ' data-al="' + (it.al || []).join(',') + '"' + (blk.alPending ? ' data-pending="1"' : ''); }
 
+  function media(it) {
+    return it.img ? '<div class="cv-media"><img loading="lazy" src="' + esc(it.img) + '" alt="' + esc(it.name) + '"></div>' : '<div class="cv-media is-ph" aria-hidden="true"></div>';
+  }
   function card(it, blk) {
-    var h = '<article class="cv-card cv-item"' + attrs(it, blk) + '>' + (it.img ? '<img class="cv-card-img" loading="lazy" src="' + esc(it.img) + '" alt="' + esc(it.name) + '">' : '') + '<div class="cv-card-in">';
-    h += '<div class="cv-card-top"><span class="cv-code">' + (it.code && it.code !== it.name ? esc(it.code) : '') + '</span>' + als(it.al) + (blk.alPending ? '<span class="cv-pend">' + esc(ui('pending')) + '</span>' : '') + '</div>';
-    h += '<div class="cv-card-head"><h4 class="cv-name">' + esc(it.name) + (it.note ? ' <small>' + esc(tx(it.note)) + '</small>' : '') + '</h4>' + (it.price != null ? '<span class="cv-price">' + money(it.price) + '</span>' : '') + '</div>';
+    var pend = blk.alPending ? '<span class="cv-pend">' + esc(ui('pending')) + '</span>' : '';
+    var h = '<article class="cv-card cv-item"' + attrs(it, blk) + '><div class="cv-card-body">';
+    if (it.code && it.code !== it.name) h += '<span class="cv-code">' + esc(it.code) + '</span>';
+    h += '<h4 class="cv-name">' + esc(it.name) + (it.note ? ' <small>' + esc(tx(it.note)) + '</small>' : '') + '</h4>';
     if (it.es) h += '<p class="cv-desc">' + esc(tx({ es: it.es, en: it.en })) + '</p>';
     if (it.tag) h += '<p class="cv-tag">' + esc(tx(it.tag)) + '</p>';
     if (it.variants) h += '<ul class="cv-variants">' + it.variants.map(function (v) { return '<li><b>' + esc(v.name) + '</b><span>' + esc(tx({ es: v.es, en: v.en })) + '</span>' + als(v.al) + '</li>'; }).join('') + '</ul>';
-    return h + '</div></article>';
+    h += '<div class="cv-card-foot">' + (it.price != null ? '<span class="cv-price">' + money(it.price) + '</span>' : '') + als(it.al) + pend + '</div>';
+    return h + '</div>' + media(it) + '</article>';
   }
   function row(it, blk) {
     return '<li class="cv-item"' + attrs(it, blk) + '><span class="cv-nm">' + esc(it.name) + als(it.al) + (blk.alPending ? '<span class="cv-pend">' + esc(ui('pending')) + '</span>' : '') + '</span><span class="cv-price">' + money(it.price) + '</span></li>';
   }
-  function block(b) {
-    var h = '<div class="cv-block"><div class="cv-block-h"><h3>' + esc(tx(b.title)) + '</h3>' + (b.note ? '<span>' + esc(tx(b.note)) + '</span>' : '') + '</div>';
+
+  /* Categorías planas (cada bloque de la carta), como las pestañas de Honest Greens */
+  function cats() {
+    var out = [];
+    D.sections.forEach(function (s, si) {
+      var first = true;
+      if (s.soon) { out.push({ soon: true, sec: s, first: true, id: s.id }); return; }
+      s.groups.forEach(function (g, gi) {
+        g.blocks.forEach(function (b, bi) { out.push({ sec: s, group: g, block: b, id: 'c' + si + gi + bi, first: first, gfirst: bi === 0 }); first = false; });
+      });
+    });
+    return out;
+  }
+  function catHtml(c) {
+    var b = c.block, s = c.sec;
+    var h = '<section class="cv-cat is-' + s.color + '" id="' + c.id + '" style="--c:var(--' + s.color + ')"><header class="cv-cat-h"><p class="cv-kicker">' + esc(tx(s.title)) + ' · ' + esc(tx(c.group.title)) + '</p><h2 class="cv-cat-title">' + esc(tx(b.title)) + '</h2>';
+    var note = [b.note ? tx(b.note) : (c.gfirst && c.group.note ? tx(c.group.note) : '')].filter(Boolean).join(' · ');
+    if (note) h += '<p class="cv-cat-note">' + esc(note) + '</p>';
+    h += '</header><div class="cv-cat-body">';
     h += b.compact ? '<ul class="cv-list">' + b.items.map(function (i) { return row(i, b); }).join('') + '</ul>' : '<div class="cv-grid">' + b.items.map(function (i) { return card(i, b); }).join('') + '</div>';
     if (b.extras) h += '<div class="cv-extras"><span class="cv-extras-t">' + esc(tx(b.extras.title)) + '</span>' + b.extras.list.map(function (e) { return '<span class="cv-chip">' + esc(tx(e[0])) + (e[1] !== '' ? ' <b>' + esc(money(e[1])) + '</b>' : '') + '</span>'; }).join('') + '</div>';
-    return h + '</div>';
-  }
-  function micro(sec) {
-    var seen = {}, out = [];
-    sec.groups.forEach(function (g) { g.blocks.forEach(function (b) { b.items.forEach(function (i) { var k = i.name.toUpperCase(); if (!seen[k] && !/^\d+$/.test(k) && out.length < 26) { seen[k] = 1; out.push(k); } }); }); });
-    return out.join(' · ');
+    return h + '</div></section>';
   }
 
+  var CATS = [];
   function render() {
     document.documentElement.lang = L;
-    $('cvKicker').textContent = ui('kicker');
     $('cvAlLabel').textContent = ui('allergies');
     $('cvDisclaimer').textContent = ui('note');
     $('cvSheetTitle').textContent = ui('al_h'); $('cvSheetText').textContent = ui('al_p'); $('cvAlClear').textContent = ui('clear'); $('cvAlDone').textContent = ui('done');
     [].forEach.call(document.querySelectorAll('.cv-lang button'), function (b) { b.setAttribute('aria-pressed', String(b.dataset.lang === L)); });
-    $('cvTabs').innerHTML = D.sections.map(function (s) { return '<a class="cv-tab' + (s.soon ? ' is-soon' : '') + '" href="#' + s.id + '" data-sec="' + s.id + '" style="--c:var(--' + s.color + ')"><i></i>' + esc(tx(s.title)) + (s.soon ? ' · ' + esc(ui('soon')) : '') + '</a>'; }).join('');
-    $('cvTiles').innerHTML = D.sections.map(function (s) {
-      return '<a class="cv-tile is-' + s.color + (s.soon ? ' is-soon' : '') + '" href="#' + s.id + '" style="--c:var(--' + s.color + ')">' + (s.soon ? '<span class="cv-tile-soon">' + esc(ui('soon')) + '</span>' : '<span class="cv-tile-text">' + esc(micro(s)) + '</span>') + '<span class="cv-tile-title">' + esc(tx(s.title)) + '</span></a>';
+    CATS = cats();
+    $('cvTabs').innerHTML = CATS.map(function (c, i) {
+      var cls = 'cv-tab' + (c.first && i ? ' is-split' : '') + (c.soon ? ' is-soon' : '');
+      var st = ' style="--c:var(--' + c.sec.color + ')"';
+      return c.soon ? '<span class="' + cls + '"' + st + '>' + esc(tx(c.sec.title)) + ' · ' + esc(ui('soon')) + '</span>' : '<a class="' + cls + '" href="#' + c.id + '" data-cat="' + c.id + '"' + st + '>' + esc(tx(c.block.title)) + '</a>';
     }).join('');
-    $('cvSections').innerHTML = D.sections.filter(function (s) { return !s.soon; }).map(function (s) {
-      return '<section class="cv-sec is-' + s.color + '" id="' + s.id + '" style="--c:var(--' + s.color + ')"><div class="cv-sec-head"><h2 class="cv-sec-title">' + esc(tx(s.title)) + '</h2><span class="cv-sec-mark">ROCE ®</span></div>' +
-        s.groups.map(function (g) { return '<div class="cv-group"><h3 class="cv-group-h">' + esc(tx(g.title)) + '</h3>' + (g.note ? '<p class="cv-note">' + esc(tx(g.note)) + '</p>' : '') + g.blocks.map(block).join('') + '</div>'; }).join('') + '</section>';
-    }).join('');
-    buildSheet(); applyFilter(); observe();
+    $('cvSections').innerHTML = CATS.filter(function (c) { return !c.soon; }).map(catHtml).join('');
+    current = ''; buildSheet(); applyFilter(); measure(); onScroll();
   }
 
   /* ── Alérgenos ── */
@@ -81,8 +97,11 @@
       el.classList.toggle('is-hidden', !!bad);
       el.classList.toggle('is-pending', !!(sel.length && el.dataset.pending && !bad));
     });
-    [].forEach.call(document.querySelectorAll('.cv-block'), function (b) { b.classList.toggle('is-hidden', !!b.querySelector('.cv-item') && !b.querySelector('.cv-item:not(.is-hidden)')); });
-    [].forEach.call(document.querySelectorAll('.cv-group'), function (g) { g.classList.toggle('is-hidden', !g.querySelector('.cv-block:not(.is-hidden)')); });
+    [].forEach.call(document.querySelectorAll('.cv-cat'), function (b) {
+      var gone = !!b.querySelector('.cv-item') && !b.querySelector('.cv-item:not(.is-hidden)');
+      b.classList.toggle('is-hidden', gone);
+      var t = document.querySelector('.cv-tab[data-cat="' + b.id + '"]'); if (t) t.classList.toggle('is-hidden', gone);
+    });
     var c = $('cvAlCount'); c.textContent = sel.length; c.hidden = !sel.length;
     var f = $('cvFilter');
     if (sel.length) {
@@ -94,16 +113,26 @@
   }
   function setSel(a) { sel = a; buildSheet(); applyFilter(); }
 
-  /* ── Pestaña activa según el scroll ── */
-  var io;
-  function observe() {
-    if (io) io.disconnect();
-    if (!('IntersectionObserver' in window)) return;
-    io = new IntersectionObserver(function (es) {
-      es.forEach(function (e) { if (e.isIntersecting) [].forEach.call(document.querySelectorAll('.cv-tab'), function (t) { t.classList.toggle('is-on', t.dataset.sec === e.target.id); }); });
-    }, { rootMargin: '-35% 0px -55% 0px' });
-    [].forEach.call(document.querySelectorAll('.cv-sec'), function (s) { io.observe(s); });
+  /* ── Altura de la barra fija + pestaña activa según el scroll ── */
+  function measure() { document.documentElement.style.setProperty('--bar', document.getElementById('top').offsetHeight + 'px'); }
+  var ticking = false, current = '';
+  function onScroll() {
+    if (ticking) return; ticking = true;
+    requestAnimationFrame(function () {
+      ticking = false;
+      var line = document.getElementById('top').offsetHeight + 24, id = '';
+      [].forEach.call(document.querySelectorAll('.cv-cat:not(.is-hidden)'), function (s) { if (s.getBoundingClientRect().top <= line) id = s.id; });
+      if (!id) { var f = document.querySelector('.cv-cat:not(.is-hidden)'); id = f ? f.id : ''; }
+      if (id === current) return; current = id;
+      var nav = $('cvTabs');
+      [].forEach.call(nav.querySelectorAll('.cv-tab'), function (t) {
+        var on = t.dataset.cat === id; t.classList.toggle('is-on', on);
+        if (on) nav.scrollTo({ left: t.offsetLeft - (nav.clientWidth - t.offsetWidth) / 2, behavior: 'smooth' });
+      });
+    });
   }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', function () { measure(); onScroll(); });
 
   /* ── Eventos ── */
   $('cvAlBtn').addEventListener('click', function () { var d = $('cvSheet'); if (d.showModal) d.showModal(); else d.setAttribute('open', ''); });
