@@ -275,3 +275,9 @@ body.has-filter .is-pending .cv-pend { display: inline; }
 .cv-menu-foot { justify-content: flex-end; margin-top: 0; }
 .cv-menu-foot .cv-lang { margin-bottom: 0.25rem; }
 .cv-m-word { margin-top: 0; padding-top: 0.9rem; }
+
+/* menú: logo grande y ES/EN como estaban, ES/EN pegado a la línea del logo */
+.cv-menu-foot { display: block; flex: 0 0 auto; margin-top: auto; justify-content: initial; padding-top: 1rem; }
+.cv-menu-foot .cv-lang { justify-content: flex-start; margin: 0 0 0.3rem; font-size: 0.9rem; }
+.cv-menu-foot .cv-lang button { padding: 0.3rem 0.5rem 0.3rem 0; }
+.cv-m-word { display: block; flex: none; width: 100%; height: auto; max-height: none; object-fit: fill; margin-top: 0; padding-top: 1rem; border-top: 1.5px solid var(--black); }
