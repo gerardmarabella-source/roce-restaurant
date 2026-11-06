@@ -64,7 +64,7 @@ window.CARTA = {
                     { name: 'Costilla', al: [3], es: 'Costilla de vaca a baja temperatura, aguacate y mayonesa ahumada.', en: 'Slow-cooked beef rib, avocado and smoked mayo.' }
                   ]
                 },
-                { name: 'Patatas Artesana', al: [3, 7], price: 9.5, es: 'Patata agria en doble cocción, crujiente al centro, con 4 salsas ROCE (más icónicas).', en: 'Double-cooked potato, crispy in the centre, with 4 ROCE sauces (the most iconic).' }
+                { name: 'Patatas Artesanas', al: [3, 7], price: 9.5, es: 'Patata agria en doble cocción, crujiente al centro, con 4 salsas ROCE (más icónicas).', en: 'Double-cooked potato, crispy in the centre, with 4 ROCE sauces (the most iconic).' }
               ]
             },
             {
@@ -90,7 +90,7 @@ window.CARTA = {
               title: { es: 'Acompañamientos', en: 'Sides' },
               compact: true,
               items: [
-                { name: 'Patata artesana', al: [3, 7], price: 3.5 }, { name: 'Garbanzo artesano', price: 3.5 }, { name: 'Frijoles marinados', price: 3.5 },
+                { name: 'Patatas artesanas', al: [3, 7], price: 3.5 }, { name: 'Garbanzo artesano', price: 3.5 }, { name: 'Frijoles marinados', price: 3.5 },
                 { name: 'Maíz especiado', price: 3.5 }, { name: 'Boniato al carbón', price: 3.5 }
               ]
             },
