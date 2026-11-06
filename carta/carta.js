@@ -179,6 +179,7 @@
     st.setProperty('--pull', still ? '0px' : (dir > 0 ? -v : v) + 'px');
     // el logo del pie crece de su tamaño normal al gigante; al llegar al tamaño completo, cambia de hoja (arriba: logo que crece en el hueco)
     st.setProperty('--lpb', dir > 0 ? p.toFixed(3) : '0'); st.setProperty('--lpt', dir < 0 ? p.toFixed(3) : '0');
+    var tf = $('cvTopFill'); if (tf) tf.style.width = (dir < 0 ? Math.round(p * 100) : 0) + '%';
   }
   function springBack() { clearTimeout(pull.timer); pull.wacc = 0; document.body.classList.remove('is-pulling'); setPull(0, pull.dir || 1); document.body.classList.remove('is-pulling'); }
   function go(dir) {

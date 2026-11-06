@@ -387,3 +387,8 @@ body.is-pulling .cv-foot-logo { transition: none; }
 .cv-toplogo { position: fixed; z-index: 5; left: 0; right: 0; top: var(--bar); height: 150px; display: flex; align-items: center; justify-content: center; pointer-events: none; opacity: min(1, calc(var(--lpt, 0) * 3)); }
 .cv-toplogo img { width: calc(26% + 40% * var(--lpt, 0)); max-width: 30rem; height: auto; }
 @media (prefers-reduced-motion: reduce) { .cv-foot-logo { transform: scale(0.5); transition: none; } }
+
+/* hoja anterior (arriba): barra blanca fina bajo la cabecera; abajo se queda el logo que crece */
+.cv-topbar { display: block !important; position: fixed; z-index: 29; left: 0; right: 0; top: var(--bar); height: 4px; pointer-events: none; }
+.cv-topbar i { display: block; width: 0; height: 100%; background: #fff; transition: none; }
+.cv-toplogo { display: none; }
