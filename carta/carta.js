@@ -161,7 +161,7 @@
      (de azul a rojo) y, al llegar al máximo, la hoja cambia. Si sueltas antes, vuelve a su sitio. */
   function nextSheet() { var ids = D.sections.map(function (s) { return s.id; }), i = ids.indexOf(cur); return i >= 0 && i < ids.length - 1 ? D.sections[i + 1] : null; }
   function prevSheet() { var ids = D.sections.map(function (s) { return s.id; }), i = ids.indexOf(cur); return i > 0 ? D.sections[i - 1] : null; }
-  function paintNext() { /* sin barra: el logo del pie hace de indicador */ }
+  function paintNext() { var p = $('cvNext'); if (p) p.hidden = !nextSheet(); }
   function heat(t) {
     var S = [[50, 110, 255], [40, 215, 240], [255, 220, 60], [255, 140, 40], [255, 40, 40]], x = Math.min(0.9999, Math.max(0, t)) * (S.length - 1), i = Math.floor(x), f = x - i;
     return 'rgb(' + [0, 1, 2].map(function (k) { return Math.round(S[i][k] + (S[i + 1][k] - S[i][k]) * f); }).join(',') + ')';
@@ -180,6 +180,7 @@
     // el logo del pie crece de su tamaño normal al gigante; al llegar al tamaño completo, cambia de hoja (arriba: logo que crece en el hueco)
     st.setProperty('--lpb', dir > 0 ? p.toFixed(3) : '0'); st.setProperty('--lpt', dir < 0 ? p.toFixed(3) : '0');
     var tf = $('cvTopFill'); if (tf) tf.style.width = (dir < 0 ? Math.round(p * 100) : 0) + '%';
+    var nb = $('cvNextBar'); if (nb) nb.style.width = (dir > 0 ? Math.round(p * 100) : 0) + '%';
   }
   function springBack() { clearTimeout(pull.timer); pull.wacc = 0; document.body.classList.remove('is-pulling'); setPull(0, pull.dir || 1); document.body.classList.remove('is-pulling'); }
   function go(dir) {

@@ -201,7 +201,7 @@
       $('cvChefClose').textContent = st.result ? t('edit') : t('close');
       $('cvChefGo').textContent = st.result ? t('again') : t('go');
     }
-    function open() { st.result = null; paint(); var d = $('cvChef'); if (d.showModal) d.showModal(); else d.setAttribute('open', ''); }
+    function open() { st.result = null; paint(); var d = $('cvChef'); if (d.showModal) d.showModal(); else d.setAttribute('open', ''); fit(); }
     function close() { var d = $('cvChef'); if (d.close) d.close(); else d.removeAttribute('open'); }
     function run(again) {
       var ta = $('cvChefText'); if (ta) st.text = ta.value;
@@ -209,6 +209,10 @@
       st.seed = again ? st.seed + 1 : 0; st.result = propose(st.seed); paint(); $('cvChef').scrollTop = 0; var b = $('cvChefBody'); if (b) b.scrollTop = 0;
     }
 
+    // iPhone: con el teclado abierto el panel se ajusta al área visible (si no, se queda aplastado) y no abre el teclado solo
+    function fit() { var vv = window.visualViewport, d = $('cvChef'); if (!vv || !d) return; d.style.setProperty('--vvh', Math.round(vv.height) + 'px'); d.style.setProperty('--vvt', Math.round(vv.offsetTop) + 'px'); }
+    if (window.visualViewport) { window.visualViewport.addEventListener('resize', fit); window.visualViewport.addEventListener('scroll', fit); }
+    document.addEventListener('focusin', function (e) { if (e.target && e.target.id === 'cvChefText') setTimeout(function () { fit(); try { e.target.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch (x) { /* sin scroll */ } }, 250); });
     $('cvChefBtn').addEventListener('click', open);
     $('cvChefClose').addEventListener('click', function () { if (st.result) { st.result = null; paint(); } else close(); });
     $('cvChefGo').addEventListener('click', function () { run(!!st.result); });

@@ -403,3 +403,23 @@ body.is-pulling .cv-foot-logo { transition: none; }
 
 /* Filtros sin subrayado */
 .cv-allergy-btn, .cv-allergy-btn span { text-decoration: none; }
+
+/* paneles en iPhone: usan el alto visible real (con teclado también) y quedan arriba, no aplastados */
+.cv-sheet { max-height: 88vh; max-height: 88dvh; }
+.cv-sheet-in { max-height: 88vh; max-height: 88dvh; }
+.cv-chef[open] { margin: calc(var(--vvt, 0px) + 0.75rem) auto auto; max-height: calc(var(--vvh, 100dvh) - 1.5rem); }
+.cv-chef .cv-sheet-in { max-height: calc(var(--vvh, 100dvh) - 1.5rem); }
+.cv-chef textarea { font-size: 16px; scroll-margin: 1rem; }
+
+/* pie: logo ROCE gigante (fijo) y, encima, la barra blanca fina que se rellena al tirar (igual que arriba) */
+.cv-foot-logo { transform: none !important; transition: none; will-change: auto; }
+.cv-next { display: block !important; max-width: 60rem; margin: 0 auto 2rem; }
+.cv-next[hidden] { display: none !important; }
+.cv-next-track { display: block; width: 100%; height: 4px; margin: 0; border: 0; border-radius: 0; background: rgba(255, 255, 255, 0.18); overflow: hidden; }
+.cv-next i { display: block; width: 0; height: 100%; margin: 0; background: #fff; border-radius: 0; transition: none; }
+@media (prefers-reduced-motion: reduce) { .cv-foot-logo { transform: none; } }
+
+/* al tirar solo se mueve la hoja; el pie (logo gigante y barra blanca) se queda fijo abajo */
+.cv-foot { transform: none !important; transition: none !important; will-change: auto; }
+main { transform: translateY(var(--pull, 0px)); }
+body.is-pulling main { transition: none; }
