@@ -368,3 +368,8 @@ body.is-pulling main, body.is-pulling .cv-foot { transition: none; }
 
 /* el título lateral no se pega al borde de abajo de la hoja (p. ej. en Bakery, que es corta) */
 .cv-spine { padding-bottom: 3rem; }
+
+/* títulos de grupo (Desayunos, Comidas): mismo gris claro que los ingredientes */
+.cv-gh { opacity: 1; }
+.cv-gh h2 { opacity: 0.62; }
+.cv-gh span { opacity: 0.62; }
