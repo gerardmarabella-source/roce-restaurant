@@ -4,10 +4,10 @@
   'use strict';
   var D = window.CARTA;
   var UI = {
-    es: { al_key: 'Los números en círculo son los alérgenos de cada plato.', al_key_btn: 'Ver cuáles son', nut_key: 'Kcal = calorías · P = proteínas · C = hidratos · G = grasas (por ración)', nutri: 'Valores nutricionales por ración: calorías, proteínas, hidratos y grasas', allergies: 'Alergias', al_leg: 'Alérgenos', filters: 'Filtros', f_h: 'Filtra la carta', f_p: 'Marca alérgenos, tipo de dieta o ingredientes y te mostramos solo lo que encaja.', diet_h: 'Tipo de dieta', al_t: 'Alérgenos (ocultamos los platos que los llevan)', ing_h: 'Ingredientes', clear: 'Quitar todo', clear_sec: 'Borrar', done: 'Ver carta', without: 'Sin', with_: 'Con', pending: 'Consúltalo con el equipo', soon: 'Muy pronto', soon_p: 'Estamos preparando esta carta.',
+    es: { nutri: 'Valores nutricionales por ración: calorías, proteínas, hidratos y grasas', allergies: 'Alergias', al_leg: 'Alérgenos', filters: 'Filtros', f_h: 'Filtra la carta', f_p: 'Marca alérgenos, tipo de dieta o ingredientes y te mostramos solo lo que encaja.', diet_h: 'Tipo de dieta', al_t: 'Alérgenos (ocultamos los platos que los llevan)', ing_h: 'Ingredientes', clear: 'Quitar todo', clear_sec: 'Borrar', done: 'Ver carta', without: 'Sin', with_: 'Con', pending: 'Consúltalo con el equipo', soon: 'Muy pronto', soon_p: 'Estamos preparando esta carta.',
       b_al: 'Sin alérgenos', b_diet: 'Dieta', diet_note: 'La dieta y los ingredientes son orientativos según lo que figura en la carta. Si tienes dudas, pregunta al equipo.',
       note: 'Si tienes alguna alergia o intolerancia, avisa a nuestro equipo antes de pedir. Pueden existir trazas de otros alérgenos. Los alérgenos de las bebidas los confirma el equipo.', remove: 'Quitar filtros', next: 'Sigue bajando para ver', menu: 'Carta', menu_btn: 'Menú', close: 'Cerrar', cats: 'Categorías' },
-    en: { al_key: 'The numbers in circles are each dish\'s allergens.', al_key_btn: 'See which are which', nut_key: 'Kcal = calories · P = protein · C = carbs · F = fat (per serving)', nutri: 'Nutrition per serving: calories, protein, carbs and fat', allergies: 'Allergies', al_leg: 'Allergens', filters: 'Filters', f_h: 'Filter the menu', f_p: 'Tick allergens, diet or ingredients and we will show only what fits.', diet_h: 'Diet', al_t: 'Allergens (we hide dishes containing them)', ing_h: 'Ingredients', clear: 'Clear all', clear_sec: 'Clear', done: 'See menu', without: 'Without', with_: 'With', pending: 'Ask our team', soon: 'Coming soon', soon_p: 'We are preparing this menu.',
+    en: { nutri: 'Nutrition per serving: calories, protein, carbs and fat', allergies: 'Allergies', al_leg: 'Allergens', filters: 'Filters', f_h: 'Filter the menu', f_p: 'Tick allergens, diet or ingredients and we will show only what fits.', diet_h: 'Diet', al_t: 'Allergens (we hide dishes containing them)', ing_h: 'Ingredients', clear: 'Clear all', clear_sec: 'Clear', done: 'See menu', without: 'Without', with_: 'With', pending: 'Ask our team', soon: 'Coming soon', soon_p: 'We are preparing this menu.',
       b_al: 'Without allergens', b_diet: 'Diet', diet_note: 'Diet and ingredients are indicative, based on what the menu lists. If in doubt, ask our team.',
       note: 'If you have any allergy or intolerance, please tell our team before ordering. Traces of other allergens may be present. Allergens in drinks are confirmed by our team.', remove: 'Clear filters', next: 'Keep scrolling to see', menu: 'Menu', menu_btn: 'Menu', close: 'Close', cats: 'Categories' }
   };
@@ -112,7 +112,6 @@
   function page(s, si) {
     var h = '<article class="cv-paper is-' + s.color + (s.soon ? ' is-soon' : '') + '" id="pg-' + s.id + '" data-sec="' + s.id + '"' + (s.id === cur ? '' : ' hidden') + '><div class="cv-paper-in"><h1 class="cv-sr">' + esc(tx(s.title)) + '</h1>';
     var body = '';
-    if (!s.soon) body += '<p class="cv-key">' + esc(ui('al_key')) + ' <button type="button" class="cv-key-btn" data-open-al>' + esc(ui('al_key_btn')) + '</button><br><small>' + esc(ui('nut_key')) + '</small></p>';
     if (s.soon) body += '<div class="cv-soon"><b>' + esc(ui('soon')) + '</b><p>' + esc(s.desc ? tx(s.desc) : ui('soon_p')) + '</p></div>';
     else s.groups.forEach(function (g, gi) {
       var same = tx(g.title) === tx(s.title) && !g.force;
@@ -287,7 +286,6 @@
     else if (al) { closeMenu(); openAl(); }
   });
   $('cvAlBtn').addEventListener('click', openAl);
-  document.addEventListener('click', function (e) { if (e.target.closest && e.target.closest('[data-open-al]')) openAl(); });
   $('cvAlDone').addEventListener('click', function () { $('cvSheet').close ? $('cvSheet').close() : $('cvSheet').removeAttribute('open'); });
   $('cvAlClear').addEventListener('click', function () { setF({ al: [], diet: [], ing: { m: F.ing.m, k: [] } }); });
   $('cvSheet').addEventListener('click', function (e) {
