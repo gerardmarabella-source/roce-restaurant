@@ -45,9 +45,20 @@
     prive: CTX_ALTA.filter(function (c) { return c.l === 'Terraza cubierta' || c.l === 'Sala privé' || c.l === 'Office' || c.l === 'Almacén'; })
   };
 
+  // Elementos del local (barras, cocina, escaleras…): los guardados desde «Editar plano» o, si no hay, los de base.
+  function ctxList(z) {
+    if (S.edit && S.edit.ctx && S.edit.ctx[z]) return S.edit.ctx[z];
+    var sv = S.planCtx && S.planCtx[z]; if (Array.isArray(sv)) return sv;
+    return (CTX[z] || []).map(function (c, i) { return Object.assign({ id: z + '-' + i }, c); });
+  }
+  function ctxMut(z) {
+    if (!S.edit.ctx) S.edit.ctx = {};
+    if (!S.edit.ctx[z]) S.edit.ctx[z] = JSON.parse(JSON.stringify(ctxList(z)));
+    return S.edit.ctx[z];
+  }
   var ZONE_NAME = { baja: 'Planta baja', alta: 'Planta alta', prive: 'Sala privé' };
 
-  var S = { view: 'day', date: '', zone: 'baja', time: '', zones: [], tables: [], services: [], loadedCfg: false, bookings: [], blocks: [], closures: [], busy: false, join: false, sel: [], zoom: 1, px: 0, py: 0, justMoved: false, mode: 'timeline', joinTime: '', prescribers: [], notes: {}, waitlist: [], crm: [], crmQ: '', crmSort: 'last', crmType: '', crmMap: {}, loyalty: null, edit: null };
+  var S = { view: 'day', date: '', zone: 'baja', time: '', zones: [], tables: [], services: [], loadedCfg: false, bookings: [], blocks: [], closures: [], busy: false, join: false, sel: [], zoom: 1, px: 0, py: 0, justMoved: false, mode: 'timeline', joinTime: '', prescribers: [], notes: {}, waitlist: [], crm: [], crmQ: '', crmSort: 'last', crmType: '', crmMap: {}, loyalty: null, edit: null, planCtx: null };
 
   function today() { return new Intl.DateTimeFormat('en-CA', { timeZone: TZ }).format(new Date()); }
   function addDays(d, n) { var x = new Date(d + 'T12:00:00Z'); x.setUTCDate(x.getUTCDate() + n); return x.toISOString().slice(0, 10); }
@@ -79,7 +90,7 @@
       api('dining_accounts?select=*&order=name').catch(function () { return []; }),
       api('dining_account_moves?select=*&order=created_at.desc&limit=2000').catch(function () { return []; }),
       api('dining_settings?select=*').catch(function () { return []; })
-    ]).then(function (r) { (r[9] || []).forEach(function (x) { if (x.key === 'loyalty') S.loyalty = x.value; }); S.tags = r[5] || []; S.openings = r[6] || []; S.accounts = r[7] || []; S.accMoves = r[8] || []; S.zones = r[0] || []; S.tables = r[1] || []; S.services = r[2] || []; S.prescribers = r[3] || []; S.team = r[4] || []; S.loadedCfg = true; });
+    ]).then(function (r) { (r[9] || []).forEach(function (x) { if (x.key === 'loyalty') S.loyalty = x.value; if (x.key === 'plan_ctx') S.planCtx = x.value; }); S.tags = r[5] || []; S.openings = r[6] || []; S.accounts = r[7] || []; S.accMoves = r[8] || []; S.zones = r[0] || []; S.tables = r[1] || []; S.services = r[2] || []; S.prescribers = r[3] || []; S.team = r[4] || []; S.loadedCfg = true; });
   }
   function loadDay() {
     var from = A.madridToISO(S.date + 'T05:00'), to = A.madridToISO(addDays(S.date, 1) + 'T05:00');
@@ -259,21 +270,38 @@
   function editBar(E) {
     if (S.mode !== 'map' || !can('tables_config')) return '';
     if (!E) return '<div class="mt-edit"><button type="button" class="ad-btn is-small is-ghost" id="mtEdit">Editar plano</button></div>';
-    var sel = E.sel && tableById(E.sel), n = changedIds().length, r = sel ? Math.round(tcur(E.sel).rot) : 0, dis = sel ? '' : ' disabled';
-    return '<div class="mt-edit is-on"><p class="ad-meta">Arrastra las mesas para moverlas. Toca una para girarla. Los cambios no se guardan hasta que pulses «Guardar plano».</p>' +
+    var sel = E.sel && tableById(E.sel), n = changedIds().length + (E.ctxDirty ? 1 : 0), r = sel ? Math.round(tcur(E.sel).rot) : 0, dis = sel ? '' : ' disabled';
+    return '<div class="mt-edit is-on"><p class="ad-meta">Arrastra las mesas para moverlas. Toca una para girarla. Toca el nombre de una barra, zona o columna para moverla, cambiarle el tamaño o borrarla. Los cambios no se guardan hasta que pulses «Guardar plano».</p>' +
       '<div class="mt-edit-row"><b class="mt-edit-sel">' + (sel ? 'Mesa ' + esc(sel.name) + ' · ' + r + '°' : 'Ninguna mesa seleccionada') + '</b>' +
       '<button type="button" class="ad-btn is-small is-ghost" data-rot="-15"' + dis + '>⟲ 15°</button><button type="button" class="ad-btn is-small is-ghost" data-rot="15"' + dis + '>⟳ 15°</button>' +
       '<button type="button" class="ad-btn is-small is-ghost" data-rot="90"' + dis + '>Girar 90°</button><button type="button" class="ad-btn is-small is-ghost" data-rot="0"' + dis + '>Recta</button></div>' +
-      '<div class="mt-edit-row"><button type="button" class="ad-btn" id="mtEditSave">Guardar plano' + (n ? ' (' + n + ' mesa' + (n === 1 ? '' : 's') + ')' : '') + '</button><button type="button" class="ad-btn is-ghost" id="mtEditCancel">' + (n ? 'Descartar cambios' : 'Salir') + '</button></div></div>';
+      ctxBar(E) + '<div class="mt-edit-row"><button type="button" class="ad-btn" id="mtEditSave">Guardar plano' + (n ? ' (' + n + ' cambio' + (n === 1 ? '' : 's') + ')' : '') + '</button><button type="button" class="ad-btn is-ghost" id="mtEditCancel">' + (n ? 'Descartar cambios' : 'Salir') + '</button></div></div>';
+  }
+  function ctxBar(E) {
+    var c = E.csel && ctxList(S.zone).filter(function (x) { return x.id === E.csel; })[0], h = '<div class="mt-edit-row"><b class="mt-edit-sel">Elementos</b><button type="button" class="ad-btn is-small is-ghost" data-cadd="barra">+ Barra</button><button type="button" class="ad-btn is-small is-ghost" data-cadd="zona">+ Zona</button><button type="button" class="ad-btn is-small is-ghost" data-cadd="col">+ Columna</button><button type="button" class="ad-btn is-small is-ghost" data-cadd="reset">Restaurar los de base</button></div>';
+    if (!c) return h;
+    h += '<div class="mt-edit-row"><b class="mt-edit-sel">' + (c.k === 'col' ? 'Columna' : 'Elemento') + ' seleccionado</b>';
+    if (c.k !== 'col') h += '<input type="text" id="mtCtxName" value="' + esc(c.l || '') + '" maxlength="30" aria-label="Nombre">' +
+      '<button type="button" class="ad-btn is-small ' + (c.dash ? '' : 'is-ghost') + '" data-cact="dash">Borde discontinuo</button><button type="button" class="ad-btn is-small ' + (c.hatch ? '' : 'is-ghost') + '" data-cact="hatch">Rayado</button><button type="button" class="ad-btn is-small ' + (c.round ? '' : 'is-ghost') + '" data-cact="round">Redondeado</button>';
+    else h += '<button type="button" class="ad-btn is-small is-ghost" data-cact="bigger">Más grande</button><button type="button" class="ad-btn is-small is-ghost" data-cact="smaller">Más pequeña</button>';
+    return h + '<button type="button" class="ad-btn is-small is-danger" data-cact="del">Eliminar</button></div>';
   }
   function saveEdit(btn) {
-    var ids = changedIds(); if (!ids.length) { S.edit = null; return render(); }
+    var ids = changedIds(); if (!ids.length && !S.edit.ctxDirty) { S.edit = null; return render(); }
     btn.disabled = true;
-    return Promise.all(ids.map(function (id) {
+    var jobs = ids.map(function (id) {
       var t = tableById(id), c = S.edit.ch[id], body = { pos_x: Math.round(c.pos_x * 100) / 100, pos_y: Math.round(c.pos_y * 100) / 100 };
       if ((c.rot || 0) !== (t.rot || 0)) body.rot = c.rot;
       return api('dining_tables?id=eq.' + id, { method: 'PATCH', body: body, prefer: 'return=minimal' });
-    })).then(function () { return loadConfig(true); }).then(function () { S.edit = null; render(); flash('Plano guardado.', 'ok'); })
+    });
+    var val = null;
+    if (S.edit.ctxDirty) {
+      val = Object.assign({}, S.planCtx || {});
+      Object.keys(S.edit.ctx || {}).forEach(function (z) { val[z] = S.edit.ctx[z].map(function (c) { var o = {}; Object.keys(c).forEach(function (k) { o[k] = typeof c[k] === 'number' ? Math.round(c[k] * 10) / 10 : c[k]; }); return o; }); });
+      jobs.push(api('dining_settings?on_conflict=key', { method: 'POST', body: { key: 'plan_ctx', value: val }, prefer: 'resolution=merge-duplicates,return=minimal' }));
+    }
+    var ctxSaved = S.edit.ctxDirty ? val : null;
+    return Promise.all(jobs).then(function () { if (ctxSaved) S.planCtx = ctxSaved; return loadConfig(true); }).then(function () { if (ctxSaved) S.planCtx = ctxSaved; }).then(function () { S.edit = null; render(); flash('Plano guardado.', 'ok'); })
       .catch(function (x) { btn.disabled = false; var s = String((x && x.message) || x); flash(/rot/i.test(s) ? 'Falta ejecutar mesas_plano_editor.sql en Supabase (crea la columna del giro).' : 'No se ha podido guardar el plano: ' + s, 'error'); });
   }
   // Arrastrar una mesa (solo en modo edición)
@@ -305,6 +333,68 @@
     setTimeout(function () { S.justMoved = false; }, 80);
   }
   document.addEventListener('pointerup', endTdrag); document.addEventListener('pointercancel', endTdrag);
+  // Arrastrar / cambiar de tamaño elementos del local (se agarran por su nombre; el primer toque solo los selecciona)
+  var cdrag = null;
+  root.addEventListener('pointerdown', function (e) {
+    if (!S.edit || !e.target.closest) return;
+    if (e.target.closest('.mt-t')) return;
+    var rz = e.target.closest('.mt-rz'), el = rz ? rz.parentNode : e.target.closest('.mt-ctx[data-ctx]'), mp = root.querySelector('.mt-map'); if (!el || !mp) return;
+    var id = el.dataset.ctx;
+    if (S.edit.csel !== id) { S.edit.csel = id; S.edit.sel = ''; render(); e.stopPropagation(); return; }
+    cdrag = { id: id, el: el, rz: !!rz, pid: e.pointerId, r: mp.getBoundingClientRect(), sx: e.clientX, sy: e.clientY, l: parseFloat(el.style.left), t: parseFloat(el.style.top), w: parseFloat(el.style.width), h: parseFloat(el.style.height), moved: false, dx: 0, dy: 0 };
+    try { (rz || el).setPointerCapture(e.pointerId); } catch (x) { /* sin captura */ }
+    e.stopPropagation();
+  }, true);
+  document.addEventListener('pointermove', function (e) {
+    if (!cdrag || e.pointerId !== cdrag.pid) return;
+    if (!cdrag.moved && Math.hypot(e.clientX - cdrag.sx, e.clientY - cdrag.sy) < 4) return;
+    cdrag.moved = true; S.justMoved = true;
+    cdrag.dx = (e.clientX - cdrag.sx) / cdrag.r.width * 100; cdrag.dy = (e.clientY - cdrag.sy) / cdrag.r.height * 100;
+    if (cdrag.rz) { cdrag.el.style.width = Math.max(1, cdrag.w + cdrag.dx) + '%'; cdrag.el.style.height = Math.max(1, cdrag.h + cdrag.dy) + '%'; }
+    else { cdrag.el.style.left = (cdrag.l + cdrag.dx) + '%'; cdrag.el.style.top = (cdrag.t + cdrag.dy) + '%'; }
+  });
+  function endCdrag(e) {
+    if (!cdrag || e.pointerId !== cdrag.pid) return;
+    var d = cdrag; cdrag = null;
+    if (S.edit && d.moved) {
+      var b = S.edit.boxes[S.zone], du = d.dx / 100 * b.bw, dv = d.dy / 100 * b.bh, c = ctxMut(S.zone).filter(function (x) { return x.id === d.id; })[0];
+      if (c) {
+        if (c.k === 'col') { c.x += du; c.y += dv; }
+        else if (d.rz) { c.x1 = Math.max(c.x0 + 20, c.x1 + du); c.y1 = Math.max(c.y0 + 20, c.y1 + dv); }
+        else { c.x0 += du; c.x1 += du; c.y0 += dv; c.y1 += dv; }
+        S.edit.ctxDirty = true;
+      }
+      render();
+    }
+    setTimeout(function () { S.justMoved = false; }, 80);
+  }
+  document.addEventListener('pointerup', endCdrag); document.addEventListener('pointercancel', endCdrag);
+  root.addEventListener('input', function (e) {
+    if (e.target.id !== 'mtCtxName' || !S.edit) return;
+    var c = ctxMut(S.zone).filter(function (x) { return x.id === S.edit.csel; })[0];
+    if (c) { c.l = e.target.value; S.edit.ctxDirty = true; var sp = root.querySelector('.mt-ctx.is-csel span'); if (sp) sp.textContent = c.l; }
+  });
+  function ctxAction(t) {
+    var list = ctxMut(S.zone), E = S.edit, b = E.boxes[S.zone];
+    if (t.dataset.cadd) {
+      if (t.dataset.cadd === 'reset') { E.ctx[S.zone] = (CTX[S.zone] || []).map(function (c, i) { return Object.assign({ id: S.zone + '-' + i }, JSON.parse(JSON.stringify(c))); }); E.csel = ''; }
+      else {
+        var cx = b.minx - b.PAD + b.bw / 2, cy = b.oy + b.bh / 2, id = 'n' + Date.now().toString(36), n;
+        if (t.dataset.cadd === 'col') n = { id: id, k: 'col', x: cx, y: cy, s: 34 };
+        else if (t.dataset.cadd === 'barra') n = { id: id, k: 'room', x0: cx - 110, y0: cy - 40, x1: cx + 110, y1: cy + 40, l: 'Barra', round: 1 };
+        else n = { id: id, k: 'room', x0: cx - 150, y0: cy - 100, x1: cx + 150, y1: cy + 100, l: 'Zona', dash: 1 };
+        list.push(n); E.csel = id; E.sel = '';
+      }
+      E.ctxDirty = true; return render();
+    }
+    var c = list.filter(function (x) { return x.id === E.csel; })[0]; if (!c) return;
+    var a = t.dataset.cact;
+    if (a === 'del') { E.ctx[S.zone] = list.filter(function (x) { return x.id !== E.csel; }); E.csel = ''; }
+    else if (a === 'bigger') c.s = Math.min(120, c.s * 1.25);
+    else if (a === 'smaller') c.s = Math.max(14, c.s / 1.25);
+    else c[a] = c[a] ? 0 : 1;
+    E.ctxDirty = true; render();
+  }
   A.editing = function () { return !!S.edit; };
 
   function render() {
@@ -419,7 +509,7 @@
 
     var zones = S.zones.filter(function (z) { return S.tables.some(function (t) { return t.zone_id === z.id; }); });
     // El plano se recorta a donde hay mesas (con un margen) para que se vean grandes.
-    var PW = 1660, PH = 1175, PAD = (CTX[S.zone] || []).length ? 110 : 45;
+    var PW = 1660, PH = 1175, PAD = ctxList(S.zone).length ? 110 : 45;
     var zt = S.tables.filter(function (t) { return t.zone_id === S.zone && t.pos_x != null; });
     var E = S.edit && S.mode === 'map' ? S.edit : null;   // modo "Editar plano"
     var boxes = zt.map(function (t) { var sz = SHAPE[t.shape] || SHAPE.square, c = E && E.ch[t.id], px = c ? c.pos_x : t.pos_x, py = c ? c.pos_y : t.pos_y; return { t: t, cx: px / 100 * PW, cy: py / 100 * PH, w: sz[0] / 100 * PW, h: sz[1] / 100 * PW, r: c && c.rot != null ? c.rot : (t.rot || 0) }; });
@@ -431,7 +521,7 @@
       // Al editar, el encuadre queda fijo (sin saltos al mover) e incluye también los elementos del local.
       if (!E.boxes[S.zone]) {
         var ex = [minx, maxx], ey = [miny, maxy];
-        (CTX[S.zone] || []).forEach(function (c) { if (c.k === 'col') { ex.push(c.x - c.s / 2, c.x + c.s / 2); ey.push(c.y - c.s / 2, c.y + c.s / 2); } else { ex.push(c.x0, c.x1); ey.push(c.y0, c.y1); } });
+        ctxList(S.zone).forEach(function (c) { if (c.k === 'col') { ex.push(c.x - c.s / 2, c.x + c.s / 2); ey.push(c.y - c.s / 2, c.y + c.s / 2); } else { ex.push(c.x0, c.x1); ey.push(c.y0, c.y1); } });
         var ax = Math.min.apply(null, ex), bx = Math.max.apply(null, ex), ay = Math.min.apply(null, ey), by = Math.max.apply(null, ey), p2 = 70;
         var w2 = bx - ax + 2 * p2, h2 = Math.max(by - ay + 2 * p2, w2 / 2.4);
         E.boxes[S.zone] = { minx: ax, PAD: p2, bw: w2, bh: h2, oy: ay - p2 - (h2 - (by - ay + 2 * p2)) / 2 };
@@ -439,9 +529,10 @@
       var eb = E.boxes[S.zone]; minx = eb.minx; PAD = eb.PAD; bw = eb.bw; bh = eb.bh; oy = eb.oy;
     }
     var map = '<div class="mt-map-wrap"><div class="mt-viewport" style="aspect-ratio:' + (bw / bh).toFixed(3) + '"><div class="mt-zoom"><button type="button" data-zoom="1" aria-label="Acercar">+</button><button type="button" data-zoom="-1" aria-label="Alejar">−</button><button type="button" data-zoom="0" aria-label="Ver todo">⤢</button></div><div class="mt-map' + (E ? ' is-edit' : '') + '">' +
-      (CTX[S.zone] || []).map(function (c) {
-        if (c.k === 'col') { var cl = ((c.x - c.s / 2 - minx + PAD) / bw * 100).toFixed(2), ct = ((c.y - c.s / 2 - oy) / bh * 100).toFixed(2); return '<i class="mt-ctx is-col" style="left:' + cl + '%;top:' + ct + '%;width:' + (c.s / bw * 100).toFixed(2) + '%;height:' + (c.s / bh * 100).toFixed(2) + '%"></i>'; }
-        return '<div class="mt-ctx' + (c.dash ? ' is-dash' : '') + (c.hatch ? ' is-hatch' : '') + (c.round ? ' is-round' : '') + '" style="left:' + ((c.x0 - minx + PAD) / bw * 100).toFixed(2) + '%;top:' + ((c.y0 - oy) / bh * 100).toFixed(2) + '%;width:' + ((c.x1 - c.x0) / bw * 100).toFixed(2) + '%;height:' + ((c.y1 - c.y0) / bh * 100).toFixed(2) + '%"><span>' + esc(c.l) + '</span></div>';
+      ctxList(S.zone).map(function (c) {
+        var cs = E && E.csel === c.id ? ' is-csel' : '', da = E ? ' data-ctx="' + esc(c.id) + '"' : '';
+        if (c.k === 'col') { var cl = ((c.x - c.s / 2 - minx + PAD) / bw * 100).toFixed(2), ct = ((c.y - c.s / 2 - oy) / bh * 100).toFixed(2); return '<i class="mt-ctx is-col' + cs + '"' + da + ' style="left:' + cl + '%;top:' + ct + '%;width:' + (c.s / bw * 100).toFixed(2) + '%;height:' + (c.s / bh * 100).toFixed(2) + '%"></i>'; }
+        return '<div class="mt-ctx' + (c.dash ? ' is-dash' : '') + (c.hatch ? ' is-hatch' : '') + (c.round ? ' is-round' : '') + cs + '"' + da + ' style="left:' + ((c.x0 - minx + PAD) / bw * 100).toFixed(2) + '%;top:' + ((c.y0 - oy) / bh * 100).toFixed(2) + '%;width:' + ((c.x1 - c.x0) / bw * 100).toFixed(2) + '%;height:' + ((c.y1 - c.y0) / bh * 100).toFixed(2) + '%"><span>' + esc(c.l) + '</span>' + (cs ? '<b class="mt-rz" aria-label="Cambiar tamaño"></b>' : '') + '</div>';
       }).join('') +
       boxes.map(function (b) {
         var t = b.t, o = occupancy(t, iso);
@@ -629,13 +720,14 @@
     if (t.id === 'mtJoin') { if (S.edit) return void flash('Termina de editar el plano antes de juntar mesas.', 'error'); S.join = !S.join; S.sel = []; return void render(); }
     if (t.id === 'mtJoinClear') { S.sel = []; return void render(); }
     if (t.id === 'mtJoinGo') { var picked = S.sel.map(tableById).filter(Boolean), jt = S.joinTime; S.join = false; S.sel = []; S.joinTime = ''; render(); return void openNew({ tables: picked, time: jt }); }
+    if ((t.dataset.cadd || t.dataset.cact) && S.edit) return void ctxAction(t);
     if (t.id === 'mtEdit') { S.edit = { ch: {}, sel: '', boxes: {} }; S.join = false; S.sel = []; return void render(); }
     if (t.id === 'mtEditCancel') { S.edit = null; return void render(); }
     if (t.id === 'mtEditSave') return void saveEdit(t);
     if (t.dataset.rot != null && S.edit && S.edit.sel) { var cr = tcur(S.edit.sel).rot, dd = +t.dataset.rot, nr = t.dataset.rot === '0' ? 0 : (((cr + dd) % 360) + 360) % 360; setCh(S.edit.sel, { rot: nr }); return void render(); }
     if (t.id === 'mtNew') return void openNew({});
     if (t.id === 'mtPrint') return void printDay();
-    if (t.dataset.table && S.edit) { S.edit.sel = t.dataset.table; return void render(); }
+    if (t.dataset.table && S.edit) { S.edit.sel = t.dataset.table; S.edit.csel = ''; return void render(); }
     if (t.dataset.table) {
       var tb = tableById(t.dataset.table), o = occupancy(tb, at(S.date, S.time));
       if (S.join) {

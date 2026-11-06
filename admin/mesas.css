@@ -177,3 +177,12 @@
 .mt-edit.is-on { padding: 0.8rem 1rem; border: 1.5px solid var(--fg); }
 .mt-edit-row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; margin-top: 0.6rem; }
 .mt-edit-sel { min-width: 11rem; }
+
+/* Editar elementos del local */
+.mt-map.is-edit .mt-ctx[data-ctx] span { pointer-events: auto; cursor: grab; background: rgba(255, 255, 255, 0.85); border: 1px dashed rgba(10, 10, 10, 0.4); color: var(--fg); user-select: none; touch-action: none; }
+.mt-map.is-edit .mt-ctx.is-col[data-ctx] { pointer-events: auto; cursor: grab; touch-action: none; }
+.mt-ctx.is-csel { outline: 2px solid var(--fg); outline-offset: 1px; z-index: 1; }
+.mt-ctx.is-csel span { background: var(--fg) !important; color: var(--bg) !important; }
+.mt-rz { position: absolute; right: -6px; bottom: -6px; width: 14px; height: 14px; background: var(--fg); border: 2px solid var(--bg); cursor: nwse-resize; pointer-events: auto; touch-action: none; }
+#mtCtxName { padding: 0.35rem 0.5rem; border: 1px solid var(--fg); background: var(--bg); color: var(--fg); font: inherit; width: 11rem; }
+.mt-ctx.is-csel { overflow: visible; }
