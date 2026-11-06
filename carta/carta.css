@@ -285,3 +285,7 @@ body.has-filter .is-pending .cv-pend { display: inline; }
 /* botón de ayuda con su estrellita */
 .cv-chef-btn::before { content: "✦"; margin-right: 0.5rem; }
 .cv-chef-btn { font-weight: 700; letter-spacing: 0.1em; }
+
+/* títulos de grupo (Desayunos & Meriendas, Comidas…): Helvetica Neue en mayúsculas, como la carta impresa */
+.cv-gh { opacity: 1; }
+.cv-gh h2 { font-family: var(--display); font-weight: 700; font-size: clamp(1.15rem, 4.6vw, 1.6rem); line-height: 1.1; letter-spacing: 0.22em; text-transform: uppercase; }
