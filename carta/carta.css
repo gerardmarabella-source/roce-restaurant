@@ -315,7 +315,6 @@ html[data-sheet="dark"] { --sheet: #262624; --ink: var(--cream); }
 
 /* pie: solo el logo ROCE gigante y, encima, la barra para pasar de hoja */
 .cv-foot { padding: 3.5rem var(--pad) calc(2rem + env(safe-area-inset-bottom)); text-align: left; }
-.cv-foot { position: relative; z-index: 7; background: #0a0a0a; }
 .cv-foot-logo { display: block; width: 100%; max-width: 78rem; height: auto; margin: 0 auto; }
 @media (min-width: 900px) { .cv-foot { padding-inline: 2.2rem; } }
 .cv-foot { padding-bottom: calc(4.5rem + env(safe-area-inset-bottom)); }
@@ -415,7 +414,9 @@ main { transform: none; will-change: auto; transition: none; }
 #cvSheet[open] { min-height: min(26rem, 70vh); min-height: min(26rem, 70dvh); }
 
 /* ── Título lateral fijo (no sticky) y tramo de scroll extra al final del pie ── */
-.cv-spine i { display: none !important; }          /* los de dentro de cada hoja solo reservan la columna */
+.cv-spine i { display: none !important; }
+.cv-paper.is-end .cv-spine span { position: static; transform: none; }
+.cv-paper.is-end .cv-spine i { display: block !important; position: absolute; left: 0; bottom: 54px; }          /* los de dentro de cada hoja solo reservan la columna */
 :root { --sp: 30vh; --sp: 30svh; }
 .cv-spine-fixed { position: fixed; z-index: 6; top: calc(var(--bar) + var(--sp)); left: 0; width: 4.8rem; pointer-events: none; color: var(--ink); will-change: transform; transform: translate3d(0, 0, 0); }
 .cv-spine-fixed i { display: block; font-style: normal; writing-mode: vertical-rl; transform: rotate(180deg); line-height: 1; letter-spacing: -0.02em; text-transform: uppercase; white-space: nowrap; font-size: min(clamp(3.4rem, 15vw, 4.6rem), calc((100vh - var(--bar) - var(--sp) - 2rem) / var(--len, 4.6))); font-size: min(clamp(3.4rem, 15vw, 4.6rem), calc((100svh - var(--bar) - var(--sp) - 2rem) / var(--len, 4.6))); }

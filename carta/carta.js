@@ -171,12 +171,15 @@
   }
   function paintNext() { renderFootNav(); }
 
-  // Título lateral FIJO en pantalla (sin sticky ni desplazamientos por JS, que van con retraso): al llegar al final de la hoja lo tapa el pie, que sube por encima
+  // Título lateral FIJO en pantalla (sin sticky ni desplazamientos por JS, que van con retraso): al llegar al final de la hoja se cambia por el título de dentro de la hoja
   function spineSet() { var f = $('cvSpineFix'), t = $('cvSpineTxt'), s = secById(cur); if (!f || !t || !s) return; t.textContent = tx(s.title); f.setAttribute('style', spineStyle(s)); spinePos(true); }
   function spinePos(force) {
     var f = $('cvSpineFix'), paper = document.querySelector('.cv-paper:not([hidden])'); if (!f || !paper) return;
     var pr = paper.getBoundingClientRect(), sc = paper.querySelector('.cv-spine'), w = sc ? sc.getBoundingClientRect().width : 0;
     if (force || f._w !== w || f._l !== pr.right) { f.style.width = w + 'px'; f.style.left = (pr.right - w) + 'px'; f._w = w; f._l = pr.right; }
+    /* Al llegar al final de la hoja el título fijo se cambia por el de dentro de la hoja (mismo sitio, mismo tamaño): ese ya baja con el scroll nativo, sin script ni retraso. */
+    var end = pr.bottom - 54 < f.offsetTop + f.offsetHeight;
+    if (force || paper.classList.contains('is-end') !== end) { paper.classList.toggle('is-end', end); f.style.visibility = end ? 'hidden' : ''; }
   }
   window.addEventListener('scroll', function () { spinePos(); }, { passive: true });
   window.addEventListener('resize', function () { spinePos(true); });
