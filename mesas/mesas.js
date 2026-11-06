@@ -18,7 +18,7 @@
       party: 'Personas', date: 'Fecha', time: 'Hora', person: 'persona', people: 'personas',
       months: ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'],
       dows: ['L', 'M', 'X', 'J', 'V', 'S', 'D'],
-      prev: 'Mes anterior', next: 'Mes siguiente', meal_lunch: 'Comida', meal_dinner: 'Cena', cal_closed: 'Cerrado', cal_full: 'Completo', cal_partial: 'Algún turno completo', cal_full_in: 'Completo: {n}',
+      prev: 'Mes anterior', next: 'Mes siguiente', meal_lunch: 'Comida', meal_dinner: 'Cena', cal_closed: 'Cerrado', cal_full: 'Completo', cal_partial: 'Algún turno completo o cerrado', cal_full_in: 'Completo: {n}', cal_closed_in: 'Cerrado: {n}',
       pick_date: 'Elige un día para ver las horas disponibles.',
       loading: 'Buscando mesas…', none: 'No quedan mesas ese día para {n}. Prueba otro día o escríbenos por {wa}.', wa_msg: 'Hola, quería reservar mesa para {n} el {date}.',
       err_load: 'No hemos podido consultar las mesas. Inténtalo de nuevo en un momento.',
@@ -53,7 +53,7 @@
       party: 'Guests', date: 'Date', time: 'Time', person: 'guest', people: 'guests',
       months: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
       dows: ['M', 'T', 'W', 'T', 'F', 'S', 'S'],
-      prev: 'Previous month', next: 'Next month', meal_lunch: 'Lunch', meal_dinner: 'Dinner', cal_closed: 'Closed', cal_full: 'Fully booked', cal_partial: 'One service fully booked', cal_full_in: 'Fully booked: {n}',
+      prev: 'Previous month', next: 'Next month', meal_lunch: 'Lunch', meal_dinner: 'Dinner', cal_closed: 'Closed', cal_full: 'Fully booked', cal_partial: 'A service is full or closed', cal_full_in: 'Fully booked: {n}', cal_closed_in: 'Closed: {n}',
       pick_date: 'Pick a day to see the available times.',
       loading: 'Looking for tables…', none: 'No tables left that day for {n}. Try another day or message us on {wa}.', wa_msg: 'Hi, I would like to book a table for {n} on {date}.',
       err_load: "We couldn't check the tables. Please try again in a moment.",
@@ -176,7 +176,7 @@
     for (var i = 0; i < startDow; i++) h += '<span></span>';
     for (var d = 1; d <= dim; d++) {
       var s = ymd(m.y, m.m, d), off = s < today || s > last, cs = (st.cal[calKey()] || {})[s], stt = cs ? cs.o_state : '';
-      var tip = stt === 'closed' ? t('cal_closed') : stt === 'full' ? t('cal_full') : stt === 'partial' ? t('cal_full_in', { n: (lang() === 'en' ? cs.o_full_en : cs.o_full_es).join(', ') }) : '';
+      var tip = stt === 'closed' ? t('cal_closed') : stt === 'full' ? t('cal_full') : stt === 'partial' ? [(lang() === 'en' ? cs.o_full_en : cs.o_full_es) || [], (lang() === 'en' ? cs.o_closed_en : cs.o_closed_es) || []].map(function (l, i) { return l.length ? t(i ? 'cal_closed_in' : 'cal_full_in', { n: l.join(', ') }) : ''; }).filter(Boolean).join(' · ') : '';
       h += '<button type="button" class="mz-day' + (s === st.date ? ' is-on' : '') + (s === today ? ' is-today' : '') + (stt === 'closed' ? ' is-closed' : stt === 'full' ? ' is-full' : stt === 'partial' ? ' is-partial' : '') + '" data-date="' + s + '"' + (tip ? ' title="' + esc(tip) + '" aria-label="' + d + ' · ' + esc(tip) + '"' : '') + (off || stt === 'closed' ? ' disabled' : '') + '>' + d + '</button>';
     }
     var seen = st.cal[calKey()] || {}, kinds = {};
