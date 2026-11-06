@@ -126,7 +126,7 @@
     --foot: 96px;
     --pad: 1.25rem;
     --gap: 0.75rem;
-    --avail: calc(100dvh - var(--head) - var(--foot) - 1.5rem);
+    --avail: calc(100dvh - var(--head) - var(--foot) - 0.25rem);
     height: 100dvh;
     display: flex;
     flex-direction: column;
@@ -151,13 +151,18 @@
     --ev-n: 0;
     --ev-h: clamp(2.6rem, calc(var(--avail) * 0.075), 3.6rem);
     --ev-x: calc(var(--ev-n) * (var(--ev-h) + var(--gap)));
-    --sh: min(calc(var(--sw) * 0.55), calc((var(--avail) - var(--ev-x)) * 0.17));
+    /* La frase se pega arriba y los cuadrados abajo; lo que sobra de alto se reparte: la frase crece (hasta el ancho que cabe)
+       y, si no puede crecer más, los cuadrados se hacen más altos. 4,45 = alto de la frase en "em" (5 líneas). */
+    --fw: min(calc((100vw - 2 * var(--pad)) / 4.3), 14rem);
+    --shcap: calc(var(--sw) * 0.55);
+    --shfloor: calc((var(--avail) - var(--ev-x)) * 0.17);
+    --sh: min(var(--shcap), max(var(--shfloor), calc((var(--avail) - var(--ev-x) - var(--gap) - 1.5rem - var(--fw) * 4.45) / 2)));
     flex: 1;
     min-height: 0;
     display: flex;
     flex-direction: column;
-    justify-content: flex-start; /* la frase pegada arriba del todo */
-    gap: 1.25rem;
+    justify-content: space-between; /* la frase pegada arriba del todo y los cuadrados hasta abajo */
+    gap: 1rem;
     padding: 0 var(--pad);
   }
 
@@ -166,7 +171,7 @@
   .home-statement {
     font-family: var(--display);
     font-weight: 400; /* Helvetica Neue tal cual (Regular de marca) */
-    font-size: min(calc((100vw - 2 * var(--pad)) / 4.3), 14rem, calc((var(--avail) - 2 * var(--sh) - var(--gap) - 1.25rem - var(--ev-x)) / 4.5));
+    font-size: min(var(--fw), calc((var(--avail) - 2 * var(--sh) - var(--gap) - 1.5rem - var(--ev-x)) / 4.45));
     width: auto;
     flex: 0 0 auto;
     margin: 0;
@@ -311,7 +316,7 @@
 
   /* Tablet vertical: bloques algo más bajos para que la frase pueda crecer con el ancho. */
   @media (min-width: 600px) and (max-aspect-ratio: 5/4) {
-    .home-main { --sh: min(calc(var(--sw) * 0.62), calc((var(--avail) - var(--ev-x)) * 0.15)); }
+    .home-main { --shcap: calc(var(--sw) * 0.62); --shfloor: calc((var(--avail) - var(--ev-x)) * 0.11); }
   }
 
   /* Horizontal (escritorio, móvil tumbado): frase a la izquierda y los dos
@@ -322,7 +327,7 @@
     .home-head { position: static; height: var(--head); flex-shrink: 0; }
     .home-main {
       --s: min(calc((var(--avail) - var(--gap) - var(--ev-x)) / 2), 30vw);
-      --sw: min(calc(var(--s) * 1.9), 42vw);
+      --sw: min(calc(var(--s) * 1.9), 38vw);
       --sh: var(--s);
       flex-direction: row;
       align-items: center;
@@ -332,7 +337,7 @@
     /* La frase sube bajo la franja del menú (el menú está a la derecha, no choca). */
     .home-top { flex: 1; min-width: 0; width: auto; align-self: flex-start; margin-top: calc(-1 * var(--head)); }
     .home-statement {
-      font-size: min(14rem, calc(var(--avail) / 4.5), calc((100vw - 2 * var(--pad) - var(--sw) - 2rem) / 4.4));
+      font-size: min(14rem, calc((var(--avail) + var(--head) - 0.5rem) / 4.45), calc((100vw - 2 * var(--pad) - var(--sw) - 2rem) / 4.4));
     }
     /* Cuadrados más anchos: el nombre de cada espacio cabe entero en una línea. */
     .home-square strong.home-name { white-space: nowrap; font-size: clamp(0.8rem, min(5.3cqw, calc(var(--sh) * 0.16)), 2.4rem); }
