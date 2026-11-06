@@ -23,5 +23,6 @@
 21. `mesas_calendario2.sql` — el calendario marca también los turnos cerrados (p. ej. la cena de un domingo)
 22. `mesas_cena_dias.sql` — la cena abre de miércoles a sábado
 23. `mesas_plano_editor.sql` — giro de mesas en el plano («Editar plano») y las baldas V1 y V2 de la planta alta
+24. `mails_abandono.sql` — aviso «sigue con tu reserva / compra» a los 5 min (columnas abandon_mail_at + barrido cada 5 min; después, desplegar booking-email)
 
 Todos se pueden ejecutar más de una vez. Si se vuelve a ejecutar `mesas.sql` o `mesas_tarjeta.sql`, hay que volver a ejecutar los de después.

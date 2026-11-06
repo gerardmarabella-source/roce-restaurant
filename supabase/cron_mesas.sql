@@ -1,4 +1,4 @@
--- ROCE · Recordatorio de 24 h y email de valoración tras la visita: barrido cada 15 minutos.
+-- ROCE · Recordatorio de 24 h y email de valoración tras la visita: barrido cada 5 minutos.
 -- Avisa a la función booking-email, que envía los recordatorios y las valoraciones pendientes (cada reserva recibe uno solo).
 -- Ejecutar UNA vez en Supabase → SQL Editor. Si lo repites no pasa nada: se reprograma.
 create extension if not exists pg_cron;
@@ -6,7 +6,7 @@ create extension if not exists pg_net;
 select cron.unschedule(jobid) from cron.job where jobname = 'roce-mesas-avisos';
 select cron.schedule(
   'roce-mesas-avisos',
-  '*/15 * * * *',
+  '*/5 * * * *',
   $job$
   select net.http_post(
     url := 'https://lhwmtknmjmhktpkcngyz.supabase.co/functions/v1/booking-email',

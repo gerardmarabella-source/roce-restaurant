@@ -766,7 +766,7 @@ async function handleTableBooking(p: any): Promise<Response> {
 }
 
 // ─── Recordatorio de 24 h y email de valoración tras la visita ──────────────
-// Los dispara un programador cada 15 minutos ({action:"table_sweep"}, ver supabase/cron_mesas.sql).
+// Los dispara un programador cada 5 minutos ({action:"table_sweep"}, ver supabase/cron_mesas.sql): recordatorio, valoración y carritos abandonados.
 // Cada reserva recibe un solo recordatorio y una sola petición de valoración (columnas reminder_sent_at / review_sent_at).
 const GOOGLE_REVIEW_URL = Deno.env.get("GOOGLE_REVIEW_URL") ?? "";   // enlace "Dejar una reseña" de la ficha de Google
 const INSTAGRAM_URL = Deno.env.get("INSTAGRAM_URL") ?? "https://www.instagram.com/somosroce";
@@ -835,6 +835,98 @@ ${btnHtml(GOOGLE_REVIEW_URL, t.revBtn)}
     body: JSON.stringify({ sender: { name: "ROCE", email: FROM }, replyTo: { email: REPLY_TO, name: "ROCE" }, to: [b.name ? { email: b.email, name: b.name } : { email: b.email }], subject: PREVIEW_TAG + t.revSubject, htmlContent: html }) });
   return res.ok;
 }
+// ─── Carritos abandonados ───────────────────────────────────────────────────────────────────────────
+// A los 5 minutos de dejar a medias la tarjeta/fianza de una mesa o el pago de unas entradas se le escribe UNA vez
+// ("sigue con tu reserva" / "sigue con tu compra"). Columna abandon_mail_at en table_bookings y bookings (supabase/mails_abandono.sql).
+const ABANDON_MIN = 5;
+const AB = {
+  es: {
+    locale: "es-ES", ref: "Referencia", date: "Día", time: "Hora", party: "Personas", tickets: "Entradas", event: "Evento", total: "Total",
+    tTitle: "Sigue con tu reserva", tSubject: (w: string) => `Sigue con tu reserva · ROCE · ${w}`,
+    tCard: (u: string) => `Te has quedado a medias. Tu mesa sigue guardada: añade una tarjeta como garantía antes del ${u} para confirmarla. No se cobra nada ahora.`,
+    tDep: (m: string, u: string) => `Te has quedado a medias. Tu mesa sigue guardada: paga la fianza de ${m} antes del ${u} para confirmarla.`,
+    tBtnCard: "Añadir tarjeta y confirmar", tBtnDep: "Pagar fianza y confirmar",
+    eTitle: "Sigue con tu compra", eSubject: (t: string) => `Sigue con tu compra · ${t}`,
+    eIntro: (q: number, t: string) => `Has dejado a medias la compra de ${q} entrada${q === 1 ? "" : "s"} para ${t}. Aún puedes terminarla.`,
+    eBtn: "Terminar mi compra", tail: "Si ya lo has completado o no quieres seguir, ignora este mensaje.",
+  },
+  en: {
+    locale: "en-GB", ref: "Reference", date: "Day", time: "Time", party: "Guests", tickets: "Tickets", event: "Event", total: "Total",
+    tTitle: "Finish your booking", tSubject: (w: string) => `Finish your booking · ROCE · ${w}`,
+    tCard: (u: string) => `You left it halfway. Your table is still held: add a card as a guarantee before ${u} to confirm it. Nothing is charged now.`,
+    tDep: (m: string, u: string) => `You left it halfway. Your table is still held: pay the ${m} deposit before ${u} to confirm it.`,
+    tBtnCard: "Add card and confirm", tBtnDep: "Pay deposit and confirm",
+    eTitle: "Finish your purchase", eSubject: (t: string) => `Finish your purchase · ${t}`,
+    eIntro: (q: number, t: string) => `You left your purchase of ${q} ticket${q === 1 ? "" : "s"} for ${t} halfway. You can still complete it.`,
+    eBtn: "Finish my purchase", tail: "If you already completed it or don't want to continue, just ignore this message.",
+  },
+};
+async function brevoSend(to: { email: string; name?: string }, subject: string, html: string): Promise<boolean> {
+  const res = await fetch("https://api.brevo.com/v3/smtp/email", { method: "POST", headers: brevoHeaders,
+    body: JSON.stringify({ sender: { name: "ROCE", email: FROM }, replyTo: { email: REPLY_TO, name: "ROCE" }, to: [to.name ? { email: to.email, name: to.name } : { email: to.email }], subject: PREVIEW_TAG + subject, htmlContent: html }) });
+  return res.ok;
+}
+async function sendAbandonedTable(b: any): Promise<boolean> {
+  const l = b.lang === "en" ? "en" : "es", a = AB[l];
+  const { data: z } = await serviceClient().from("dining_zones").select("name_es, name_en, payment_mode").eq("id", b.zone_id).maybeSingle();
+  const starts = new Date(b.starts_at), dep = Number(b.deposit_cents ?? 0);
+  const day = new Intl.DateTimeFormat(a.locale, { timeZone: "Europe/Madrid", weekday: "long", day: "numeric", month: "long" }).format(starts);
+  const hm = new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/Madrid", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(starts);
+  const until = b.hold_until ? new Intl.DateTimeFormat(a.locale, { timeZone: "Europe/Madrid", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" }).format(new Date(b.hold_until)) : "";
+  const money = (c: number) => (c / 100).toLocaleString(a.locale, { style: "currency", currency: "EUR", minimumFractionDigits: c % 100 ? 2 : 0 });
+  const card = (b.pay_mode || z?.payment_mode) === "card";
+  const rows = [[a.ref, b.ref], [a.date, day], [a.time, hm], [a.party, String(b.party)]];
+  const html = mailShell(`
+<tr><td style="padding:28px 24px 8px;color:#fff;font:32px Arial,sans-serif;text-transform:uppercase">${esc(a.tTitle)}</td></tr>
+<tr><td style="padding:0 24px 20px;color:#ddd;font:16px/1.5 Arial,sans-serif">${esc(card ? a.tCard(until) : a.tDep(money(dep), until))}</td></tr>
+<tr><td style="padding:0 24px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0">${rowsHtml(rows)}</table></td></tr>
+${btnHtml(`${SITE}/reserva/?t=${b.token}`, card ? a.tBtnCard : a.tBtnDep)}
+<tr><td style="padding:14px 24px 0;color:#aaa;font:13px/1.5 Arial,sans-serif">${esc(a.tail)}</td></tr>
+<tr><td style="padding:24px 24px 32px;color:#777;font:11px/1.5 Arial,sans-serif">${esc(TT[l].privacy)}</td></tr>`);
+  return await brevoSend({ email: b.email, name: b.name }, a.tSubject(`${day} · ${hm}`), html);
+}
+async function sendAbandonedEvent(b: any, ev: any): Promise<boolean> {
+  const l = b.lang === "en" ? "en" : "es", a = AB[l];
+  const title = l === "en" && ev.title_en ? ev.title_en : ev.title_es;
+  const when = new Intl.DateTimeFormat(a.locale, { timeZone: "Europe/Madrid", weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" }).format(new Date(ev.starts_at));
+  const total = (Number(b.total_cents ?? 0) / 100).toLocaleString(a.locale, { style: "currency", currency: "EUR" });
+  const rows = [[a.event, title], [a.date, when], [a.tickets, String(b.qty)], [a.total, total]];
+  const html = mailShell(`
+<tr><td style="padding:28px 24px 8px;color:#fff;font:32px Arial,sans-serif;text-transform:uppercase">${esc(a.eTitle)}</td></tr>
+<tr><td style="padding:0 24px 20px;color:#ddd;font:16px/1.5 Arial,sans-serif">${esc(a.eIntro(Number(b.qty), title))}</td></tr>
+<tr><td style="padding:0 24px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0">${rowsHtml(rows)}</table></td></tr>
+${btnHtml(`${SITE}/eventos/entradas/?e=${encodeURIComponent(b.event_id)}`, a.eBtn)}
+<tr><td style="padding:14px 24px 0;color:#aaa;font:13px/1.5 Arial,sans-serif">${esc(a.tail)}</td></tr>
+<tr><td style="padding:24px 24px 32px;color:#777;font:11px/1.5 Arial,sans-serif">${esc(T[l].privacy)}</td></tr>`);
+  return await brevoSend({ email: b.email, name: b.name }, a.eSubject(title), html);
+}
+async function sweepAbandoned(): Promise<{ tables: number; events: number; skipped: number }> {
+  const sb = serviceClient(), now = Date.now(), iso = (ms: number) => new Date(ms).toISOString();
+  let tables = 0, events = 0, skipped = 0;
+  // Mesas: pendientes de tarjeta/fianza, con la mesa todavía retenida.
+  const { data: tb } = await sb.from("table_bookings").select("*").eq("status", "pending").is("abandon_mail_at", null).neq("email", "")
+    .lte("created_at", iso(now - ABANDON_MIN * 60e3)).gt("created_at", iso(now - 6 * 3600e3)).gt("hold_until", iso(now)).limit(40);
+  for (const b of tb ?? []) {
+    const mark = () => sb.from("table_bookings").update({ abandon_mail_at: new Date().toISOString() }).eq("id", b.id);
+    const t0 = new Date(b.starts_at).getTime();
+    const { data: done } = await sb.from("table_bookings").select("id").ilike("email", b.email).in("status", ["confirmed", "seated", "completed"])
+      .gt("created_at", b.created_at).gte("starts_at", iso(t0 - 86400e3)).lte("starts_at", iso(t0 + 86400e3)).limit(1);
+    if (done && done.length) { await mark(); skipped++; continue; }    // ya terminó otra reserva ese día: no se le molesta
+    if (await sendAbandonedTable(b)) { await mark(); tables++; }
+  }
+  // Entradas: compra pendiente de pago (la plaza se retiene 30 min), de un evento que todavía no ha pasado.
+  const { data: eb } = await sb.from("bookings").select("*").eq("status", "pending").eq("payment_status", "pending").is("abandon_mail_at", null).neq("email", "")
+    .lte("created_at", iso(now - ABANDON_MIN * 60e3)).gt("created_at", iso(now - 30 * 60e3)).limit(40);
+  for (const b of eb ?? []) {
+    const mark = () => sb.from("bookings").update({ abandon_mail_at: new Date().toISOString() }).eq("id", b.id);
+    const { data: ev } = await sb.from("events").select("*").eq("id", b.event_id).maybeSingle();
+    if (!ev || new Date(ev.starts_at).getTime() + Number(ev.duration_h ?? 0) * 3600e3 < now) { await mark(); skipped++; continue; }
+    const { data: done } = await sb.from("bookings").select("id").ilike("email", b.email).eq("event_id", b.event_id).eq("status", "confirmed").gt("created_at", b.created_at).limit(1);
+    if (done && done.length) { await mark(); skipped++; continue; }
+    if (await sendAbandonedEvent(b, ev)) { await mark(); events++; }
+  }
+  return { tables, events, skipped };
+}
 async function sweepTableMails(): Promise<Response> {
   const sb = serviceClient();
   const now = Date.now();
@@ -860,7 +952,8 @@ async function sweepTableMails(): Promise<Response> {
       if (await sendTableReview(b)) { await stamp(new Date()); reviews++; }
     }
   }
-  return new Response(JSON.stringify({ reminders, reviews, skipped, review_url: !!GOOGLE_REVIEW_URL }), { headers: { "content-type": "application/json" } });
+  const abandoned = await sweepAbandoned();
+  return new Response(JSON.stringify({ reminders, reviews, skipped, abandoned, review_url: !!GOOGLE_REVIEW_URL }), { headers: { "content-type": "application/json" } });
 }
 
 // ─── Vista previa de los emails de una reserva (solo se envía a direcciones @roce.es) ───────────────
