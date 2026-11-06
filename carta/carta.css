@@ -170,3 +170,44 @@ body.has-filter .is-pending .cv-pend { display: inline; }
 .cv-chips .cv-chip[aria-pressed="true"] { background: var(--black); color: #fff; }
 .cv-sheet-actions { position: sticky; bottom: calc(-1rem - env(safe-area-inset-bottom)); display: flex; justify-content: space-between; gap: 0.6rem; margin-top: 1rem; padding-top: 0.5rem; border-top: 1.5px solid var(--black); background: #fff; }
 .cv-ghost, .cv-solid { padding: 0.8rem 0; border: 0; background: transparent; color: var(--black); font-size: 0.95rem; font-weight: 700; text-decoration: underline; text-underline-offset: 4px; }
+
+/* ── Panel de filtros y ayuda del chef: cuerpo con scroll + botones siempre visibles ── */
+.cv-sheet[open] { display: flex; flex-direction: column; overflow: hidden; }
+.cv-sheet-in { display: flex; flex-direction: column; min-height: 0; flex: 1; max-height: 88vh; }
+.cv-sheet-body { flex: 1; min-height: 0; overflow-y: auto; padding-bottom: 0.4rem; -webkit-overflow-scrolling: touch; }
+.cv-sheet-actions { position: static; flex: 0 0 auto; display: flex; gap: 0.6rem; margin-top: 0.8rem; padding-top: 0.8rem; border-top: 1.5px solid var(--black); background: #fff; }
+.cv-ghost, .cv-solid { flex: 1; padding: 0.85rem 0.6rem; border: 1.5px solid var(--black); text-decoration: none; font-size: 0.85rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
+.cv-ghost { background: transparent; color: var(--black); }
+.cv-solid { background: var(--black); color: #fff; }
+.cv-fs-h { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; margin-bottom: 0.3rem; }
+.cv-fs-h h3 { margin: 0; }
+.cv-fs-clear { padding: 0.25rem 0.7rem; border: 1.5px solid var(--black); background: #fff; color: var(--black); font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
+.cv-fs-clear:disabled { opacity: 0.3; border-color: rgba(10, 10, 10, 0.4); }
+.cv-link { padding: 0; border: 0; background: transparent; color: var(--black); font-size: 0.85rem; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
+
+/* botón flotante */
+.cv-chef-btn { position: fixed; z-index: 35; right: var(--pad); bottom: calc(1rem + env(safe-area-inset-bottom)); padding: 0.8rem 1.1rem; border: 1.5px solid #fff; border-radius: 999px; background: var(--black); color: #fff; box-shadow: 0 6px 22px rgba(0, 0, 0, 0.5); font-size: 0.85rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+.cv-chef-btn::before { content: "✦"; margin-right: 0.5rem; }
+.cv-foot { padding-bottom: calc(5rem + env(safe-area-inset-bottom)); }
+
+/* ayuda del chef */
+.cv-chef h2 { margin-bottom: 0.4rem; }
+.cv-chef textarea { width: 100%; padding: 0.7rem 0.8rem; border: 1.5px solid var(--black); border-radius: 0; background: #fff; color: var(--black); font: inherit; font-size: 1rem; resize: vertical; }
+.cv-ideas { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0.7rem 0 0.2rem; }
+.cv-ideas .cv-chip { padding: 0.35rem 0.75rem; border: 1.5px solid var(--black); border-radius: 999px; background: transparent; color: var(--black); font-size: 0.8rem; font-weight: 700; }
+.cv-opts { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.cv-opt { padding: 0.5rem 0.9rem; border: 1.5px solid var(--black); background: transparent; color: var(--black); font-size: 0.9rem; font-weight: 700; }
+.cv-opt[aria-pressed="true"] { background: var(--black); color: #fff; }
+.cv-pick-list { list-style: none; margin: 0.6rem 0 0; padding: 0; }
+.cv-pick-list li { padding: 0.8rem 0; border-top: 1.5px solid var(--black); }
+.cv-pl-slot { margin: 0 0 0.3rem; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; opacity: 0.6; }
+.cv-pl-top { display: flex; justify-content: space-between; gap: 1rem; font-size: 1.1rem; text-transform: uppercase; }
+.cv-pl-desc { margin: 0.25rem 0 0; font-size: 0.88rem; opacity: 0.7; }
+.cv-pl-why { margin: 0.3rem 0 0.2rem; font-size: 0.85rem; font-style: italic; }
+.cv-pick-list .cv-als { margin: 0.2rem 0; }
+.cv-pick-list .cv-al { border-color: var(--black); color: var(--black); }
+.cv-pl-total { margin: 0.6rem 0 0; padding-top: 0.6rem; border-top: 1.5px solid var(--black); font-size: 1rem; }
+
+/* resaltar el plato al saltar desde la propuesta */
+.cv-item.is-flash { animation: cvFlash 2.6s ease; }
+@keyframes cvFlash { 0%, 60% { background: color-mix(in srgb, var(--ink) 22%, transparent); } 100% { background: transparent; } }

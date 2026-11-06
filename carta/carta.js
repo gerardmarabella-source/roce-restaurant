@@ -4,10 +4,10 @@
   'use strict';
   var D = window.CARTA;
   var UI = {
-    es: { allergies: 'Alergias', filters: 'Filtros', f_h: 'Filtra la carta', f_p: 'Marca alérgenos, tipo de dieta o ingredientes y te mostramos solo lo que encaja.', diet_h: 'Tipo de dieta', al_t: 'Alérgenos (ocultamos los platos que los llevan)', ing_h: 'Ingredientes', clear: 'Quitar', done: 'Ver carta', without: 'Sin', with_: 'Con', pending: 'Consúltalo con el equipo', soon: 'Muy pronto', soon_p: 'Estamos preparando esta carta.',
+    es: { allergies: 'Alergias', filters: 'Filtros', f_h: 'Filtra la carta', f_p: 'Marca alérgenos, tipo de dieta o ingredientes y te mostramos solo lo que encaja.', diet_h: 'Tipo de dieta', al_t: 'Alérgenos (ocultamos los platos que los llevan)', ing_h: 'Ingredientes', clear: 'Quitar todo', clear_sec: 'Borrar', done: 'Ver carta', without: 'Sin', with_: 'Con', pending: 'Consúltalo con el equipo', soon: 'Muy pronto', soon_p: 'Estamos preparando esta carta.',
       b_al: 'Sin alérgenos', b_diet: 'Dieta', diet_note: 'La dieta y los ingredientes son orientativos según lo que figura en la carta. Si tienes dudas, pregunta al equipo.',
       note: 'Si tienes alguna alergia o intolerancia, avisa a nuestro equipo antes de pedir. Pueden existir trazas de otros alérgenos. Los alérgenos de las bebidas los confirma el equipo.', remove: 'Quitar filtros', menu: 'Carta', menu_btn: 'Menú', close: 'Cerrar', cats: 'Categorías' },
-    en: { allergies: 'Allergies', filters: 'Filters', f_h: 'Filter the menu', f_p: 'Tick allergens, diet or ingredients and we will show only what fits.', diet_h: 'Diet', al_t: 'Allergens (we hide dishes containing them)', ing_h: 'Ingredients', clear: 'Clear', done: 'See menu', without: 'Without', with_: 'With', pending: 'Ask our team', soon: 'Coming soon', soon_p: 'We are preparing this menu.',
+    en: { allergies: 'Allergies', filters: 'Filters', f_h: 'Filter the menu', f_p: 'Tick allergens, diet or ingredients and we will show only what fits.', diet_h: 'Diet', al_t: 'Allergens (we hide dishes containing them)', ing_h: 'Ingredients', clear: 'Clear all', clear_sec: 'Clear', done: 'See menu', without: 'Without', with_: 'With', pending: 'Ask our team', soon: 'Coming soon', soon_p: 'We are preparing this menu.',
       b_al: 'Without allergens', b_diet: 'Diet', diet_note: 'Diet and ingredients are indicative, based on what the menu lists. If in doubt, ask our team.',
       note: 'If you have any allergy or intolerance, please tell our team before ordering. Traces of other allergens may be present. Allergens in drinks are confirmed by our team.', remove: 'Clear filters', menu: 'Menu', menu_btn: 'Menu', close: 'Close', cats: 'Categories' }
   };
@@ -77,9 +77,9 @@
   var secById = function (id) { return D.sections.filter(function (s) { return s.id === id; })[0]; };
 
   /* ── Platos y listas ── */
-  function item(it, blk) {
+  function item(it, blk, n) {
     var dup = it.code && it.code === it.name;
-    var h = '<li class="cv-item"' + attrs(it, blk) + '><div class="cv-i-main"><div class="cv-i-top"><span class="cv-i-name">' +
+    var h = '<li class="cv-item" id="it-' + blk._id + '-' + n + '"' + attrs(it, blk) + '><div class="cv-i-main"><div class="cv-i-top"><span class="cv-i-name">' +
       (it.code && !dup ? '<em>' + esc(it.code) + '</em>' : '') + esc(it.name) + (it.note ? ' <small>' + esc(tx(it.note)) + '</small>' : '') + als(it.al) +
       (blk.alPending ? '<span class="cv-pend">' + esc(ui('pending')) + '</span>' : '') + '</span><span class="cv-price">' + money(it.price) + '</span></div>';
     if (it.es) h += '<p class="cv-i-desc">' + esc(tx({ es: it.es, en: it.en })) + '</p>';
@@ -95,9 +95,10 @@
     }).join('') + '</ul></div>';
   }
   function cat(id, b) {
+    b._id = id;
     return '<section class="cv-cat" id="' + id + '"><button type="button" class="cv-cat-h" aria-expanded="true" data-toggle="' + id + '"><span class="cv-cat-t"><h3>' + esc(tx(b.title)) + '</h3>' +
       (b.note ? '<small>' + esc(tx(b.note)) + '</small>' : '') + '</span><svg class="cv-chev" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M6 15l6-6 6 6"/></svg></button>' +
-      '<div class="cv-cat-body"><ul class="cv-items">' + b.items.map(function (i) { return item(i, b); }).join('') + '</ul>' + extras(b) + '</div></section>';
+      '<div class="cv-cat-body"><ul class="cv-items">' + b.items.map(function (i, n) { return item(i, b, n); }).join('') + '</ul>' + extras(b) + '</div></section>';
   }
   function page(s, si) {
     var h = '<article class="cv-paper is-' + s.color + '" id="pg-' + s.id + '" data-sec="' + s.id + '"' + (s.id === cur ? '' : ' hidden') + '><div class="cv-paper-in"><h1 class="cv-sr">' + esc(tx(s.title)) + '</h1>';
@@ -118,7 +119,8 @@
     $('cvAlLabel').textContent = ui('filters'); $('cvMenuLabel').textContent = ui('menu_btn'); $('cvCloseLabel').textContent = ui('close');
     $('cvDisclaimer').textContent = ui('note');
     $('cvSheetTitle').textContent = ui('f_h'); $('cvSheetText').textContent = ui('f_p'); $('cvAlClear').textContent = ui('clear'); $('cvAlDone').textContent = ui('done');
-    $('cvDietH').textContent = ui('diet_h'); $('cvAlH').textContent = ui('al_t'); $('cvIngH').textContent = ui('ing_h'); $('cvDietNote').textContent = ui('diet_note');
+    $('cvDietH').textContent = ui('diet_h'); $('cvAlH').textContent = ui('al_t'); $('cvIngH').textContent = ui('ing_h');
+    ['cvDietClear', 'cvAlClearSec', 'cvIngClear'].forEach(function (id) { $(id).textContent = ui('clear_sec'); }); $('cvDietNote').textContent = ui('diet_note');
     $('cvSections').innerHTML = D.sections.map(page).join('');
     buildSheet(); applyFilter(); endFlip(); sheetState(); measure(); onScroll();
   }
@@ -193,6 +195,7 @@
     });
     [].forEach.call(document.querySelectorAll('.cv-group'), function (g) { g.classList.toggle('is-hidden', !!g.querySelector('.cv-cat') && !g.querySelector('.cv-cat:not(.is-hidden)')); });
     var c = $('cvAlCount'); c.textContent = n; c.hidden = !n;
+    $('cvDietClear').disabled = !F.diet.length; $('cvAlClearSec').disabled = !F.al.length; $('cvIngClear').disabled = !F.ing.k.length;
     var f = $('cvFilter'), parts = [];
     if (F.al.length) parts.push(ui('b_al') + ': <b>' + F.al.map(function (x) { return esc(tx(D.allergens[x - 1])); }).join(', ') + '</b>');
     if (F.diet.length) parts.push(ui('b_diet') + ': <b>' + F.diet.map(function (k) { return esc(tx(DIETS.filter(function (d) { return d.k === k; })[0])); }).join(', ') + '</b>');
@@ -257,6 +260,8 @@
   $('cvAlClear').addEventListener('click', function () { setF({ al: [], diet: [], ing: { m: F.ing.m, k: [] } }); });
   $('cvSheet').addEventListener('click', function (e) {
     if (e.target === this) { this.close(); return; }
+    var cl = e.target.closest('[data-clear]');
+    if (cl) { var w = cl.dataset.clear; setF({ al: w === 'al' ? [] : F.al, diet: w === 'diet' ? [] : F.diet, ing: { m: F.ing.m, k: w === 'ing' ? [] : F.ing.k } }); return; }
     var d = e.target.closest('[data-d]'), n = e.target.closest('[data-n]'), i = e.target.closest('[data-i]'), m = e.target.closest('[data-m]');
     if (d) setF({ al: F.al, diet: toggle(F.diet, d.dataset.d), ing: F.ing });
     else if (n) setF({ al: toggle(F.al, +n.dataset.n), diet: F.diet, ing: F.ing });
@@ -267,6 +272,19 @@
     var l = window.ROCE_I18N && window.ROCE_I18N.getLang();
     if (l && l !== L) { L = l; current = ''; render(); }
   });
+  function goTo(secId, itemId) {
+    closeMenu();
+    if (secId !== cur) setSheet(secId);
+    setTimeout(function () {
+      var el = $(itemId); if (!el) return;
+      var c = el.closest('.cv-cat'); if (c) openCat(c);
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      el.classList.remove('is-flash'); void el.offsetWidth; el.classList.add('is-flash');
+      setTimeout(function () { el.classList.remove('is-flash'); }, 2600);
+    }, 80);
+  }
+  window.CARTA_API = { D: D, ING: ING, DIETS: DIETS, RE: RE, F: function () { return F; }, L: function () { return L; }, tx: tx, esc: esc, money: money, als: als, norm: norm, analyze: analyze, goTo: goTo, openFilters: openAl };
   render();
   if (landing) openMenu();
+  document.dispatchEvent(new Event('carta:ready'));
 })();
