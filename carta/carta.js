@@ -180,24 +180,24 @@
     var now = Date.now();
     // el empujón con el que llegas al borde (y su inercia) no cuenta: hay que quedarse en el borde y volver a insistir
     if (over.edgeDir !== dir) { over.edgeDir = dir; over.edgeT = now; }
-    if (now - over.edgeT < 700) { over.t = now; return; }
-    if (now - over.t > 600 || over.dir !== dir) over.acc = 0; over.t = now; over.dir = dir;
+    if (now - over.edgeT < 450) { over.t = now; return; }
+    if (now - over.t > 700 || over.dir !== dir) over.acc = 0; over.t = now; over.dir = dir;
     over.acc += d; if (dir > 0) overBar(over.acc * 100 / need);
     if (over.acc >= need) overGo(dir);
   }
-  window.addEventListener('wheel', function (e) { if (e.deltaY > 0) overPush(e.deltaY, 800, 1); else if (e.deltaY < 0) overPush(-e.deltaY, 900, -1); }, { passive: true });
+  window.addEventListener('wheel', function (e) { if (e.deltaY > 0) overPush(e.deltaY, 450, 1); else if (e.deltaY < 0) overPush(-e.deltaY, 520, -1); }, { passive: true });
   window.addEventListener('touchstart', function (e) { over.y0 = e.touches[0].clientY; over.edgeStart = atBottom() ? 1 : atTop() ? -1 : 0; }, { passive: true });
   window.addEventListener('touchmove', function (e) {
     if (over.y0 == null || blocked()) return;
     var dy = over.y0 - e.touches[0].clientY;
-    if (dy > 0 && over.edgeStart === 1 && atBottom() && nextSheet()) { over.acc = dy; over.dir = 1; overBar(dy * 100 / 240); if (dy >= 240) { over.y0 = null; overGo(1); } }
-    else if (dy < 0 && over.edgeStart === -1 && atTop() && prevSheet()) { if (-dy >= 260) { over.y0 = null; overGo(-1); } }
+    if (dy > 0 && over.edgeStart === 1 && atBottom() && nextSheet()) { over.acc = dy; over.dir = 1; overBar(dy * 100 / 150); if (dy >= 150) { over.y0 = null; overGo(1); } }
+    else if (dy < 0 && over.edgeStart === -1 && atTop() && prevSheet()) { if (-dy >= 170) { over.y0 = null; overGo(-1); } }
     else overReset();
   }, { passive: true });
   window.addEventListener('touchend', function () { over.y0 = null; overReset(); }, { passive: true });
   window.addEventListener('keydown', function (e) {
-    if (['ArrowDown', 'PageDown', ' ', 'End'].indexOf(e.key) !== -1 && atBottom()) overPush(80, 480, 1);
-    else if (['ArrowUp', 'PageUp', 'Home'].indexOf(e.key) !== -1 && atTop()) overPush(80, 560, -1);
+    if (['ArrowDown', 'PageDown', ' ', 'End'].indexOf(e.key) !== -1 && atBottom()) overPush(80, 320, 1);
+    else if (['ArrowUp', 'PageUp', 'Home'].indexOf(e.key) !== -1 && atTop()) overPush(80, 360, -1);
   });
 
   /* ── Filtros: alérgenos + dieta + ingredientes ── */

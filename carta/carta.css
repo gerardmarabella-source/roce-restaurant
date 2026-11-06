@@ -329,3 +329,12 @@ html[data-sheet="dark"] { --sheet: #262624; --ink: var(--cream); }
 .cv-next i { display: block; width: 0; height: 100%; margin: 0; background: #fff; }
 .cv-next-track { display: block; width: 100%; max-width: 12rem; height: 2px; margin: 0.7rem auto 0; background: rgba(255, 255, 255, 0.28); }
 .cv-next { margin-top: 2.2rem; }
+
+/* pie: solo el logo ROCE gigante y, encima, la barra para pasar de hoja */
+.cv-foot { padding: 3.5rem var(--pad) calc(2rem + env(safe-area-inset-bottom)); text-align: left; }
+.cv-foot-logo { display: block; width: 100%; max-width: 78rem; height: auto; margin: 0 auto; }
+.cv-next { max-width: 78rem; margin: 0 auto 2.4rem; text-align: left; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.18em; color: #fff; }
+.cv-next-track { display: block; width: 100%; max-width: none; height: 10px; margin: 0.9rem 0 0; border: 1.5px solid rgba(255, 255, 255, 0.7); background: transparent; }
+.cv-next i { display: block; width: 0; height: 100%; margin: 0; background: #fff; transition: width 0.12s linear; }
+@media (min-width: 900px) { .cv-foot { padding-inline: 2.2rem; } }
+.cv-foot { padding-bottom: calc(4.5rem + env(safe-area-inset-bottom)); }
