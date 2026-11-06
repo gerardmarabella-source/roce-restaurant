@@ -108,11 +108,10 @@ img { max-width: 100%; display: block; }
 .cv-variants { list-style: none; margin: 0.6rem 0 0; padding: 0.5rem 0 0; border-top: 1px dashed color-mix(in srgb, var(--ink) 40%, transparent); display: grid; gap: 0.45rem; }
 .cv-variants li { display: grid; grid-template-columns: 5rem 1fr; gap: 0.5rem; font-size: 0.85rem; }
 .cv-variants b { text-transform: uppercase; letter-spacing: 0.05em; font-size: 0.76rem; }
-.cv-variants .cv-als { grid-column: 2; margin-left: 0; }
+.cv-variants .cv-als { grid-column: 2; }
 
 /* alérgenos: círculos numerados */
-.cv-als { margin-left: 0.5rem; font-size: 0.82rem; font-weight: 700; letter-spacing: 0.04em; white-space: nowrap; color: var(--alc, #6e3708); }
-html[data-sheet="olive"] { --alc: #e8bf6a; } html[data-sheet="red"] { --alc: #f2c47c; }
+.cv-als { display: inline-flex; flex-wrap: wrap; gap: 0.22rem; }
 .cv-al { display: inline-grid; place-items: center; width: 1.2rem; height: 1.2rem; border-radius: 50%; border: 1px solid currentColor; font-size: 0.62rem; font-weight: 700; line-height: 1; opacity: 0.8; }
 .cv-pend { display: none; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.06em; opacity: 0.8; }
 .is-pending { opacity: 0.55; }
