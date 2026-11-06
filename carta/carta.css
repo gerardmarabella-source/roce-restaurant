@@ -264,3 +264,9 @@ body.has-filter .is-pending .cv-pend { display: inline; }
 .cv-chef .cv-slot-side { border-color: var(--olive); } .cv-chef .cv-slot-side .cv-pl-slot { background: var(--olive); } .cv-chef .cv-slot-side .cv-pl-n { color: var(--olive); }
 .cv-chef .cv-slot-drink { border-color: var(--red); } .cv-chef .cv-slot-drink .cv-pl-slot { background: var(--red); } .cv-chef .cv-slot-drink .cv-pl-n { color: var(--red); }
 .cv-chef .cv-slot-sweet { border-color: var(--gold); } .cv-chef .cv-slot-sweet .cv-pl-slot { background: var(--gold); } .cv-chef .cv-slot-sweet .cv-pl-n { color: var(--gold); }
+
+/* ayuda: botón discreto */
+.cv-chef-btn { right: var(--pad); bottom: calc(0.9rem + env(safe-area-inset-bottom)); padding: 0.45rem 0.95rem; border: 1px solid rgba(255, 255, 255, 0.55); background: rgba(10, 10, 10, 0.88); box-shadow: none; font-size: 0.72rem; font-weight: 400; letter-spacing: 0.12em; }
+.cv-chef-btn::before { content: none; }
+.cv-foot { padding-bottom: calc(3.5rem + env(safe-area-inset-bottom)); }
+.cv-chef .cv-pick-list li { border-width: 1.5px; }

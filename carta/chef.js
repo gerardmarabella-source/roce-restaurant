@@ -6,7 +6,7 @@
     var A = window.CARTA_API; if (!A) return;
     var T = {
       es: {
-        btn: 'Ayuda del chef', h: 'Ayuda del chef', p: 'Cuéntame qué te apetece y te preparo una propuesta con lo que hay en la carta.',
+        btn: 'Ayuda', h: 'Ayuda', p: 'Cuéntame qué te apetece y te preparo una propuesta con lo que hay en la carta.',
         ph: 'Ej: algo ligero con aguacate y un zumo', ex_h: 'Ideas', ex: ['Algo ligero y fresco', 'Tengo mucha hambre', 'Algo dulce', 'Un zumo para despertar', 'Vegetariano sin gluten', 'Con pollo, sin cebolla'],
         q_what: 'Cuéntame qué te apetece', q_when: '¿Para cuándo?', opt: 'opcional', when: [['breakfast', 'Desayuno'], ['lunch', 'Comida'], ['drink', 'Solo bebida']],
         q_hunger: '¿Cuánta hambre tienes?', hunger: [['light', 'Poca'], ['normal', 'Normal'], ['hungry', 'Mucha']],
@@ -20,7 +20,7 @@
         note: 'Propuesta orientativa. Comprueba los alérgenos con nuestro equipo.', res_h: 'Tu propuesta'
       },
       en: {
-        btn: 'Chef\'s help', h: 'Chef\'s help', p: 'Tell me what you fancy and I will put together a suggestion from our menu.',
+        btn: 'Help', h: 'Help', p: 'Tell me what you fancy and I will put together a suggestion from our menu.',
         ph: 'E.g. something light with avocado and a juice', ex_h: 'Ideas', ex: ['Something light and fresh', 'I am very hungry', 'Something sweet', 'A juice to wake up', 'Vegetarian gluten-free', 'With chicken, no onion'],
         q_what: 'Tell me what you fancy', q_when: 'When?', opt: 'optional', when: [['breakfast', 'Breakfast'], ['lunch', 'Lunch'], ['drink', 'Just a drink']],
         q_hunger: 'How hungry are you?', hunger: [['light', 'A little'], ['normal', 'Normal'], ['hungry', 'Very']],
