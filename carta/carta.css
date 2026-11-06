@@ -107,7 +107,7 @@ img { max-width: 100%; display: block; }
 .cv-i-name small { font-size: 0.7rem; letter-spacing: 0.08em; opacity: 0.65; }
 .cv-price { font-size: 1.02rem; white-space: nowrap; }
 .cv-i-desc { margin: 0.25rem 0 0; max-width: 36rem; font-size: 0.92rem; line-height: 1.4; opacity: 0.62; }
-.cv-i-tag { font-style: italic; }
+.cv-i-tag { }
 .cv-thumb { flex: 0 0 auto; width: 4.6rem; height: 4.6rem; object-fit: cover; }
 .cv-variants { list-style: none; margin: 0.6rem 0 0; padding: 0.5rem 0 0; border-top: 1px dashed color-mix(in srgb, var(--ink) 40%, transparent); display: grid; gap: 0.45rem; }
 .cv-variants li { display: grid; grid-template-columns: 5rem 1fr; gap: 0.5rem; font-size: 0.85rem; }
@@ -203,7 +203,7 @@ body.has-filter .is-pending .cv-pend { display: inline; }
 .cv-pl-slot { margin: 0 0 0.3rem; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; opacity: 0.6; }
 .cv-pl-top { display: flex; justify-content: space-between; gap: 1rem; font-size: 1.1rem; text-transform: uppercase; }
 .cv-pl-desc { margin: 0.25rem 0 0; font-size: 0.88rem; opacity: 0.7; }
-.cv-pl-why { margin: 0.3rem 0 0.2rem; font-size: 0.85rem; font-style: italic; }
+.cv-pl-why { margin: 0.3rem 0 0.2rem; font-size: 0.85rem; }
 .cv-pick-list .cv-als { margin: 0.2rem 0; }
 .cv-pick-list .cv-al { border-color: var(--black); color: var(--black); }
 .cv-pl-total { margin: 0.6rem 0 0; padding-top: 0.6rem; border-top: 1.5px solid var(--black); font-size: 1rem; }
