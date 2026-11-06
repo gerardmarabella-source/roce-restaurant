@@ -418,3 +418,8 @@ body.is-pulling .cv-foot-logo { transition: none; }
 .cv-next-track { display: block; width: 100%; height: 4px; margin: 0; border: 0; border-radius: 0; background: rgba(255, 255, 255, 0.18); overflow: hidden; }
 .cv-next i { display: block; width: 0; height: 100%; margin: 0; background: #fff; border-radius: 0; transition: none; }
 @media (prefers-reduced-motion: reduce) { .cv-foot-logo { transform: none; } }
+
+/* al tirar solo se mueve la hoja; el pie (logo gigante y barra blanca) se queda fijo abajo */
+.cv-foot { transform: none !important; transition: none !important; will-change: auto; }
+main { transform: translateY(var(--pull, 0px)); }
+body.is-pulling main { transition: none; }
