@@ -30,10 +30,6 @@
     }(window, document, 'script', 'https://connect.facebook.net/en_US/fbevents.js');
     fbq('init', PIXEL_ID);
     fbq('track', 'PageView');
-    // En la página de reservas (widget de CoverManager) registramos la visita a la reserva.
-    if (document.querySelector('iframe[src*="covermanager.com"]')) {
-      fbq('track', 'ViewContent', { content_name: 'Reserva de mesa' });
-    }
   }
 
   var banner = document.getElementById('cookieBanner');
