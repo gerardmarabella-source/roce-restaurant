@@ -4,10 +4,10 @@
   'use strict';
   var D = window.CARTA;
   var UI = {
-    es: { allergies: 'Alergias', al_leg: 'Alérgenos', filters: 'Filtros', f_h: 'Filtra la carta', f_p: 'Marca alérgenos, tipo de dieta o ingredientes y te mostramos solo lo que encaja.', diet_h: 'Tipo de dieta', al_t: 'Alérgenos (ocultamos los platos que los llevan)', ing_h: 'Ingredientes', clear: 'Quitar todo', clear_sec: 'Borrar', done: 'Ver carta', without: 'Sin', with_: 'Con', pending: 'Consúltalo con el equipo', soon: 'Muy pronto', soon_p: 'Estamos preparando esta carta.',
+    es: { nutri: 'Valores nutricionales por ración: calorías, proteínas, hidratos y grasas', allergies: 'Alergias', al_leg: 'Alérgenos', filters: 'Filtros', f_h: 'Filtra la carta', f_p: 'Marca alérgenos, tipo de dieta o ingredientes y te mostramos solo lo que encaja.', diet_h: 'Tipo de dieta', al_t: 'Alérgenos (ocultamos los platos que los llevan)', ing_h: 'Ingredientes', clear: 'Quitar todo', clear_sec: 'Borrar', done: 'Ver carta', without: 'Sin', with_: 'Con', pending: 'Consúltalo con el equipo', soon: 'Muy pronto', soon_p: 'Estamos preparando esta carta.',
       b_al: 'Sin alérgenos', b_diet: 'Dieta', diet_note: 'La dieta y los ingredientes son orientativos según lo que figura en la carta. Si tienes dudas, pregunta al equipo.',
       note: 'Si tienes alguna alergia o intolerancia, avisa a nuestro equipo antes de pedir. Pueden existir trazas de otros alérgenos. Los alérgenos de las bebidas los confirma el equipo.', remove: 'Quitar filtros', next: 'Sigue bajando para ver', menu: 'Carta', menu_btn: 'Menú', close: 'Cerrar', cats: 'Categorías' },
-    en: { allergies: 'Allergies', al_leg: 'Allergens', filters: 'Filters', f_h: 'Filter the menu', f_p: 'Tick allergens, diet or ingredients and we will show only what fits.', diet_h: 'Diet', al_t: 'Allergens (we hide dishes containing them)', ing_h: 'Ingredients', clear: 'Clear all', clear_sec: 'Clear', done: 'See menu', without: 'Without', with_: 'With', pending: 'Ask our team', soon: 'Coming soon', soon_p: 'We are preparing this menu.',
+    en: { nutri: 'Nutrition per serving: calories, protein, carbs and fat', allergies: 'Allergies', al_leg: 'Allergens', filters: 'Filters', f_h: 'Filter the menu', f_p: 'Tick allergens, diet or ingredients and we will show only what fits.', diet_h: 'Diet', al_t: 'Allergens (we hide dishes containing them)', ing_h: 'Ingredients', clear: 'Clear all', clear_sec: 'Clear', done: 'See menu', without: 'Without', with_: 'With', pending: 'Ask our team', soon: 'Coming soon', soon_p: 'We are preparing this menu.',
       b_al: 'Without allergens', b_diet: 'Diet', diet_note: 'Diet and ingredients are indicative, based on what the menu lists. If in doubt, ask our team.',
       note: 'If you have any allergy or intolerance, please tell our team before ordering. Traces of other allergens may be present. Allergens in drinks are confirmed by our team.', remove: 'Clear filters', next: 'Keep scrolling to see', menu: 'Menu', menu_btn: 'Menu', close: 'Close', cats: 'Categories' }
   };
@@ -77,6 +77,11 @@
   }
   var secById = function (id) { return D.sections.filter(function (s) { return s.id === id; })[0]; };
 
+  /* Valores nutricionales por ración: [kcal, proteínas, hidratos, grasas]. */
+  function nut(n) {
+    var l = L === 'en' ? ['Kcal', 'P', 'C', 'F'] : ['Kcal', 'P', 'C', 'G'];
+    return '<p class="cv-nut" aria-label="' + esc(ui('nutri')) + '"><span><b>' + l[0] + '</b> ' + n[0] + '</span><span><b>' + l[1] + '</b> ' + n[1] + ' g</span><span><b>' + l[2] + '</b> ' + n[2] + ' g</span><span><b>' + l[3] + '</b> ' + n[3] + ' g</span></p>';
+  }
   /* ── Platos y listas ── */
   function item(it, blk, n) {
     var dup = it.code && it.code === it.name;
@@ -85,6 +90,7 @@
       (blk.alPending ? '<span class="cv-pend">' + esc(ui('pending')) + '</span>' : '') + '</span><span class="cv-price">' + money(it.price) + '</span></div>';
     if (it.es) h += '<p class="cv-i-desc">' + esc(tx({ es: it.es, en: it.en })) + '</p>';
     if (it.tag) h += '<p class="cv-i-desc cv-i-tag">' + esc(tx(it.tag)) + '</p>';
+    if (it.nut) h += nut(it.nut);
     if (it.variants) h += '<ul class="cv-variants">' + it.variants.map(function (v) { return '<li><b>' + esc(v.name) + '</b><span>' + esc(tx({ es: v.es, en: v.en })) + '</span>' + als(v.al) + '</li>'; }).join('') + '</ul>';
     h += '</div>' + (it.img ? '<img class="cv-thumb" loading="lazy" src="' + esc(it.img) + '" alt="">' : '') + '</li>';
     return h;
