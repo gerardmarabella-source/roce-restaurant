@@ -18,8 +18,8 @@
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:type" content="image/png">
-<meta property="og:url" content="https://roce.es/fuck-who-doesn%27t-like-this-place/">
-<link rel="canonical" href="https://roce.es/fuck-who-doesn%27t-like-this-place/">
+<meta property="og:url" content="https://roce.es/reservas/">
+<link rel="canonical" href="https://roce.es/reservas/">
 <meta property="og:site_name" content="ROCE">
 <meta property="og:locale" content="es_ES">
 <meta property="og:locale:alternate" content="en_GB">
@@ -31,10 +31,10 @@
   "@graph": [
     {
       "@type": "Restaurant",
-      "@id": "https://roce.es/night/#place",
+      "@id": "https://roce.es/restaurant-cocktails/#place",
       "name": "ROCE - Restaurant & Cocktails",
       "alternateName": "ROCE Night",
-      "url": "https://roce.es/night/",
+      "url": "https://roce.es/restaurant-cocktails/",
       "parentOrganization": {
         "@id": "https://roce.es/#org"
       },
@@ -63,17 +63,17 @@
           "closes": "02:00"
         }
       ],
-      "acceptsReservations": "https://roce.es/fuck-who-doesn%27t-like-this-place/#night",
+      "acceptsReservations": "https://roce.es/reservas/#night",
       "sameAs": [
         "https://www.instagram.com/somosroce"
       ]
     },
     {
       "@type": "CafeOrCoffeeShop",
-      "@id": "https://roce.es/day/#place",
+      "@id": "https://roce.es/coffee-bakery-kitchen/#place",
       "name": "ROCE - Coffee, Bakery & Kitchen",
       "alternateName": "ROCE Day",
-      "url": "https://roce.es/day/",
+      "url": "https://roce.es/coffee-bakery-kitchen/",
       "parentOrganization": {
         "@id": "https://roce.es/#org"
       },
@@ -105,7 +105,7 @@
           "closes": "20:00"
         }
       ],
-      "acceptsReservations": "https://roce.es/fuck-who-doesn%27t-like-this-place/#day",
+      "acceptsReservations": "https://roce.es/reservas/#day",
       "sameAs": [
         "https://www.instagram.com/somosroce"
       ]
@@ -364,7 +364,7 @@
 
 <main class="reserve-form-page">
   <div class="reserve-form-wrap">
-    <a class="reserve-back" href="/night/" data-i18n="back_to_home">&larr; Volver a ROCE</a>
+    <a class="reserve-back" href="/restaurant-cocktails/" data-i18n="back_to_home">&larr; Volver a ROCE</a>
     <div class="reserve-head">
       <h1 data-i18n-html="reservar_h1">Reserva<br>tu mesa</h1>
       <div class="reserve-zones" role="group" aria-label="Day / Night">
@@ -511,7 +511,7 @@
     // Las reservas de noche son +18: se pide confirmarlo una vez; si no, se pasa a Day.
     if (next === 'night') window.ROCE_AGE.ask(null, () => setZone('day'));
     zoneTabs.forEach((b) => b.setAttribute('aria-pressed', b.dataset.zone === zone ? 'true' : 'false'));
-    backLink.setAttribute('href', zone === 'all' ? '/' : '/' + zone + '/');
+    backLink.setAttribute('href', zone === 'all' ? '/' : '/' + (zone === 'day' ? 'coffee-bakery-kitchen' : 'restaurant-cocktails') + '/');
     document.body.classList.toggle('zone-day', zone === 'day');
     document.getElementById('nightNotice').hidden = zone === 'day';
     document.getElementById('reserveHours').hidden = zone !== 'day'; // solo se muestra el horario de Day
