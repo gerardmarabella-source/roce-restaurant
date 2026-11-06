@@ -293,10 +293,10 @@ body.has-filter .is-pending .cv-pend { display: inline; }
 /* título lateral: siempre entero en cualquier alto de pantalla y texto más ancho, pegado a él */
 .cv-paper { --sp: 30vh; --sp: 30svh; }
 .cv-spine span { top: calc(var(--bar) + var(--sp)); }
-.cv-spine i { font-size: min(clamp(2.8rem, 12vw, 3.6rem), calc((100vh - var(--bar) - var(--sp) - 2rem) / var(--len, 5.4))); font-size: min(clamp(2.8rem, 12vw, 3.6rem), calc((100svh - var(--bar) - var(--sp) - 2rem) / var(--len, 5.4))); }
+.cv-spine i { font-size: min(clamp(2.8rem, 12vw, 3.6rem), calc((100vh - var(--bar) - var(--sp) - 2rem) / var(--len, 4.6))); font-size: min(clamp(2.8rem, 12vw, 3.6rem), calc((100svh - var(--bar) - var(--sp) - 2rem) / var(--len, 4.6))); }
 @media (min-width: 900px) {
   .cv-paper { --sp: 14vh; --sp: 14svh; }
-  .cv-spine i { font-size: min(clamp(4.4rem, 8vw, 6.6rem), calc((100vh - var(--bar) - var(--sp) - 2rem) / var(--len, 5.4))); font-size: min(clamp(4.4rem, 8vw, 6.6rem), calc((100svh - var(--bar) - var(--sp) - 2rem) / var(--len, 5.4))); }
+  .cv-spine i { font-size: min(clamp(4.4rem, 8vw, 6.6rem), calc((100vh - var(--bar) - var(--sp) - 2rem) / var(--len, 4.6))); font-size: min(clamp(4.4rem, 8vw, 6.6rem), calc((100svh - var(--bar) - var(--sp) - 2rem) / var(--len, 4.6))); }
   .cv-paper-in > * { max-width: none; }
   .cv-paper-in { padding-right: 2.2rem; }
 }
@@ -312,3 +312,11 @@ html[data-sheet="dark"] { --sheet: #262624; --ink: var(--cream); }
 /* aviso: seguir bajando = siguiente hoja */
 .cv-next { margin: 1.6rem auto 0; text-align: center; font-size: 0.72rem; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(255, 255, 255, 0.75); }
 .cv-next i { display: block; width: 0; height: 2px; max-width: 12rem; margin: 0.6rem auto 0; background: #fff; }
+
+/* título lateral más grande */
+.cv-paper { --spine: 4.8rem; }
+.cv-spine i { font-size: min(clamp(3.4rem, 15vw, 4.6rem), calc((100vh - var(--bar) - var(--sp) - 2rem) / var(--len, 4.6))); font-size: min(clamp(3.4rem, 15vw, 4.6rem), calc((100svh - var(--bar) - var(--sp) - 2rem) / var(--len, 4.6))); }
+@media (min-width: 900px) {
+  .cv-paper { --spine: 11rem; --sp: 8vh; --sp: 8svh; }
+  .cv-spine i { font-size: min(clamp(5.6rem, 10vw, 9rem), calc((100vh - var(--bar) - var(--sp) - 2rem) / var(--len, 4.6))); font-size: min(clamp(5.6rem, 10vw, 9rem), calc((100svh - var(--bar) - var(--sp) - 2rem) / var(--len, 4.6))); }
+}

@@ -102,7 +102,7 @@
       '<div class="cv-cat-body"><ul class="cv-items">' + b.items.map(function (i, n) { return item(i, b, n); }).join('') + '</ul>' + extras(b) + '</div></section>';
   }
   // el título vertical se adapta a su longitud (así cabe entero aunque sea largo: COFFEE & MATCHA)
-  function spineStyle(s) { var n = tx(s.title).length, len = Math.max(5.4, n * 0.7); return '--len:' + len.toFixed(1) + (n > 8 ? ';--sp:8svh' : ''); }
+  function spineStyle(s) { var n = tx(s.title).length, len = Math.max(4.6, n * 0.64); return '--len:' + len.toFixed(1) + (n > 8 ? ';--sp:8svh' : ''); }
   function page(s, si) {
     var h = '<article class="cv-paper is-' + s.color + '" id="pg-' + s.id + '" data-sec="' + s.id + '"' + (s.id === cur ? '' : ' hidden') + '><div class="cv-paper-in"><h1 class="cv-sr">' + esc(tx(s.title)) + '</h1>';
     var body = '';
@@ -136,6 +136,7 @@
     clearTimeout(flipping.t);
     [].forEach.call(document.querySelectorAll('.cv-paper'), function (p) { p.classList.remove('flip-away', 'flip-in'); p.hidden = p.dataset.sec !== cur; });
     flipping = null;
+    window.scrollTo({ top: 0, behavior: 'instant' });
   }
   function sheetState(keep) {
     var s = secById(cur);
@@ -162,26 +163,39 @@
     var n = nextSheet(), p = $('cvNext'); if (!p) return;
     p.hidden = !n; if (n) $('cvNextTxt').textContent = ui('next') + ' ' + tx(n.title) + ' ↓';
   }
-  var over = { acc: 0, t: 0, y0: null, lock: false };
+  function prevSheet() { var ids = D.sections.map(function (s) { return s.id; }), i = ids.indexOf(cur); return i > 0 ? D.sections[i - 1] : null; }
+  var over = { acc: 0, t: 0, y0: null, lock: false, dir: 0 };
   function atBottom() { return window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 3; }
+  function atTop() { return window.scrollY <= 1; }
   function overBar(v) { var b = $('cvNextBar'); if (b) b.style.width = Math.min(100, Math.max(0, Math.round(v))) + '%'; }
-  function overReset() { over.acc = 0; overBar(0); }
-  function overPush(d, need) {
-    if (over.lock || !nextSheet() || !atBottom() || !$('cvMenu').hidden || document.querySelector('dialog[open]')) { overReset(); return; }
-    var now = Date.now(); if (now - over.t > 600) over.acc = 0; over.t = now;
-    over.acc += d; overBar(over.acc * 100 / need);
-    if (over.acc >= need) { over.lock = true; var n = nextSheet(); overReset(); setSheet(n.id); setTimeout(function () { over.lock = false; }, 1300); }
+  function overReset() { over.acc = 0; over.dir = 0; overBar(0); }
+  function blocked() { return over.lock || !$('cvMenu').hidden || !!document.querySelector('dialog[open]'); }
+  function overGo(dir) {
+    var n = dir > 0 ? nextSheet() : prevSheet(); if (!n) return;
+    over.lock = true; overReset(); setSheet(n.id); setTimeout(function () { over.lock = false; }, 1300);
   }
-  window.addEventListener('wheel', function (e) { if (e.deltaY > 0) overPush(e.deltaY, 260); else overReset(); }, { passive: true });
+  // dir 1 = seguir bajando al final → hoja siguiente · dir -1 = seguir subiendo arriba del todo → hoja anterior (siempre llegas a lo alto)
+  function overPush(d, need, dir) {
+    var ok = dir > 0 ? (atBottom() && nextSheet()) : (atTop() && prevSheet());
+    if (blocked() || !ok) { overReset(); return; }
+    var now = Date.now(); if (now - over.t > 600 || over.dir !== dir) over.acc = 0; over.t = now; over.dir = dir;
+    over.acc += d; if (dir > 0) overBar(over.acc * 100 / need);
+    if (over.acc >= need) overGo(dir);
+  }
+  window.addEventListener('wheel', function (e) { if (e.deltaY > 0) overPush(e.deltaY, 260, 1); else if (e.deltaY < 0) overPush(-e.deltaY, 300, -1); }, { passive: true });
   window.addEventListener('touchstart', function (e) { over.y0 = e.touches[0].clientY; }, { passive: true });
   window.addEventListener('touchmove', function (e) {
-    if (over.y0 == null) return;
+    if (over.y0 == null || blocked()) return;
     var dy = over.y0 - e.touches[0].clientY;
-    if (dy > 0 && atBottom() && nextSheet() && !over.lock && $('cvMenu').hidden) { over.acc = dy; over.t = Date.now(); overBar(dy * 100 / 120); if (dy >= 120) { over.lock = true; var n = nextSheet(); overReset(); over.y0 = null; setSheet(n.id); setTimeout(function () { over.lock = false; }, 1300); } }
-    else if (dy <= 0) overReset();
+    if (dy > 0 && atBottom() && nextSheet()) { over.acc = dy; over.dir = 1; overBar(dy * 100 / 120); if (dy >= 120) { over.y0 = null; overGo(1); } }
+    else if (dy < 0 && atTop() && prevSheet()) { if (-dy >= 140) { over.y0 = null; overGo(-1); } }
+    else overReset();
   }, { passive: true });
   window.addEventListener('touchend', function () { over.y0 = null; overReset(); }, { passive: true });
-  window.addEventListener('keydown', function (e) { if (['ArrowDown', 'PageDown', ' ', 'End'].indexOf(e.key) !== -1 && atBottom()) overPush(80, 240); });
+  window.addEventListener('keydown', function (e) {
+    if (['ArrowDown', 'PageDown', ' ', 'End'].indexOf(e.key) !== -1 && atBottom()) overPush(80, 240, 1);
+    else if (['ArrowUp', 'PageUp', 'Home'].indexOf(e.key) !== -1 && atTop()) overPush(80, 240, -1);
+  });
 
   /* ── Filtros: alérgenos + dieta + ingredientes ── */
   var presentIng = null;
