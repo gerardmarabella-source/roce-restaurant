@@ -35,7 +35,7 @@ img { max-width: 100%; display: block; }
 .cv-lang button.is-active { color: var(--black); text-decoration: underline; text-underline-offset: 4px; }
 
 /* ── Menú a pantalla completa (como una lista tipográfica con filetes) ── */
-.cv-menu { position: fixed; inset: 0; z-index: 70; overflow-y: auto; background: var(--paper); color: var(--black); animation: cvMenuIn 0.3s cubic-bezier(0.2, 0.7, 0.2, 1); }
+.cv-menu { position: fixed; inset: 0; z-index: 70; overflow: hidden; background: var(--paper); color: var(--black); animation: cvMenuIn 0.3s cubic-bezier(0.2, 0.7, 0.2, 1); }
 @keyframes cvMenuIn { from { opacity: 0; transform: translateY(-1.2rem); } to { opacity: 1; transform: none; } }
 .cv-menu-in { display: flex; flex-direction: column; min-height: 100%; max-width: 46rem; margin: 0 auto; padding: env(safe-area-inset-top) var(--pad) calc(1.4rem + env(safe-area-inset-bottom)); }
 .cv-menu-top { display: flex; align-items: center; justify-content: flex-end; padding: 0.75rem 0 0.65rem; border-bottom: 1.5px solid var(--black); }
@@ -73,7 +73,7 @@ img { max-width: 100%; display: block; }
 .cv-paper-in { --lpad: calc(var(--pad) + 0.7rem); position: relative; z-index: 2; flex: 1; min-width: 0; padding: 0.4rem 1.5rem 3rem var(--lpad); }
 /* título vertical en el lomo, como en las cartas impresas */
 .cv-spine { position: relative; z-index: 2; flex: 0 0 var(--spine); align-self: stretch; }
-.cv-spine span { position: sticky; top: calc(var(--bar) + 1.1rem); display: block; }
+.cv-spine span { position: sticky; top: calc(var(--bar) + 30vh); top: calc(var(--bar) + 30svh); display: block; }
 .cv-spine i { display: block; font-style: normal; writing-mode: vertical-rl; transform: rotate(180deg); font-size: clamp(2.8rem, 12vw, 3.6rem); line-height: 1; letter-spacing: -0.02em; text-transform: uppercase; white-space: nowrap; }
 /* hoja que se abre / se cierra */
 .cv-paper.flip-away { z-index: 3; animation: cvAway 0.95s cubic-bezier(0.55, 0.05, 0.3, 1) forwards; }
@@ -211,3 +211,12 @@ body.has-filter .is-pending .cv-pend { display: inline; }
 /* resaltar el plato al saltar desde la propuesta */
 .cv-item.is-flash { animation: cvFlash 2.6s ease; }
 @keyframes cvFlash { 0%, 60% { background: color-mix(in srgb, var(--ink) 22%, transparent); } 100% { background: transparent; } }
+
+/* menú fijo: cabe en una pantalla, sin scroll */
+.cv-menu-in { height: 100%; min-height: 0; }
+.cv-menu-body { flex: 0 0 auto; }
+.cv-menu-foot { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; margin-top: 1rem; }
+.cv-menu-foot .cv-lang { justify-content: center; }
+.cv-menu-foot .cv-lang button { padding: 0.3rem 0.6rem; }
+.cv-m-word { flex: 1 1 auto; min-height: 0; width: 100%; height: auto; max-height: 26vh; object-fit: contain; object-position: left bottom; }
+.cv-m-word { flex: 0 1 auto; margin-top: auto; }

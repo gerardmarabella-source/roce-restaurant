@@ -238,8 +238,6 @@
     var h = '<ul class="cv-m-list">' + D.sections.map(function (s) {
       return '<li><button type="button" class="cv-m-sheet' + (s.id === cur ? ' is-on' : '') + '" data-sec="' + s.id + '" style="--c:var(--' + s.color + ')"><span>' + esc(tx(s.title)) + '</span><span class="cv-m-side">' + (s.soon ? '<small>' + esc(ui('soon')) + '</small>' : '') + '</span></button></li>';
     }).join('') + '</ul>';
-    var cats = [].slice.call(document.querySelectorAll('#pg-' + cur + ' .cv-cat:not(.is-hidden)'));
-    if (cats.length && !landing) h += '<p class="cv-m-h">' + esc(ui('cats')) + '</p><ul class="cv-m-list is-sub">' + cats.map(function (c) { return '<li><a class="cv-m-cat" href="#' + c.id + '" data-cat="' + c.id + '">' + esc(c.querySelector('h3').textContent) + '</a></li>'; }).join('') + '</ul>';
     h += '<ul class="cv-m-list is-sub is-last"><li><button type="button" class="cv-m-cat" id="cvMenuAl">' + esc(ui('filters')) + (F.al.length + F.diet.length + F.ing.k.length ? ' (' + (F.al.length + F.diet.length + F.ing.k.length) + ')' : '') + '</button></li></ul>';
     $('cvMenuBody').innerHTML = h;
   }
