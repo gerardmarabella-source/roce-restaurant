@@ -10,7 +10,7 @@
       note: 'If you have any allergy or intolerance, please tell our team before ordering. Traces of other allergens may be present. Allergens in drinks are confirmed by our team.', remove: 'Remove filter', menu: 'Menu', menu_btn: 'Menu', close: 'Close', cats: 'Categories' }
   };
   var L = 'es';
-  try { L = localStorage.getItem('roce_carta_lang') || (/^en/i.test(navigator.language || '') ? 'en' : 'es'); } catch (e) {}
+  try { L = localStorage.getItem('roce_lang') || (/^en/i.test(navigator.language || '') ? 'en' : 'es'); } catch (e) {}
   var sel = [];
   try { sel = JSON.parse(sessionStorage.getItem('roce_carta_al') || '[]'); } catch (e) {}
   var cur = (location.hash || '').replace('#', '');
@@ -72,7 +72,6 @@
     $('cvAlLabel').textContent = ui('allergies'); $('cvMenuLabel').textContent = ui('menu_btn'); $('cvCloseLabel').textContent = ui('close');
     $('cvDisclaimer').textContent = ui('note');
     $('cvSheetTitle').textContent = ui('al_h'); $('cvSheetText').textContent = ui('al_p'); $('cvAlClear').textContent = ui('clear'); $('cvAlDone').textContent = ui('done');
-    [].forEach.call(document.querySelectorAll('.cv-lang button'), function (b) { b.setAttribute('aria-pressed', String(b.dataset.lang === L)); });
     $('cvSections').innerHTML = D.sections.map(page).join('');
     buildSheet(); applyFilter(); endFlip(); sheetState(); measure(); onScroll();
   }
@@ -162,7 +161,7 @@
   /* ── Menú de navegación a pantalla completa ── */
   function renderMenu() {
     var h = '<ul class="cv-m-list">' + D.sections.map(function (s) {
-      return '<li><button type="button" class="cv-m-sheet' + (s.id === cur ? ' is-on' : '') + '" data-sec="' + s.id + '" style="--c:var(--' + s.color + ')"><span>' + esc(tx(s.title)) + '</span><span class="cv-m-side">' + (s.soon ? '<small>' + esc(ui('soon')) + '</small>' : '') + '<i></i></span></button></li>';
+      return '<li><button type="button" class="cv-m-sheet' + (s.id === cur ? ' is-on' : '') + '" data-sec="' + s.id + '" style="--c:var(--' + s.color + ')"><span>' + esc(tx(s.title)) + '</span><span class="cv-m-side">' + (s.soon ? '<small>' + esc(ui('soon')) + '</small>' : '') + '</span></button></li>';
     }).join('') + '</ul>';
     var cats = [].slice.call(document.querySelectorAll('#pg-' + cur + ' .cv-cat:not(.is-hidden)'));
     if (cats.length) h += '<p class="cv-m-h">' + esc(ui('cats')) + '</p><ul class="cv-m-list is-sub">' + cats.map(function (c) { return '<li><a class="cv-m-cat" href="#' + c.id + '" data-cat="' + c.id + '">' + esc(c.querySelector('h3').textContent) + '</a></li>'; }).join('') + '</ul>';
@@ -190,8 +189,9 @@
     var n = +b.dataset.n, i = sel.indexOf(n);
     setSel(i === -1 ? sel.concat(n) : sel.filter(function (x) { return x !== n; }));
   });
-  [].forEach.call(document.querySelectorAll('.cv-lang button'), function (b) {
-    b.addEventListener('click', function () { L = b.dataset.lang; try { localStorage.setItem('roce_carta_lang', L); } catch (e) {} current = ''; render(); });
+  document.addEventListener('roce:lang', function () {
+    var l = window.ROCE_I18N && window.ROCE_I18N.getLang();
+    if (l && l !== L) { L = l; current = ''; render(); }
   });
   render();
 })();

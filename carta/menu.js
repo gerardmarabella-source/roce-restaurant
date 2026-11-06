@@ -113,7 +113,7 @@ window.CARTA = {
       id: 'bebidas', color: 'olive', title: { es: 'Bebidas', en: 'Drinks' },
       groups: [
         {
-          title: { es: 'Drinks', en: 'Drinks' }, note: { es: 'Fruta real, sabor real', en: 'Real fruit, real flavour' },
+          title: { es: 'Drinks', en: 'Drinks' },
           blocks: [
             {
               title: { es: 'Cafés', en: 'Coffees' }, compact: true, alPending: true,
