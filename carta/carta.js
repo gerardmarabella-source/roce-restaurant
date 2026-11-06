@@ -164,7 +164,7 @@
     p.hidden = !n; if (n) $('cvNextTxt').textContent = ui('next') + ' ' + tx(n.title) + ' ↓';
   }
   function prevSheet() { var ids = D.sections.map(function (s) { return s.id; }), i = ids.indexOf(cur); return i > 0 ? D.sections[i - 1] : null; }
-  var over = { acc: 0, t: 0, y0: null, lock: false, dir: 0 };
+  var over = { acc: 0, t: 0, y0: null, lock: false, dir: 0, edgeDir: 0, edgeT: 0, atEdge: false };
   function atBottom() { return window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 3; }
   function atTop() { return window.scrollY <= 1; }
   function overBar(v) { var b = $('cvNextBar'); if (b) b.style.width = Math.min(100, Math.max(0, Math.round(v))) + '%'; }
@@ -177,24 +177,28 @@
   // dir 1 = seguir bajando al final → hoja siguiente · dir -1 = seguir subiendo arriba del todo → hoja anterior (siempre llegas a lo alto)
   function overPush(d, need, dir) {
     var ok = dir > 0 ? (atBottom() && nextSheet()) : (atTop() && prevSheet());
-    if (blocked() || !ok) { overReset(); return; }
-    var now = Date.now(); if (now - over.t > 600 || over.dir !== dir) over.acc = 0; over.t = now; over.dir = dir;
+    if (blocked() || !ok) { over.edgeDir = 0; overReset(); return; }
+    var now = Date.now();
+    // el empujón con el que llegas al borde (y su inercia) no cuenta: hay que quedarse en el borde y volver a insistir
+    if (over.edgeDir !== dir) { over.edgeDir = dir; over.edgeT = now; }
+    if (now - over.edgeT < 700) { over.t = now; return; }
+    if (now - over.t > 600 || over.dir !== dir) over.acc = 0; over.t = now; over.dir = dir;
     over.acc += d; if (dir > 0) overBar(over.acc * 100 / need);
     if (over.acc >= need) overGo(dir);
   }
-  window.addEventListener('wheel', function (e) { if (e.deltaY > 0) overPush(e.deltaY, 260, 1); else if (e.deltaY < 0) overPush(-e.deltaY, 300, -1); }, { passive: true });
-  window.addEventListener('touchstart', function (e) { over.y0 = e.touches[0].clientY; }, { passive: true });
+  window.addEventListener('wheel', function (e) { if (e.deltaY > 0) overPush(e.deltaY, 800, 1); else if (e.deltaY < 0) overPush(-e.deltaY, 900, -1); }, { passive: true });
+  window.addEventListener('touchstart', function (e) { over.y0 = e.touches[0].clientY; over.edgeStart = atBottom() ? 1 : atTop() ? -1 : 0; }, { passive: true });
   window.addEventListener('touchmove', function (e) {
     if (over.y0 == null || blocked()) return;
     var dy = over.y0 - e.touches[0].clientY;
-    if (dy > 0 && atBottom() && nextSheet()) { over.acc = dy; over.dir = 1; overBar(dy * 100 / 120); if (dy >= 120) { over.y0 = null; overGo(1); } }
-    else if (dy < 0 && atTop() && prevSheet()) { if (-dy >= 140) { over.y0 = null; overGo(-1); } }
+    if (dy > 0 && over.edgeStart === 1 && atBottom() && nextSheet()) { over.acc = dy; over.dir = 1; overBar(dy * 100 / 240); if (dy >= 240) { over.y0 = null; overGo(1); } }
+    else if (dy < 0 && over.edgeStart === -1 && atTop() && prevSheet()) { if (-dy >= 260) { over.y0 = null; overGo(-1); } }
     else overReset();
   }, { passive: true });
   window.addEventListener('touchend', function () { over.y0 = null; overReset(); }, { passive: true });
   window.addEventListener('keydown', function (e) {
-    if (['ArrowDown', 'PageDown', ' ', 'End'].indexOf(e.key) !== -1 && atBottom()) overPush(80, 240, 1);
-    else if (['ArrowUp', 'PageUp', 'Home'].indexOf(e.key) !== -1 && atTop()) overPush(80, 240, -1);
+    if (['ArrowDown', 'PageDown', ' ', 'End'].indexOf(e.key) !== -1 && atBottom()) overPush(80, 480, 1);
+    else if (['ArrowUp', 'PageUp', 'Home'].indexOf(e.key) !== -1 && atTop()) overPush(80, 560, -1);
   });
 
   /* ── Filtros: alérgenos + dieta + ingredientes ── */
