@@ -17,5 +17,6 @@
 15. `permisos_finos.sql` — permisos de detalle del equipo (ejecutar el último)
 16. `mesas_calendario.sql` — calendario de la web con días cerrados / completos / con un turno completo, y cierres de tipo "completo"
 17. `mesas_limite_reservas.sql` — hasta 10 reservas activas por email
+18. `mesas_aperturas.sql` — aperturas especiales (abrir un día cerrado de base) y horizonte de reservas de la web
 
 Todos se pueden ejecutar más de una vez. Si se vuelve a ejecutar `mesas.sql` o `mesas_tarjeta.sql`, hay que volver a ejecutar los de después.

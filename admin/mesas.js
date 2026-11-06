@@ -75,9 +75,10 @@
       api('dining_prescribers?select=*&order=name').catch(function () { return []; }),
       api('rpc/dining_team_people', { method: 'POST', body: {} }).catch(function () { return []; }),
       api('dining_tags?select=*&order=name').catch(function () { return []; }),
+      api('dining_openings?select=*&date_to=gte.' + today() + '&order=date_from').catch(function () { return []; }),
       api('dining_accounts?select=*&order=name').catch(function () { return []; }),
       api('dining_account_moves?select=*&order=created_at.desc&limit=2000').catch(function () { return []; })
-    ]).then(function (r) { S.tags = r[5] || []; S.accounts = r[6] || []; S.accMoves = r[7] || []; S.zones = r[0] || []; S.tables = r[1] || []; S.services = r[2] || []; S.prescribers = r[3] || []; S.team = r[4] || []; S.loadedCfg = true; });
+    ]).then(function (r) { S.tags = r[5] || []; S.openings = r[6] || []; S.accounts = r[7] || []; S.accMoves = r[8] || []; S.zones = r[0] || []; S.tables = r[1] || []; S.services = r[2] || []; S.prescribers = r[3] || []; S.team = r[4] || []; S.loadedCfg = true; });
   }
   function loadDay() {
     var from = A.madridToISO(S.date + 'T05:00'), to = A.madridToISO(addDays(S.date, 1) + 'T05:00');
@@ -280,6 +281,8 @@
     for (var m = t0; m < t1; m += 60) ticks += '<span class="mt-tick" style="left:' + Math.round((m - t0) * PXMIN) + 'px">' + hhmm(m) + '</span>';
     var nowMin = S.date === today() ? mins(new Date().toISOString()) : null;
     var nowLine = nowMin != null && nowMin >= t0 && nowMin <= t1 ? '<i class="mt-now" style="left:' + Math.round((nowMin - t0) * PXMIN) + 'px"></i>' : '';
+    // Etiqueta con la hora actual en la cabecera (se mueve sola cada medio minuto).
+    var nowLbl = nowLine ? '<span class="mt-now-lbl" style="left:' + Math.round((nowMin - t0) * PXMIN) + 'px">' + hhmm(Math.floor(nowMin) % 1440) + '</span>' : '';
     var rowsHtml = rows.map(function (t) {
       var bars = '';
       S.bookings.forEach(function (b) {
@@ -302,7 +305,7 @@
         '<div class="mt-track" data-track="' + t.id + '" data-t0="' + t0 + '" style="width:' + W + 'px">' + bars + '</div></div>';
     }).join('');
     if (!rows.length) return '<p class="ad-empty">Esta zona no tiene mesas activas.</p>';
-    return '<div class="mt-tl"><div class="mt-tl-in" style="min-width:' + (W + 78) + 'px"><div class="mt-row mt-head"><span class="mt-rl"></span><div class="mt-ticks" style="width:' + W + 'px">' + ticks + '</div></div>' +
+    return '<div class="mt-tl"><div class="mt-tl-in" style="min-width:' + (W + 78) + 'px"><div class="mt-row mt-head"><span class="mt-rl"></span><div class="mt-ticks" style="width:' + W + 'px" data-t0="' + t0 + '">' + ticks + nowLbl + '</div></div>' +
       '<div class="mt-body" style="--w:' + W + 'px">' + nowLine + rowsHtml + '</div></div></div>' +
       '<p class="ad-meta mt-legend"><span class="mt-dot is-booked"></span>Reservada <span class="mt-dot is-pending"></span>Pendiente <span class="mt-dot is-seated"></span>En mesa <span class="mt-dot is-blocked"></span>Bloqueada · en cada barra: personas/plazas de la mesa. Toca un hueco para reservar, una barra para editarla.</p>';
   }
@@ -384,6 +387,14 @@
       }
     }
   }
+
+  // La marca de "ahora" avanza sola mientras el panel está abierto.
+  setInterval(function () {
+    var tk = root.querySelector('.mt-ticks[data-t0]'), line = root.querySelector('.mt-now'), lbl = root.querySelector('.mt-now-lbl');
+    if (!tk || !line || !lbl || S.view !== 'day' || S.date !== today()) return;
+    var base = new Date(A.madridToISO(S.date + 'T00:00')).getTime(), nowMin = (Date.now() - base) / 60000, left = Math.round((nowMin - +tk.dataset.t0) * PXMIN);
+    line.style.left = left + 'px'; lbl.style.left = left + 'px'; lbl.textContent = hhmm(Math.floor(nowMin) % 1440);
+  }, 30000);
 
   function joinBar() {
     var ts = S.sel.map(tableById).filter(Boolean), seats = ts.reduce(function (n, t) { return n + t.seats_max; }, 0);
@@ -1086,6 +1097,7 @@
       '<h2 class="ad-sub" style="margin-top:1.75rem">Mesas</h2><p class="ad-meta" style="margin-bottom:0.6rem">Las mesas con el mismo “grupo de unión” (en la misma zona) se pueden juntar para grupos grandes.</p>' + tables +
       '<h2 class="ad-sub" style="margin-top:1.75rem">Prescriptores</h2>' + prescribersHtml() +
       '<h2 class="ad-sub" style="margin-top:1.75rem">Etiquetas de cliente</h2>' + tagsCfgHtml() +
+      '<h2 class="ad-sub" style="margin-top:1.75rem">Abrir un día que normalmente está cerrado</h2>' + openingsHtml() +
       '<h2 class="ad-sub" style="margin-top:1.75rem">Cierres por día</h2>' + closures +
       '<div class="ad-permbar" id="cfgBar" hidden><span id="cfgCount">Cambios sin guardar</span><button class="ad-btn" type="button" id="cfgSave">Guardar cambios</button><button class="ad-btn is-ghost" type="button" id="cfgReset">Descartar</button></div>';
     var pf = document.getElementById('prForm');
@@ -1100,12 +1112,35 @@
       var m = (S.team || []).filter(function (x) { return String(x.email).toLowerCase() === em.toLowerCase(); })[0];
       addPrescriber(m ? personName(m) : em, em).then(function () { flash('Prescriptor añadido.', 'ok'); render(); }).catch(function () { flash('No se ha podido añadir (¿ya existe?).', 'error'); });
     });
+    var of = document.getElementById('opForm');
+    if (of) of.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var msg = document.getElementById('opMsg'); msg.hidden = true;
+      var from = document.getElementById('opFrom').value, to = document.getElementById('opTo').value;
+      if (!from || !to || to < from) { msg.textContent = 'Revisa las fechas.'; msg.hidden = false; return; }
+      api('dining_openings', { method: 'POST', body: { date_from: from, date_to: to, service_id: document.getElementById('opSvc').value || null, note: document.getElementById('opNote').value.trim() }, prefer: 'return=minimal' })
+        .then(function () { return loadConfig(true); }).then(function () { flash('Apertura añadida.', 'ok'); render(); })
+        .catch(function (x) { msg.textContent = /dining_openings/.test(String(x && x.message)) ? 'Falta ejecutar mesas_aperturas.sql en Supabase.' : errText(x); msg.hidden = false; });
+    });
     var cf = document.getElementById('clForm');
     if (cf) cf.addEventListener('submit', function (e) {
       e.preventDefault();
       api('dining_closures', { method: 'POST', body: closureBody(), prefer: 'return=minimal' })
         .then(function () { flash('Cierre añadido.', 'ok'); return enter(); }).catch(fail);
     });
+  }
+  // Aperturas especiales: un turno (o todos) funciona un día que por su horario normal estaría cerrado (p. ej. un lunes).
+  function openingsHtml() {
+    var list = (S.openings || []).map(function (o) {
+      var sv = o.service_id ? ((S.services.filter(function (x) { return x.id === o.service_id; })[0] || {}).name_es || o.service_id) : 'Todos los turnos';
+      return '<li class="ad-card"><div><div class="ad-name">' + esc(o.date_from === o.date_to ? o.date_from : o.date_from + ' → ' + o.date_to) + ' <span class="ad-tag is-green">Abierto</span></div><div class="ad-meta">' + esc(sv) + (o.note ? ' · ' + esc(o.note) : '') + '</div></div><div class="ad-actions"><button class="ad-btn is-small is-danger" data-delopening="' + o.id + '" type="button">Quitar</button></div></li>';
+    }).join('');
+    return '<p class="ad-meta" style="margin-bottom:0.7rem">Abre en la web un día (o varios) que por su horario normal estaría cerrado. Se ofrecen las horas habituales del turno; si ese día además hay un cierre, el cierre manda.</p><ul class="ad-list">' + (list || '<li class="ad-empty">Sin aperturas especiales.</li>') + '</ul>' +
+      '<form class="ad-sheet-inline" id="opForm"><h3 class="mt-h3">Nueva apertura especial</h3><p class="ad-msg is-error" id="opMsg" hidden></p><div class="ad-grid">' +
+      '<label class="ad-field"><span>Desde el día</span><input type="date" id="opFrom" required></label><label class="ad-field"><span>Hasta el día (incluido)</span><input type="date" id="opTo" required></label>' +
+      '<label class="ad-field"><span>Turno</span><select id="opSvc"><option value="">Todos los turnos</option>' + S.services.map(function (x) { return '<option value="' + x.id + '">' + esc(x.name_es) + '</option>'; }).join('') + '</select></label>' +
+      '<label class="ad-field"><span>Motivo interno (opcional)</span><input id="opNote" maxlength="120" placeholder="p. ej. Puente, evento privado"></label></div>' +
+      '<button class="ad-btn" type="submit">Abrir esos días</button></form>';
   }
   function tagsCfgHtml() {
     return '<p class="ad-meta" style="margin-bottom:0.6rem">Alergias y “Pago por transferencia” vienen de serie. Aquí están las que has creado tú (VIP, prensa…); también puedes crearlas con “＋ Nueva etiqueta” al editar una reserva o un cliente.</p><div class="mt-al-list">' +
@@ -1140,7 +1175,7 @@
   }
   // Acciones inmediatas (borrar, desactivar, añadir…) recargan la pantalla: avisa antes de perder cambios sin guardar.
   root.addEventListener('click', function (e) {
-    if (pendCount() && e.target.closest('[data-deltag],[data-pres-toggle],[data-addtable],[data-deltable],[data-delclosure]') && !confirm('Tienes cambios sin guardar en la configuración; si sigues se perderán. ¿Continuar?')) { e.stopImmediatePropagation(); e.preventDefault(); }
+    if (pendCount() && e.target.closest('[data-deltag],[data-delopening],[data-pres-toggle],[data-addtable],[data-deltable],[data-delclosure]') && !confirm('Tienes cambios sin guardar en la configuración; si sigues se perderán. ¿Continuar?')) { e.stopImmediatePropagation(); e.preventDefault(); }
   }, true);
   root.addEventListener('submit', function (e) {
     if (pendCount() && !confirm('Tienes cambios sin guardar en la configuración; si sigues se perderán. ¿Continuar?')) { e.preventDefault(); e.stopImmediatePropagation(); }
@@ -1178,6 +1213,11 @@
     }
   });
   root.addEventListener('click', function (e) {
+    var dop = e.target.closest('[data-delopening]');
+    if (dop) {
+      if (!confirm('¿Quitar esta apertura especial? Esos días volverán a su horario normal.')) return;
+      return void api('dining_openings?id=eq.' + dop.dataset.delopening, { method: 'DELETE', prefer: 'return=minimal' }).then(function () { return loadConfig(true); }).then(render).catch(fail);
+    }
     var dt = e.target.closest('[data-deltag]');
     if (dt) {
       if (!confirm('¿Quitar la etiqueta “' + dt.dataset.deltag + '”? Dejará de poder elegirse (las reservas que ya la tienen no se tocan).')) return;

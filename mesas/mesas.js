@@ -422,4 +422,6 @@
   } catch (x) {}
   document.addEventListener('roce:lang', function () { keepForm(); render(); });
   render();
+  // Hasta dónde se puede reservar lo decide la configuración (días vista de los turnos), no un número fijo en la web.
+  rpc('dining_horizon', {}).then(function (n) { n = parseInt(n, 10); if (n >= 1 && n <= 400 && n !== DAYS_AHEAD) { DAYS_AHEAD = n; st.cal = {}; render(); } }).catch(function () {});
 })();
