@@ -356,3 +356,15 @@ html[data-sheet="dark"] { --sheet: #262624; --ink: var(--cream); }
 
 /* menú: sin la raya entre ES/EN y el logo */
 .cv-m-word { border-top: 0; padding-top: 0.5rem; }
+
+/* tirar de la página: sigue al dedo con resistencia y vuelve como un muelle */
+html { overscroll-behavior-y: none; }
+main, .cv-foot { transform: translateY(var(--pull, 0px)); transition: transform 0.38s cubic-bezier(0.2, 0.9, 0.25, 1); will-change: transform; }
+body.is-pulling main, body.is-pulling .cv-foot { transition: none; }
+.cv-next-track { height: 8px; border-radius: 4px; }
+.cv-next i { transition: none; border-radius: 4px; }
+.cv-topbar { height: 4px; } .cv-topbar i { transition: none; }
+@media (prefers-reduced-motion: reduce) { main, .cv-foot { transform: none; transition: none; } }
+
+/* el título lateral no se pega al borde de abajo de la hoja (p. ej. en Bakery, que es corta) */
+.cv-spine { padding-bottom: 3rem; }

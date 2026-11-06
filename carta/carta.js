@@ -156,58 +156,83 @@
     flipping = { t: setTimeout(endFlip, 1000) };
   }
 
-  /* ── Seguir bajando al final = pasar a la hoja siguiente ── */
+  /* ── Tirar de la página más allá del borde = cambiar de hoja ──
+     Al llegar al final (o al principio) y seguir tirando, la página sigue al dedo con resistencia (como un muelle), la barra se llena
+     (de azul a rojo) y, al llegar al máximo, la hoja cambia. Si sueltas antes, vuelve a su sitio. */
   function nextSheet() { var ids = D.sections.map(function (s) { return s.id; }), i = ids.indexOf(cur); return i >= 0 && i < ids.length - 1 ? D.sections[i + 1] : null; }
-  function paintNext() {
-    var n = nextSheet(), p = $('cvNext'); if (!p) return;
-    p.hidden = !n;
-  }
   function prevSheet() { var ids = D.sections.map(function (s) { return s.id; }), i = ids.indexOf(cur); return i > 0 ? D.sections[i - 1] : null; }
-  var over = { acc: 0, t: 0, y0: null, lock: false, dir: 0, edgeDir: 0, edgeT: 0, atEdge: false };
-  function atBottom() { return window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 3; }
-  function atTop() { return window.scrollY <= 1; }
-  // color de temperatura: azul (frío) → amarillo → rojo (caliente)
+  function paintNext() { var p = $('cvNext'); if (p) p.hidden = !nextSheet(); }
   function heat(t) {
     var S = [[50, 110, 255], [40, 215, 240], [255, 220, 60], [255, 140, 40], [255, 40, 40]], x = Math.min(0.9999, Math.max(0, t)) * (S.length - 1), i = Math.floor(x), f = x - i;
     return 'rgb(' + [0, 1, 2].map(function (k) { return Math.round(S[i][k] + (S[i + 1][k] - S[i][k]) * f); }).join(',') + ')';
   }
-  var overTimer = 0;
-  function overBar(v, dir) {
-    var pct = Math.min(100, Math.max(0, Math.round(v))), p = pct + '%', b = $((dir || over.dir) < 0 ? 'cvTopFill' : 'cvNextBar');
-    if (b) { b.style.width = p; b.style.background = heat(pct / 100); }
-    clearTimeout(overTimer); if (v > 0) overTimer = setTimeout(function () { over.acc = 0; over.dir = 0; var d = $('cvNextBar'), u = $('cvTopFill'); if (d) d.style.width = '0%'; if (u) u.style.width = '0%'; }, 900);
+  var THR = 100, MAXP = 150, still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var pull = { v: 0, dir: 0, wacc: 0, timer: 0, lock: false, lastScroll: 0, t: null };
+  function atBottom() { return window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 2; }
+  function atTop() { return window.scrollY <= 1; }
+  function edgeOk(dir) { return dir > 0 ? atBottom() && !!nextSheet() : atTop() && !!prevSheet(); }
+  function blocked() { return pull.lock || !$('cvMenu').hidden || !!document.querySelector('dialog[open]'); }
+  function setPull(v, dir) {
+    pull.v = v; pull.dir = v > 0 ? dir : 0;
+    var pct = Math.min(100, v / THR * 100), col = heat(pct / 100), d = $('cvNextBar'), u = $('cvTopFill');
+    document.body.classList.toggle('is-pulling', v > 0);
+    document.documentElement.style.setProperty('--pull', still ? '0px' : (dir > 0 ? -v : v) + 'px');
+    if (d) { d.style.width = (dir > 0 ? pct : 0) + '%'; d.style.background = col; }
+    if (u) { u.style.width = (dir < 0 ? pct : 0) + '%'; u.style.background = col; }
   }
-  function overReset() { over.acc = 0; over.dir = 0; clearTimeout(overTimer); var d = $('cvNextBar'), u = $('cvTopFill'); if (d) d.style.width = '0%'; if (u) u.style.width = '0%'; }
-  function blocked() { return over.lock || !$('cvMenu').hidden || !!document.querySelector('dialog[open]'); }
-  function overGo(dir) {
-    var n = dir > 0 ? nextSheet() : prevSheet(); if (!n) return;
-    over.lock = true; overReset(); setSheet(n.id); setTimeout(function () { over.lock = false; }, 1300);
+  function springBack() { clearTimeout(pull.timer); pull.wacc = 0; document.body.classList.remove('is-pulling'); setPull(0, pull.dir || 1); document.body.classList.remove('is-pulling'); }
+  function go(dir) {
+    var n = dir > 0 ? nextSheet() : prevSheet(); if (!n) return springBack();
+    pull.lock = true; clearTimeout(pull.timer); pull.wacc = 0;
+    try { if (navigator.vibrate) navigator.vibrate(14); } catch (e) { /* sin vibración */ }
+    document.body.classList.add('is-pulling'); setPull(0, dir); setSheet(n.id);
+    setTimeout(function () { pull.lock = false; document.body.classList.remove('is-pulling'); }, 1300);
   }
-  // dir 1 = seguir bajando al final → hoja siguiente · dir -1 = seguir subiendo arriba del todo → hoja anterior (siempre llegas a lo alto)
-  function overPush(d, need, dir) {
-    var ok = dir > 0 ? (atBottom() && nextSheet()) : (atTop() && prevSheet());
-    if (blocked() || !ok) { over.edgeDir = 0; overReset(); return; }
-    var now = Date.now();
-    // el empujón con el que llegas al borde (y su inercia) no cuenta: hay que quedarse en el borde y volver a insistir
-    if (over.edgeDir !== dir) { over.edgeDir = dir; over.edgeT = now; }
-    if (now - over.edgeT < (dir > 0 ? 350 : 600)) { over.t = now; return; }
-    if (now - over.t > 700 || over.dir !== dir) over.acc = 0; over.t = now; over.dir = dir;
-    over.acc += d; overBar(over.acc * 100 / need, dir);
-    if (over.acc >= need) overGo(dir);
-  }
-  window.addEventListener('wheel', function (e) { if (e.deltaY > 0) overPush(e.deltaY, 450, 1); else if (e.deltaY < 0) overPush(-e.deltaY, 600, -1); }, { passive: true });
-  window.addEventListener('touchstart', function (e) { over.y0 = e.touches[0].clientY; over.edgeStart = atBottom() ? 1 : atTop() ? -1 : 0; }, { passive: true });
-  window.addEventListener('touchmove', function (e) {
-    if (over.y0 == null || blocked()) return;
-    var dy = over.y0 - e.touches[0].clientY;
-    if (dy > 0 && over.edgeStart === 1 && atBottom() && nextSheet()) { over.acc = dy; over.dir = 1; overBar(dy * 100 / 150); if (dy >= 150) { over.y0 = null; overGo(1); } }
-    else if (dy < 0 && over.edgeStart === -1 && atTop() && prevSheet()) { over.dir = -1; overBar(-dy * 100 / 190, -1); if (-dy >= 190) { over.y0 = null; overGo(-1); } }
-    else overReset();
+  window.addEventListener('scroll', function () { pull.lastScroll = Date.now(); }, { passive: true });
+
+  // rueda / trackpad: cada empujón estira un poco; si dejas de empujar, vuelve
+  window.addEventListener('wheel', function (e) {
+    if (blocked() || !e.deltaY) return;
+    var dir = e.deltaY > 0 ? 1 : -1;
+    if (!edgeOk(dir)) { if (pull.v) springBack(); return; }
+    if (Date.now() - pull.lastScroll < 300) return;                 // inercia del gesto con el que llegaste al borde
+    if (pull.dir !== dir) pull.wacc = 0;
+    pull.wacc = Math.min(MAXP, pull.wacc + Math.abs(e.deltaY) * 0.4);
+    setPull(pull.wacc, dir);
+    clearTimeout(pull.timer); pull.timer = setTimeout(springBack, 420);
+    if (pull.wacc >= THR) go(dir);
   }, { passive: true });
-  window.addEventListener('touchend', function () { over.y0 = null; overReset(); }, { passive: true });
+
+  // táctil: la página sigue al dedo (con resistencia) desde que llegas al borde
+  window.addEventListener('touchstart', function (e) { pull.t = { y: e.touches[0].clientY, last: e.touches[0].clientY, a: null, dir: 0, buzz: false }; }, { passive: true });
+  window.addEventListener('touchmove', function (e) {
+    var t = pull.t; if (!t || blocked()) return;
+    var y = e.touches[0].clientY, up = y < t.last; t.last = y;
+    if (t.a == null) {
+      var dir = up ? 1 : -1;
+      if (!edgeOk(dir)) return;
+      t.a = y; t.dir = dir;
+    }
+    var d = t.dir > 0 ? t.a - y : y - t.a;
+    if (d <= 0) { if (pull.v) setPull(0, t.dir); t.a = y; return; }       // vuelves a mover en sentido contrario
+    if (e.cancelable) e.preventDefault();
+    var v = Math.min(MAXP, d * 0.55);
+    setPull(v, t.dir);
+    if (v >= THR && !t.buzz) { t.buzz = true; try { if (navigator.vibrate) navigator.vibrate(8); } catch (x) { /* sin vibración */ } }
+  }, { passive: false });
+  function touchDone() {
+    var t = pull.t; pull.t = null; if (!t || t.a == null) return;
+    if (pull.v >= THR) go(t.dir); else springBack();
+  }
+  window.addEventListener('touchend', touchDone, { passive: true });
+  window.addEventListener('touchcancel', touchDone, { passive: true });
   window.addEventListener('keydown', function (e) {
-    if (['ArrowDown', 'PageDown', ' ', 'End'].indexOf(e.key) !== -1 && atBottom()) overPush(80, 320, 1);
-    else if (['ArrowUp', 'PageUp', 'Home'].indexOf(e.key) !== -1 && atTop()) overPush(80, 360, -1);
+    var dir = ['ArrowDown', 'PageDown', ' ', 'End'].indexOf(e.key) !== -1 ? 1 : ['ArrowUp', 'PageUp', 'Home'].indexOf(e.key) !== -1 ? -1 : 0;
+    if (!dir || blocked() || !edgeOk(dir) || Date.now() - pull.lastScroll < 300) return;
+    if (pull.dir !== dir) pull.wacc = 0;
+    pull.wacc = Math.min(MAXP, pull.wacc + 28); setPull(pull.wacc, dir);
+    clearTimeout(pull.timer); pull.timer = setTimeout(springBack, 600);
+    if (pull.wacc >= THR) go(dir);
   });
 
   /* ── Filtros: alérgenos + dieta + ingredientes ── */
