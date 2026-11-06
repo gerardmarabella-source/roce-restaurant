@@ -350,7 +350,7 @@
     function tickets(n) { return n + ' ' + (n === 1 ? t('tk_ticket_one') : t('tk_ticket_many')); }
     function whenText() { return U.fmt(ev, lang(), { weekday: 'long', day: 'numeric', month: 'long' }) + ' · ' + U.range(ev) + (U.floor(ev, lang()) ? ' · ' + U.floor(ev, lang()) : ''); }
 
-    document.querySelector('.tk-back').setAttribute('href', '/eventos/?f=' + ev.env);
+    document.querySelector('.tk-back').setAttribute('href', '/eventos/');
 
     var MAX = Math.max(0, Math.min(ev.max_per_order || 6, ev.left));
     var state = { qty: 1, step: 1, order: null };
