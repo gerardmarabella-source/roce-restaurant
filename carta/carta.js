@@ -6,10 +6,10 @@
   var UI = {
     es: { allergies: 'Alergias', al_leg: 'Alérgenos', filters: 'Filtros', f_h: 'Filtra la carta', f_p: 'Marca alérgenos, tipo de dieta o ingredientes y te mostramos solo lo que encaja.', diet_h: 'Tipo de dieta', al_t: 'Alérgenos (ocultamos los platos que los llevan)', ing_h: 'Ingredientes', clear: 'Quitar todo', clear_sec: 'Borrar', done: 'Ver carta', without: 'Sin', with_: 'Con', pending: 'Consúltalo con el equipo', soon: 'Muy pronto', soon_p: 'Estamos preparando esta carta.',
       b_al: 'Sin alérgenos', b_diet: 'Dieta', diet_note: 'La dieta y los ingredientes son orientativos según lo que figura en la carta. Si tienes dudas, pregunta al equipo.',
-      note: 'Si tienes alguna alergia o intolerancia, avisa a nuestro equipo antes de pedir. Pueden existir trazas de otros alérgenos. Los alérgenos de las bebidas los confirma el equipo.', remove: 'Quitar filtros', menu: 'Carta', menu_btn: 'Menú', close: 'Cerrar', cats: 'Categorías' },
+      note: 'Si tienes alguna alergia o intolerancia, avisa a nuestro equipo antes de pedir. Pueden existir trazas de otros alérgenos. Los alérgenos de las bebidas los confirma el equipo.', remove: 'Quitar filtros', next: 'Sigue bajando para ver', menu: 'Carta', menu_btn: 'Menú', close: 'Cerrar', cats: 'Categorías' },
     en: { allergies: 'Allergies', al_leg: 'Allergens', filters: 'Filters', f_h: 'Filter the menu', f_p: 'Tick allergens, diet or ingredients and we will show only what fits.', diet_h: 'Diet', al_t: 'Allergens (we hide dishes containing them)', ing_h: 'Ingredients', clear: 'Clear all', clear_sec: 'Clear', done: 'See menu', without: 'Without', with_: 'With', pending: 'Ask our team', soon: 'Coming soon', soon_p: 'We are preparing this menu.',
       b_al: 'Without allergens', b_diet: 'Diet', diet_note: 'Diet and ingredients are indicative, based on what the menu lists. If in doubt, ask our team.',
-      note: 'If you have any allergy or intolerance, please tell our team before ordering. Traces of other allergens may be present. Allergens in drinks are confirmed by our team.', remove: 'Clear filters', menu: 'Menu', menu_btn: 'Menu', close: 'Close', cats: 'Categories' }
+      note: 'If you have any allergy or intolerance, please tell our team before ordering. Traces of other allergens may be present. Allergens in drinks are confirmed by our team.', remove: 'Clear filters', next: 'Keep scrolling to see', menu: 'Menu', menu_btn: 'Menu', close: 'Close', cats: 'Categories' }
   };
   var DIETS = [
     { k: 'veg', es: 'Vegetariano', en: 'Vegetarian' }, { k: 'vegan', es: 'Vegano', en: 'Vegan' }, { k: 'pesc', es: 'Pescetariano', en: 'Pescatarian' },
@@ -40,8 +40,9 @@
   var F = { al: [], diet: [], ing: { m: 'sin', k: [] } };
   try { var s0 = JSON.parse(sessionStorage.getItem('roce_carta_f') || 'null'); if (s0) F = { al: s0.al || [], diet: s0.diet || [], ing: s0.ing || { m: 'sin', k: [] } }; } catch (e) {}
   var cur = (location.hash || '').replace('#', '');
+  cur = { brunch: 'kitchen', bebidas: 'coffee' }[cur] || cur;   // enlaces antiguos
   var landing = !D.sections.some(function (s) { return s.id === cur; });   // el QR abre primero el menú; desde ahí se elige la carta
-  if (landing) cur = D.sections[0].id;
+  if (landing) cur = 'kitchen';
 
   var $ = function (id) { return document.getElementById(id); };
   var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
@@ -100,10 +101,12 @@
       (b.note ? '<small>' + esc(tx(b.note)) + '</small>' : '') + '</span><svg class="cv-chev" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M6 15l6-6 6 6"/></svg></button>' +
       '<div class="cv-cat-body"><ul class="cv-items">' + b.items.map(function (i, n) { return item(i, b, n); }).join('') + '</ul>' + extras(b) + '</div></section>';
   }
+  // el título vertical se adapta a su longitud (así cabe entero aunque sea largo: COFFEE & MATCHA)
+  function spineStyle(s) { var n = tx(s.title).length, len = Math.max(5.4, n * 0.7); return '--len:' + len.toFixed(1) + (n > 8 ? ';--sp:8svh' : ''); }
   function page(s, si) {
     var h = '<article class="cv-paper is-' + s.color + '" id="pg-' + s.id + '" data-sec="' + s.id + '"' + (s.id === cur ? '' : ' hidden') + '><div class="cv-paper-in"><h1 class="cv-sr">' + esc(tx(s.title)) + '</h1>';
     var body = '';
-    if (s.soon) body += '<div class="cv-soon"><b>' + esc(ui('soon')) + '</b><p>' + esc(ui('soon_p')) + '</p></div>';
+    if (s.soon) body += '<div class="cv-soon"><b>' + esc(ui('soon')) + '</b><p>' + esc(s.desc ? tx(s.desc) : ui('soon_p')) + '</p></div>';
     else s.groups.forEach(function (g, gi) {
       var same = tx(g.title) === tx(s.title);
       body += '<div class="cv-group">';
@@ -111,7 +114,7 @@
       g.blocks.forEach(function (b, bi) { var id = 'c' + si + gi + bi; body += cat(id, b); });
       body += '</div>';
     });
-    return h + body + '</div><div class="cv-spine" aria-hidden="true"><span><i>' + esc(tx(s.title)) + '</i></span></div></article>';
+    return h + body + '</div><div class="cv-spine" aria-hidden="true" style="' + spineStyle(s) + '"><span><i>' + esc(tx(s.title)) + '</i></span></div></article>';
   }
 
   function render() {
@@ -123,7 +126,7 @@
     $('cvDietH').textContent = ui('diet_h'); $('cvAlH').textContent = ui('al_t'); $('cvIngH').textContent = ui('ing_h');
     ['cvDietClear', 'cvAlClearSec', 'cvIngClear'].forEach(function (id) { $(id).textContent = ui('clear_sec'); }); $('cvDietNote').textContent = ui('diet_note');
     $('cvSections').innerHTML = D.sections.map(page).join('');
-    buildSheet(); applyFilter(); endFlip(); sheetState(); measure(); onScroll();
+    buildSheet(); applyFilter(); endFlip(); sheetState(); measure(); onScroll(); paintNext();
   }
 
   /* ── Cambiar de hoja: la hoja se abre / se cierra como en una carpeta ── */
@@ -147,11 +150,38 @@
     window.scrollTo({ top: 0, behavior: 'instant' });
     cur = id; sheetState(old); measure();
     try { history.replaceState(null, '', '#' + id); } catch (e) {}
-    current = ''; onScroll();
+    current = ''; onScroll(); paintNext();
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) { endFlip(); return; }
     (forward ? from : to).classList.add(forward ? 'flip-away' : 'flip-in');
     flipping = { t: setTimeout(endFlip, 1000) };
   }
+
+  /* ── Seguir bajando al final = pasar a la hoja siguiente ── */
+  function nextSheet() { var ids = D.sections.map(function (s) { return s.id; }), i = ids.indexOf(cur); return i >= 0 && i < ids.length - 1 ? D.sections[i + 1] : null; }
+  function paintNext() {
+    var n = nextSheet(), p = $('cvNext'); if (!p) return;
+    p.hidden = !n; if (n) $('cvNextTxt').textContent = ui('next') + ' ' + tx(n.title) + ' ↓';
+  }
+  var over = { acc: 0, t: 0, y0: null, lock: false };
+  function atBottom() { return window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 3; }
+  function overBar(v) { var b = $('cvNextBar'); if (b) b.style.width = Math.min(100, Math.max(0, Math.round(v))) + '%'; }
+  function overReset() { over.acc = 0; overBar(0); }
+  function overPush(d, need) {
+    if (over.lock || !nextSheet() || !atBottom() || !$('cvMenu').hidden || document.querySelector('dialog[open]')) { overReset(); return; }
+    var now = Date.now(); if (now - over.t > 600) over.acc = 0; over.t = now;
+    over.acc += d; overBar(over.acc * 100 / need);
+    if (over.acc >= need) { over.lock = true; var n = nextSheet(); overReset(); setSheet(n.id); setTimeout(function () { over.lock = false; }, 1300); }
+  }
+  window.addEventListener('wheel', function (e) { if (e.deltaY > 0) overPush(e.deltaY, 260); else overReset(); }, { passive: true });
+  window.addEventListener('touchstart', function (e) { over.y0 = e.touches[0].clientY; }, { passive: true });
+  window.addEventListener('touchmove', function (e) {
+    if (over.y0 == null) return;
+    var dy = over.y0 - e.touches[0].clientY;
+    if (dy > 0 && atBottom() && nextSheet() && !over.lock && $('cvMenu').hidden) { over.acc = dy; over.t = Date.now(); overBar(dy * 100 / 120); if (dy >= 120) { over.lock = true; var n = nextSheet(); overReset(); over.y0 = null; setSheet(n.id); setTimeout(function () { over.lock = false; }, 1300); } }
+    else if (dy <= 0) overReset();
+  }, { passive: true });
+  window.addEventListener('touchend', function () { over.y0 = null; overReset(); }, { passive: true });
+  window.addEventListener('keydown', function (e) { if (['ArrowDown', 'PageDown', ' ', 'End'].indexOf(e.key) !== -1 && atBottom()) overPush(80, 240); });
 
   /* ── Filtros: alérgenos + dieta + ingredientes ── */
   var presentIng = null;

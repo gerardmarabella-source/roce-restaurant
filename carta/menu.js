@@ -11,7 +11,7 @@ window.CARTA = {
   ],
   sections: [
     {
-      id: 'brunch', color: 'kraft', title: { es: 'Brunch', en: 'Brunch' },
+      id: 'kitchen', color: 'kraft', title: { es: 'Kitchen', en: 'Kitchen' },
       groups: [
         {
           title: { es: 'Desayunos & Meriendas', en: 'Breakfast & Afternoon' },
@@ -123,7 +123,7 @@ window.CARTA = {
               extras: { title: { es: 'Extras', en: 'Extras' }, list: [[{ es: 'Iced', en: 'Iced' }, '+0,50'], [{ es: 'Doble carga', en: 'Double shot' }, '+1,00'], [{ es: 'Vegetal barista', en: 'Barista plant milk' }, '+0,30'], [{ es: 'Con hielo', en: 'On ice' }, '+0,15'], [{ es: 'Descafeinado', en: 'Decaf' }, '']] }
             },
             {
-              title: { es: 'Tés & Infusiones', en: 'Teas & Infusions' }, compact: true, alPending: true,
+              title: { es: 'Matcha & Tés', en: 'Matcha & Teas' }, compact: true, alPending: true,
               items: [
                 { name: 'Matcha', price: 3.5 }, { name: 'Matcha latte', price: 4.5 }, { name: 'Iced matcha latte', price: 4.9 }, { name: 'Té verde', price: 2.2 },
                 { name: 'Té negro', price: 2.2 }, { name: 'Té rojo', price: 2.2 }, { name: 'Rooibos', price: 2.2 }, { name: 'Manzanilla', price: 1.9 },
@@ -155,6 +155,22 @@ window.CARTA = {
         }
       ]
     },
-    { id: 'bakery', color: 'red', soon: true, title: { es: 'Bakery', en: 'Bakery' }, groups: [] }
+    { id: 'bakery', color: 'red', soon: true, title: { es: 'Bakery', en: 'Bakery' }, desc: { es: 'Bollería, cookies, bizcochos y demás productos del horno.', en: 'Pastries, cookies, cakes and other baked goods.' }, groups: [] }
   ]
 };
+
+/* Las cinco cartas: Coffee & Matcha · Kitchen · Bakery · Fresh Drinks · Drinks & More.
+   Se componen a partir de los bloques de arriba (el bloque "Drinks" se reparte entre Coffee & Matcha y Fresh Drinks). */
+(function () {
+  var C = window.CARTA, by = {};
+  C.sections.forEach(function (s) { by[s.id] = s; });
+  var drinks = by.bebidas.groups[0].blocks;
+  function sheet(id, color, es, en, blocks) { return { id: id, color: color, title: { es: es, en: en }, groups: [{ title: { es: es, en: en }, blocks: blocks }] }; }
+  C.sections = [
+    sheet('coffee', 'olive', 'Coffee & Matcha', 'Coffee & Matcha', [drinks[0], drinks[1]]),
+    by.kitchen,
+    by.bakery,
+    sheet('fresh', 'cream', 'Fresh Drinks', 'Fresh Drinks', [drinks[2], drinks[3]]),
+    { id: 'more', color: 'dark', soon: true, title: { es: 'Drinks & More', en: 'Drinks & More' }, desc: { es: 'Aguas, refrescos, cervezas y otras bebidas.', en: 'Water, soft drinks, beers and other drinks.' }, groups: [] }
+  ];
+})();

@@ -40,7 +40,7 @@
     var t = function (k) { return T[A.L()][k]; };
 
     /* ── Catálogo ── */
-    var KIND = { 'tostadas': 'toast', 'acai & yogur': 'sweet', 'sandwiches': 'sandwich', 'starters': 'starter', 'pokes': 'bowl', 'platos roce': 'main', 'acompanamientos': 'side', 'extras': 'extra', 'cafes': 'coffee', 'tes & infusiones': 'tea', 'smoothies': 'smoothie', 'zumos naturales': 'juice' };
+    var KIND = { 'tostadas': 'toast', 'acai & yogur': 'sweet', 'sandwiches': 'sandwich', 'starters': 'starter', 'pokes': 'bowl', 'platos roce': 'main', 'acompanamientos': 'side', 'extras': 'extra', 'cafes': 'coffee', 'tes & infusiones': 'tea', 'matcha & tes': 'tea', 'smoothies': 'smoothie', 'zumos naturales': 'juice' };
     var DRINK = ['juice', 'smoothie', 'coffee', 'tea'];
     function catalogue() {
       var out = [];
