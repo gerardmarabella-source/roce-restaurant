@@ -108,7 +108,6 @@
       '<div class="cv-cat-body"><ul class="cv-items">' + b.items.map(function (i, n) { return item(i, b, n); }).join('') + '</ul>' + extras(b) + '</div></section>';
   }
   // el título vertical se adapta a su longitud (así cabe entero aunque sea largo: COFFEE & MATCHA)
-  function spineStyle(s) { var n = tx(s.title).length, len = Math.max(4.6, n * 0.64); return '--len:' + len.toFixed(1) + (n > 8 ? ';--sp:8svh' : ''); }
   function page(s, si) {
     var h = '<article class="cv-paper is-' + s.color + (s.soon ? ' is-soon' : '') + '" id="pg-' + s.id + '" data-sec="' + s.id + '"' + (s.id === cur ? '' : ' hidden') + '><div class="cv-paper-in"><h1 class="cv-sr">' + esc(tx(s.title)) + '</h1>';
     var body = '';
@@ -120,7 +119,7 @@
       g.blocks.forEach(function (b, bi) { var id = 'c' + si + gi + bi; body += cat(id, b); });
       body += '</div>';
     });
-    return h + body + '</div><div class="cv-spine" aria-hidden="true" style="' + spineStyle(s) + '"><span><i>' + esc(tx(s.title)) + '</i></span></div></article>';
+    return h + body + '</div><div class="cv-spine" aria-hidden="true"><div class="cv-run">' + new Array(61).join('<i>' + esc(tx(s.title)) + '</i>') + '</div></div></article>';
   }
 
   function render() {
@@ -131,7 +130,7 @@
     $('cvDietH').textContent = ui('diet_h'); $('cvAlH').textContent = ui('al_t'); $('cvIngH').textContent = ui('ing_h');
     ['cvDietClear', 'cvAlClearSec', 'cvIngClear'].forEach(function (id) { $(id).textContent = ui('clear_sec'); }); $('cvDietNote').textContent = ui('diet_note');
     $('cvSections').innerHTML = D.sections.map(page).join('');
-    buildSheet(); applyFilter(); endFlip(); sheetState(); measure(); onScroll(); paintNext(); spineSet();
+    buildSheet(); applyFilter(); endFlip(); sheetState(); measure(); onScroll(); paintNext();
   }
 
   /* ── Cambiar de hoja: la hoja se abre / se cierra como en una carpeta ── */
@@ -156,7 +155,7 @@
     window.scrollTo({ top: 0, behavior: 'instant' });
     cur = id; sheetState(old); measure();
     try { history.replaceState(null, '', '#' + id); } catch (e) {}
-    current = ''; onScroll(); paintNext(); spineSet();
+    current = ''; onScroll(); paintNext();
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) { endFlip(); return; }
     (forward ? from : to).classList.add(forward ? 'flip-away' : 'flip-in');
     flipping = { t: setTimeout(endFlip, 1000) };
@@ -171,18 +170,6 @@
   }
   function paintNext() { renderFootNav(); }
 
-  // Título lateral FIJO en pantalla (sin sticky ni desplazamientos por JS, que van con retraso): al llegar al final de la hoja se cambia por el título de dentro de la hoja
-  function spineSet() { var f = $('cvSpineFix'), t = $('cvSpineTxt'), s = secById(cur); if (!f || !t || !s) return; t.textContent = tx(s.title); f.setAttribute('style', spineStyle(s)); spinePos(true); }
-  function spinePos(force) {
-    var f = $('cvSpineFix'), paper = document.querySelector('.cv-paper:not([hidden])'); if (!f || !paper) return;
-    var pr = paper.getBoundingClientRect(), sc = paper.querySelector('.cv-spine'), w = sc ? sc.getBoundingClientRect().width : 0;
-    if (force || f._w !== w || f._l !== pr.right) { f.style.width = w + 'px'; f.style.left = (pr.right - w) + 'px'; f._w = w; f._l = pr.right; }
-    /* Al llegar al final de la hoja el título fijo se cambia por el de dentro de la hoja (mismo sitio, mismo tamaño): ese ya baja con el scroll nativo, sin script ni retraso. */
-    var end = pr.bottom - 54 < f.offsetTop + f.offsetHeight;
-    if (force || paper.classList.contains('is-end') !== end) { paper.classList.toggle('is-end', end); f.style.visibility = end ? 'hidden' : ''; }
-  }
-  window.addEventListener('scroll', function () { spinePos(); }, { passive: true });
-  window.addEventListener('resize', function () { spinePos(true); });
 
   /* ── Filtros: alérgenos + dieta + ingredientes ── */
   var presentIng = null;
