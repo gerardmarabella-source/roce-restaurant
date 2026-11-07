@@ -31,3 +31,4 @@ Todos se pueden ejecutar más de una vez. Si se vuelve a ejecutar `mesas.sql` o 
 27. `app_pago.sql` — pagos de Redsys para pedidos de la app (payments.app_order_id y confirm_payment); después, desplegar la función «redsys» con la acción pay_app (ya aplicado)
 28. `app_menu_extras.sql` — «Más proteína» disponible todo el día (ya aplicado)
 29. `app_rocecover.sql` — pedido a mesa cobrado → visita «walkin» o suma a la visita de esa mesa (ocupación y gasto), CRM con clientes y pedidos de la app, comensales en el pedido (ya aplicado)
+30. `app_devoluciones.sql` — devoluciones (total o parcial) de pedidos de la app cobrados con Redsys: `app_refunds`, `app_orders.refunded_cents` y las funciones `app_refund_reserve` / `app_refund_finish`; después, desplegar la función «redsys» con la acción app_refund (ya aplicado y desplegado el 7 nov 2026)

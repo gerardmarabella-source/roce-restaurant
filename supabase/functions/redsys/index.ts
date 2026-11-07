@@ -124,6 +124,7 @@ async function handleJson(req: Request): Promise<Response> {
   if (body.action === "refund") return await handleRefund(req, body as RefundBody);
   if (body.action === "pay_table") return await handlePayTable(body);
   if (body.action === "pay_app") return await handlePayApp(req, body as { order_id?: string; lang?: string });
+  if (body.action === "app_refund") return await handleAppRefund(req, body);
   if (body.action === "table_refund") return await handleTableRefund(req, body);
   if (body.action === "table_charge") return await handleTableCharge(req, body);
   if (body.action !== "pay") return json({ error: "bad_action" }, 400);
@@ -504,6 +505,90 @@ async function handleTableRefund(req: Request, body: { token?: string; booking_i
     .eq("id", b.id);
   if (up.error) return json({ error: "refund_done_but_not_saved", detail: up.error.message }, 500);
   return json({ ok: true, method: manual ? "manual" : "redsys" });
+}
+
+// Devolución (total o parcial) de un pedido de la app cobrado con Redsys. Solo el equipo, desde RoceCover.
+// Reserva el importe en la base de datos antes de llamar al banco (no se puede devolver dos veces lo mismo ni más de lo cobrado) y,
+// si el banco la acepta, actualiza el pedido y resta lo devuelto del gasto de la visita. Con {manual: true} solo se registra una
+// devolución que ya se hizo a mano en el portal del banco. Los abonos fiscales los emite Ágora, no esta función.
+async function handleAppRefund(req: Request, body: { order_id?: string; amount_cents?: number; manual?: boolean; reason?: string }): Promise<Response> {
+  const url = Deno.env.get("SUPABASE_URL")!;
+  const caller = createClient(url, Deno.env.get("SUPABASE_ANON_KEY")!, {
+    global: { headers: { Authorization: req.headers.get("Authorization") ?? "" } },
+    auth: { persistSession: false },
+  });
+  const { data: ok } = await caller.rpc("has_tab", { t: "tables" });
+  if (ok !== true) return json({ error: "forbidden" }, 403);
+  const { data: me } = await caller.auth.getUser();
+  const who = (me.user?.email ?? "").toLowerCase();
+
+  const sb = createClient(url, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
+  const { data: o } = await sb.from("app_orders").select("id, ref, total_cents, refunded_cents, payment_status").eq("id", String(body.order_id ?? "")).maybeSingle();
+  if (!o) return json({ error: "not_found" }, 404);
+  if (o.payment_status === "refunded") return json({ error: "already_refunded" }, 409);
+  if (o.payment_status !== "paid") return json({ error: "not_refundable" }, 409);
+  const open = o.total_cents - (o.refunded_cents ?? 0);
+  const amount = Number.isInteger(body.amount_cents) ? Number(body.amount_cents) : open;
+  if (amount < 1 || amount > open) return json({ error: "bad_amount" }, 400);
+  const manual = body.manual === true;
+
+  const { data: rsv, error: rerr } = await sb.rpc("app_refund_reserve", {
+    p_order: o.id, p_amount: amount, p_by: who, p_manual: manual, p_reason: String(body.reason ?? "").slice(0, 200),
+  });
+  if (rerr) {
+    const m = String(rerr.message ?? "");
+    const known = ["refund_in_progress", "no_online_payment", "bad_amount", "not_refundable", "not_found"].find((k) => m.includes(k));
+    return json({ error: known ?? "reserve_failed", detail: known ? undefined : m.slice(0, 160) }, known === "not_found" ? 404 : 409);
+  }
+  const rid = (rsv as { id: number; order_id: string | null }).id;
+  const payOrder = (rsv as { order_id: string | null }).order_id;
+  const finish = async (good: boolean, code: string) => { await sb.rpc("app_refund_finish", { p_id: rid, p_ok: good, p_code: code }); };
+  const fail = async (code: string, detail: string, status = 502) => {
+    await finish(false, code);
+    return json({ error: "bank_refused", code, detail }, status);
+  };
+
+  if (!manual) {
+    const cfg = config();
+    if (!cfg.enabled) return await fail("CONFIG", "Pasarela sin configurar", 503);
+    const params = {
+      DS_MERCHANT_AMOUNT: String(amount),
+      DS_MERCHANT_ORDER: payOrder,
+      DS_MERCHANT_MERCHANTCODE: cfg.merchant,
+      DS_MERCHANT_CURRENCY: "978",
+      DS_MERCHANT_TRANSACTIONTYPE: "3", // devolución
+      DS_MERCHANT_TERMINAL: cfg.terminal,
+    };
+    const merchantParameters = toB64(JSON.stringify(params));
+    let out: Record<string, unknown>;
+    try {
+      const r = await fetch(REST_URLS[cfg.env], {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          Ds_SignatureVersion: "HMAC_SHA256_V1",
+          Ds_MerchantParameters: merchantParameters,
+          Ds_Signature: await sign(cfg.key, String(payOrder), merchantParameters),
+        }),
+        signal: AbortSignal.timeout(25000),
+      });
+      out = await r.json();
+    } catch (e) {
+      return await fail("NETWORK", "No se pudo contactar con el banco: " + String(e).slice(0, 120));
+    }
+    if (out.errorCode) return await fail(String(out.errorCode), "El banco ha rechazado la petición");
+    let resp: Record<string, unknown>;
+    try { resp = fromB64Json(String(out.Ds_MerchantParameters ?? "")); } catch { return await fail("RESPONSE", "Respuesta del banco ilegible"); }
+    const get = (name: string) => { const k = Object.keys(resp).find((x) => x.toLowerCase() === name.toLowerCase()); return k ? String(resp[k]) : ""; };
+    const expected = await sign(cfg.key, get("Ds_Order") || String(payOrder), String(out.Ds_MerchantParameters));
+    if (!safeEqual(canon(expected), canon(String(out.Ds_Signature ?? "")))) return await fail("SIGNATURE", "Firma de la respuesta no válida: compruébalo en el portal del banco");
+    const code = get("Ds_Response");
+    if (code !== "0900") return await fail(code || "UNKNOWN", "El banco no ha aceptado la devolución (código " + (code || "?") + ")");
+    await finish(true, code);
+  } else {
+    await finish(true, "MANUAL");
+  }
+  return json({ ok: true, method: manual ? "manual" : "redsys", refunded_cents: amount, remaining_cents: open - amount });
 }
 
 // Cobro de la penalización a la tarjeta guardada (solo el equipo, desde el panel: no se presentó o anuló tarde).

@@ -99,7 +99,7 @@
       api('dining_blocks?select=*&starts_at=lt.' + encodeURIComponent(to) + '&ends_at=gt.' + encodeURIComponent(from) + '&order=starts_at'),
       api('dining_customer_notes?select=*').catch(function () { return []; }),
       A.api('rpc/dining_crm', { method: 'POST', body: {} }).catch(function () { return []; })
-    ]).then(function (r) { S.bookings = r[0] || []; S.blocks = r[1] || []; S.notes = {}; (r[2] || []).forEach(function (n) { S.notes[n.customer_key] = n; }); S.crmMap = {}; (r[3] || []).forEach(function (c) { S.crmMap[c.customer_key] = c; }); });
+    ]).then(function (r) { S.appDayRows = null; S.bookings = r[0] || []; S.blocks = r[1] || []; S.notes = {}; (r[2] || []).forEach(function (n) { S.notes[n.customer_key] = n; }); S.crmMap = {}; (r[3] || []).forEach(function (c) { S.crmMap[c.customer_key] = c; }); });
   }
   function tableById(id) { return S.tables.filter(function (t) { return t.id === id; })[0]; }
   // Clave del cliente (la misma que usa el CRM): su email o, si no tiene, su teléfono.
@@ -609,7 +609,7 @@
       '<div class="ad-bar mt-mapbar"><div class="mt-zones" role="group">' + zones.map(function (z) { return '<button type="button" class="ck-chip" data-zone="' + z.id + '" aria-pressed="' + (z.id === S.zone) + '">' + esc(z.name_es) + '</button>'; }).join('') + '</div>' +
       '<button type="button" class="ad-btn is-small ' + (S.join ? '' : 'is-ghost') + '" id="mtJoin">' + (S.join ? 'Terminar de juntar' : 'Juntar mesas') + '</button>' +
       (S.mode === 'map' ? '<span class="mt-time"><button type="button" class="ad-btn is-ghost is-small" data-tstep="-1" aria-label="Hora anterior">‹</button><label>Mapa a las <select id="mtTime">' + opts.map(function (t) { return '<option' + (t === S.time ? ' selected' : '') + '>' + t + '</option>'; }).join('') + '</select></label><button type="button" class="ad-btn is-ghost is-small" data-tstep="1" aria-label="Hora siguiente">›</button></span>' : '') + '</div>' +
-      (S.join ? joinBar() : '') + (S.mode === 'map' ? map : timeline()) + '<h2 class="ad-sub">Reservas del día</h2><ul class="ad-list" id="mtList">' + list + '</ul>';
+      (S.join ? joinBar() : '') + (S.mode === 'map' ? map : timeline()) + '<h2 class="ad-sub">Reservas del día</h2><ul class="ad-list" id="mtList">' + list + '</ul>' + appDayBox();
     var tlEl = body.querySelector('.mt-tl');
     if (tlEl) {
       var key = S.date + S.zone;
@@ -721,6 +721,66 @@
       .then(function () { return done('Cobrados ' + eur(b.deposit_cents) + ' a la tarjeta.'); })
       .catch(function (x) { if (btn) btn.disabled = false; flash('No se ha podido cobrar: ' + x.message, 'error'); return loadDay().then(render); });
   }
+  // ─── Pedidos de la app del día: cobros y devoluciones (total o parcial) ───────────
+  function appDayBox() {
+    if (S.appDayOpen && !S.appDayRows && !S.appDayLoading) { S.appDayLoading = true; setTimeout(function () { loadAppDay().then(function () { S.appDayLoading = false; }); }, 0); }
+    var n = S.appDayRows ? S.appDayRows.length : null;
+    return '<details class="mt-more" id="appDayBox"' + (S.appDayOpen ? ' open' : '') + '><summary>Pedidos de la app de hoy' + (n != null ? ' · ' + n : '') + ' (cobros y devoluciones)</summary>' +
+      '<div id="appDay">' + (S.appDayRows ? appDayHtml(S.appDayRows) : '<p class="ad-meta">Cargando…</p>') + '</div></details>';
+  }
+  function appDayHtml(rows) {
+    if (S.appDayErr) return '<p class="ad-meta">' + esc(S.appDayErr) + '</p>';
+    if (!rows.length) return '<p class="ad-meta">Hoy no hay pedidos cobrados por la app.</p>';
+    var tot = 0, ret = 0;
+    var h = rows.map(function (o) {
+      var rf = Number(o.refunded_cents || 0), open = o.total_cents - rf; tot += o.total_cents; ret += rf;
+      var items = (o.app_order_items || []).map(function (l) { return l.qty + '× ' + esc(l.name) + (l.variant ? ' (' + esc(l.variant) + ')' : ''); }).join(', ');
+      var where = o.mode === 'mesa' ? 'Mesa ' + esc(o.table_name || '') : 'Recoger';
+      var st = o.payment_status === 'refunded' ? '<span class="ad-tag is-red">Devuelto</span>' : rf > 0 ? '<span class="ad-tag">Devuelto ' + eur(rf) + '</span>' : '';
+      var btns = o.payment_status === 'paid' && open > 0
+        ? '<div style="display:flex;flex-wrap:wrap;gap:0.5rem;margin:0.3rem 0 0.9rem"><button type="button" class="ad-btn is-small is-ghost" data-apprefund="full" data-id="' + o.id + '" data-open="' + open + '" data-ref="' + esc(o.ref) + '">Devolver ' + eur(open) + '</button>' +
+          '<button type="button" class="ad-btn is-small is-ghost" data-apprefund="part" data-id="' + o.id + '" data-open="' + open + '" data-ref="' + esc(o.ref) + '">Devolver una parte</button></div>' : '';
+      return '<p><b>' + esc(o.ref) + '</b> · ' + where + ' · ' + esc(o.name || '') + ' · ' + eur(o.total_cents) + ' ' + st + '<br><span class="ad-meta">' + items + '</span></p>' + btns;
+    }).join('');
+    return h + '<p class="ad-meta"><b>Cobrado por la app hoy: ' + eur(tot) + (ret ? ' · devuelto ' + eur(ret) : '') + '</b></p>';
+  }
+  function loadAppDay() {
+    var from = A.madridToISO(S.date + 'T05:00'), to = A.madridToISO(addDays(S.date, 1) + 'T05:00');
+    var base = 'app_orders?select=id,ref,mode,table_name,name,total_cents,status,payment_status,paid_at,app_order_items(name,qty,variant)&paid_at=gte.' + encodeURIComponent(from) + '&paid_at=lt.' + encodeURIComponent(to) + '&order=paid_at.desc';
+    // Con app_devoluciones.sql ejecutado también llega lo ya devuelto; sin él, la lista sale igual y los botones no funcionan todavía.
+    return api(base.replace('select=id,', 'select=id,refunded_cents,')).catch(function () { return api(base); })
+      .then(function (rows) { S.appDayRows = rows || []; S.appDayErr = ''; })
+      .catch(function () { S.appDayRows = []; S.appDayErr = 'Los pedidos de la app se activan al ejecutar app_rocecover.sql.'; })
+      .then(function () { var el = document.getElementById('appDay'); if (el) el.innerHTML = appDayHtml(S.appDayRows); var sm = document.querySelector('#appDayBox summary'); if (sm) sm.textContent = 'Pedidos de la app de hoy · ' + S.appDayRows.length + ' (cobros y devoluciones)'; });
+  }
+  function refundApp(id, amount, manual, reason) {
+    var s = A.session();
+    return fetch(A.cfg.url + '/functions/v1/redsys', { method: 'POST', headers: { 'Content-Type': 'application/json', apikey: A.cfg.anonKey, Authorization: 'Bearer ' + s.access_token }, body: JSON.stringify({ action: 'app_refund', order_id: id, amount_cents: amount, manual: !!manual, reason: reason || '' }) })
+      .then(function (r) { return r.json().catch(function () { return {}; }).then(function (d) { if (!r.ok) { var m = { forbidden: 'No tienes permiso para devolver.', not_found: 'No encuentro ese pedido.', already_refunded: 'Ya está devuelto del todo.', not_refundable: 'Este pedido no se puede devolver (no está cobrado).', bad_amount: 'El importe no es válido o es mayor que lo que queda por devolver.', refund_in_progress: 'Ya hay una devolución en curso de este pedido; espera unos segundos.', no_online_payment: 'No consta un cobro online de este pedido.' }; var e = new Error((m[d.error] || d.detail || d.error || ('Error ' + r.status)) + (d.code ? ' (código ' + d.code + ')' : '')); e.code = d.error; throw e; } return d; }); });
+  }
+  root.addEventListener('toggle', function (e) { if (e.target && e.target.id === 'appDayBox') { S.appDayOpen = e.target.open; if (e.target.open) loadAppDay(); } }, true);
+  root.addEventListener('click', function (e) {
+    var b = e.target.closest && e.target.closest('[data-apprefund]'); if (!b) return;
+    var id = b.dataset.id, open = +b.dataset.open, ref = b.dataset.ref, amount = open;
+    if (b.dataset.apprefund === 'part') {
+      var v = prompt('¿Cuántos euros devuelves del pedido ' + ref + '? (máximo ' + (open / 100).toFixed(2).replace('.', ',') + ')', '');
+      if (v == null) return;
+      var n = Math.round(parseFloat(String(v).replace(',', '.')) * 100);
+      if (!n || n < 1 || n > open) { flash('El importe no es válido.', 'error'); return; }
+      amount = n;
+    }
+    if (!confirm('¿Devolver ' + eur(amount) + ' del pedido ' + ref + ' a la tarjeta del cliente? Se hace por Redsys y no se puede deshacer.')) return;
+    b.disabled = true;
+    refundApp(id, amount, false).then(function () { flash('Devuelto ' + eur(amount) + ' del pedido ' + ref + '.', 'ok'); S.appDayRows = null; return loadDay().then(function () { render(); }); })
+      .catch(function (x) {
+        b.disabled = false;
+        if (x.code === 'bank_refused' || /código|banco|Pasarela|contactar/i.test(x.message)) {
+          if (confirm('El banco no ha podido devolverlo: ' + x.message + '\n\n¿Lo has devuelto ya a mano en el portal del banco? Acepta para registrarlo como devuelto.')) {
+            refundApp(id, amount, true).then(function () { flash('Registrada la devolución de ' + eur(amount) + '.', 'ok'); S.appDayRows = null; return loadDay().then(function () { render(); }); }).catch(function (y) { flash('No se ha podido registrar: ' + y.message, 'error'); });
+          }
+        } else flash('No se ha podido devolver: ' + x.message, 'error');
+      });
+  });
   function done(msg) { return loadDay().then(function () { render(); if (msg) flash(msg, 'ok'); }); }
 
   root.addEventListener('click', function (e) {
