@@ -116,17 +116,17 @@ window.CARTA = {
             {
               title: { es: 'Cafés', en: 'Coffees' }, compact: true, alPending: true,
               items: [
-                { name: 'Espresso', price: 2 }, { name: 'Double espresso', price: 2.5 }, { name: 'Cortado', price: 2.2 }, { name: 'Americano', price: 2.5 },
-                { name: 'Latte', price: 3 }, { name: 'Flat white', price: 3.5 }, { name: 'Mocca latte', price: 3.9 }
+                { name: 'Espresso', price: 2.2 }, { name: 'Double espresso', price: 3 }, { name: 'Cortado', price: 2.4 }, { name: 'Americano', price: 2.7 },
+                { name: 'Latte', price: 3.5 }, { name: 'Flat white', price: 3.8 }, { name: 'Mocca latte', price: 4.5 }
               ],
-              extras: { title: { es: 'Extras', en: 'Extras' }, list: [[{ es: 'Iced', en: 'Iced' }, '+0,50'], [{ es: 'Doble carga', en: 'Double shot' }, '+1,00'], [{ es: 'Vegetal barista', en: 'Barista plant milk' }, '+0,30'], [{ es: 'Con hielo', en: 'On ice' }, '+0,15'], [{ es: 'Descafeinado', en: 'Decaf' }, '']] }
+              extras: { title: { es: 'Extras', en: 'Extras' }, list: [[{ es: 'Iced', en: 'Iced' }, '+0,50'], [{ es: 'Doble carga', en: 'Double shot' }, '+1,00'], [{ es: 'Vegetal barista', en: 'Barista plant milk' }, '+0,50'], [{ es: 'Con hielo', en: 'On ice' }, '+0,15'], [{ es: 'Descafeinado', en: 'Decaf' }, '']] }
             },
             {
               title: { es: 'Matcha & Tés', en: 'Matcha & Teas' }, compact: true, alPending: true,
               items: [
-                { name: 'Matcha', price: 3.5 }, { name: 'Matcha latte', price: 4.5 }, { name: 'Iced matcha latte', price: 4.9 }, { name: 'Té verde', price: 2.2 },
-                { name: 'Té negro', price: 2.2 }, { name: 'Té rojo', price: 2.2 }, { name: 'Rooibos', price: 2.2 }, { name: 'Manzanilla', price: 1.9 },
-                { name: 'Menta poleo', price: 1.9 }, { name: 'Digestivo', price: 1.9 }
+                { name: 'Matcha', price: 3.5 }, { name: 'Matcha latte', price: 4.5 }, { name: 'Iced matcha latte', price: 4.9 }, { name: 'Té verde', price: 2.8 },
+                { name: 'Té negro', price: 2.8 }, { name: 'Té rojo', price: 2.8 }, { name: 'Rooibos', price: 2.8 }, { name: 'Manzanilla', price: 2.5 },
+                { name: 'Menta poleo', price: 2.5 }, { name: 'Digestivo', price: 2.5 }
               ]
             },
             {
