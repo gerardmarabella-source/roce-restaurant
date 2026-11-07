@@ -26,3 +26,8 @@
 24. `mails_abandono.sql` — aviso «sigue con tu reserva / compra» a los 5 min (columnas abandon_mail_at + barrido cada 5 min; después, desplegar booking-email)
 
 Todos se pueden ejecutar más de una vez. Si se vuelve a ejecutar `mesas.sql` o `mesas_tarjeta.sql`, hay que volver a ejecutar los de después.
+25. `app_pedidos.sql` — app de pedidos (app.roce.es): carta con precios del servidor, clientes, pedidos a mesa / recoger, códigos QR de las mesas de la planta baja y funciones `app_create_order`, `app_order_set_status`, `app_resolve_table`, `app_customer_save` (ya aplicado el 7 nov 2026)
+26. `app_perfil.sql` — perfil completo del cliente de la app (nombre, apellidos, cumpleaños, género, CP, dieta, alergias, comunicaciones, facturación) y eliminar cuenta (ya aplicado el 7 nov 2026)
+27. `app_pago.sql` — pagos de Redsys para pedidos de la app (payments.app_order_id y confirm_payment); después, desplegar la función «redsys» con la acción pay_app (ya aplicado)
+28. `app_menu_extras.sql` — «Más proteína» disponible todo el día (ya aplicado)
+29. `app_rocecover.sql` — pedido a mesa cobrado → visita «walkin» o suma a la visita de esa mesa (ocupación y gasto), CRM con clientes y pedidos de la app, comensales en el pedido (ya aplicado)

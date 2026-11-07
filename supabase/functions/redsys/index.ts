@@ -4,6 +4,8 @@
 //   · La web le habla en JSON:  {action: "status"}  o  {action: "pay", ref, lang, return_base}
 //     "pay" devuelve los datos firmados que la web envía al banco; la clave secreta
 //     nunca sale de aquí.
+//   · La app de pedidos (app.roce.es) le pide {action: "pay_app", order_id, lang} con la sesión del cliente: devuelve los datos
+//     firmados para cobrar ese pedido (solo el suyo) y el cliente vuelve a https://app.roce.es/?pago=ok|ko&ref=<pedido>.
 //   · El panel de administración le pide {action: "refund", booking_id, manual?}: devuelve el
 //     cobro por el servicio REST de Redsys (o, con manual=true, solo registra una devolución ya hecha
 //     en el portal del banco), emite el abono y deja la reserva como "devuelta". Solo responde a
@@ -121,6 +123,7 @@ async function handleJson(req: Request): Promise<Response> {
   if (body.action === "status") return json({ enabled: cfg.enabled, env: cfg.env });
   if (body.action === "refund") return await handleRefund(req, body as RefundBody);
   if (body.action === "pay_table") return await handlePayTable(body);
+  if (body.action === "pay_app") return await handlePayApp(req, body as { order_id?: string; lang?: string });
   if (body.action === "table_refund") return await handleTableRefund(req, body);
   if (body.action === "table_charge") return await handleTableCharge(req, body);
   if (body.action !== "pay") return json({ error: "bad_action" }, 400);
@@ -342,6 +345,67 @@ async function handlePayTable(body: { token?: string; lang?: string; return_base
     Ds_MerchantParameters: merchantParameters,
     Ds_Signature: await sign(cfg.key, order, merchantParameters),
     guarantee,
+  });
+}
+
+// ─── App de pedidos: cobro de un pedido a mesa / para recoger ─────────────
+// El cliente ya ha creado el pedido con app_create_order (los precios los calcula la base de datos). Aquí solo se firma el cobro
+// de SU pedido (se comprueba con su sesión) y se vuelve siempre a la app.
+const APP_ORIGIN = "https://app.roce.es";
+const APP_HOLD_MS = 30 * 60 * 1000; // el pedido sin pagar caduca a los 30 min
+async function handlePayApp(req: Request, body: { order_id?: string; lang?: string }): Promise<Response> {
+  const cfg = config();
+  if (!cfg.enabled) return json({ error: "disabled" }, 503);
+  const url = Deno.env.get("SUPABASE_URL")!;
+  const caller = createClient(url, Deno.env.get("SUPABASE_ANON_KEY")!, {
+    global: { headers: { Authorization: req.headers.get("Authorization") ?? "" } },
+    auth: { persistSession: false },
+  });
+  const { data: me } = await caller.auth.getUser();
+  const uid = me.user?.id;
+  if (!uid) return json({ error: "unauthorized" }, 401);
+
+  const sb = createClient(url, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
+  const { data: o } = await sb.from("app_orders")
+    .select("id, ref, customer_id, name, total_cents, status, payment_status, created_at, lang")
+    .eq("id", String(body.order_id ?? "")).maybeSingle();
+  if (!o || o.customer_id !== uid) return json({ error: "not_found" }, 404);
+  if (o.payment_status === "paid") return json({ error: "already_paid" }, 409);
+  if (o.status !== "pending_payment" || !["pending", "failed"].includes(o.payment_status) || o.total_cents <= 0) return json({ error: "not_payable" }, 409);
+  if (Date.now() - Date.parse(o.created_at) > APP_HOLD_MS) return json({ error: "expired" }, 410);
+  if (o.payment_status === "failed") await sb.from("app_orders").update({ payment_status: "pending" }).eq("id", o.id);
+
+  // Un intento de pago = un número de pedido nuevo (Redsys no admite repetirlo).
+  let order = "";
+  for (let i = 0; i < 5 && !order; i++) {
+    const candidate = newOrder();
+    const { error } = await sb.from("payments").insert({ order_id: candidate, app_order_id: o.id, amount_cents: o.total_cents });
+    if (!error) order = candidate;
+  }
+  if (!order) return json({ error: "order_failed" }, 500);
+
+  const back = (status: string) => `${APP_ORIGIN}/?pago=${status}&ref=${encodeURIComponent(o.ref)}`;
+  const params = {
+    DS_MERCHANT_AMOUNT: String(o.total_cents),
+    DS_MERCHANT_ORDER: order,
+    DS_MERCHANT_MERCHANTCODE: cfg.merchant,
+    DS_MERCHANT_CURRENCY: "978",
+    DS_MERCHANT_TRANSACTIONTYPE: "0",
+    DS_MERCHANT_TERMINAL: cfg.terminal,
+    DS_MERCHANT_MERCHANTURL: `${url}/functions/v1/redsys`,
+    DS_MERCHANT_URLOK: back("ok"),
+    DS_MERCHANT_URLKO: back("ko"),
+    DS_MERCHANT_CONSUMERLANGUAGE: (body.lang ?? o.lang) === "en" ? "002" : "001",
+    DS_MERCHANT_PRODUCTDESCRIPTION: ascii("Pedido ROCE " + o.ref).slice(0, 120),
+    DS_MERCHANT_TITULAR: ascii(o.name || "Cliente").slice(0, 60),
+    DS_MERCHANT_MERCHANTNAME: ascii(cfg.name).slice(0, 25),
+  };
+  const merchantParameters = toB64(JSON.stringify(params));
+  return json({
+    url: URLS[cfg.env],
+    Ds_SignatureVersion: "HMAC_SHA256_V1",
+    Ds_MerchantParameters: merchantParameters,
+    Ds_Signature: await sign(cfg.key, order, merchantParameters),
   });
 }
 
