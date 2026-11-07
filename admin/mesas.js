@@ -937,6 +937,7 @@
       '<label class="mt-check"><input type="checkbox" id="edBlock"' + ((noteOf(b) || {}).blocked ? ' checked' : '') + '> Bloquear: que no pueda volver a reservar</label>' +
       '<input type="text" id="edBlockWhy" maxlength="200" placeholder="Motivo del bloqueo (solo lo ve el equipo)" value="' + esc((noteOf(b) || {}).blocked_reason || '') + '"></div>' +
       '</details>' : '') +
+      '<details class="mt-more" id="edAppBox"><summary>Pedidos de la app</summary><div id="edApp" class="mt-log"><p class="ad-meta">Se carga al abrir.</p></div></details>' +
       '<details class="mt-more" id="edLogBox"><summary>Historial de cambios</summary><div id="edLog" class="mt-log"><p class="ad-meta">Se carga al abrir.</p></div></details>' +
       '<details class="mt-more"><summary>Tipo, duración, prescriptor y gasto</summary><div class="ad-grid">' +
       '<label class="ad-field"><span>Tipo de reserva</span><select id="edKind">' + Object.keys(BK_KIND).map(function (k) { return '<option value="' + k + '"' + ((b.kind || 'normal') === k ? ' selected' : '') + '>' + BK_KIND[k] + '</option>'; }).join('') + '</select></label>' +
@@ -965,6 +966,11 @@
           if (!q('edLogBox').open || q('edLog').dataset.loaded) return; q('edLog').dataset.loaded = '1';
           api('dining_booking_log?booking_id=eq.' + b.id + '&select=*&order=at.desc&limit=100').then(function (rows) { q('edLog').innerHTML = logHtml(rows || [], false); })
             .catch(function () { q('edLog').innerHTML = '<p class="ad-meta">El historial se activa al ejecutar mesas_servicio2.sql.</p>'; });
+        });
+        q('edAppBox').addEventListener('toggle', function () {
+          if (!q('edAppBox').open || q('edApp').dataset.loaded) return; q('edApp').dataset.loaded = '1';
+          api('app_orders?table_booking_id=eq.' + b.id + '&select=ref,mode,table_name,total_cents,status,payment_status,paid_at,app_order_items(name,qty,variant)&order=paid_at.asc').then(function (rows) { q('edApp').innerHTML = appOrdersHtml(rows || []); })
+            .catch(function () { q('edApp').innerHTML = '<p class="ad-meta">Los pedidos de la app se activan al ejecutar app_rocecover.sql.</p>'; });
         });
         // Cargar el gasto de la visita al saldo de la cuenta de empresa / grupo.
         var charged = null;
@@ -1096,11 +1102,35 @@
       '<button class="ad-btn is-ghost is-small" id="crmCsv" type="button">Descargar CSV</button></div>' +
       '<p class="ad-meta" style="margin-bottom:0.7rem">' + rows.length + ' clientes · gasto total anotado ' + eur(tot) + '. El gasto de cada visita se anota en la ficha de la reserva; cuando se conecte el TPV (Ágora) se rellenará solo.</p>' +
       '<div class="ad-table-wrap"><table class="ad-table"><thead><tr><th>Cliente</th><th>Visitas</th><th>No shows</th><th>Gasto</th><th>Última visita</th><th>Próximas</th><th>Eventos</th><th></th></tr></thead><tbody>' + rows.map(function (c) {
-        return '<tr' + (c.blocked ? ' class="is-cancelled"' : '') + '><td><b>' + esc(c.name || 'Sin nombre') + '</b> ' + tierTag(tierOf(c.visits, c.spend_cents)) + (c.blocked ? ' <span class="ad-tag is-red">bloqueado</span>' : '') + (c.customer_type === 'empresa' ? ' <span class="ad-tag">Empresa' + (c.company ? ': ' + esc(c.company) : '') + '</span>' : '') + (c.customer_type === 'grupo' ? ' <span class="ad-tag">Consumo interno' + (c.company ? ': ' + esc(c.company) : '') + '</span>' : '') + (c.balance_cents ? ' <span class="ad-tag is-red">Saldo ' + eur(c.balance_cents) + '</span>' : '') + (c.tags || []).map(function (k) { return ' ' + tagHtml(k); }).join('') + '<br><span class="ad-meta">' + esc(c.email || '') + (c.phone ? ' · ' + esc(c.phone) : '') + '</span>' + (c.note ? '<br><span class="ad-meta">“' + esc(c.note) + '”</span>' : '') + '</td>' +
+        return '<tr' + (c.blocked ? ' class="is-cancelled"' : '') + '><td><b>' + esc(c.name || 'Sin nombre') + '</b> ' + tierTag(tierOf(c.visits, c.spend_cents)) + (c.app_user ? ' <span class="ad-tag">App</span>' : '') + (c.blocked ? ' <span class="ad-tag is-red">bloqueado</span>' : '') + (c.customer_type === 'empresa' ? ' <span class="ad-tag">Empresa' + (c.company ? ': ' + esc(c.company) : '') + '</span>' : '') + (c.customer_type === 'grupo' ? ' <span class="ad-tag">Consumo interno' + (c.company ? ': ' + esc(c.company) : '') + '</span>' : '') + (c.balance_cents ? ' <span class="ad-tag is-red">Saldo ' + eur(c.balance_cents) + '</span>' : '') + (c.tags || []).map(function (k) { return ' ' + tagHtml(k); }).join('') + '<br><span class="ad-meta">' + esc(c.email || '') + (c.phone ? ' · ' + esc(c.phone) : '') + '</span>' + (c.note ? '<br><span class="ad-meta">“' + esc(c.note) + '”</span>' : '') + '</td>' +
           '<td>' + c.visits + '</td><td>' + (c.no_shows ? '<b style="color:var(--red)">' + c.no_shows + '</b>' : '0') + '</td><td class="nowrap">' + eur(Number(c.spend_cents || 0)) + (c.visits && Number(c.spend_cents) ? '<br><span class="ad-meta">' + eur(Math.round(Number(c.spend_cents) / c.visits)) + ' / visita</span>' : '') + '</td>' +
           '<td class="nowrap">' + (c.last_visit ? esc(fmtShort(c.last_visit)) : '—') + '</td><td>' + c.upcoming + '</td><td>' + (c.event_visits || 0) + (Number(c.tickets_cents) ? '<br><span class="ad-meta">' + eur(Number(c.tickets_cents)) + '</span>' : '') + '</td>' +
           '<td><button class="ad-btn is-small is-ghost" data-crm="' + esc(c.customer_key) + '">Ficha</button></td></tr>';
       }).join('') + '</tbody></table></div>' + (rows.length ? '' : '<p class="ad-empty">Todavía no hay clientes con reservas.</p>');
+  }
+  var APP_ALLERGENS = ['Gluten', 'Crustáceos', 'Huevo', 'Pescado', 'Cacahuete', 'Soja', 'Leche', 'Frutos de cáscara', 'Apio', 'Mostaza', 'Sésamo', 'Sulfitos', 'Altramuces', 'Moluscos'];
+  var APP_DIETS = { vegetariana: 'Vegetariana', vegana: 'Vegana', pescetariana: 'Pescetariana', sin_gluten: 'Sin gluten', sin_lactosa: 'Sin lactosa', keto: 'Keto' };
+  var APP_GENDER = { masculino: 'Masculino', femenino: 'Femenino', otro: 'Otro', no_decir: 'Prefiere no decirlo' };
+  var APP_HEARD = { instagram: 'Instagram', google: 'Google', amigo: 'Un amigo', puerta: 'Pasaba por la puerta', evento: 'Un evento de ROCE', otro: 'Otro' };
+  var APP_ST = { pending_payment: 'Sin pagar', paid: 'Pagado', preparing: 'En preparación', ready: 'Listo', served: 'Servido', cancelled: 'Anulado' };
+  // Ficha del cliente de la app (perfil + pedidos): lo que alimenta el CRM de forma automática.
+  function appBlock(c) {
+    if (!c.app_user && !c.app_orders) return '';
+    var al = (c.allergies || []).map(function (n) { return n + ' ' + APP_ALLERGENS[n - 1]; });
+    var ln = function (k, v) { return v ? '<p class="ad-meta"><b>' + k + ':</b> ' + esc(v) + '</p>' : ''; };
+    return '<div class="ad-field"><span>Cliente de la app</span>' +
+      (c.app_user ? ln('Cumpleaños', c.birthday ? new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(c.birthday + 'T12:00:00')) : '') + ln('Género', APP_GENDER[c.gender] || '') + ln('Código postal', c.postal_code) +
+        ln('Dieta', APP_DIETS[c.diet] || c.diet) + (al.length ? '<p class="ad-meta"><b>Alergias:</b> <b style="color:var(--red)">' + esc(al.join(', ')) + '</b></p>' : '') +
+        ln('Comunicaciones', 'email ' + (c.marketing_optin ? 'sí' : 'no') + ' · WhatsApp ' + (c.marketing_whatsapp ? 'sí' : 'no')) + ln('Nos conoció por', APP_HEARD[c.heard_from] || c.heard_from) : '<p class="ad-meta">Ha pedido por la app sin perfil completo.</p>') +
+      ln('Pedidos en la app', (c.app_orders || 0) + ' · ' + eur(Number(c.app_spend_cents || 0)) + (c.app_last ? ' · último ' + fmtShort(c.app_last) : '')) + '</div>';
+  }
+  function appOrdersHtml(rows) {
+    if (!rows.length) return '<p class="ad-meta">Esta visita no tiene pedidos de la app.</p>';
+    var tot = rows.reduce(function (n, o) { return n + (o.payment_status === 'paid' ? o.total_cents : 0); }, 0);
+    return rows.map(function (o) {
+      var items = (o.app_order_items || []).map(function (l) { return l.qty + '× ' + esc(l.name) + (l.variant ? ' (' + esc(l.variant) + ')' : ''); }).join(', ');
+      return '<p><b>' + esc(o.ref) + '</b> · ' + eur(o.total_cents) + ' · ' + esc(APP_ST[o.status] || o.status) + (o.paid_at ? ' · ' + esc(new Intl.DateTimeFormat('es-ES', { timeZone: TZ, hour: '2-digit', minute: '2-digit' }).format(new Date(o.paid_at))) : '') + '<br><span class="ad-meta">' + items + '</span></p>';
+    }).join('') + '<p class="ad-meta"><b>Cobrado por la app en esta visita: ' + eur(tot) + '</b></p>';
   }
   function fmtShort(iso) { return new Intl.DateTimeFormat('es-ES', { timeZone: TZ, day: '2-digit', month: '2-digit', year: '2-digit' }).format(new Date(iso)); }
   root.addEventListener('input', function (e) { if (e.target.id === 'crmQ') { S.crmQ = e.target.value; var pos = e.target.selectionStart; render(); var el = document.getElementById('crmQ'); if (el) { el.focus(); el.setSelectionRange(pos, pos); } } });
@@ -1116,7 +1146,7 @@
     var c = S.crm.filter(function (x) { return x.customer_key === f.dataset.crm; })[0]; if (!c) return;
     modal('<h2>' + esc(c.name || 'Cliente') + '</h2><p class="ad-meta">' + esc(c.email || '') + (c.phone ? ' · ' + esc(c.phone) : '') + '</p>' +
       '<div class="mt-crmstats"><div><b>' + c.visits + '</b><span>visitas</span></div><div><b>' + c.no_shows + '</b><span>no shows</span></div><div><b>' + c.cancellations + '</b><span>anulaciones</span></div><div><b>' + eur(Number(c.spend_cents || 0)) + '</b><span>gasto</span></div></div>' +
-      '<p class="ad-msg is-error" id="cuMsg" hidden></p>' +
+      appBlock(c) + '<p class="ad-msg is-error" id="cuMsg" hidden></p>' +
       '<div class="mt-two"><label class="ad-field"><span>Tipo de cliente</span><select id="cuType">' + Object.keys(CT).map(function (k) { return '<option value="' + k + '"' + (c.customer_type === k ? ' selected' : '') + '>' + esc(CT[k]) + '</option>'; }).join('') + '</select></label>' +
       '<label class="ad-field"><span>Empresa / grupo</span><input type="text" id="cuCompany" maxlength="80" value="' + esc(c.company || '') + '"></label></div>' +
       '<div class="mt-two"><label class="ad-field"><span>CIF (para facturar)</span><input type="text" id="cuTax" maxlength="20" value="' + esc(c.tax_id || '') + '"></label>' +
