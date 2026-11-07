@@ -784,12 +784,12 @@
   // ─── Casi en vivo: la vista del día se refresca sola cada pocos segundos ─────────
   // Solo pide las reservas y los bloqueos (ligero). No toca la pantalla si no ha cambiado nada, ni si estás editando
   // (plano, ventana abierta, escribiendo en un campo, arrastrando) ni si la pestaña no se está viendo.
-  var LIVE_MS = 6000, live = { busy: false, last: 0, ok: false };
+  var LIVE_MS = 6000, live = { busy: false, last: 0, ok: false, pending: false };
   function liveBadge() {
     var b = document.getElementById('mtLive');
     if (!b) { b = document.createElement('div'); b.id = 'mtLive'; b.setAttribute('role', 'status'); b.style.cssText = 'position:fixed;right:0.8rem;bottom:0.8rem;z-index:20;padding:0.25rem 0.6rem;border-radius:999px;background:#0a0a0a;color:#fff;font:600 0.68rem/1.2 inherit;letter-spacing:0.04em;opacity:0.85;pointer-events:none'; root.appendChild(b); }
     var t = live.last ? new Intl.DateTimeFormat('es-ES', { timeZone: TZ, hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23' }).format(new Date(live.last)) : '';
-    b.innerHTML = '<span style="color:' + (live.ok ? '#3ddc84' : '#ff6b5e') + '">●</span> ' + (live.ok ? 'En vivo · ' + t : 'Sin conexión · reintentando');
+    b.innerHTML = '<span style="color:' + (live.ok ? '#3ddc84' : '#ff6b5e') + '">●</span> ' + (live.ok ? (rt.joined ? 'En vivo · al instante' : 'En vivo · ' + t) : 'Sin conexión · reintentando');
   }
   function liveBlocked() {
     if (document.hidden || S.view !== 'day' || S.busy || S.edit || !root.offsetParent) return true;
@@ -801,7 +801,7 @@
   function liveRefresh(force) {
     var bd = document.getElementById('mtLive'); if (bd) bd.style.display = S.view === 'day' ? '' : 'none';
     if (live.busy || (!force && liveBlocked())) return;
-    live.busy = true;
+    live.busy = true; live.pending = false;
     var day = S.date, from = A.madridToISO(day + 'T05:00'), to = A.madridToISO(addDays(day, 1) + 'T05:00');
     Promise.all([
       api('table_bookings?select=*,table_booking_tables(table_id)&starts_at=gte.' + encodeURIComponent(from) + '&starts_at=lt.' + encodeURIComponent(to) + '&order=starts_at'),
@@ -816,7 +816,41 @@
       } else if (S.appDayOpen) loadAppDay();
     }).catch(function () { live.ok = false; }).then(function () { live.busy = false; liveBadge(); });
   }
-  setInterval(function () { liveRefresh(false); }, LIVE_MS);
+  // Canal de tiempo real de Supabase (websocket): avisa al instante de cualquier cambio en reservas, bloqueos, mesas de una reserva y pedidos.
+  // Respeta los permisos: solo llegan los cambios que el usuario ya puede ver. Si se corta, se reconecta solo y mientras tanto sigue el refresco periódico.
+  var rt = { ws: null, joined: false, hb: null, ref: 0, tok: '', backoff: 0, next: 0, t: null };
+  var RT_TABLES = ['table_bookings', 'table_booking_tables', 'dining_blocks', 'app_orders'];
+  function rtSend(topic, event, payload) { try { rt.ws.send(JSON.stringify({ topic: topic, event: event, payload: payload, ref: String(++rt.ref) })); } catch (e) { /* se reconecta */ } }
+  function rtDrop() {
+    clearInterval(rt.hb);
+    if (rt.ws) { var w = rt.ws; rt.ws = null; w.onclose = null; w.onerror = null; try { w.close(); } catch (e) { /* ya cerrado */ } }
+    rt.joined = false; rt.backoff = Math.min(60000, (rt.backoff || 2000) * 2); rt.next = Date.now() + rt.backoff; liveBadge();
+  }
+  function rtConnect() {
+    var s = A.session(); if (!s || !s.access_token || rt.ws || Date.now() < rt.next) return;
+    var ws; try { ws = new WebSocket(A.cfg.url.replace(/^http/, 'ws') + '/realtime/v1/websocket?apikey=' + encodeURIComponent(A.cfg.anonKey) + '&vsn=1.0.0'); } catch (e) { return; }
+    rt.ws = ws; rt.joined = false; rt.tok = s.access_token;
+    ws.onopen = function () {
+      rtSend('realtime:rc-live', 'phx_join', { config: { broadcast: { ack: false, self: false }, presence: { key: '' }, postgres_changes: RT_TABLES.map(function (t) { return { event: '*', schema: 'public', table: t }; }), private: false }, access_token: rt.tok });
+      rt.hb = setInterval(function () {
+        rtSend('phoenix', 'heartbeat', {});
+        var s2 = A.session(); if (s2 && s2.access_token && s2.access_token !== rt.tok) { rt.tok = s2.access_token; rtSend('realtime:rc-live', 'access_token', { access_token: rt.tok }); }
+      }, 25000);
+    };
+    ws.onmessage = function (m) {
+      var d; try { d = JSON.parse(m.data); } catch (e) { return; }
+      if (d.event === 'phx_reply' && d.topic === 'realtime:rc-live') {
+        if (d.payload && d.payload.status === 'ok') { rt.joined = true; rt.backoff = 0; live.pending = true; liveBadge(); }
+        else rtDrop();
+      } else if (d.event === 'postgres_changes') {
+        live.pending = true; clearTimeout(rt.t); rt.t = setTimeout(function () { liveRefresh(false); }, 250);
+      } else if (d.event === 'phx_close' || d.event === 'phx_error') rtDrop();
+    };
+    ws.onclose = rtDrop; ws.onerror = function () { try { ws.close(); } catch (e) { /* ya cerrado */ } };
+  }
+  // Cada 6 s: reconecta si hace falta y refresca si hay algo pendiente, si no hay canal, o como seguro cada minuto.
+  setInterval(function () { rtConnect(); if (live.pending || !rt.joined || Date.now() - live.last > 60000) liveRefresh(false); }, LIVE_MS);
+  rtConnect();
   document.addEventListener('visibilitychange', function () { if (!document.hidden) liveRefresh(false); });
   window.addEventListener('focus', function () { liveRefresh(false); });
   function done(msg) { return loadDay().then(function () { render(); if (msg) flash(msg, 'ok'); }); }
