@@ -254,6 +254,31 @@
       [['day', 'Día', 'tables'], ['wait', 'Lista de espera', 'tables_wait'], ['crm', 'Clientes', 'tables_crm'], ['accounts', 'Cuentas empresa', 'tables_accounts'], ['stats', 'Estadísticas', 'tables_stats'], ['blocks', 'Bloqueos', 'tables_blocks'], ['config', 'Configuración', 'tables_config']].filter(function (v) { return can(v[2]); }).map(function (v) { return '<button type="button" class="ck-chip" data-view="' + v[0] + '" aria-pressed="' + (S.view === v[0]) + '">' + v[1] + '</button>'; }).join('') +
       '</div><div id="mtBody"></div>';
   }
+  // Tamaño de cada mesa: el de su forma × un factor de ancho y de alto (guardado en plan_ctx._tsize).
+  function tscale(id) { var m = (S.edit && S.edit.tsize && S.edit.tsize[id]) || (S.planCtx && S.planCtx._tsize && S.planCtx._tsize[id]); return { w: m && m.w > 0 ? m.w : 1, h: m && m.h > 0 ? m.h : 1 }; }
+  function tsize(t) { var b = SHAPE[t.shape] || SHAPE.square, k = tscale(t.id); return [b[0] * k.w, b[1] * k.h]; }
+  // Las mesas nuevas (sin posición en el plano) se colocan solas en una fila bajo las demás y se guardan.
+  function placeLoose() {
+    var PW = 1660, PH = 1175;
+    S.zones.forEach(function (z) {
+      var loose = S.tables.filter(function (t) { return t.zone_id === z.id && t.pos_x == null; });
+      if (!loose.length) return;
+      var placed = S.tables.filter(function (t) { return t.zone_id === z.id && t.pos_x != null; });
+      var left = 12, bottom = 8;   // % del plano
+      if (placed.length) {
+        left = Math.min.apply(null, placed.map(function (t) { return t.pos_x - tsize(t)[0] / 2; }));
+        bottom = Math.max.apply(null, placed.map(function (t) { return t.pos_y + tsize(t)[1] * PW / PH / 2; }));
+      }
+      var x = left, rowTop = bottom + 1.5, rowH = 0;
+      loose.forEach(function (t) {
+        var sz = tsize(t), w = sz[0], h = sz[1] * PW / PH;
+        if (x + w > 96 && x > left) { x = left; rowTop += rowH + 1.5; rowH = 0; }
+        t.pos_x = Math.round((x + w / 2) * 100) / 100; t.pos_y = Math.min(97, Math.round((rowTop + h / 2) * 100) / 100); t.rot = t.rot || 0;
+        x += w + 1.2; rowH = Math.max(rowH, h);
+        if (can('tables_config') && !t._placed) { t._placed = true; api('dining_tables?id=eq.' + t.id, { method: 'PATCH', body: { pos_x: t.pos_x, pos_y: t.pos_y }, prefer: 'return=minimal' }).catch(function () { /* se recoloca al recargar */ }); }
+      });
+    });
+  }
   // ─── Editar el plano: mover y girar mesas ─────────────────────────
   function tcur(id) { var t = tableById(id), c = S.edit && S.edit.ch[id]; return { pos_x: c ? c.pos_x : t.pos_x, pos_y: c ? c.pos_y : t.pos_y, rot: c && c.rot != null ? c.rot : (t.rot || 0) }; }
   function setCh(id, patch) { S.edit.ch[id] = Object.assign(tcur(id), patch); }
@@ -265,10 +290,15 @@
     if (S.mode !== 'map' || !can('tables_config')) return '';
     if (!E) return '<div class="mt-edit"><button type="button" class="ad-btn is-small is-ghost" id="mtEdit">Editar plano</button></div>';
     var sel = E.sel && tableById(E.sel), n = changedIds().length + (E.ctxDirty ? 1 : 0), r = sel ? Math.round(tcur(E.sel).rot) : 0, dis = sel ? '' : ' disabled';
-    return '<div class="mt-edit is-on"><p class="ad-meta">Arrastra las mesas para moverlas. Toca una para girarla. Toca el nombre de una barra, zona o columna para moverla, cambiarle el tamaño o borrarla. Los cambios no se guardan hasta que pulses «Guardar plano».</p>' +
+    return '<div class="mt-edit is-on"><p class="ad-meta">Arrastra las mesas para moverlas. Toca una para girarla o cambiarle el tamaño. Toca el nombre de una barra, zona o columna para moverla, cambiarle el tamaño o borrarla. Los cambios no se guardan hasta que pulses «Guardar plano».</p>' +
       '<div class="mt-edit-row"><b class="mt-edit-sel">' + (sel ? 'Mesa ' + esc(sel.name) + ' · ' + r + '°' : 'Ninguna mesa seleccionada') + '</b>' +
       '<button type="button" class="ad-btn is-small is-ghost" data-rot="-15"' + dis + '>⟲ 15°</button><button type="button" class="ad-btn is-small is-ghost" data-rot="15"' + dis + '>⟳ 15°</button>' +
       '<button type="button" class="ad-btn is-small is-ghost" data-rot="90"' + dis + '>Girar 90°</button><button type="button" class="ad-btn is-small is-ghost" data-rot="0"' + dis + '>Recta</button></div>' +
+      '<div class="mt-edit-row"><b class="mt-edit-sel">Tamaño' + (sel ? ' · ' + Math.round(tscale(E.sel).w * 100) + '% × ' + Math.round(tscale(E.sel).h * 100) + '%' : '') + '</b>' +
+      '<button type="button" class="ad-btn is-small is-ghost" data-tsz="w-"' + dis + '>Ancho −</button><button type="button" class="ad-btn is-small is-ghost" data-tsz="w+"' + dis + '>Ancho +</button>' +
+      '<button type="button" class="ad-btn is-small is-ghost" data-tsz="h-"' + dis + '>Alto −</button><button type="button" class="ad-btn is-small is-ghost" data-tsz="h+"' + dis + '>Alto +</button>' +
+      '<button type="button" class="ad-btn is-small is-ghost" data-tsz="all-"' + dis + '>Más pequeña</button><button type="button" class="ad-btn is-small is-ghost" data-tsz="all+"' + dis + '>Más grande</button>' +
+      '<button type="button" class="ad-btn is-small is-ghost" data-tsz="0"' + dis + '>Tamaño original</button></div>' +
       ctxBar(E) + '<div class="mt-edit-row"><button type="button" class="ad-btn" id="mtEditSave">Guardar plano' + (n ? ' (' + n + ' cambio' + (n === 1 ? '' : 's') + ')' : '') + '</button><button type="button" class="ad-btn is-ghost" id="mtEditCancel">' + (n ? 'Descartar cambios' : 'Salir') + '</button></div></div>';
   }
   function ctxBar(E) {
@@ -291,6 +321,7 @@
     var val = null;
     if (S.edit.ctxDirty) {
       val = Object.assign({}, S.planCtx || {});
+      if (S.edit.tsize) { val._tsize = Object.assign({}, val._tsize || {}); Object.keys(S.edit.tsize).forEach(function (id) { var k = S.edit.tsize[id]; if (k.w === 1 && k.h === 1) delete val._tsize[id]; else val._tsize[id] = { w: k.w, h: k.h }; }); }
       Object.keys(S.edit.ctx || {}).forEach(function (z) { val[z] = S.edit.ctx[z].map(function (c) { var o = {}; Object.keys(c).forEach(function (k) { o[k] = typeof c[k] === 'number' ? Math.round(c[k] * 10) / 10 : c[k]; }); return o; }); });
       jobs.push(api('dining_settings?on_conflict=key', { method: 'POST', body: { key: 'plan_ctx', value: val }, prefer: 'resolution=merge-duplicates,return=minimal' }));
     }
@@ -504,9 +535,10 @@
     var zones = S.zones.filter(function (z) { return S.tables.some(function (t) { return t.zone_id === z.id; }); });
     // El plano se recorta a donde hay mesas (con un margen) para que se vean grandes.
     var PW = 1660, PH = 1175, PAD = ctxList(S.zone).length ? 110 : 45;
+    placeLoose();
     var zt = S.tables.filter(function (t) { return t.zone_id === S.zone && t.pos_x != null; });
     var E = S.edit && S.mode === 'map' ? S.edit : null;   // modo "Editar plano"
-    var boxes = zt.map(function (t) { var sz = SHAPE[t.shape] || SHAPE.square, c = E && E.ch[t.id], px = c ? c.pos_x : t.pos_x, py = c ? c.pos_y : t.pos_y; return { t: t, cx: px / 100 * PW, cy: py / 100 * PH, w: sz[0] / 100 * PW, h: sz[1] / 100 * PW, r: c && c.rot != null ? c.rot : (t.rot || 0) }; });
+    var boxes = zt.map(function (t) { var sz = tsize(t), c = E && E.ch[t.id], px = c ? c.pos_x : t.pos_x, py = c ? c.pos_y : t.pos_y; return { t: t, cx: px / 100 * PW, cy: py / 100 * PH, w: sz[0] / 100 * PW, h: sz[1] / 100 * PW, r: c && c.rot != null ? c.rot : (t.rot || 0) }; });
     var minx = Math.min.apply(null, boxes.map(function (b) { return b.cx - b.w / 2; })), maxx = Math.max.apply(null, boxes.map(function (b) { return b.cx + b.w / 2; }));
     var miny = Math.min.apply(null, boxes.map(function (b) { return b.cy - b.h / 2; })), maxy = Math.max.apply(null, boxes.map(function (b) { return b.cy + b.h / 2; }));
     if (!boxes.length) { minx = 0; maxx = PW; miny = 0; maxy = PH; }
@@ -718,6 +750,14 @@
     if (t.id === 'mtEdit') { S.edit = { ch: {}, sel: '', boxes: {} }; S.join = false; S.sel = []; return void render(); }
     if (t.id === 'mtEditCancel') { S.edit = null; return void render(); }
     if (t.id === 'mtEditSave') return void saveEdit(t);
+    if (t.dataset.tsz != null && S.edit && S.edit.sel) {
+      var k0 = tscale(S.edit.sel), k1 = { w: k0.w, h: k0.h }, a0 = t.dataset.tsz, st = 0.1, cl = function (v) { return Math.min(4, Math.max(0.3, Math.round(v * 100) / 100)); };
+      if (a0 === '0') { k1 = { w: 1, h: 1 }; }
+      else if (a0 === 'w+') k1.w = cl(k0.w + st); else if (a0 === 'w-') k1.w = cl(k0.w - st);
+      else if (a0 === 'h+') k1.h = cl(k0.h + st); else if (a0 === 'h-') k1.h = cl(k0.h - st);
+      else if (a0 === 'all+') { k1.w = cl(k0.w + st); k1.h = cl(k0.h + st); } else if (a0 === 'all-') { k1.w = cl(k0.w - st); k1.h = cl(k0.h - st); }
+      S.edit.tsize = S.edit.tsize || {}; S.edit.tsize[S.edit.sel] = k1; S.edit.ctxDirty = true; return void render();
+    }
     if (t.dataset.rot != null && S.edit && S.edit.sel) { var cr = tcur(S.edit.sel).rot, dd = +t.dataset.rot, nr = t.dataset.rot === '0' ? 0 : (((cr + dd) % 360) + 360) % 360; setCh(S.edit.sel, { rot: nr }); return void render(); }
     if (t.id === 'mtNew') return void openNew({});
     if (t.id === 'mtPrint') return void printDay();
