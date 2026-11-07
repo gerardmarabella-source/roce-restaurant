@@ -334,6 +334,14 @@
   @keyframes neonFlick { 0%, 17%, 19%, 22%, 62%, 64%, 66%, 100% { opacity: 1; } 18%, 63% { opacity: 0.35; } 20% { opacity: 0.7; } 65% { opacity: 0.5; } }
   @keyframes ledFlick { 0%, 11%, 14%, 16%, 48%, 51%, 54%, 80%, 83%, 100% { opacity: 1; } 12% { opacity: 0.8; } 15% { opacity: 0.88; } 49% { opacity: 0.78; } 52.5% { opacity: 0.9; } 81.5% { opacity: 0.82; } }
   @media (prefers-reduced-motion: reduce) { .home-square-event[data-env="night"], .home-square-event[data-env="night"] .he-unit strong, .home-square-event[data-env="night"] .he-unit small, .home-square-event[data-env="night"].is-live::before, .home-square-event .he-live::before { animation: none !important; } }
+  /* Neón más suave en móvil (en ordenador se queda con todo el brillo). */
+  @media (max-width: 700px) {
+    .home-square-event[data-env="night"] { box-shadow: 0 0 2px var(--core), 0 0 5px rgba(255, 42, 31, 0.7), inset 0 0 8px rgba(255, 42, 31, 0.4), inset 0 0 18px rgba(255, 42, 31, 0.15); }
+    .home-square-event[data-env="night"]::before { box-shadow: 0 0 10px rgba(255, 42, 31, 0.65), 0 0 22px rgba(255, 42, 31, 0.3), 0 0 36px rgba(255, 42, 31, 0.12); }
+    .home-square-event[data-env="night"] .he-unit strong, .home-square-event[data-env="night"] .he-unit small { text-shadow: 0 0 1px var(--core), 0 0 5px rgba(255, 42, 31, 0.8), 0 0 10px rgba(255, 42, 31, 0.4); }
+    .home-square-event[data-env="night"] .he-live { box-shadow: 0 0 4px rgba(255, 31, 31, 0.6), 0 0 9px rgba(255, 31, 31, 0.3); }
+    .home-square-event[data-env="night"] .he-unit::after { box-shadow: 0 0 2px var(--core), 0 0 5px rgba(255, 42, 31, 0.8); }
+  }
   
   .home-foot {
     flex-shrink: 0;
