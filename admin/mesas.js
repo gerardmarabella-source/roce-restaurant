@@ -311,6 +311,7 @@
     return h + '<button type="button" class="ad-btn is-small is-danger" data-cact="del">Eliminar</button></div>';
   }
   function saveEdit(btn) {
+    if (!can('tables_config')) { S.edit = null; return render(); }
     var ids = changedIds(); if (!ids.length && !S.edit.ctxDirty) { S.edit = null; return render(); }
     btn.disabled = true;
     var jobs = ids.map(function (id) {
@@ -332,7 +333,7 @@
   // Arrastrar una mesa (solo en modo edición)
   var tdrag = null;
   root.addEventListener('pointerdown', function (e) {
-    if (!S.edit) return;
+    if (!S.edit || !can('tables_config')) return;
     var tb = e.target.closest && e.target.closest('.mt-t'), mp = root.querySelector('.mt-map'); if (!tb || !mp) return;
     var r = mp.getBoundingClientRect(), L = parseFloat(tb.style.left), T = parseFloat(tb.style.top);
     tdrag = { id: tb.dataset.table, el: tb, pid: e.pointerId, r: r, gx: (e.clientX - r.left) / r.width * 100 - L, gy: (e.clientY - r.top) / r.height * 100 - T, moved: false, sx: e.clientX, sy: e.clientY, l: L, t: T };
@@ -747,7 +748,7 @@
     if (t.id === 'mtJoinClear') { S.sel = []; return void render(); }
     if (t.id === 'mtJoinGo') { var picked = S.sel.map(tableById).filter(Boolean), jt = S.joinTime; S.join = false; S.sel = []; S.joinTime = ''; render(); return void openNew({ tables: picked, time: jt }); }
     if ((t.dataset.cadd || t.dataset.cact) && S.edit) return void ctxAction(t);
-    if (t.id === 'mtEdit') { S.edit = { ch: {}, sel: '', boxes: {} }; S.join = false; S.sel = []; return void render(); }
+    if (t.id === 'mtEdit') { if (!can('tables_config')) return void flash('No tienes permiso para editar el plano.', 'error'); S.edit = { ch: {}, sel: '', boxes: {} }; S.join = false; S.sel = []; return void render(); }
     if (t.id === 'mtEditCancel') { S.edit = null; return void render(); }
     if (t.id === 'mtEditSave') return void saveEdit(t);
     if (t.dataset.tsz != null && S.edit && S.edit.sel) {
