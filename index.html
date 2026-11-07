@@ -289,7 +289,7 @@
     text-shadow: 0 0 2px var(--core), 0 0 7px var(--neon), 0 0 14px var(--neon), 0 0 28px rgba(255, 42, 31, 0.9), 0 0 48px rgba(255, 42, 31, 0.5);
     animation: neonFlick 7s linear 1.4s infinite;
   }
-  .home-square-event .he-unit small { color: var(--core); text-shadow: 0 0 3px var(--neon), 0 0 9px var(--neon); }
+  .home-square-event .he-unit small { color: var(--core); opacity: 1; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700; text-shadow: 0 0 3px var(--neon), 0 0 9px var(--neon); }
   .home-square-event .home-square-arrow { color: var(--core); text-shadow: 0 0 3px var(--neon), 0 0 10px var(--neon), 0 0 22px var(--neon);  display: flex; align-items: center; align-self: stretch; line-height: 1; padding-bottom: 0.12em;}
   /* Encendido: el tubo arranca a trompicones. */
   @keyframes neonOn { 0% { opacity: 0.15; } 8% { opacity: 1; } 12% { opacity: 0.2; } 22% { opacity: 0.9; } 26% { opacity: 0.25; } 40% { opacity: 1; } 46% { opacity: 0.5; } 52%, 100% { opacity: 1; } }
@@ -302,11 +302,13 @@
     mask-image: linear-gradient(90deg, transparent 0, #000 calc(var(--evp) + 0.6rem), #000 calc(100% - 1.4rem), transparent 100%); }
   .home-square-event .he-text .mq { margin-left: var(--evp); }
   .home-square-event .mq { display: inline-block; white-space: nowrap; }
-  .home-square-event .he-unit { display: inline-block; padding-right: 2.5rem; }
-  .home-square-event .he-unit:last-child { padding-right: 0; }
-  .home-square-event.mq-on .he-unit:last-child { padding-right: 2.5rem; }
+  .home-square-event .he-unit { display: inline-block; padding-right: 0; }
+  /* Separador entre vueltas: un punto de neón. */
+  .home-square-event .he-unit::after { content: ''; display: inline-block; width: 0.36em; height: 0.36em; margin: 0 1.5rem; border-radius: 50%; background: var(--core); vertical-align: 0.1em; box-shadow: 0 0 3px var(--core), 0 0 8px var(--neon), 0 0 16px var(--neon); font-size: 1rem; }
+  .home-square-event .he-unit:last-child::after { display: none; }
+  .home-square-event.mq-on .he-unit:last-child::after { display: inline-block; }
   .home-square-event .he-unit strong, .home-square-event .he-unit small { display: inline; margin: 0; }
-  .home-square-event .he-unit small { margin-left: 0.8rem; }
+  .home-square-event .he-unit small { margin: 0 0.8rem 0 0; }
   .home-square-event.mq-on .mq { animation: heLoop var(--mq-dur, 10s) linear infinite; }
   /* Con el ratón encima (o con el foco del teclado) el texto se para. */
   .home-square-event.mq-on:hover .mq, .home-square-event.mq-on:focus-visible .mq { animation-play-state: paused; }
@@ -624,7 +626,7 @@
     // Cubo del evento más cercano (o en marcha), de día o de noche: blanco o negro según su ambiente, sin cartel.
     function heMarquee(cube, title, when) {
       var box = cube.querySelector('.he-text'), inner = box.querySelector('.mq');
-      var unit = function () { var u = document.createElement('span'); u.className = 'he-unit'; var st = document.createElement('strong'); st.className = 'home-name'; st.textContent = title; var sm = document.createElement('small'); sm.textContent = when; u.appendChild(st); u.appendChild(sm); return u; };
+      var unit = function () { var u = document.createElement('span'); u.className = 'he-unit'; var st = document.createElement('strong'); st.className = 'home-name'; st.textContent = title; var sm = document.createElement('small'); sm.textContent = when.replace(/,/g, ''); u.appendChild(sm); u.appendChild(st); return u; };
       function measure() {
         cube.classList.remove('mq-on'); inner.style.removeProperty('--mq-cycle'); inner.textContent = ''; inner.appendChild(unit());
         var one = inner.firstChild.offsetWidth;
