@@ -269,21 +269,32 @@
   /* Franja del próximo evento (o el que está en marcha), más baja que los cuadrados: fondo blanco si es de día y negro si es de noche. Sin cartel. */
   .home-square-event { flex-direction: row; align-items: center; justify-content: space-between; gap: 0.7rem; height: var(--ev-h); padding: 0 calc(min(var(--sw), var(--sh)) * 0.09); }
   .home-square-event[hidden] { display: none; }
-  /* Neón rojo: tubo rojo sobre fondo negro, de día y de noche. Brillo en el texto, la flecha y el marco; parpadeo muy suave. */
+  /* Neón rojo retro: letras de tubo (contorno con el centro casi blanco), marco de doble tubo redondeado, resplandor sobre la pared
+     y parpadeo irregular como un neón antiguo. */
   .home-square-event, .home-square-event[data-env="day"], .home-square-event[data-env="night"] {
-    --neon: #ff3b30;
-    background: #0a0a0a; color: #ffe3df;
-    border: 2px solid var(--neon);
-    box-shadow: 0 0 4px rgba(255, 59, 48, 0.9), 0 0 14px rgba(255, 59, 48, 0.55), 0 0 32px rgba(255, 59, 48, 0.3), inset 0 0 10px rgba(255, 59, 48, 0.35);
-    text-shadow: 0 0 1px #fff, 0 0 5px var(--neon), 0 0 10px rgba(255, 59, 48, 0.75);
-    animation: neonOn 0.9s steps(1, end) 1 both, neonHum 6s ease-in-out 1s infinite;
+    --neon: #ff2a1f; --core: #ffe9e5;
+    background: #0b0506; color: var(--core);
+    border: 3px solid var(--core); border-radius: 999px;
+    box-shadow:
+      0 0 3px var(--core), 0 0 8px var(--neon), 0 0 18px var(--neon), 0 0 34px rgba(255, 42, 31, 0.6), 0 0 60px rgba(255, 42, 31, 0.28),
+      inset 0 0 0 5px #0b0506, inset 0 0 0 7px rgba(255, 42, 31, 0.9), inset 0 0 14px rgba(255, 42, 31, 0.55), inset 0 0 30px rgba(255, 42, 31, 0.25);
+    padding-left: calc(min(var(--sw), var(--sh)) * 0.09 + 0.4rem); padding-right: calc(min(var(--sw), var(--sh)) * 0.09 + 0.4rem);
+    animation: neonOn 1.1s steps(1, end) 1 both;
   }
-  html[data-mode="night"] .home-square-event[data-env="night"] { border-color: var(--neon); }
-  .home-square-event .home-square-arrow { text-shadow: inherit; }
-  /* Encendido como un tubo que arranca, y después un leve vaivén de intensidad. */
-  @keyframes neonOn { 0% { opacity: 0.25; } 12% { opacity: 1; } 18% { opacity: 0.3; } 30% { opacity: 1; } 36% { opacity: 0.55; } 44%, 100% { opacity: 1; } }
-  @keyframes neonHum { 0%, 100% { filter: brightness(1); } 50% { filter: brightness(1.12); } 53% { filter: brightness(0.9); } 56% { filter: brightness(1.12); } }
-  @media (prefers-reduced-motion: reduce) { .home-square-event, .home-square-event[data-env="day"], .home-square-event[data-env="night"] { animation: none; } }
+  html[data-mode="night"] .home-square-event[data-env="night"] { border-color: var(--core); }
+  /* Letras: solo el contorno del tubo, claro por dentro y rojo por fuera. */
+  .home-square-event .he-unit strong {
+    color: rgba(255, 42, 31, 0.12); -webkit-text-stroke: 1.4px var(--core); paint-order: stroke fill;
+    text-shadow: 0 0 2px var(--core), 0 0 7px var(--neon), 0 0 14px var(--neon), 0 0 28px rgba(255, 42, 31, 0.9), 0 0 48px rgba(255, 42, 31, 0.5);
+    animation: neonFlick 7s linear 1.4s infinite;
+  }
+  .home-square-event .he-unit small { color: var(--core); text-shadow: 0 0 3px var(--neon), 0 0 9px var(--neon); }
+  .home-square-event .home-square-arrow { color: var(--core); text-shadow: 0 0 3px var(--neon), 0 0 10px var(--neon), 0 0 22px var(--neon); }
+  /* Encendido: el tubo arranca a trompicones. */
+  @keyframes neonOn { 0% { opacity: 0.15; } 8% { opacity: 1; } 12% { opacity: 0.2; } 22% { opacity: 0.9; } 26% { opacity: 0.25; } 40% { opacity: 1; } 46% { opacity: 0.5; } 52%, 100% { opacity: 1; } }
+  /* Parpadeo irregular de las letras (casi siempre encendidas, de vez en cuando fallan un instante). */
+  @keyframes neonFlick { 0%, 17%, 19%, 22%, 62%, 64%, 66%, 100% { opacity: 1; } 18%, 63% { opacity: 0.35; } 20% { opacity: 0.7; } 65% { opacity: 0.5; } }
+  @media (prefers-reduced-motion: reduce) { .home-square-event, .home-square-event .he-unit strong { animation: none !important; } }
   /* Título y fecha en una sola línea; si no caben, giran juntos en bucle (la flecha se queda quieta). */
   .home-square-event .he-text { flex: 1; min-width: 0; overflow: hidden; white-space: nowrap; padding: 0.35rem 0.5rem; margin: -0.35rem -0.5rem; }
   .home-square-event .mq { display: inline-block; white-space: nowrap; }
