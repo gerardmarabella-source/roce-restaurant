@@ -279,7 +279,7 @@
       0 0 3px var(--core), 0 0 8px var(--neon), 0 0 18px var(--neon), 0 0 34px rgba(255, 42, 31, 0.6), 0 0 60px rgba(255, 42, 31, 0.28),
       inset 0 0 14px rgba(255, 42, 31, 0.55), inset 0 0 30px rgba(255, 42, 31, 0.25);
     --evp: calc(min(var(--sw), var(--sh)) * 0.09 + 0.4rem);
-    padding-left: var(--evp); padding-right: var(--evp); overflow: hidden;
+    padding-left: var(--evp); padding-right: clamp(0.7rem, calc(var(--evp) * 0.5), 1.3rem); overflow: hidden;
     animation: neonOn 1.1s steps(1, end) 1 both;
   }
   html[data-mode="night"] .home-square-event[data-env="night"] { border-color: var(--core); }
@@ -290,7 +290,7 @@
     animation: neonFlick 7s linear 1.4s infinite;
   }
   .home-square-event .he-unit small { color: var(--core); text-shadow: 0 0 3px var(--neon), 0 0 9px var(--neon); }
-  .home-square-event .home-square-arrow { color: var(--core); text-shadow: 0 0 3px var(--neon), 0 0 10px var(--neon), 0 0 22px var(--neon); }
+  .home-square-event .home-square-arrow { color: var(--core); text-shadow: 0 0 3px var(--neon), 0 0 10px var(--neon), 0 0 22px var(--neon);  display: flex; align-items: center; align-self: stretch; line-height: 1; padding-bottom: 0.12em;}
   /* Encendido: el tubo arranca a trompicones. */
   @keyframes neonOn { 0% { opacity: 0.15; } 8% { opacity: 1; } 12% { opacity: 0.2; } 22% { opacity: 0.9; } 26% { opacity: 0.25; } 40% { opacity: 1; } 46% { opacity: 0.5; } 52%, 100% { opacity: 1; } }
   /* Parpadeo irregular de las letras (casi siempre encendidas, de vez en cuando fallan un instante). */
