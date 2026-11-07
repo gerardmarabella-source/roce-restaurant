@@ -3,7 +3,7 @@
 
 :root {
   --black: #0a0a0a; --paper: #f6f3ec; --cream: #ece7dd;
-  --kraft: #a78d5b; --red: #832f2f; --olive: #5b5a32; --gold: #9f7a2e;
+  --kraft: #a78d5b; --red: #832f2f; --olive: #5b5a32; --dark: #262624; --gold: #9f7a2e;
   --display: "Helvetica Neue Web", "Helvetica Neue", Arial, sans-serif;
   --pad: clamp(1.1rem, 4.5vw, 2.4rem);
   --bar: 5.4rem;
