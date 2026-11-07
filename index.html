@@ -308,6 +308,8 @@
   .home-square-event .he-unit strong, .home-square-event .he-unit small { display: inline; margin: 0; }
   .home-square-event .he-unit small { margin-left: 0.8rem; }
   .home-square-event.mq-on .mq { animation: heLoop var(--mq-dur, 10s) linear infinite; }
+  /* Con el ratón encima (o con el foco del teclado) el texto se para. */
+  .home-square-event.mq-on:hover .mq, .home-square-event.mq-on:focus-visible .mq { animation-play-state: paused; }
   @keyframes heLoop { from { transform: translateX(0); } to { transform: translateX(calc(-1 * var(--mq-cycle))); } }
   @media (prefers-reduced-motion: reduce) { .home-square-event.mq-on .mq { animation: none; } }
   
