@@ -68,9 +68,7 @@ img { max-width: 100%; display: block; }
 .cv-paper::after { content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 1; background: linear-gradient(90deg, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0) 1.6rem), linear-gradient(270deg, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0) 1rem); }
 .cv-paper-in { --lpad: calc(var(--pad) + 0.7rem); position: relative; z-index: 2; flex: 1; min-width: 0; padding: 0.4rem 1.5rem 3rem var(--lpad); }
 /* título vertical en el lomo, como en las cartas impresas */
-.cv-spine { position: relative; z-index: 2; flex: 0 0 var(--spine); align-self: stretch; }
-.cv-spine span { position: sticky; top: calc(var(--bar) + 30vh); top: calc(var(--bar) + 30svh); display: block; }
-.cv-spine i { display: block; font-style: normal; writing-mode: vertical-rl; transform: rotate(180deg); font-size: clamp(2.8rem, 12vw, 3.6rem); line-height: 1; letter-spacing: -0.02em; text-transform: uppercase; white-space: nowrap; }
+.cv-spine { position: relative; z-index: 2; flex: 0 0 var(--spine); align-self: stretch; overflow: hidden; }
 /* hoja que se abre / se cierra */
 .cv-paper.flip-away { z-index: 3; animation: cvAway 0.95s cubic-bezier(0.55, 0.05, 0.3, 1) forwards; }
 .cv-paper.flip-in { z-index: 3; animation: cvIn 0.95s cubic-bezier(0.3, 0.05, 0.55, 1) forwards; }
@@ -135,7 +133,6 @@ body.has-filter .is-pending .cv-pend { display: inline; }
   .cv-paper { --spine: 8rem; }
   .cv-paper-in { --lpad: calc(var(--pad) + 1.4rem); padding-bottom: 3rem; padding-right: 3rem; }
   .cv-paper-in > * { max-width: 46rem; }
-  .cv-spine i { font-size: clamp(4.4rem, 8vw, 6.6rem); }
   }
 
 /* ── Pie (el normal de la web) ── */
@@ -284,12 +281,7 @@ body.has-filter .is-pending .cv-pend { display: inline; }
 .cv-gh h2 { font-family: var(--display); font-weight: 700; font-size: clamp(1.15rem, 4.6vw, 1.6rem); line-height: 1.1; letter-spacing: 0.22em; text-transform: uppercase; }
 
 /* título lateral: siempre entero en cualquier alto de pantalla y texto más ancho, pegado a él */
-.cv-paper { --sp: 30vh; --sp: 30svh; }
-.cv-spine span { top: calc(var(--bar) + var(--sp)); }
-.cv-spine i { font-size: min(clamp(2.8rem, 12vw, 3.6rem), calc((100vh - var(--bar) - var(--sp) - 2rem) / var(--len, 4.6))); font-size: min(clamp(2.8rem, 12vw, 3.6rem), calc((100svh - var(--bar) - var(--sp) - 2rem) / var(--len, 4.6))); }
 @media (min-width: 900px) {
-  .cv-paper { --sp: 14vh; --sp: 14svh; }
-  .cv-spine i { font-size: min(clamp(4.4rem, 8vw, 6.6rem), calc((100vh - var(--bar) - var(--sp) - 2rem) / var(--len, 4.6))); font-size: min(clamp(4.4rem, 8vw, 6.6rem), calc((100svh - var(--bar) - var(--sp) - 2rem) / var(--len, 4.6))); }
   .cv-paper-in > * { max-width: none; }
   .cv-paper-in { padding-right: 2.2rem; }
 }
@@ -298,16 +290,13 @@ body.has-filter .is-pending .cv-pend { display: inline; }
 html[data-sheet="cream"] { --sheet: var(--cream); --ink: #0a0a0a; }
 html[data-sheet="dark"] { --sheet: #262624; --ink: var(--cream); }
 .cv-m-sheet { font-size: clamp(1.9rem, 8.2vw, 3.4rem); }
-.cv-spine i { white-space: nowrap; }
 
 /* aviso: seguir bajando = siguiente hoja */
 
 /* título lateral más grande */
 .cv-paper { --spine: 4.8rem; }
-.cv-spine i { font-size: min(clamp(3.4rem, 15vw, 4.6rem), calc((100vh - var(--bar) - var(--sp) - 2rem) / var(--len, 4.6))); font-size: min(clamp(3.4rem, 15vw, 4.6rem), calc((100svh - var(--bar) - var(--sp) - 2rem) / var(--len, 4.6))); }
 @media (min-width: 900px) {
-  .cv-paper { --spine: 11rem; --sp: 8vh; --sp: 8svh; }
-  .cv-spine i { font-size: min(clamp(5.6rem, 10vw, 9rem), calc((100vh - var(--bar) - var(--sp) - 2rem) / var(--len, 4.6))); font-size: min(clamp(5.6rem, 10vw, 9rem), calc((100svh - var(--bar) - var(--sp) - 2rem) / var(--len, 4.6))); }
+  .cv-paper { --spine: 11rem; }
 }
 
 /* ES/EN del menú centrado, pegado a la línea del logo */
@@ -337,7 +326,6 @@ main, .cv-foot { transform: translateY(var(--pull, 0px)); transition: transform 
 @media (prefers-reduced-motion: reduce) { main, .cv-foot { transform: none; transition: none; } }
 
 /* el título lateral no se pega al borde de abajo de la hoja (p. ej. en Bakery, que es corta) */
-.cv-spine { padding-bottom: 3rem; }
 
 /* títulos de grupo (Desayunos, Comidas): mismo gris claro que los ingredientes */
 .cv-gh { opacity: 1; }
@@ -345,8 +333,6 @@ main, .cv-foot { transform: translateY(var(--pull, 0px)); transition: transform 
 .cv-gh span { opacity: 0.62; }
 
 /* título lateral: fijo en pantalla hasta que llega el pie (solo en hojas cortas se deja aire abajo) */
-.cv-spine { padding-bottom: 0; }
-.cv-paper.is-soon .cv-spine { padding-bottom: 3rem; }
 
 /* pie: logo en tamaño normal que crece al tirar hasta el tamaño gigante (entonces cambia de hoja) */
 .cv-foot { padding: 3rem var(--pad) calc(3.5rem + env(safe-area-inset-bottom)); }
@@ -357,7 +343,6 @@ main, .cv-foot { transform: translateY(var(--pull, 0px)); transition: transform 
 /* hoja anterior (arriba): barra blanca fina bajo la cabecera; abajo se queda el logo que crece */
 
 /* título lateral: siempre con sangría sobre el borde de abajo de la hoja; fijo en pantalla y, al llegar el fin de hoja, la acompaña con ese margen */
-.cv-spine, .cv-paper.is-soon .cv-spine { padding-bottom: 3.4rem; }
 
 /* botón Filtros con su icono de líneas */
 .cv-allergy-btn { gap: 0.5rem; text-decoration: none; }
@@ -392,7 +377,6 @@ main { transform: none; will-change: auto; transition: none; }
 /* 3) sin mezcla de color sobre toda la hoja (pesa y hace vibrar al hacer scroll en iOS) */
 .cv-paper::before { mix-blend-mode: normal; opacity: 0.32; }
 /* 4) el título lateral va en su propia capa para que no tiemble */
-.cv-spine span { transform: translate3d(0, 0, 0); -webkit-transform: translate3d(0, 0, 0); backface-visibility: hidden; -webkit-backface-visibility: hidden; }
 /* Filtros: nunca más bajo que esto, aunque Safari calcule mal el alto */
 #cvSheet[open] { min-height: min(30rem, 76vh); min-height: min(30rem, 76dvh); }
 
@@ -417,16 +401,6 @@ main { transform: none; will-change: auto; transition: none; }
 #cvSheet[open] { min-height: min(26rem, 70vh); min-height: min(26rem, 70dvh); }
 
 /* ── Título lateral fijo (no sticky) y tramo de scroll extra al final del pie ── */
-.cv-spine i { display: none !important; }
-.cv-paper.is-end .cv-spine span { position: static; transform: none; }
-.cv-paper.is-end .cv-spine i { display: block !important; position: absolute; left: 0; bottom: 54px; }          /* los de dentro de cada hoja solo reservan la columna */
-:root { --sp: 30vh; --sp: 30svh; }
-.cv-spine-fixed { position: fixed; z-index: 6; top: calc(var(--bar) + var(--sp)); left: 0; width: 4.8rem; pointer-events: none; color: var(--ink); will-change: transform; transform: translate3d(0, 0, 0); }
-.cv-spine-fixed i { display: block; font-style: normal; writing-mode: vertical-rl; transform: rotate(180deg); line-height: 1; letter-spacing: -0.02em; text-transform: uppercase; white-space: nowrap; font-size: min(clamp(3.4rem, 15vw, 4.6rem), calc((100vh - var(--bar) - var(--sp) - 2rem) / var(--len, 4.6))); font-size: min(clamp(3.4rem, 15vw, 4.6rem), calc((100svh - var(--bar) - var(--sp) - 2rem) / var(--len, 4.6))); }
-@media (min-width: 900px) {
-  :root { --sp: 8vh; --sp: 8svh; }
-  .cv-spine-fixed i { font-size: min(clamp(5.6rem, 10vw, 9rem), calc((100vh - var(--bar) - var(--sp) - 2rem) / var(--len, 4.6))); font-size: min(clamp(5.6rem, 10vw, 9rem), calc((100svh - var(--bar) - var(--sp) - 2rem) / var(--len, 4.6))); }
-}
 
 /* ── Sin cambios de hoja automáticos: el pie tiene una leyenda para elegir a qué carta ir ── */
 main { transform: none !important; transition: none !important; }
@@ -437,3 +411,8 @@ main { transform: none !important; transition: none !important; }
 .cv-fn.is-on { color: #fff; }
 .cv-fn:hover, .cv-fn:focus-visible { color: #fff; }
 .cv-foot { padding-bottom: calc(4.5rem + env(safe-area-inset-bottom)); }
+
+/* ── Título lateral repetido de arriba abajo de la hoja (KITCHEN KITCHEN KITCHEN…), dentro de la hoja y con scroll nativo ── */
+.cv-run { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: flex-start; overflow: hidden; }
+.cv-run i { flex: 0 0 auto; display: block; font-style: normal; writing-mode: vertical-rl; transform: rotate(180deg); font-size: clamp(3.4rem, 15vw, 4.6rem); line-height: 1; letter-spacing: -0.02em; text-transform: uppercase; white-space: nowrap; margin-bottom: 0.45em; }
+@media (min-width: 900px) { .cv-run i { font-size: clamp(5.6rem, 10vw, 9rem); } }
