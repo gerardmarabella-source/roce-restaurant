@@ -154,7 +154,7 @@ window.CARTA = {
         }
       ]
     },
-    { id: 'bakery', color: 'red', soon: true, title: { es: 'Bakery', en: 'Bakery' }, desc: { es: 'Bollería, dulces y horno.', en: 'Pastries, sweets and bakery.' }, groups: [] }
+    { id: 'bakery', color: 'dark', soon: true, title: { es: 'Bakery', en: 'Bakery' }, desc: { es: 'Bollería, dulces y horno.', en: 'Pastries, sweets and bakery.' }, groups: [] }
   ]
 };
 
