@@ -781,6 +781,44 @@
         } else flash('No se ha podido devolver: ' + x.message, 'error');
       });
   });
+  // ─── Casi en vivo: la vista del día se refresca sola cada pocos segundos ─────────
+  // Solo pide las reservas y los bloqueos (ligero). No toca la pantalla si no ha cambiado nada, ni si estás editando
+  // (plano, ventana abierta, escribiendo en un campo, arrastrando) ni si la pestaña no se está viendo.
+  var LIVE_MS = 6000, live = { busy: false, last: 0, ok: false };
+  function liveBadge() {
+    var b = document.getElementById('mtLive');
+    if (!b) { b = document.createElement('div'); b.id = 'mtLive'; b.setAttribute('role', 'status'); b.style.cssText = 'position:fixed;right:0.8rem;bottom:0.8rem;z-index:20;padding:0.25rem 0.6rem;border-radius:999px;background:#0a0a0a;color:#fff;font:600 0.68rem/1.2 inherit;letter-spacing:0.04em;opacity:0.85;pointer-events:none'; root.appendChild(b); }
+    var t = live.last ? new Intl.DateTimeFormat('es-ES', { timeZone: TZ, hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23' }).format(new Date(live.last)) : '';
+    b.innerHTML = '<span style="color:' + (live.ok ? '#3ddc84' : '#ff6b5e') + '">●</span> ' + (live.ok ? 'En vivo · ' + t : 'Sin conexión · reintentando');
+  }
+  function liveBlocked() {
+    if (document.hidden || S.view !== 'day' || S.busy || S.edit || !root.offsetParent) return true;
+    if (document.querySelector('.ad-modal')) return true;
+    if (typeof tdrag !== 'undefined' && tdrag) return true;
+    var ae = document.activeElement; if (ae && root.contains(ae) && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName)) return true;
+    return false;
+  }
+  function liveRefresh(force) {
+    var bd = document.getElementById('mtLive'); if (bd) bd.style.display = S.view === 'day' ? '' : 'none';
+    if (live.busy || (!force && liveBlocked())) return;
+    live.busy = true;
+    var day = S.date, from = A.madridToISO(day + 'T05:00'), to = A.madridToISO(addDays(day, 1) + 'T05:00');
+    Promise.all([
+      api('table_bookings?select=*,table_booking_tables(table_id)&starts_at=gte.' + encodeURIComponent(from) + '&starts_at=lt.' + encodeURIComponent(to) + '&order=starts_at'),
+      api('dining_blocks?select=*&starts_at=lt.' + encodeURIComponent(to) + '&ends_at=gt.' + encodeURIComponent(from) + '&order=starts_at')
+    ]).then(function (r) {
+      live.ok = true; live.last = Date.now();
+      if (day !== S.date || liveBlocked()) return;   // cambiaste de día o empezaste a editar mientras llegaba
+      var nb = r[0] || [], nk = r[1] || [];
+      if (JSON.stringify([nb, nk]) !== JSON.stringify([S.bookings, S.blocks])) {
+        var rows = S.appDayRows; S.bookings = nb; S.blocks = nk; render(); S.appDayRows = rows;
+        if (S.appDayOpen) loadAppDay();
+      } else if (S.appDayOpen) loadAppDay();
+    }).catch(function () { live.ok = false; }).then(function () { live.busy = false; liveBadge(); });
+  }
+  setInterval(function () { liveRefresh(false); }, LIVE_MS);
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) liveRefresh(false); });
+  window.addEventListener('focus', function () { liveRefresh(false); });
   function done(msg) { return loadDay().then(function () { render(); if (msg) flash(msg, 'ok'); }); }
 
   root.addEventListener('click', function (e) {
