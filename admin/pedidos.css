@@ -1,0 +1,49 @@
+/* Panel · Pedidos de la app (pantalla de cocina y barra) */
+#tabOrders .po-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.8rem; margin-bottom: 1rem; }
+.po-st { display: flex; gap: 0; border: 1.5px solid var(--fg, #0a0a0a); }
+.po-stbtn { padding: 0.6rem 1.2rem; border: 0; background: transparent; color: inherit; font: inherit; font-size: 0.95rem; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; }
+.po-stbtn + .po-stbtn { border-left: 1.5px solid var(--fg, #0a0a0a); }
+.po-stbtn[aria-pressed="true"] { background: var(--fg, #0a0a0a); color: var(--bg, #f6f3ec); }
+.po-tools { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.po-cols { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; align-items: start; }
+.po-col h4, .po-served h4 { margin: 0 0 0.6rem; padding-bottom: 0.5rem; border-bottom: 2px solid var(--fg, #0a0a0a); font-size: 1.05rem; letter-spacing: 0.12em; text-transform: uppercase; }
+.po-col h4 small, .po-served h4 small { margin-left: 0.4rem; opacity: 0.55; font-size: 0.85rem; }
+.po-empty { opacity: 0.4; padding: 0.6rem 0; }
+.po-card { margin-bottom: 0.9rem; padding: 0.8rem 0.9rem 0.7rem; background: #fff; border: 1.5px solid var(--fg, #0a0a0a); border-top-width: 6px; }
+.po-card.is-slow { border-top-color: #d9902f; }
+.po-card.is-late { border-top-color: #c0392b; }
+.po-card header { display: flex; align-items: baseline; justify-content: space-between; gap: 0.6rem; }
+.po-where { font-size: 1.55rem; font-weight: 700; letter-spacing: 0.02em; text-transform: uppercase; line-height: 1.1; }
+.po-where.is-pick { font-size: 1.15rem; }
+.po-ref { font-size: 0.78rem; letter-spacing: 0.08em; opacity: 0.6; }
+.po-meta { display: flex; flex-wrap: wrap; gap: 0.2rem 0.9rem; margin: 0.25rem 0 0.5rem; font-size: 0.8rem; opacity: 0.7; }
+.po-age { font-weight: 700; opacity: 1; }
+.po-card.is-slow .po-age { color: #b0701a; } .po-card.is-late .po-age { color: #c0392b; }
+.po-warn { margin: 0.2rem 0 0.5rem; padding: 0.45rem 0.6rem; background: #c0392b; color: #fff; font-size: 0.92rem; letter-spacing: 0.02em; text-transform: uppercase; }
+.po-card h5 { margin: 0.5rem 0 0.2rem; font-size: 0.7rem; letter-spacing: 0.16em; text-transform: uppercase; opacity: 0.55; }
+.po-card ul { list-style: none; margin: 0; padding: 0; }
+.po-card li { padding: 0.28rem 0; border-top: 1px solid rgba(10, 10, 10, 0.12); font-size: 1.08rem; line-height: 1.25; }
+.po-card li:first-child { border-top: 0; }
+.po-card li b { display: inline-block; min-width: 2rem; }
+.po-card li em { display: block; margin-left: 2.1rem; font-style: normal; font-size: 0.88rem; opacity: 0.75; }
+.po-card li q { display: block; margin-left: 2.1rem; font-size: 0.9rem; font-weight: 700; quotes: "“" "”"; }
+.po-note { margin: 0.5rem 0 0; padding: 0.4rem 0.55rem; background: #f4e9c8; font-size: 0.9rem; }
+.po-card footer { display: flex; align-items: center; justify-content: space-between; gap: 0.8rem; margin-top: 0.7rem; }
+.po-go { flex: 1; padding: 0.8rem 0.6rem; border: 0; background: var(--fg, #0a0a0a); color: var(--bg, #f6f3ec); font: inherit; font-size: 1.05rem; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; }
+.po-go:disabled { opacity: 0.4; }
+.po-total { font-size: 0.85rem; opacity: 0.6; white-space: nowrap; }
+.po-served { margin-top: 1.4rem; }
+.po-srv { padding: 0.4rem 0; border-bottom: 1px solid rgba(10, 10, 10, 0.15); font-size: 0.9rem; }
+.po-modal { position: fixed; inset: 0; z-index: 90; display: flex; align-items: flex-start; justify-content: center; padding: 1.5rem 1rem; background: rgba(10, 10, 10, 0.6); overflow-y: auto; }
+.po-modal-in { width: min(34rem, 100%); padding: 1.1rem 1.2rem 1.4rem; background: var(--bg, #f6f3ec); border: 2px solid var(--fg, #0a0a0a); }
+.po-modal header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.po-modal h3 { margin: 0; font-size: 1.3rem; letter-spacing: 0.08em; text-transform: uppercase; }
+.po-modal h5 { margin: 1rem 0 0.2rem; font-size: 0.74rem; letter-spacing: 0.16em; text-transform: uppercase; opacity: 0.6; }
+.po-hint { font-size: 0.85rem; opacity: 0.7; }
+.po-menu { list-style: none; margin: 0; padding: 0; }
+.po-menu li { border-top: 1px solid rgba(10, 10, 10, 0.15); }
+.po-menu label { display: flex; align-items: center; gap: 0.7rem; padding: 0.6rem 0; cursor: pointer; }
+.po-menu input { width: 1.25rem; height: 1.25rem; accent-color: #0a0a0a; }
+.po-menu span { flex: 1; }
+.po-menu em { font-style: normal; font-size: 0.75rem; letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.5; }
+@media (max-width: 900px) { .po-cols { grid-template-columns: 1fr; } .po-where { font-size: 1.35rem; } }
