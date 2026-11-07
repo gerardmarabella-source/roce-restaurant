@@ -471,7 +471,7 @@
     var ts = new Date(iso).getTime(), r = { state: 'free', booking: null, block: null };
     S.bookings.forEach(function (b) {
       if (!holds(b) || !(b.table_booking_tables || []).some(function (x) { return x.table_id === t.id; })) return;
-      if (new Date(b.starts_at).getTime() <= ts && ts < new Date(b.ends_at).getTime()) { r.state = b.status === 'seated' ? 'seated' : b.status === 'pending' ? 'pending' : 'booked'; r.booking = b; }
+      if (new Date(b.starts_at).getTime() <= ts && ts < new Date(b.ends_at).getTime()) { r.state = b.status === 'seated' ? (b.bill_at ? 'bill' : 'seated') : b.status === 'pending' ? 'pending' : 'booked'; r.booking = b; }
     });
     if (r.state === 'free') S.blocks.forEach(function (k) {
       if (k.zone_id === t.zone_id && (!k.table_ids || k.table_ids.indexOf(t.id) !== -1) && new Date(k.starts_at).getTime() <= ts && ts < new Date(k.ends_at).getTime()) { r.state = 'blocked'; r.block = k; }
@@ -503,12 +503,12 @@
       S.bookings.forEach(function (b) {
         if (b.status === 'cancelled' || !(b.table_booking_tables || []).some(function (x) { return x.table_id === t.id; })) return;
         var l = Math.round((mins(b.starts_at) - t0) * PXMIN), w = Math.max(24, Math.round((mins(b.ends_at) - mins(b.starts_at)) * PXMIN)) - 2;
-        var st = b.status === 'no_show' ? 'noshow' : b.status === 'seated' ? (b.dessert_at ? 'dessert' : 'seated') : b.status === 'completed' ? 'done' : b.status === 'pending' ? 'pending' : 'booked';
+        var st = b.status === 'no_show' ? 'noshow' : b.status === 'seated' ? (b.bill_at ? 'bill' : b.dessert_at ? 'dessert' : 'seated') : b.status === 'completed' ? 'done' : b.status === 'pending' ? 'pending' : 'booked';
         var many = (b.table_booking_tables || []).length > 1, seats = seatsOf(b), over = b.party > seats;
         var arrived = b.status === 'confirmed' && !!b.arrived_at;
         var late = b.status === 'confirmed' && !b.arrived_at && S.date === today() && Date.now() - Date.parse(b.starts_at) > 15 * 60000;
         var al = allergiesOf(b).length ? ' ⚠' : '', lb = labelsOf(b).length ? ' · ' + labelsOf(b).map(function (k) { return LBL()[k]; }).join(', ') : '';
-        var flags = al + lb + (arrived ? ' · llegó ' + hm(b.arrived_at) : '') + (b.status === 'seated' && b.dessert_at ? ' · postre' : '') + (late ? ' · ¿llega?' : '') + (b.status === 'no_show' ? ' · no vino' : '');
+        var flags = al + lb + (arrived ? ' · llegó ' + hm(b.arrived_at) : '') + (b.status === 'seated' && b.bill_at ? ' · cuenta pedida' : b.status === 'seated' && b.dessert_at ? ' · postre' : '') + (late ? ' · ¿llega?' : '') + (b.status === 'no_show' ? ' · no vino' : '');
         bars += '<button type="button" class="mt-bar is-' + st + (arrived ? ' is-arrived' : '') + (late ? ' is-late' : '') + (over ? ' is-over' : '') + '" data-bid="' + b.id + '" style="left:' + l + 'px;width:' + w + 'px" title="' + esc((b.name || 'Sin nombre') + ' · ' + b.party + ' personas en ' + seats + ' plazas · ' + hm(b.starts_at) + '–' + hm(b.ends_at) + flags + (alText(b) ? ' · ALERGIAS: ' + alText(b) : '') + (b.notes ? ' · ' + b.notes : '')) + '"><b>' + esc(b.name || 'Sin nombre') + '</b> <span>' + b.party + '/' + seats + (many ? ' · juntas' : '') + flags + '</span></button>';
       });
       S.blocks.forEach(function (k) {
@@ -522,7 +522,7 @@
     if (!rows.length) return '<p class="ad-empty">Esta zona no tiene mesas activas.</p>';
     return '<div class="mt-tl"><div class="mt-tl-in" style="min-width:' + (W + 78) + 'px"><div class="mt-row mt-head"><span class="mt-rl"></span><div class="mt-ticks" style="width:' + W + 'px" data-t0="' + t0 + '">' + ticks + nowLbl + '</div></div>' +
       '<div class="mt-body" style="--w:' + W + 'px">' + nowLine + rowsHtml + '</div></div></div>' +
-      '<p class="ad-meta mt-legend"><span class="mt-dot is-booked"></span>Reservada <span class="mt-dot is-pending"></span>Pendiente <span class="mt-dot is-seated"></span>En mesa <span class="mt-dot is-blocked"></span>Bloqueada · en cada barra: personas/plazas de la mesa. Toca un hueco para reservar, una barra para editarla.</p>';
+      '<p class="ad-meta mt-legend"><span class="mt-dot is-booked"></span>Reservada <span class="mt-dot is-pending"></span>Pendiente <span class="mt-dot is-seated"></span>En mesa <span class="mt-dot is-bill"></span>Cuenta pedida <span class="mt-dot is-blocked"></span>Bloqueada · en cada barra: personas/plazas de la mesa. Toca un hueco para reservar, una barra para editarla.</p>';
   }
 
   function renderDay(body) {
@@ -563,12 +563,12 @@
       }).join('') +
       boxes.map(function (b) {
         var t = b.t, o = occupancy(t, iso);
-        var tip = t.name + ' · ' + t.seats_max + ' p.' + (o.booking ? ' · ' + o.booking.name + ' (' + o.booking.party + ')' : o.block ? ' · bloqueada' + (o.block.note ? ': ' + o.block.note : '') : '');
+        var tip = t.name + ' · ' + t.seats_max + ' p.' + (o.booking ? ' · ' + o.booking.name + ' (' + o.booking.party + ')' + (o.state === 'bill' ? ' · cuenta pedida' : '') : o.block ? ' · bloqueada' + (o.block.note ? ': ' + o.block.note : '') : '');
         return '<button type="button" class="mt-t is-' + o.state + (S.sel.indexOf(t.id) !== -1 ? ' is-sel' : '') + (E && E.sel === t.id ? ' is-esel' : '') + ' sh-' + esc(t.shape) + '" data-table="' + t.id + '" title="' + esc(tip) + '" style="--rot:' + b.r + 'deg;left:' + ((b.cx - minx + PAD) / bw * 100).toFixed(2) + '%;top:' + ((b.cy - oy) / bh * 100).toFixed(2) + '%;width:' + (b.w / bw * 100).toFixed(2) + '%;height:' + (b.h / bh * 100).toFixed(2) + '%">' +
           '<b>' + esc(t.name) + '</b>' + (o.booking ? '<i>' + esc(o.booking.name.split(' ')[0]) + '</i>' : '') + '</button>';
       }).join('') + '</div></div>' +
       editBar(E) +
-      '<p class="ad-meta mt-legend"><span class="mt-dot is-free"></span>Libre <span class="mt-dot is-booked"></span>Reservada <span class="mt-dot is-pending"></span>Pendiente de pago <span class="mt-dot is-seated"></span>En mesa <span class="mt-dot is-blocked"></span>Bloqueada</p></div>';
+      '<p class="ad-meta mt-legend"><span class="mt-dot is-free"></span>Libre <span class="mt-dot is-booked"></span>Reservada <span class="mt-dot is-pending"></span>Pendiente de pago <span class="mt-dot is-seated"></span>En mesa <span class="mt-dot is-bill"></span>Cuenta pedida <span class="mt-dot is-blocked"></span>Bloqueada</p></div>';
 
     var list = S.bookings.length ? S.bookings.map(function (b) {
       var tn = bookingTables(b).map(function (t) { return t.name; }).join(' + ');
