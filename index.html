@@ -269,11 +269,23 @@
   /* Franja del próximo evento (o el que está en marcha), más baja que los cuadrados: fondo blanco si es de día y negro si es de noche. Sin cartel. */
   .home-square-event { flex-direction: row; align-items: center; justify-content: space-between; gap: 0.7rem; height: var(--ev-h); padding: 0 calc(min(var(--sw), var(--sh)) * 0.09); }
   .home-square-event[hidden] { display: none; }
-  .home-square-event[data-env="day"] { background: var(--white); color: var(--black); border: 2px solid var(--black); }
-  .home-square-event[data-env="night"] { background: var(--black); color: var(--white); border: 2px solid var(--black); }
-  html[data-mode="night"] .home-square-event[data-env="night"] { border-color: var(--white); }
+  /* Neón rojo: tubo rojo sobre fondo negro, de día y de noche. Brillo en el texto, la flecha y el marco; parpadeo muy suave. */
+  .home-square-event, .home-square-event[data-env="day"], .home-square-event[data-env="night"] {
+    --neon: #ff3b30;
+    background: #0a0a0a; color: #ffe3df;
+    border: 2px solid var(--neon);
+    box-shadow: 0 0 4px rgba(255, 59, 48, 0.9), 0 0 14px rgba(255, 59, 48, 0.55), 0 0 32px rgba(255, 59, 48, 0.3), inset 0 0 10px rgba(255, 59, 48, 0.35);
+    text-shadow: 0 0 1px #fff, 0 0 5px var(--neon), 0 0 10px rgba(255, 59, 48, 0.75);
+    animation: neonOn 0.9s steps(1, end) 1 both, neonHum 6s ease-in-out 1s infinite;
+  }
+  html[data-mode="night"] .home-square-event[data-env="night"] { border-color: var(--neon); }
+  .home-square-event .home-square-arrow { text-shadow: inherit; }
+  /* Encendido como un tubo que arranca, y después un leve vaivén de intensidad. */
+  @keyframes neonOn { 0% { opacity: 0.25; } 12% { opacity: 1; } 18% { opacity: 0.3; } 30% { opacity: 1; } 36% { opacity: 0.55; } 44%, 100% { opacity: 1; } }
+  @keyframes neonHum { 0%, 100% { filter: brightness(1); } 50% { filter: brightness(1.12); } 53% { filter: brightness(0.9); } 56% { filter: brightness(1.12); } }
+  @media (prefers-reduced-motion: reduce) { .home-square-event, .home-square-event[data-env="day"], .home-square-event[data-env="night"] { animation: none; } }
   /* Título y fecha en una sola línea; si no caben, giran juntos en bucle (la flecha se queda quieta). */
-  .home-square-event .he-text { flex: 1; min-width: 0; overflow: hidden; white-space: nowrap; }
+  .home-square-event .he-text { flex: 1; min-width: 0; overflow: hidden; white-space: nowrap; padding: 0.35rem 0.5rem; margin: -0.35rem -0.5rem; }
   .home-square-event .mq { display: inline-block; white-space: nowrap; }
   .home-square-event .he-unit { display: inline-block; padding-right: 2.5rem; }
   .home-square-event .he-unit:last-child { padding-right: 0; }
