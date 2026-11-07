@@ -298,7 +298,7 @@
     --neon: #ff2a1f; --core: #ffe9e5;
     background: #0b0506; color: var(--core);
     border: 3px solid var(--core); border-radius: 999px;
-    box-shadow: 0 0 2px var(--core), 0 0 5px rgba(255, 42, 31, 0.7), inset 0 0 8px rgba(255, 42, 31, 0.4), inset 0 0 18px rgba(255, 42, 31, 0.15);
+    box-shadow: 0 0 3px var(--core), 0 0 8px var(--neon), inset 0 0 14px rgba(255, 42, 31, 0.55), inset 0 0 30px rgba(255, 42, 31, 0.25);
     --evp: calc(min(var(--sw), var(--sh)) * 0.09 + 0.4rem);
     --evfs: clamp(0.72rem, min(9.6cqw, calc(var(--sh) * 0.15)), 2.5rem);
     padding-left: var(--evp); padding-right: 0; overflow: visible; position: relative;
@@ -308,7 +308,7 @@
   /* Letras de tubo: contorno claro, centro rojo oscuro y brillo; fallan un instante de vez en cuando. */
   .home-square-event[data-env="night"] .he-unit strong, .home-square-event[data-env="night"] .he-unit small {
     color: rgba(255, 42, 31, 0.12); -webkit-text-stroke: 1.4px var(--core); paint-order: stroke fill;
-    text-shadow: 0 0 1px var(--core), 0 0 5px rgba(255, 42, 31, 0.8), 0 0 10px rgba(255, 42, 31, 0.4);
+    text-shadow: 0 0 2px var(--core), 0 0 7px var(--neon), 0 0 14px var(--neon), 0 0 28px rgba(255, 42, 31, 0.9), 0 0 48px rgba(255, 42, 31, 0.5);
     animation: neonFlick 7s linear 1.4s infinite;
   }
   .home-square-event[data-env="night"] .he-unit small { opacity: 1; text-transform: uppercase; font-weight: 700; line-height: 1.02; margin: 0 0.8rem 0 0; }
@@ -320,20 +320,28 @@
     mask-image: linear-gradient(90deg, transparent 0, #000 calc(var(--evp) + 0.6rem), #000 calc(100% - var(--evp) - 0.6rem), transparent 100%); }
   .home-square-event[data-env="night"] .he-text .mq { margin-left: var(--evp); }
   /* Separador entre vueltas: un punto de neón. */
-  .home-square-event[data-env="night"] .he-unit::after { content: ''; display: inline-block; width: 0.36em; height: 0.36em; margin: 0 1.5rem; border-radius: 50%; background: var(--core); vertical-align: 0.1em; box-shadow: 0 0 2px var(--core), 0 0 5px rgba(255, 42, 31, 0.8); font-size: 1rem; }
+  .home-square-event[data-env="night"] .he-unit::after { content: ''; display: inline-block; width: 0.36em; height: 0.36em; margin: 0 1.5rem; border-radius: 50%; background: var(--core); vertical-align: 0.1em; box-shadow: 0 0 3px var(--core), 0 0 8px var(--neon), 0 0 16px var(--neon); font-size: 1rem; }
   .home-square-event[data-env="night"] .he-unit:last-child::after { display: none; }
   .home-square-event[data-env="night"].mq-on .he-unit:last-child::after { display: inline-block; }
   /* Halo ancho del tubo en su propio pseudo-elemento; en vivo titila suave e irregular. */
-  .home-square-event[data-env="night"]::before { content: ''; position: absolute; inset: -2px; border-radius: inherit; pointer-events: none; box-shadow: 0 0 10px rgba(255, 42, 31, 0.65), 0 0 22px rgba(255, 42, 31, 0.3), 0 0 36px rgba(255, 42, 31, 0.12); }
+  .home-square-event[data-env="night"]::before { content: ''; position: absolute; inset: -2px; border-radius: inherit; pointer-events: none; box-shadow: 0 0 18px var(--neon), 0 0 34px rgba(255, 42, 31, 0.6), 0 0 60px rgba(255, 42, 31, 0.28); }
   .home-square-event[data-env="night"].is-live::before { animation: ledFlick 4.6s linear 1.2s infinite; }
   /* En vivo: etiqueta roja pequeña pegada al borde de arriba del tubo (como el «EN DIRECTO» de YouTube). */
-  .home-square-event[data-env="night"] .he-live { display: none; position: absolute; z-index: 2; top: 0; left: calc(var(--evp) - 0.2rem); transform: translateY(-52%); align-items: center; gap: 0.35rem; padding: 0.14rem 0.5rem 0.14rem 0.4rem; border-radius: 4px; background: #ff1f1f; color: #fff; font-family: var(--display); font-size: clamp(0.55rem, 2.2vw, 0.72rem); font-weight: 700; line-height: 1.1; letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap; box-shadow: 0 0 4px rgba(255, 31, 31, 0.6), 0 0 9px rgba(255, 31, 31, 0.3); text-shadow: none; }
+  .home-square-event[data-env="night"] .he-live { display: none; position: absolute; z-index: 2; top: 0; left: calc(var(--evp) - 0.2rem); transform: translateY(-52%); align-items: center; gap: 0.35rem; padding: 0.14rem 0.5rem 0.14rem 0.4rem; border-radius: 4px; background: #ff1f1f; color: #fff; font-family: var(--display); font-size: clamp(0.55rem, 2.2vw, 0.72rem); font-weight: 700; line-height: 1.1; letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap; box-shadow: 0 0 6px rgba(255, 31, 31, 0.9), 0 0 16px rgba(255, 31, 31, 0.55); text-shadow: none; }
   .home-square-event[data-env="night"].is-live .he-live { display: inline-flex; }
   .home-square-event[data-env="night"] .he-live::before { content: ''; flex: none; width: 0.45rem; height: 0.45rem; border-radius: 50%; background: #fff; animation: liveDot 1.3s ease-in-out infinite; box-shadow: none; }
   @keyframes neonOn { 0% { opacity: 0.15; } 8% { opacity: 1; } 12% { opacity: 0.2; } 22% { opacity: 0.9; } 26% { opacity: 0.25; } 40% { opacity: 1; } 46% { opacity: 0.5; } 52%, 100% { opacity: 1; } }
   @keyframes neonFlick { 0%, 17%, 19%, 22%, 62%, 64%, 66%, 100% { opacity: 1; } 18%, 63% { opacity: 0.35; } 20% { opacity: 0.7; } 65% { opacity: 0.5; } }
   @keyframes ledFlick { 0%, 11%, 14%, 16%, 48%, 51%, 54%, 80%, 83%, 100% { opacity: 1; } 12% { opacity: 0.8; } 15% { opacity: 0.88; } 49% { opacity: 0.78; } 52.5% { opacity: 0.9; } 81.5% { opacity: 0.82; } }
   @media (prefers-reduced-motion: reduce) { .home-square-event[data-env="night"], .home-square-event[data-env="night"] .he-unit strong, .home-square-event[data-env="night"] .he-unit small, .home-square-event[data-env="night"].is-live::before, .home-square-event .he-live::before { animation: none !important; } }
+  /* Neón más suave en móvil (en ordenador se queda con todo el brillo). */
+  @media (max-width: 700px) {
+    .home-square-event[data-env="night"] { box-shadow: 0 0 2px var(--core), 0 0 5px rgba(255, 42, 31, 0.7), inset 0 0 8px rgba(255, 42, 31, 0.4), inset 0 0 18px rgba(255, 42, 31, 0.15); }
+    .home-square-event[data-env="night"]::before { box-shadow: 0 0 10px rgba(255, 42, 31, 0.65), 0 0 22px rgba(255, 42, 31, 0.3), 0 0 36px rgba(255, 42, 31, 0.12); }
+    .home-square-event[data-env="night"] .he-unit strong, .home-square-event[data-env="night"] .he-unit small { text-shadow: 0 0 1px var(--core), 0 0 5px rgba(255, 42, 31, 0.8), 0 0 10px rgba(255, 42, 31, 0.4); }
+    .home-square-event[data-env="night"] .he-live { box-shadow: 0 0 4px rgba(255, 31, 31, 0.6), 0 0 9px rgba(255, 31, 31, 0.3); }
+    .home-square-event[data-env="night"] .he-unit::after { box-shadow: 0 0 2px var(--core), 0 0 5px rgba(255, 42, 31, 0.8); }
+  }
   
   .home-foot {
     flex-shrink: 0;
