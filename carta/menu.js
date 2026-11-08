@@ -32,8 +32,8 @@ window.CARTA = {
             {
               title: { es: 'Açaí & Yogur', en: 'Açaí & Yogurt' }, note: { es: 'Todo el día', en: 'All day' },
               items: [
-                { name: 'Dark Açaí', al: [5, 8], nut: [412, 10, 56, 16], price: 10.5, es: 'Açaí, plátano, granola, crema de cacahuete y nibs de cacao.', en: 'Açaí, banana, granola, peanut cream and cacao nibs.' },
-                { name: 'Shaka Açaí', al: [8], nut: [398, 8, 62, 14], price: 10.5, es: 'Açaí, mango, plátano, coco y granola.', en: 'Açaí, mango, banana, coconut and granola.' },
+                { name: 'Dark Açaí', diet: ['veg', 'pesc', 'vegan', 'gf', 'lf'], al: [5, 8], nut: [412, 10, 56, 16], price: 10.5, es: 'Açaí, plátano, granola, crema de cacahuete y nibs de cacao.', en: 'Açaí, banana, granola, peanut cream and cacao nibs.' },
+                { name: 'Shaka Açaí', diet: ['veg', 'pesc', 'vegan', 'gf', 'lf'], al: [8], nut: [398, 8, 62, 14], price: 10.5, es: 'Açaí, mango, plátano, coco y granola.', en: 'Açaí, mango, banana, coconut and granola.' },
                 { name: 'Greek Freak', al: [7, 8], nut: [368, 16, 48, 12], price: 7.5, es: 'Yogur griego, fruta de temporada, granola y miel.', en: 'Greek yogurt, seasonal fruit, granola and honey.' }
               ],
               extras: { title: { es: 'Extras', en: 'Extras' }, list: [[{ es: 'Fruta', en: 'Fruit' }, 2], [{ es: 'Granola', en: 'Granola' }, 1.5], [{ es: 'Crema de cacahuete', en: 'Peanut cream' }, 1.5]] }
@@ -68,7 +68,7 @@ window.CARTA = {
               ]
             },
             {
-              title: { es: 'Pokes', en: 'Pokes' }, note: { es: 'Platos completos en bowl', en: 'Complete bowls' },
+              title: { es: 'Pokes', en: 'Pokes' },
               items: [
                 { name: 'Black Rice Chicken', al: [6, 11], nut: [562, 36, 64, 18], price: 13.5, es: 'Arroz salvaje, pollo, edamame, aguacate, pepino, encurtidos, cebolla encurtida, mezcla verde, sésamo y salsa ROCE.', en: 'Wild rice, chicken, edamame, avocado, cucumber, pickles, pickled onion, mixed greens, sesame and ROCE sauce.' },
                 { name: 'Black Rice Tuna', al: [4, 6, 11], nut: [606, 40, 62, 20], price: 16.5, es: 'Arroz salvaje, atún, edamame, aguacate, pepino, encurtidos, cebolla encurtida, mezcla verde, sésamo y salsa ROCE.', en: 'Wild rice, tuna, edamame, avocado, cucumber, pickles, pickled onion, mixed greens, sesame and ROCE sauce.' },
@@ -83,24 +83,24 @@ window.CARTA = {
                 { name: 'Citric Nordic', al: [4, 11], nut: [682, 38, 56, 32], price: 17.5, es: 'Salmón a la brasa, arroz salvaje, aguacate, pepino, cebolla encurtida, mezcla verde, sésamo, hierbas frescas y vinagreta cítrica.', en: 'Grilled salmon, wild rice, avocado, cucumber, pickled onion, mixed greens, sesame, fresh herbs and citrus vinaigrette.' },
                 { name: 'Muuuuuucho Beef', al: [7], nut: [756, 48, 60, 36], price: 18.5, es: 'Filete de ternera, patata, maíz, rúcula, cebolla encurtida, kikos, especias ahumadas y chimichurri verde.', en: 'Beef fillet, potato, corn, rocket, pickled onion, toasted corn, smoked spices and green chimichurri.' },
                 { name: 'Falafel & Hummus', al: [11], nut: [618, 22, 68, 28], price: 13.5, es: 'Falafel, hummus de remolacha, pepino, granada, col, mezcla verde, lenteja beluga, sésamo, tahini de limón y salsa yogur limón.', en: 'Falafel, beetroot hummus, cucumber, pomegranate, cabbage, mixed greens, beluga lentils, sesame, lemon tahini and lemon yogurt sauce.' },
-                { name: 'La Huerta', diet: ['veg', 'pesc', 'gf', 'lf'], al: [11], nut: [548, 16, 66, 26], price: 12.5, es: 'Hummus de remolacha, arándanos, berenjena y calabacín asados, mezcla verde, brotes, albahaca, vinagreta cítrica, cebolla encurtida asada, DUKA ROCE y sal / oliva.', en: 'Beetroot hummus, blueberries, roasted aubergine and courgette, mixed greens, sprouts, basil, citrus vinaigrette, roasted pickled onion, ROCE DUKA and salt / olive oil.' }
+                { name: 'La Huerta', diet: ['veg', 'pesc', 'vegan', 'gf', 'lf'], al: [11], nut: [548, 16, 66, 26], price: 12.5, es: 'Hummus de remolacha, arándanos, berenjena y calabacín asados, mezcla verde, brotes, albahaca, vinagreta cítrica, cebolla encurtida asada, DUKA ROCE y sal / oliva.', en: 'Beetroot hummus, blueberries, roasted aubergine and courgette, mixed greens, sprouts, basil, citrus vinaigrette, roasted pickled onion, ROCE DUKA and salt / olive oil.' }
               ]
             },
             {
               title: { es: 'Acompañamientos', en: 'Sides' },
               compact: true,
               items: [
-                { name: 'Patatas artesanas', al: [3, 7], nut: [306, 4, 46, 12], price: 3.5 }, { name: 'Garbanzo artesano', nut: [218, 9, 32, 6], price: 3.5 }, { name: 'Frijoles marinados', nut: [176, 8, 28, 4], price: 3.5 },
-                { name: 'Maíz especiado', nut: [196, 5, 30, 6], price: 3.5 }, { name: 'Boniato al carbón', nut: [224, 3, 44, 5], price: 3.5 }
+                { name: 'Patatas artesanas', al: [3, 7], nut: [306, 4, 46, 12], price: 3.5 }, { name: 'Garbanzo artesano', diet: ['veg', 'pesc', 'vegan', 'gf', 'lf'], nut: [218, 9, 32, 6], price: 3.5 }, { name: 'Frijoles marinados', diet: ['veg', 'pesc', 'vegan', 'gf', 'lf'], nut: [176, 8, 28, 4], price: 3.5 },
+                { name: 'Maíz especiado', diet: ['veg', 'pesc', 'vegan', 'gf', 'lf'], nut: [196, 5, 30, 6], price: 3.5 }, { name: 'Boniato al carbón', diet: ['veg', 'pesc', 'vegan', 'gf', 'lf'], nut: [224, 3, 44, 5], price: 3.5 }
               ]
             },
             {
               title: { es: 'Extras', en: 'Extras' }, note: { es: 'Proteína', en: 'Protein' },
               compact: true,
               items: [
-                { name: 'Huevo campero', al: [3], nut: [72, 6, 1, 5], price: 2 }, { name: 'Falafel', al: [11], nut: [188, 8, 24, 7], price: 3.5 }, { name: 'Cottage', al: [7], nut: [82, 11, 3, 3], price: 2.5 },
+                { name: 'Huevo campero', al: [3], nut: [72, 6, 1, 5], price: 2 }, { name: 'Falafel', diet: ['veg', 'pesc', 'vegan', 'gf', 'lf'], al: [11], nut: [188, 8, 24, 7], price: 3.5 }, { name: 'Cottage', al: [7], nut: [82, 11, 3, 3], price: 2.5 },
                 { name: 'Pollo marinado', nut: [166, 27, 4, 5], price: 4.5 }, { name: 'Atún rojo', al: [4], nut: [164, 32, 0, 4], price: 6.5 }, { name: 'Salmón', al: [4], nut: [226, 34, 0, 10], price: 6.5 },
-                { name: 'Filete de ternera', nut: [324, 42, 0, 16], price: 9.5 }, { name: 'Entrecot madurado', nut: [418, 46, 0, 24], price: 15 }, { name: 'Bacon crujiente', nut: [126, 8, 1, 10], price: 2.5 }, { name: 'Hummus de remolacha', al: [11], nut: [118, 4, 12, 6], price: 2.5 }
+                { name: 'Filete de ternera', nut: [324, 42, 0, 16], price: 9.5 }, { name: 'Entrecot madurado', nut: [418, 46, 0, 24], price: 15 }, { name: 'Bacon crujiente', nut: [126, 8, 1, 10], price: 2.5 }, { name: 'Hummus de remolacha', diet: ['veg', 'pesc', 'vegan', 'gf', 'lf'], al: [11], nut: [118, 4, 12, 6], price: 2.5 }
               ]
             }
           ]
