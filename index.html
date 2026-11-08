@@ -154,15 +154,15 @@
     /* La frase se pega arriba y los cuadrados abajo; lo que sobra de alto se reparte: la frase crece (hasta el ancho que cabe)
        y, si no puede crecer más, los cuadrados se hacen más altos. 4,45 = alto de la frase en "em" (5 líneas). */
     --fw: min(calc((100vw - 2 * var(--pad)) / 4.0), 14rem);
-    --shcap: calc(var(--sw) * 0.9);
+    --shcap: calc(var(--sw) * 0.55);
     --shfloor: calc((var(--avail) - var(--ev-x)) * 0.17);
-    --sh: min(var(--shcap), max(var(--shfloor), calc((var(--avail) - var(--ev-x) - var(--gap) - 1.5rem - var(--fw) * 2.9) / 2)));
+    --sh: min(var(--shcap), max(var(--shfloor), calc((var(--avail) - var(--ev-x) - 0.4rem - 1.5rem - var(--fw) * 3.4) / 2)));
     flex: 1;
     min-height: 0;
     display: flex;
     flex-direction: column;
     justify-content: space-between; /* la frase pegada arriba del todo y los cuadrados hasta abajo */
-    gap: 1rem;
+    gap: 0.4rem;
     padding: 0 var(--pad);
   }
 
@@ -171,7 +171,7 @@
   .home-statement {
     font-family: var(--display);
     font-weight: 400; /* Helvetica Neue tal cual (Regular de marca) */
-    font-size: min(var(--fw), calc((var(--avail) - 2 * var(--sh) - var(--gap) - 1.5rem - var(--ev-x)) / 2.9));
+    font-size: min(var(--fw), calc((var(--avail) - 2 * var(--sh) - 0.4rem - 1.5rem - var(--ev-x)) / 3.4));
     width: auto;
     flex: 0 0 auto;
     margin: 0;
@@ -184,9 +184,9 @@
   .home-statement { margin-top: calc(0.5rem - 0.04em); }
   .home-statement .line { text-align: left; }
   /* La frase en tres tamaños de menos a más (Todo < empieza < con un) y el logo ROCE, que mantiene el tamaño del bloque, cierra la escalera. */
-  .home-statement .l1 { font-size: 0.4em; }
-  .home-statement .l2 { font-size: 0.52em; }
-  .home-statement .l3 { font-size: 0.62em; }
+  .home-statement .l1 { font-size: 0.6em; }
+  .home-statement .l2 { font-size: 0.8em; }
+  .home-statement .l3 { font-size: 0.98em; }
   /* La última palabra es el logo de ROCE: casi el ancho de la palabra que sustituye, pegado a la derecha. */
   /* margin-top: el hueco visible (0,055 em bajo la línea base + 0,054 em) iguala al de las demás líneas (0,109 em). */
   .home-logo { display: block; margin: 0.054em 0 0 0; height: 1.5em; width: auto; }
@@ -388,6 +388,10 @@
   /* Horizontal (escritorio, móvil tumbado): frase a la izquierda y los dos
      cuadrados apilados a la derecha. */
   @media (min-aspect-ratio: 5/4) {
+    /* En horizontal las líneas del texto se escalan (--tx, lo calcula el script) para que el logo ROCE acabe a la altura del borde inferior del cuadrado de Coffee. */
+    .home-statement .l1 { font-size: calc(0.55em * var(--tx, 1)); }
+    .home-statement .l2 { font-size: calc(0.72em * var(--tx, 1)); }
+    .home-statement .l3 { font-size: calc(0.88em * var(--tx, 1)); }
     /* En horizontal el menú ocupa su franja arriba (si no, taparía el cuadrado de la derecha). */
     .home { --pad: 2.5rem; --head: 56px; --foot: 108px; position: relative; }
     .home-head { position: static; height: var(--head); flex-shrink: 0; }
@@ -407,7 +411,7 @@
     .home-top { flex: 1; min-width: 0; width: auto; align-self: flex-start; margin-top: calc(-1 * var(--head)); }
     .home-statement {
       /* La frase ocupa TODO el alto de la pantalla: el logo ROCE toca el suelo. */
-      font-size: min(22rem, var(--hcap), calc((100vw - 2 * var(--pad) - var(--sw) - 2rem) / 4.8));
+      font-size: min(22rem, calc((100vw - 2 * var(--pad) - var(--sw) - 2rem) / 3.9));
     }
     /* Cuadrados más anchos: el nombre de cada espacio cabe entero en una línea. */
     .home-square strong.home-name { white-space: nowrap; font-size: clamp(0.8rem, min(5.3cqw, calc(var(--sh) * 0.16)), 2.4rem); }
@@ -694,11 +698,34 @@
     }
     // Seguro de encaje: en horizontal la frase llega al suelo, pero si por lo que sea (ventana más alta que la pantalla, barras del
     // navegador…) se saliera de la página, se reduce justo lo necesario para que quepa entera.
+    // Escritorio: el logo ROCE acaba a la misma altura que el borde inferior del cuadrado de Coffee, Bakery & Kitchen. El logo se hace tan
+    // ancho como deja la columna de cuadrados y las líneas del texto (--tx) crecen o encogen hasta que su borde inferior coincide.
+    function alignLogoToDay(st) {
+      var day = document.getElementById('chooseDay'), sq = document.querySelector('.home-squares');
+      var logo = document.querySelector('.home-logo-black'); if (getComputedStyle(logo).display === 'none') logo = document.querySelector('.home-logo-white');
+      if (!day || !sq || !logo || !logo.complete || !logo.naturalWidth) return;
+      var target = day.getBoundingClientRect().bottom, lines = st.querySelectorAll('.line');
+      var fs = parseFloat(getComputedStyle(st).fontSize), ratio = logo.getBoundingClientRect().width / fs;
+      var room = sq.getBoundingClientRect().left - 2 * parseFloat(getComputedStyle(document.documentElement).fontSize) - st.getBoundingClientRect().left;
+      var top = st.getBoundingClientRect().top, em = Math.min(room / ratio, (target - top) / 2.45);
+      if (!(em > 40)) return;
+      st.style.fontSize = em + 'px';
+      function bottom(tx) { st.style.setProperty('--tx', tx); return logo.getBoundingClientRect().bottom; }
+      var b1 = bottom(1), b2 = bottom(1.3), k = (b2 - b1) / 0.3;
+      var tx = k > 1 ? 1 + (target - b1) / k : 1;
+      // el texto más ancho no puede superar el ancho del logo
+      var lw = logo.getBoundingClientRect().width, maxTx = 1.6;
+      st.style.setProperty('--tx', 1);
+      [].forEach.call(lines, function (l, i) { if (i > 2) return; var r = document.createRange(); r.selectNodeContents(l); var w = r.getBoundingClientRect().width; if (w > 0) maxTx = Math.min(maxTx, lw / w); });
+      st.style.setProperty('--tx', Math.max(0.5, Math.min(tx, maxTx)).toFixed(3));
+    }
     function fitStatement() {
       var st = document.querySelector('.home-statement'), home = document.querySelector('.home');
       if (!st || !home) return;
       st.style.fontSize = '';
+      st.style.removeProperty('--tx');
       if (!window.matchMedia('(min-aspect-ratio: 5/4)').matches) return;
+      alignLogoToDay(st);
       var floor = Math.min(home.getBoundingClientRect().bottom, window.innerHeight) - 6, r = st.getBoundingClientRect(), room = floor - r.top;
       if (room > 40 && r.height > room) st.style.fontSize = (parseFloat(getComputedStyle(st).fontSize) * room / r.height) + 'px';
     }
