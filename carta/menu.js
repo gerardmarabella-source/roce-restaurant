@@ -168,7 +168,7 @@ window.CARTA = {
   C.sections = [
     by.kitchen,
     by.bakery,
-    sheet('coffee', 'dark', 'Coffee & Matcha', 'Coffee & Matcha', [drinks[0], drinks[1]]),
+    sheet('coffee', 'lgray', 'Coffee & Matcha', 'Coffee & Matcha', [drinks[0], drinks[1]]),
     sheet('fresh', 'olive', 'Fresh Juices', 'Fresh Juices', [drinks[2], drinks[3]]),
     { id: 'drinks', color: 'red', soon: true, title: { es: 'Drinks', en: 'Drinks' }, desc: { es: 'Refrescos, aguas y cervezas.', en: 'Soft drinks, water and beers.' }, groups: [] }
   ];
