@@ -160,6 +160,7 @@
   .rz-on { display: none; }
   .rz-name { grid-area: name; font-weight: 700; font-size: clamp(1.15rem, 5vw, 1.55rem); line-height: 1.05; letter-spacing: 0.02em; }
   .rz-desc { grid-area: desc; font-size: 0.8rem; line-height: 1.3; letter-spacing: 0.03em; text-transform: none; opacity: 0.75; }
+  #panelBooking[hidden] { display: none; }
   .reserve-zone[aria-pressed="true"] { background: var(--white); color: var(--black); }
   .reserve-zone[aria-pressed="true"] .rz-off { display: none; }
   .reserve-zone[aria-pressed="true"] .rz-on { display: inline; }
@@ -386,7 +387,7 @@
     </div>
 
 
-    <section id="panelBooking">
+    <section id="panelBooking" hidden>
     <p class="reserve-form-intro reserve-night" id="nightNotice"><svg class="age-badge" viewBox="0 0 100 100" role="img" aria-label="+18"><circle cx="50" cy="50" r="44" fill="#ffffff" stroke="#e5453a" stroke-width="9"/><text x="44" y="65" text-anchor="middle" font-family="'Helvetica Neue Web','Helvetica Neue',Arial,sans-serif" font-weight="700" font-size="46" letter-spacing="-3" fill="#0a0a0a">18</text><text x="77" y="52" text-anchor="middle" font-family="'Helvetica Neue Web','Helvetica Neue',Arial,sans-serif" font-weight="700" font-size="30" fill="#0a0a0a">+</text></svg> <span data-i18n="reservar_night">Reservas de noche solo para mayores de 18 años</span></p>
 
     <div class="cm-widget">
@@ -501,17 +502,24 @@
       if (/^(#day|#night|#coffee-bakery-kitchen|#restaurant-cocktails|)$/.test(location.hash) && location.hash !== h) history.replaceState(null, '', location.pathname + location.search + h);
     }
     document.getElementById('nightNotice').hidden = zone === 'day';
+    // Sin espacio elegido (se llega desde otra página) solo se ven las opciones de espacio; el calendario aparece al elegir uno.
+    document.getElementById('panelBooking').hidden = zone === 'all';
     const day = zone === 'day';
     document.querySelector('.footer-headline').textContent = day ? 'Coffee, Bakery & Kitchen' : 'Restaurant & Cocktails';
     document.getElementById('footerLogo').setAttribute('src', '/assets/logo/roce-tilted-' + (day ? 'black' : 'white') + '.png');
     document.getElementById('navLogo').setAttribute('src', '/assets/logo/roce-horizontal-' + (day ? 'black' : 'white') + '.png');
     if (window.ROCE_MESAS) window.ROCE_MESAS.setAmbience(zone);
   }
-  zoneTabs.forEach((b) => b.addEventListener('click', () => setZone(b.dataset.zone)));
+  zoneTabs.forEach((b) => b.addEventListener('click', () => {
+    const wasHidden = document.getElementById('panelBooking').hidden;
+    setZone(b.dataset.zone);
+    if (wasHidden) document.querySelector('.reserve-zones-label').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }));
   document.addEventListener('mesas:ambience', (e) => setZone(e.detail));
   // En la dirección: #restaurant-cocktails / #coffee-bakery-kitchen (los antiguos #night y #day siguen valiendo).
   if (location.hash === '#coffee-bakery-kitchen' || location.hash === '#day') setZone('day');
   else if (location.hash === '#restaurant-cocktails' || location.hash === '#night') setZone('night');
+  else setZone('all');
 
   const alquilerDetails = document.getElementById('alquilerDetails');
   function openAlquilerIfTargeted() {
