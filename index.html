@@ -156,7 +156,7 @@
     --fw: min(calc((100vw - 2 * var(--pad)) / 4.3), 14rem);
     --shcap: calc(var(--sw) * 0.55);
     --shfloor: calc((var(--avail) - var(--ev-x)) * 0.17);
-    --sh: min(var(--shcap), max(var(--shfloor), calc((var(--avail) - var(--ev-x) - var(--gap) - 1.5rem - var(--fw) * 3.6) / 2)));
+    --sh: min(var(--shcap), max(var(--shfloor), calc((var(--avail) - var(--ev-x) - var(--gap) - 1.5rem - var(--fw) * 3.55) / 2)));
     flex: 1;
     min-height: 0;
     display: flex;
@@ -171,7 +171,7 @@
   .home-statement {
     font-family: var(--display);
     font-weight: 400; /* Helvetica Neue tal cual (Regular de marca) */
-    font-size: min(var(--fw), calc((var(--avail) - 2 * var(--sh) - var(--gap) - 1.5rem - var(--ev-x)) / 3.6));
+    font-size: min(var(--fw), calc((var(--avail) - 2 * var(--sh) - var(--gap) - 1.5rem - var(--ev-x)) / 3.55));
     width: auto;
     flex: 0 0 auto;
     margin: 0;
@@ -183,9 +183,11 @@
   .home-statement .line { display: block; }
   .home-statement { margin-top: calc(0.5rem - 0.04em); }
   .home-statement .line { text-align: left; }
+  /* La frase en letra más pequeña (0,8) y el logo ROCE de la última línea mantiene el tamaño del bloque: queda más grande que el texto. */
+  .home-statement .line:not(.l4) { font-size: 0.8em; }
   /* La última palabra es el logo de ROCE: casi el ancho de la palabra que sustituye, pegado a la derecha. */
   /* margin-top: el hueco visible (0,055 em bajo la línea base + 0,054 em) iguala al de las demás líneas (0,109 em). */
-  .home-logo { display: block; margin: 0.054em 0 0 0; height: 1.02em; width: auto; }
+  .home-logo { display: block; margin: 0.054em 0 0 0; height: 1.3em; width: auto; }
   html[data-mode="night"] .home-logo-black, html:not([data-mode="night"]) .home-logo-white { display: none; }
   .visually-hidden { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
 
@@ -391,8 +393,8 @@
       padding-bottom: var(--foot); /* el pie flota abajo: los cuadrados no lo pisan */
       --s: min(calc((var(--avail) - var(--gap) - var(--ev-x)) / 2), 30vw);
       /* Los cuadrados ceden ancho (hasta un mínimo) para que la frase pueda crecer hasta tocar el suelo. */
-      --hcap: calc((100dvh - 0.9rem) / 3.6);
-      --sw: max(24rem, min(calc(var(--s) * 1.9), 38vw, calc(100vw - 2 * var(--pad) - 2rem - 4.4 * var(--hcap))));
+      --hcap: calc((100dvh - 0.9rem) / 3.55);
+      --sw: max(24rem, min(calc(var(--s) * 1.9), 38vw, calc(100vw - 2 * var(--pad) - 2rem - 3.6 * var(--hcap))));
       --sh: var(--s);
       flex-direction: row;
       align-items: center;
@@ -403,7 +405,7 @@
     .home-top { flex: 1; min-width: 0; width: auto; align-self: flex-start; margin-top: calc(-1 * var(--head)); }
     .home-statement {
       /* La frase ocupa TODO el alto de la pantalla: el logo ROCE toca el suelo. */
-      font-size: min(22rem, var(--hcap), calc((100vw - 2 * var(--pad) - var(--sw) - 2rem) / 4.4));
+      font-size: min(22rem, var(--hcap), calc((100vw - 2 * var(--pad) - var(--sw) - 2rem) / 3.6));
     }
     /* Cuadrados más anchos: el nombre de cada espacio cabe entero en una línea. */
     .home-square strong.home-name { white-space: nowrap; font-size: clamp(0.8rem, min(5.3cqw, calc(var(--sh) * 0.16)), 2.4rem); }
