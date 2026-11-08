@@ -39,7 +39,7 @@ window.CARTA = {
               extras: { title: { es: 'Extras', en: 'Extras' }, list: [[{ es: 'Fruta', en: 'Fruit' }, 2], [{ es: 'Granola', en: 'Granola' }, 1.5], [{ es: 'Crema de cacahuete', en: 'Peanut cream' }, 1.5]] }
             },
             {
-              title: { es: 'Sándwiches', en: 'Sandwiches' }, note: { es: 'Desde las 12:00 · también en comidas', en: 'From 12:00 · also at lunch' },
+              title: { es: 'Sándwiches', en: 'Sandwiches' }, note: { es: 'Todo el día', en: 'All day' },
               items: [
                 { name: 'Chicken Joe', al: [1, 3], nut: [632, 38, 49, 28], price: 12.5, es: 'Pollo a la brasa, bacon, tomate, hojas verdes y mayonesa de ajo asado.', en: 'Grilled chicken, bacon, tomato, green leaves and roasted garlic mayo.' },
                 { name: 'Terra', al: [1, 11], nut: [460, 18, 52, 20], price: 10.5, es: 'Hummus de remolacha, berenjena y calabacín asados, tomate seco, rúcula, tomate, hojas verdes y aliño de limón.', en: 'Beetroot hummus, roasted aubergine and courgette, sun-dried tomato, rocket, tomato, green leaves and lemon dressing.' },
