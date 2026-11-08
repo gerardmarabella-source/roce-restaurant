@@ -431,3 +431,15 @@ main { transform: none !important; transition: none !important; }
   .cv-cat-h { gap: 0.6rem; }
   .cv-cat-h h3 { font-size: clamp(1.2rem, 5.6vw, 1.5rem); }
 }
+
+/* Cada hoja lleva sus propios colores: al cambiar de carta, la hoja que se va conserva su color mientras gira
+   (antes tomaba al instante el de la nueva, y el giro se veía raro). */
+.cv-paper.is-kraft { --sheet: var(--kraft); --ink: #0a0a0a; }
+.cv-paper.is-olive { --sheet: var(--olive); --ink: var(--cream); }
+.cv-paper.is-red { --sheet: var(--red); --ink: var(--cream); }
+.cv-paper.is-dark { --sheet: #262624; --ink: var(--cream); }
+.cv-paper.is-cream { --sheet: var(--cream); --ink: #0a0a0a; }
+/* Coffee & Matcha: gris clarito */
+:root { --lgray: #d9d8d4; }
+html[data-sheet="lgray"] { --sheet: var(--lgray); --ink: #0a0a0a; }
+.cv-paper.is-lgray { --sheet: var(--lgray); --ink: #0a0a0a; }
