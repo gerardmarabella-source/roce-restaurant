@@ -154,10 +154,10 @@
     /* La frase se pega arriba y los cuadrados abajo; lo que sobra de alto se reparte: la frase crece (hasta el ancho que cabe)
        y, si no puede crecer más, los cuadrados se hacen más altos. 4,45 = alto de la frase en "em" (5 líneas). */
     --fw: min(calc((100vw - 2 * var(--pad)) / 3.87), 20rem);
-    --kh: 3.9; /* alto del bloque de la frase en «em» (con aire, en móvil) */
+    --kh: 3.1; /* alto del bloque de la frase en «em» (interlineado .84) */
     --shcap: calc(var(--sw) * 0.8);
     --shfloor: calc((var(--avail) - var(--ev-x)) * 0.17);
-    --sh: min(var(--shcap), max(var(--shfloor), calc((var(--avail) - var(--ev-x) - 0.4rem - 1.5rem - var(--fw) * var(--kh)) / 2)));
+    --sh: min(var(--shcap), max(var(--shfloor), calc((var(--avail) - var(--ev-x) - 0.4rem - 1.5rem - 0.95rem - var(--fw) * var(--kh)) / 2)));
     flex: 1;
     min-height: 0;
     display: flex;
@@ -172,7 +172,7 @@
   .home-statement {
     font-family: var(--display);
     font-weight: 400; /* Helvetica Neue tal cual (Regular de marca) */
-    font-size: min(var(--fw), calc((var(--avail) - 2 * var(--sh) - 0.4rem - 1.5rem - var(--ev-x)) / var(--kh)));
+    font-size: min(var(--fw), calc((var(--avail) - 2 * var(--sh) - 0.4rem - 1.5rem - 0.95rem - var(--ev-x)) / var(--kh)));
     width: auto;
     flex: 0 0 auto;
     margin: 0;
@@ -183,16 +183,13 @@
   }
   .home-statement .line { display: block; }
   .home-statement { margin-top: calc(0.5rem - 0.04em); }
+  /* Vertical: «TODO» arranca a la altura de la primera raya del icono del menú, con un pelín de margen respecto al borde. */
+  @media (max-aspect-ratio: 5/4) { .home-statement { margin-top: calc(1.45rem - 0.04em); } }
   .home-statement .line { text-align: left; }
   /* La frase en tres tamaños de menos a más (Todo < empieza < con un) y el logo ROCE, que mantiene el tamaño del bloque, cierra la escalera. */
-  .home-statement .l1 { font-size: 0.62em; }
-  .home-statement .l2 { font-size: 0.82em; }
-  .home-statement .l3 { font-size: 1em; }
-  /* Vertical: la frase con algo más de aire y el logo separado del texto, para que el bloque ocupe cerca de la mitad de la pantalla. */
-  @media (max-aspect-ratio: 5/4) and (max-width: 599px) {
-    .home-statement .l1, .home-statement .l2, .home-statement .l3 { line-height: 1; }
-    .home-statement .l4 { margin-top: 0.12em; }
-  }
+  .home-statement .l1 { font-size: 0.5em; }
+  .home-statement .l2 { font-size: 0.58em; }
+  .home-statement .l3 { font-size: 0.84em; }
   /* La última palabra es el logo de ROCE: casi el ancho de la palabra que sustituye, pegado a la derecha. */
   /* margin-top: el hueco visible (0,055 em bajo la línea base + 0,054 em) iguala al de las demás líneas (0,109 em). */
   .home-logo { display: block; margin: 0.054em 0 0 0; height: 1.5em; width: auto; }
@@ -388,16 +385,16 @@
 
   /* Tablet vertical: bloques algo más bajos para que la frase pueda crecer con el ancho. */
   @media (min-width: 600px) and (max-aspect-ratio: 5/4) {
-    .home-main { --kh: 3.62; --shcap: calc(var(--sw) * 0.62); --shfloor: calc((var(--avail) - var(--ev-x)) * 0.075); }
+    .home-main { --kh: 3.15; --shcap: calc(var(--sw) * 0.62); --shfloor: calc((var(--avail) - var(--ev-x)) * 0.075); }
   }
 
   /* Horizontal (escritorio, móvil tumbado): frase a la izquierda y los dos
      cuadrados apilados a la derecha. */
   @media (min-aspect-ratio: 5/4) {
     /* En horizontal las líneas del texto se escalan (--tx, lo calcula el script) para que el logo ROCE acabe a la altura del borde inferior del cuadrado de Coffee. */
-    .home-statement .l1 { font-size: calc(0.55em * var(--tx, 1)); }
-    .home-statement .l2 { font-size: calc(0.72em * var(--tx, 1)); }
-    .home-statement .l3 { font-size: calc(0.88em * var(--tx, 1)); }
+    .home-statement .l1 { font-size: calc(0.5em * var(--tx, 1)); }
+    .home-statement .l2 { font-size: calc(0.58em * var(--tx, 1)); }
+    .home-statement .l3 { font-size: calc(0.84em * var(--tx, 1)); }
     /* En horizontal el menú ocupa su franja arriba (si no, taparía el cuadrado de la derecha). */
     .home { --pad: 2.5rem; --head: 56px; --foot: 108px; position: relative; }
     .home-head { position: static; height: var(--head); flex-shrink: 0; }
@@ -722,16 +719,22 @@
       var b1 = bottom(1), b2 = bottom(1.3), k = (b2 - b1) / 0.3;
       var tx = k > 1 ? 1 + (target - b1) / k : 1;
       // el texto más ancho no puede superar el ancho del logo
-      var lw = logo.getBoundingClientRect().width, maxTx = 1.6;
+      var lw = logo.getBoundingClientRect().width * 0.8, maxTx = 1.6;
       st.style.setProperty('--tx', 1);
       [].forEach.call(lines, function (l, i) { if (i > 2) return; var r = document.createRange(); r.selectNodeContents(l); var w = r.getBoundingClientRect().width; if (w > 0) maxTx = Math.min(maxTx, lw / w); });
       st.style.setProperty('--tx', Math.max(0.5, Math.min(tx, maxTx)).toFixed(3));
       // Si por el ancho el bloque no llega al borde inferior del cuadrado de Coffee, el sobrante se reparte entre las líneas:
       // la primera queda arriba y el logo ROCE acaba justo en esa línea.
+      // El interlineado no se toca más que un poco (hasta 0,06 em por hueco): lo que falte se baja todo el bloque.
       var short = target - lbottom();
       if (short > 1) {
-        st.style.height = (st.getBoundingClientRect().height + short) + 'px';
-        st.style.display = 'flex'; st.style.flexDirection = 'column'; st.style.justifyContent = 'space-between';
+        var spread = Math.min(short, 3 * 0.06 * parseFloat(getComputedStyle(st).fontSize));
+        if (spread > 1) {
+          st.style.height = (st.getBoundingClientRect().height + spread) + 'px';
+          st.style.display = 'flex'; st.style.flexDirection = 'column'; st.style.justifyContent = 'space-between';
+        }
+        var rest = target - lbottom();
+        if (rest > 1) { st.style.position = 'relative'; st.style.top = rest + 'px'; }
       }
     }
     function fitStatement() {
@@ -739,7 +742,7 @@
       if (!st || !home) return;
       st.style.fontSize = '';
       st.style.removeProperty('--tx');
-      st.style.height = ''; st.style.display = ''; st.style.flexDirection = ''; st.style.justifyContent = '';
+      st.style.height = ''; st.style.display = ''; st.style.flexDirection = ''; st.style.justifyContent = ''; st.style.position = ''; st.style.top = '';
       if (!window.matchMedia('(min-aspect-ratio: 5/4)').matches) return;
       alignLogoToDay(st);
       var floor = Math.min(home.getBoundingClientRect().bottom, window.innerHeight) - 6, r = st.getBoundingClientRect(), room = floor - r.top;
