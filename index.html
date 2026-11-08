@@ -153,8 +153,8 @@
     --ev-x: calc(var(--ev-n) * (var(--ev-h) + var(--gap)));
     /* La frase se pega arriba y los cuadrados abajo; lo que sobra de alto se reparte: la frase crece (hasta el ancho que cabe)
        y, si no puede crecer más, los cuadrados se hacen más altos. 4,45 = alto de la frase en "em" (5 líneas). */
-    --fw: min(calc((100vw - 2 * var(--pad)) / 4.0), 14rem);
-    --shcap: calc(var(--sw) * 0.55);
+    --fw: min(calc((100vw - 2 * var(--pad)) / 4.0), 11.5rem, calc(var(--avail) * 0.176));
+    --shcap: calc(var(--sw) * 0.8);
     --shfloor: calc((var(--avail) - var(--ev-x)) * 0.17);
     --sh: min(var(--shcap), max(var(--shfloor), calc((var(--avail) - var(--ev-x) - 0.4rem - 1.5rem - var(--fw) * 3.4) / 2)));
     flex: 1;
