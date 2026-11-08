@@ -6,10 +6,10 @@
   var UI = {
     es: { nutri: 'Valores nutricionales por ración: calorías, proteínas, hidratos y grasas', allergies: 'Alergias', al_leg: 'Alérgenos', filters: 'Filtros', f_h: 'Filtra la carta', f_p: 'Marca alérgenos, tipo de dieta o ingredientes y te mostramos solo lo que encaja.', diet_h: 'Tipo de dieta', al_t: 'Alérgenos (ocultamos los platos que los llevan)', ing_h: 'Ingredientes', clear: 'Quitar todo', clear_sec: 'Borrar', done: 'Ver carta', without: 'Sin', with_: 'Con', pending: 'Consúltalo con el equipo', soon: 'Muy pronto', soon_p: 'Estamos preparando esta carta.',
       b_al: 'Sin alérgenos', b_diet: 'Dieta', diet_note: 'La dieta y los ingredientes son orientativos según lo que figura en la carta. Si tienes dudas, pregunta al equipo.',
-      note: 'Si tienes alguna alergia o intolerancia, avisa a nuestro equipo antes de pedir. Pueden existir trazas de otros alérgenos. Los alérgenos de las bebidas los confirma el equipo.', remove: 'Quitar filtros', next: 'Sigue bajando para ver', menu: 'Carta', menu_btn: 'Menú', close: 'Cerrar', cats: 'Categorías' },
+      note: 'Si tienes alguna alergia o intolerancia, avisa a nuestro equipo antes de pedir. Pueden existir trazas de otros alérgenos. Los alérgenos de las bebidas los confirma el equipo. «High protein»: al menos el 20 % de la energía del plato procede de proteínas. «Vegano» (hoja): según los ingredientes indicados, sin contar posibles trazas.', remove: 'Quitar filtros', next: 'Sigue bajando para ver', menu: 'Carta', menu_btn: 'Menú', close: 'Cerrar', cats: 'Categorías' },
     en: { nutri: 'Nutrition per serving: calories, protein, carbs and fat', allergies: 'Allergies', al_leg: 'Allergens', filters: 'Filters', f_h: 'Filter the menu', f_p: 'Tick allergens, diet or ingredients and we will show only what fits.', diet_h: 'Diet', al_t: 'Allergens (we hide dishes containing them)', ing_h: 'Ingredients', clear: 'Clear all', clear_sec: 'Clear', done: 'See menu', without: 'Without', with_: 'With', pending: 'Ask our team', soon: 'Coming soon', soon_p: 'We are preparing this menu.',
       b_al: 'Without allergens', b_diet: 'Diet', diet_note: 'Diet and ingredients are indicative, based on what the menu lists. If in doubt, ask our team.',
-      note: 'If you have any allergy or intolerance, please tell our team before ordering. Traces of other allergens may be present. Allergens in drinks are confirmed by our team.', remove: 'Clear filters', next: 'Keep scrolling to see', menu: 'Menu', menu_btn: 'Menu', close: 'Close', cats: 'Categories' }
+      note: 'If you have any allergy or intolerance, please tell our team before ordering. Traces of other allergens may be present. Allergens in drinks are confirmed by our team. "High protein": at least 20% of the dish\'s energy comes from protein. "Vegan" (leaf): based on the listed ingredients, traces not included.', remove: 'Clear filters', next: 'Keep scrolling to see', menu: 'Menu', menu_btn: 'Menu', close: 'Close', cats: 'Categories' }
   };
   var DIETS = [
     { k: 'veg', es: 'Vegetariano', en: 'Vegetarian' }, { k: 'vegan', es: 'Vegano', en: 'Vegan' }, { k: 'pesc', es: 'Pescetariano', en: 'Pescatarian' },
@@ -83,11 +83,31 @@
     return '<p class="cv-nut" aria-label="' + esc(ui('nutri')) + '"><span><b>' + l[0] + '</b> ' + n[0] + '</span><span><b>' + l[1] + '</b> ' + n[1] + ' g</span><span><b>' + l[2] + '</b> ' + n[2] + ' g</span><span><b>' + l[3] + '</b> ' + n[3] + ' g</span></p>';
   }
   /* ── Platos y listas ── */
+  /* «High protein»: solo en platos con valores propios (no estimados) y si al menos el 20 % de la energía procede de proteínas
+     (declaración nutricional «alto contenido en proteínas», Reglamento (CE) 1924/2006). Se calcula con los valores de cada plato. */
+  var HP_MIN = 0.25;   // mínimo legal 20 %; en ROCE se exige el 25 % para tener margen con el redondeo de los valores
+  var HP_BLOCKS = ['Tostadas', 'Açaí & Yogur', 'Sándwiches', 'Starters', 'Pokes', 'Platos ROCE'];
+  function highProtein(it, blk) { return !!(it.nut && !it.nutEst && it.nut[0] > 0 && HP_BLOCKS.indexOf(blk.key || (blk.title && blk.title.es)) !== -1 && it.nut[1] * 4 / it.nut[0] >= HP_MIN); }
+  /* Vegano (hoja): solo platos con descripción, que salen veganos del análisis de ingredientes y alérgenos, o confirmados a mano con
+     `diet: ['vegan']` en menu.js. Sin descripción no hay forma de saberlo; con granola (puede llevar miel) se exige confirmación a mano. */
+  function isVegan(it, blk) {
+    if (HP_BLOCKS.indexOf(blk.key || (blk.title && blk.title.es)) === -1) return false;
+    if (Array.isArray(it.diet)) return it.diet.indexOf('vegan') !== -1;
+    return !!it.es && analyze(it, blk).dt.vegan === 'y' && !/granola/.test(norm([it.name, it.es].join(' ')));
+  }
+  var LEAF = '<svg class="cv-leaf" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 19.5C4.5 10 10 4 20 4c0 10-6 15.500-15.500 15.500Z"/><path d="M4.5 19.500 13 11"/></svg>';
+  function tags(it, blk) {
+    var t = '';
+    if (isVegan(it, blk)) t += '<span class="cv-vg" title="' + esc(L === 'en' ? 'Vegan, based on the listed ingredients' : 'Vegano, según los ingredientes indicados') + '">' + LEAF + (L === 'en' ? 'Vegan' : 'Vegano') + '</span>';
+    if (highProtein(it, blk)) t += '<span class="cv-hp" title="' + esc(L === 'en' ? 'At least 20% of the energy comes from protein' : 'Al menos el 20 % de la energía procede de proteínas') + '">High protein</span>';
+    return t ? '<p class="cv-hp-row">' + t + '</p>' : '';
+  }
   function item(it, blk, n) {
     var dup = it.code && it.code === it.name;
     var h = '<li class="cv-item" id="it-' + blk._id + '-' + n + '"' + attrs(it, blk) + '><div class="cv-i-main"><div class="cv-i-top"><span class="cv-i-name">' +
       (it.code && !dup ? '<em>' + esc(it.code) + '</em>' : '') + esc(it.name) + (it.note ? ' <small>' + esc(tx(it.note)) + '</small>' : '') + als(it.al) +
-      (blk.alPending ? '<span class="cv-pend">' + esc(ui('pending')) + '</span>' : '') + '</span><span class="cv-price">' + money(it.price) + '</span></div>';
+      (blk.alPending ? '<span class="cv-pend">' + esc(ui('pending')) + '</span>' : '') + '</span><span class="cv-price">' + money(it.price) + '</span></div>' +
+      tags(it, blk);
     if (it.es) h += '<p class="cv-i-desc">' + esc(tx({ es: it.es, en: it.en })) + '</p>';
     if (it.tag) h += '<p class="cv-i-desc cv-i-tag">' + esc(tx(it.tag)) + '</p>';
     if (it.nut) h += nut(it.nut);

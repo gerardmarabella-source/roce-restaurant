@@ -42,7 +42,7 @@ window.CARTA = {
               title: { es: 'Sándwiches', en: 'Sandwiches' }, note: { es: 'Todo el día', en: 'All day' },
               items: [
                 { name: 'Chicken Joe', al: [1, 3], nut: [632, 38, 49, 28], price: 12.5, es: 'Pollo a la brasa, bacon, tomate, hojas verdes y mayonesa de ajo asado.', en: 'Grilled chicken, bacon, tomato, green leaves and roasted garlic mayo.' },
-                { name: 'Terra', al: [1, 11], nut: [460, 18, 52, 20], price: 10.5, es: 'Hummus de remolacha, berenjena y calabacín asados, tomate seco, rúcula, tomate, hojas verdes y aliño de limón.', en: 'Beetroot hummus, roasted aubergine and courgette, sun-dried tomato, rocket, tomato, green leaves and lemon dressing.' },
+                { name: 'Terra', diet: ['veg', 'pesc', 'lf'], al: [1, 11], nut: [460, 18, 52, 20], price: 10.5, es: 'Hummus de remolacha, berenjena y calabacín asados, tomate seco, rúcula, tomate, hojas verdes y aliño de limón.', en: 'Beetroot hummus, roasted aubergine and courgette, sun-dried tomato, rocket, tomato, green leaves and lemon dressing.' },
                 { name: 'New York 1888', al: [1, 7, 10], nut: [712, 36, 54, 38], price: 13.5, es: 'Pastrami, queso suizo, pepinillos, mostaza ROCE y rúcula.', en: 'Pastrami, Swiss cheese, pickles, ROCE mustard and rocket.' },
                 { name: 'Liguria', al: [1, 7, 8], nut: [676, 40, 50, 36], price: 13.5, es: 'Pollo a la brasa, pesto verde, queso cheddar y queso Edam, rúcula.', en: 'Grilled chicken, green pesto, cheddar and Edam cheese, rocket.' }
               ]
@@ -83,7 +83,7 @@ window.CARTA = {
                 { name: 'Citric Nordic', al: [4, 11], nut: [682, 38, 56, 32], price: 17.5, es: 'Salmón a la brasa, arroz salvaje, aguacate, pepino, cebolla encurtida, mezcla verde, sésamo, hierbas frescas y vinagreta cítrica.', en: 'Grilled salmon, wild rice, avocado, cucumber, pickled onion, mixed greens, sesame, fresh herbs and citrus vinaigrette.' },
                 { name: 'Muuuuuucho Beef', al: [7], nut: [756, 48, 60, 36], price: 18.5, es: 'Filete de ternera, patata, maíz, rúcula, cebolla encurtida, kikos, especias ahumadas y chimichurri verde.', en: 'Beef fillet, potato, corn, rocket, pickled onion, toasted corn, smoked spices and green chimichurri.' },
                 { name: 'Falafel & Hummus', al: [11], nut: [618, 22, 68, 28], price: 13.5, es: 'Falafel, hummus de remolacha, pepino, granada, col, mezcla verde, lenteja beluga, sésamo, tahini de limón y salsa yogur limón.', en: 'Falafel, beetroot hummus, cucumber, pomegranate, cabbage, mixed greens, beluga lentils, sesame, lemon tahini and lemon yogurt sauce.' },
-                { name: 'La Huerta', al: [11], nut: [548, 16, 66, 26], price: 12.5, es: 'Hummus de remolacha, arándanos, berenjena y calabacín asados, mezcla verde, brotes, albahaca, vinagreta cítrica, cebolla encurtida asada, DUKA ROCE y sal / oliva.', en: 'Beetroot hummus, blueberries, roasted aubergine and courgette, mixed greens, sprouts, basil, citrus vinaigrette, roasted pickled onion, ROCE DUKA and salt / olive oil.' }
+                { name: 'La Huerta', diet: ['veg', 'pesc', 'gf', 'lf'], al: [11], nut: [548, 16, 66, 26], price: 12.5, es: 'Hummus de remolacha, arándanos, berenjena y calabacín asados, mezcla verde, brotes, albahaca, vinagreta cítrica, cebolla encurtida asada, DUKA ROCE y sal / oliva.', en: 'Beetroot hummus, blueberries, roasted aubergine and courgette, mixed greens, sprouts, basil, citrus vinaigrette, roasted pickled onion, ROCE DUKA and salt / olive oil.' }
               ]
             },
             {
