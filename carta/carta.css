@@ -446,3 +446,8 @@ html[data-sheet="lgray"] { --sheet: var(--lgray); --ink: #0a0a0a; }
 /* Insignia «High protein» (platos con al menos el 20 % de la energía en proteínas) */
 .cv-hp { display: inline-block; align-self: center; padding: 0.12rem 0.4rem 0.1rem; border: 1.5px solid currentColor; font-size: 0.6rem; font-weight: 700; letter-spacing: 0.1em; line-height: 1.25; text-transform: uppercase; white-space: nowrap; }
 .cv-hp-row { margin: 0.4rem 0 0; }
+
+/* Insignia «Vegano» (hoja) junto a High protein, siempre en la fila bajo el nombre */
+.cv-hp-row { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+.cv-vg { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.12rem 0.45rem 0.1rem 0.35rem; border: 1.5px solid currentColor; font-size: 0.6rem; font-weight: 700; letter-spacing: 0.1em; line-height: 1.25; text-transform: uppercase; white-space: nowrap; }
+.cv-leaf { width: 0.95rem; height: 0.95rem; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
