@@ -149,11 +149,11 @@
     --sw: calc(100vw - 2 * var(--pad));
     /* Franja del evento bajo los dos cuadrados (--ev-n = 1 si hay evento; lo fija el script). Su alto se descuenta del resto para no hacer scroll. */
     --ev-n: 0;
-    --ev-h: clamp(2.6rem, calc(var(--avail) * 0.075), 3.6rem);
+    --ev-h: clamp(2rem, calc(var(--avail) * 0.056), 2.7rem);
     --ev-x: calc(var(--ev-n) * (var(--ev-h) + var(--gap)));
     /* La frase se pega arriba y los cuadrados abajo; lo que sobra de alto se reparte: la frase crece (hasta el ancho que cabe)
        y, si no puede crecer más, los cuadrados se hacen más altos. 4,45 = alto de la frase en "em" (5 líneas). */
-    --fw: min(calc((100vw - 2 * var(--pad)) / 4.45), 14rem);
+    --fw: min(calc((100vw - 2 * var(--pad)) / 4.85), 14rem);
     --shcap: calc(var(--sw) * 0.55);
     --shfloor: calc((var(--avail) - var(--ev-x)) * 0.17);
     --sh: min(var(--shcap), max(var(--shfloor), calc((var(--avail) - var(--ev-x) - var(--gap) - 1.5rem - var(--fw) * 3.2) / 2)));
@@ -303,7 +303,7 @@
     border: 3px solid var(--core); border-radius: 999px;
     box-shadow: 0 0 3px var(--core), 0 0 8px var(--neon), inset 0 0 14px rgba(255, 42, 31, 0.55), inset 0 0 30px rgba(255, 42, 31, 0.25);
     --evp: calc(min(var(--sw), var(--sh)) * 0.09 + 0.4rem);
-    --evfs: clamp(0.72rem, min(9.6cqw, calc(var(--sh) * 0.15)), 2.5rem);
+    --evfs: clamp(0.58rem, min(7.4cqw, calc(var(--sh) * 0.115)), 1.95rem);
     padding-left: var(--evp); padding-right: 0; overflow: visible; position: relative;
     animation: neonOn 1.1s steps(1, end) 1 both;
   }
@@ -375,7 +375,7 @@
   /* Cuadrados anchos (tablet): el nombre de cada espacio cabe entero en una línea. */
   @media (min-width: 600px) {
     .home-square strong.home-name { white-space: nowrap; font-size: clamp(0.8rem, min(5.3cqw, calc(var(--sh) * 0.16)), 2.4rem); }
-    .home-square-event { --evfs: clamp(0.8rem, min(5.3cqw, calc(var(--sh) * 0.16)), 2.4rem); }
+    .home-square-event { --evfs: clamp(0.64rem, min(4.1cqw, calc(var(--sh) * 0.125)), 1.9rem); }
     .home-square small { font-size: clamp(0.55rem, min(3.4cqw, calc(var(--sh) * 0.095)), 1.1rem); }
     .home-name span { display: inline; }
   }
@@ -395,8 +395,8 @@
       padding-bottom: var(--foot); /* el pie flota abajo: los cuadrados no lo pisan */
       --s: min(calc((var(--avail) - var(--gap) - var(--ev-x)) / 2), 30vw);
       /* Los cuadrados ceden ancho (hasta un mínimo) para que la frase pueda crecer hasta tocar el suelo. */
-      --hcap: calc((100dvh - 0.9rem) / 3.55);
-      --sw: max(24rem, min(calc(var(--s) * 1.9), 38vw, calc(100vw - 2 * var(--pad) - 2rem - 4.4 * var(--hcap))));
+      --hcap: calc((100dvh - 0.9rem) / 3.85);
+      --sw: max(24rem, min(calc(var(--s) * 1.9), 38vw, calc(100vw - 2 * var(--pad) - 2rem - 4.8 * var(--hcap))));
       --sh: var(--s);
       flex-direction: row;
       align-items: center;
@@ -407,11 +407,11 @@
     .home-top { flex: 1; min-width: 0; width: auto; align-self: flex-start; margin-top: calc(-1 * var(--head)); }
     .home-statement {
       /* La frase ocupa TODO el alto de la pantalla: el logo ROCE toca el suelo. */
-      font-size: min(22rem, var(--hcap), calc((100vw - 2 * var(--pad) - var(--sw) - 2rem) / 4.4));
+      font-size: min(22rem, var(--hcap), calc((100vw - 2 * var(--pad) - var(--sw) - 2rem) / 4.8));
     }
     /* Cuadrados más anchos: el nombre de cada espacio cabe entero en una línea. */
     .home-square strong.home-name { white-space: nowrap; font-size: clamp(0.8rem, min(5.3cqw, calc(var(--sh) * 0.16)), 2.4rem); }
-    .home-square-event { --evfs: clamp(0.8rem, min(5.3cqw, calc(var(--sh) * 0.16)), 2.4rem); }
+    .home-square-event { --evfs: clamp(0.64rem, min(4.1cqw, calc(var(--sh) * 0.125)), 1.9rem); }
     .home-square small { font-size: clamp(0.55rem, min(3.4cqw, calc(var(--sh) * 0.095)), 1.1rem); }
     .home-name span { display: inline; }
     .home-squares { display: flex; flex-direction: column; justify-content: flex-start; }
