@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+<link rel="preconnect" href="https://lhwmtknmjmhktpkcngyz.supabase.co" crossorigin>
 <meta charset="UTF-8">
 <meta name="facebook-domain-verification" content="97fpm62p3em57kqqspxh7niyrgvcj8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -277,6 +278,10 @@
      · NOCHE (urbano): neón rojo retro (tubo, halo que titila, etiqueta roja «Ahora» pegada arriba). */
   .home-square-event { flex-direction: row; align-items: center; justify-content: space-between; gap: 0.7rem; height: var(--ev-h); padding: 0 calc(min(var(--sw), var(--sh)) * 0.09); }
   .home-square-event[hidden] { display: none; }
+  /* Al aparecer, la franja entra con un fundido breve (no «salta» al cargar la lista). */
+  .home-square-event:not([hidden]) { animation: heIn 0.5s ease-out both; }
+  @keyframes heIn { from { opacity: 0; } to { opacity: 1; } }
+  @media (prefers-reduced-motion: reduce) { .home-square-event:not([hidden]) { animation: none; } }
   .home-square-event .he-text { flex: 1; min-width: 0; overflow: hidden; white-space: nowrap; }
   .home-square-event .mq { display: inline-block; white-space: nowrap; }
   .home-square-event .he-unit { display: inline-block; }
@@ -640,7 +645,7 @@
 <script src="/cookies.js?v=5"></script>
 <script src="/i18n.js?v=107"></script>
 <script src="/eventos/config.js?v=2"></script>
-<script src="/eventos/events.js?v=13"></script>
+<script src="/eventos/events.js?v=14"></script>
 
 <script>
   // Se marca "Ahora" en lo que está abierto según la hora de Valencia (Day de
@@ -752,7 +757,10 @@
     window.addEventListener('load', fitStatement);
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitStatement);
     fitStatement();
-    if (window.ROCE_EVENTS_READY) window.ROCE_EVENTS_READY.then(function (list) { EVENTS = list; renderLive(); });
+    // La franja del evento se pinta al instante con la última lista guardada (sin esperar a la red) y se refresca solo si algo ha cambiado.
+    function sig(l) { return l.map(function (e) { return [e.id, e.starts_at, e.env, e.title.es, e.title.en].join('~'); }).join('|'); }
+    if (window.ROCE_EVENTS_CACHED && window.ROCE_EVENTS_CACHED.length) EVENTS = window.ROCE_EVENTS_CACHED;
+    if (window.ROCE_EVENTS_READY) window.ROCE_EVENTS_READY.then(function (list) { var changed = sig(list) !== sig(EVENTS); EVENTS = list; if (changed) renderLive(); });
     document.addEventListener('roce:lang', renderLive);
 
     renderLive();
