@@ -157,7 +157,7 @@
     --kh: 3.1; /* alto del bloque de la frase en «em» (interlineado .84) */
     --shcap: calc(var(--sw) * 0.8);
     --shfloor: calc((var(--avail) - var(--ev-x)) * 0.17);
-    --sh: min(var(--shcap), max(var(--shfloor), calc((var(--avail) - var(--ev-x) - 0.4rem - 1.5rem - var(--fw) * var(--kh)) / 2)));
+    --sh: min(var(--shcap), max(var(--shfloor), calc((var(--avail) - var(--ev-x) - 0.4rem - 1.5rem - 0.95rem - var(--fw) * var(--kh)) / 2)));
     flex: 1;
     min-height: 0;
     display: flex;
@@ -172,7 +172,7 @@
   .home-statement {
     font-family: var(--display);
     font-weight: 400; /* Helvetica Neue tal cual (Regular de marca) */
-    font-size: min(var(--fw), calc((var(--avail) - 2 * var(--sh) - 0.4rem - 1.5rem - var(--ev-x)) / var(--kh)));
+    font-size: min(var(--fw), calc((var(--avail) - 2 * var(--sh) - 0.4rem - 1.5rem - 0.95rem - var(--ev-x)) / var(--kh)));
     width: auto;
     flex: 0 0 auto;
     margin: 0;
@@ -183,6 +183,8 @@
   }
   .home-statement .line { display: block; }
   .home-statement { margin-top: calc(0.5rem - 0.04em); }
+  /* Vertical: «TODO» arranca a la altura de la primera raya del icono del menú, con un pelín de margen respecto al borde. */
+  @media (max-aspect-ratio: 5/4) { .home-statement { margin-top: calc(1.45rem - 0.04em); } }
   .home-statement .line { text-align: left; }
   /* La frase en tres tamaños de menos a más (Todo < empieza < con un) y el logo ROCE, que mantiene el tamaño del bloque, cierra la escalera. */
   .home-statement .l1 { font-size: 0.5em; }
