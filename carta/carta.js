@@ -85,8 +85,9 @@
   /* ── Platos y listas ── */
   /* «High protein»: solo en platos con valores propios (no estimados) y si al menos el 20 % de la energía procede de proteínas
      (declaración nutricional «alto contenido en proteínas», Reglamento (CE) 1924/2006). Se calcula con los valores de cada plato. */
+  var HP_MIN = 0.22;   // mínimo legal 20 %; se exige un poco más (22 %) para tener margen con el redondeo de los valores
   var HP_BLOCKS = ['Tostadas', 'Açaí & Yogur', 'Sándwiches', 'Starters', 'Pokes', 'Platos ROCE'];
-  function highProtein(it, blk) { return !!(it.nut && !it.nutEst && it.nut[0] > 0 && HP_BLOCKS.indexOf(blk.key || (blk.title && blk.title.es)) !== -1 && it.nut[1] * 4 / it.nut[0] >= 0.2); }
+  function highProtein(it, blk) { return !!(it.nut && !it.nutEst && it.nut[0] > 0 && HP_BLOCKS.indexOf(blk.key || (blk.title && blk.title.es)) !== -1 && it.nut[1] * 4 / it.nut[0] >= HP_MIN); }
   function item(it, blk, n) {
     var dup = it.code && it.code === it.name;
     var h = '<li class="cv-item" id="it-' + blk._id + '-' + n + '"' + attrs(it, blk) + '><div class="cv-i-main"><div class="cv-i-top"><span class="cv-i-name">' +
