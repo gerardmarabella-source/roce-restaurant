@@ -361,7 +361,7 @@
 <body>
 
 <header class="topbar">
-  <a href="/" aria-label="ROCE — inicio"><img class="nav-logo" id="navLogo" src="/assets/logo/roce-horizontal-white.png" alt="ROCE"></a>
+  <a href="/" aria-label="ROCE — inicio"><img class="nav-logo" id="navLogo" src="/assets/logo/roce-horizontal-white.svg" alt="ROCE"></a>
 </header>
 
 <main class="reserve-form-page">
@@ -443,7 +443,7 @@
 </section>
 
 <footer class="site-footer">
-  <img class="footer-logo" id="footerLogo" src="/assets/logo/roce-tilted-white.png" alt="ROCE">
+  <img class="footer-logo" id="footerLogo" src="/assets/logo/roce-tilted-white.svg" alt="ROCE">
   <div class="footer-info">
     <p class="footer-headline">Restaurant &amp; Cocktails</p>
     <p class="footer-line">Marqués del Túria 16</p>
@@ -506,8 +506,8 @@
     document.getElementById('panelBooking').hidden = zone === 'all';
     const day = zone === 'day';
     document.querySelector('.footer-headline').textContent = day ? 'Coffee, Bakery & Kitchen' : 'Restaurant & Cocktails';
-    document.getElementById('footerLogo').setAttribute('src', '/assets/logo/roce-tilted-' + (day ? 'black' : 'white') + '.png');
-    document.getElementById('navLogo').setAttribute('src', '/assets/logo/roce-horizontal-' + (day ? 'black' : 'white') + '.png');
+    document.getElementById('footerLogo').setAttribute('src', '/assets/logo/roce-tilted-' + (day ? 'black' : 'white') + '.svg');
+    document.getElementById('navLogo').setAttribute('src', '/assets/logo/roce-horizontal-' + (day ? 'black' : 'white') + '.svg');
     if (window.ROCE_MESAS) window.ROCE_MESAS.setAmbience(zone);
   }
   zoneTabs.forEach((b) => b.addEventListener('click', () => {

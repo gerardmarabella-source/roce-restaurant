@@ -429,7 +429,7 @@
     .home-squares { display: flex; flex-direction: column; justify-content: flex-start; }
     /* El pie (Instagram, idioma y avisos legales) flota abajo, bajo los cuadrados, para que la frase llegue hasta el borde. */
     .home-foot { position: absolute; right: var(--pad); bottom: 0; height: auto; align-items: flex-end; text-align: right; padding: 0 0 0.7rem; white-space: nowrap; z-index: 3; }
-    .home-foot .lang-switch { justify-content: flex-end; }
+    .home-foot .lang-switch { justify-content: center; }
     .home-square-day, .home-square-night, .home-square-event { align-self: flex-end; }
   }
 
@@ -569,8 +569,8 @@
       <span class="line l3"><span data-i18n="home_w3">con</span> <span data-i18n="home_w4">un</span></span>
       <span class="line l4">
         <span class="visually-hidden" data-i18n="home_w5">roce</span>
-        <img class="home-logo home-logo-black" src="/assets/logo/roce-horizontal-black.png" alt="" aria-hidden="true">
-        <img class="home-logo home-logo-white" src="/assets/logo/roce-horizontal-white.png" alt="" aria-hidden="true">
+        <img class="home-logo home-logo-black" src="/assets/logo/roce-horizontal-black.svg" alt="" aria-hidden="true">
+        <img class="home-logo home-logo-white" src="/assets/logo/roce-horizontal-white.svg" alt="" aria-hidden="true">
       </span>
     </h1>
     </div>
@@ -742,7 +742,17 @@
         if (rest > 1) { st.style.position = 'relative'; st.style.top = rest + 'px'; }
       }
     }
+    // Escritorio: el pie (Instagram, idioma y avisos legales) queda centrado bajo la columna de cuadrados. En pantallas muy anchas
+    // (9/5 o más) sigue centrado en la página, como define su regla de CSS.
+    function centerFoot() {
+      var foot = document.querySelector('.home-foot'), sq = document.querySelector('.home-squares'); if (!foot || !sq) return;
+      foot.style.width = foot.style.right = foot.style.alignItems = foot.style.textAlign = foot.style.whiteSpace = '';
+      var m = window.matchMedia; if (!m('(min-aspect-ratio: 5/4)').matches || m('(min-aspect-ratio: 9/5)').matches) return;
+      var r = sq.getBoundingClientRect(); if (r.width < 50) return;
+      foot.style.width = r.width + 'px'; foot.style.right = (window.innerWidth - r.right) + 'px'; foot.style.alignItems = 'center'; foot.style.textAlign = 'center'; foot.style.whiteSpace = 'normal';
+    }
     function fitStatement() {
+      centerFoot();
       var st = document.querySelector('.home-statement'), home = document.querySelector('.home');
       if (!st || !home) return;
       st.style.fontSize = '';
