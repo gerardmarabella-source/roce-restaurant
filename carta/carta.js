@@ -91,8 +91,8 @@
     var dup = it.code && it.code === it.name;
     var h = '<li class="cv-item" id="it-' + blk._id + '-' + n + '"' + attrs(it, blk) + '><div class="cv-i-main"><div class="cv-i-top"><span class="cv-i-name">' +
       (it.code && !dup ? '<em>' + esc(it.code) + '</em>' : '') + esc(it.name) + (it.note ? ' <small>' + esc(tx(it.note)) + '</small>' : '') + als(it.al) +
-      (highProtein(it, blk) ? '<span class="cv-hp" title="' + esc(L === 'en' ? 'At least 20% of the energy comes from protein' : 'Al menos el 20 % de la energía procede de proteínas') + '">High protein</span>' : '') +
-      (blk.alPending ? '<span class="cv-pend">' + esc(ui('pending')) + '</span>' : '') + '</span><span class="cv-price">' + money(it.price) + '</span></div>';
+      (blk.alPending ? '<span class="cv-pend">' + esc(ui('pending')) + '</span>' : '') + '</span><span class="cv-price">' + money(it.price) + '</span></div>' +
+      (highProtein(it, blk) ? '<p class="cv-hp-row"><span class="cv-hp" title="' + esc(L === 'en' ? 'At least 20% of the energy comes from protein' : 'Al menos el 20 % de la energía procede de proteínas') + '">High protein</span></p>' : '');
     if (it.es) h += '<p class="cv-i-desc">' + esc(tx({ es: it.es, en: it.en })) + '</p>';
     if (it.tag) h += '<p class="cv-i-desc cv-i-tag">' + esc(tx(it.tag)) + '</p>';
     if (it.nut) h += nut(it.nut);
