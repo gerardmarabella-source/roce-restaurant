@@ -400,7 +400,7 @@
       --s: min(calc((var(--avail) - var(--gap) - var(--ev-x)) / 2), 30vw);
       /* Los cuadrados ceden ancho (hasta un mínimo) para que la frase pueda crecer hasta tocar el suelo. */
       --hcap: calc((100dvh - 0.9rem) / 3.85);
-      --sw: max(24rem, min(calc(var(--s) * 1.9), 38vw, calc(100vw - 2 * var(--pad) - 2rem - 4.8 * var(--hcap))));
+      --sw: max(min(24rem, 32vw), min(calc(var(--s) * 1.9), 38vw, calc(100vw - 2 * var(--pad) - 2rem - 4.8 * var(--hcap))));
       --sh: var(--s);
       flex-direction: row;
       align-items: center;
@@ -718,12 +718,20 @@
       st.style.setProperty('--tx', 1);
       [].forEach.call(lines, function (l, i) { if (i > 2) return; var r = document.createRange(); r.selectNodeContents(l); var w = r.getBoundingClientRect().width; if (w > 0) maxTx = Math.min(maxTx, lw / w); });
       st.style.setProperty('--tx', Math.max(0.5, Math.min(tx, maxTx)).toFixed(3));
+      // Si por el ancho el bloque no llega al borde inferior del cuadrado de Coffee, el sobrante se reparte entre las líneas:
+      // la primera queda arriba y el logo ROCE acaba justo en esa línea.
+      var short = target - logo.getBoundingClientRect().bottom;
+      if (short > 1) {
+        st.style.height = (st.getBoundingClientRect().height + short) + 'px';
+        st.style.display = 'flex'; st.style.flexDirection = 'column'; st.style.justifyContent = 'space-between';
+      }
     }
     function fitStatement() {
       var st = document.querySelector('.home-statement'), home = document.querySelector('.home');
       if (!st || !home) return;
       st.style.fontSize = '';
       st.style.removeProperty('--tx');
+      st.style.height = ''; st.style.display = ''; st.style.flexDirection = ''; st.style.justifyContent = '';
       if (!window.matchMedia('(min-aspect-ratio: 5/4)').matches) return;
       alignLogoToDay(st);
       var floor = Math.min(home.getBoundingClientRect().bottom, window.innerHeight) - 6, r = st.getBoundingClientRect(), room = floor - r.top;
