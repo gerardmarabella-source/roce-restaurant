@@ -186,3 +186,8 @@
 .mt-rz { position: absolute; right: -6px; bottom: -6px; width: 14px; height: 14px; background: var(--fg); border: 2px solid var(--bg); cursor: nwse-resize; pointer-events: auto; touch-action: none; }
 #mtCtxName { padding: 0.35rem 0.5rem; border: 1px solid var(--fg); background: var(--bg); color: var(--fg); font: inherit; width: 11rem; }
 .mt-ctx.is-csel { overflow: visible; }
+
+/* Cuenta pedida: la mesa y su barra pasan a amarillo hasta que se marca «Terminada». */
+.mt-t.is-bill { background: #ffd84d; border-color: #e0b400; color: #0a0a0a; }
+.mt-bar.is-bill { background: #ffd84d; border-color: #e0b400; color: #0a0a0a; }
+.mt-dot.is-bill { background: #ffd84d; border-color: #e0b400; }
