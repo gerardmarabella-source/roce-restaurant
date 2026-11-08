@@ -104,8 +104,7 @@
   function item(it, blk, n) {
     var dup = it.code && it.code === it.name;
     var h = '<li class="cv-item" id="it-' + blk._id + '-' + n + '"' + attrs(it, blk) + '><div class="cv-i-main"><div class="cv-i-top"><span class="cv-i-name">' +
-      (it.code && !dup ? '<em>' + esc(it.code) + '</em>' : '') + esc(it.name) + (it.note ? ' <small>' + esc(tx(it.note)) + '</small>' : '') + als(it.al) +
-      (isVegan(it, blk) ? '<span class="cv-vgl" role="img" aria-label="' + esc(L === 'en' ? 'Vegan' : 'Vegano') + '" title="' + esc(L === 'en' ? 'Vegan, based on the listed ingredients' : 'Vegano, según los ingredientes indicados') + '">' + LEAF + '</span>' : '') +
+      (it.code && !dup ? '<em>' + esc(it.code) + '</em>' : '') + esc(it.name) + (isVegan(it, blk) ? '<span class="cv-vgl" role="img" aria-label="' + esc(L === 'en' ? 'Vegan' : 'Vegano') + '" title="' + esc(L === 'en' ? 'Vegan, based on the listed ingredients' : 'Vegano, según los ingredientes indicados') + '">' + LEAF + '</span>' : '') + (it.note ? ' <small>' + esc(tx(it.note)) + '</small>' : '') + als(it.al) +
       (blk.alPending ? '<span class="cv-pend">' + esc(ui('pending')) + '</span>' : '') + '</span><span class="cv-price">' + money(it.price) + '</span></div>' +
       tags(it, blk);
     if (it.es) h += '<p class="cv-i-desc">' + esc(tx({ es: it.es, en: it.en })) + '</p>';
