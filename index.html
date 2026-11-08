@@ -149,20 +149,21 @@
     --sw: calc(100vw - 2 * var(--pad));
     /* Franja del evento bajo los dos cuadrados (--ev-n = 1 si hay evento; lo fija el script). Su alto se descuenta del resto para no hacer scroll. */
     --ev-n: 0;
-    --ev-h: clamp(2.6rem, calc(var(--avail) * 0.075), 3.6rem);
+    --ev-h: clamp(2rem, calc(var(--avail) * 0.056), 2.7rem);
     --ev-x: calc(var(--ev-n) * (var(--ev-h) + var(--gap)));
     /* La frase se pega arriba y los cuadrados abajo; lo que sobra de alto se reparte: la frase crece (hasta el ancho que cabe)
        y, si no puede crecer más, los cuadrados se hacen más altos. 4,45 = alto de la frase en "em" (5 líneas). */
-    --fw: min(calc((100vw - 2 * var(--pad)) / 4.3), 14rem);
-    --shcap: calc(var(--sw) * 0.55);
+    --fw: min(calc((100vw - 2 * var(--pad)) / 3.87), 20rem);
+    --kh: 3.9; /* alto del bloque de la frase en «em» (con aire, en móvil) */
+    --shcap: calc(var(--sw) * 0.8);
     --shfloor: calc((var(--avail) - var(--ev-x)) * 0.17);
-    --sh: min(var(--shcap), max(var(--shfloor), calc((var(--avail) - var(--ev-x) - var(--gap) - 1.5rem - var(--fw) * 4.45) / 2)));
+    --sh: min(var(--shcap), max(var(--shfloor), calc((var(--avail) - var(--ev-x) - 0.4rem - 1.5rem - var(--fw) * var(--kh)) / 2)));
     flex: 1;
     min-height: 0;
     display: flex;
     flex-direction: column;
     justify-content: space-between; /* la frase pegada arriba del todo y los cuadrados hasta abajo */
-    gap: 1rem;
+    gap: 0.4rem;
     padding: 0 var(--pad);
   }
 
@@ -171,7 +172,7 @@
   .home-statement {
     font-family: var(--display);
     font-weight: 400; /* Helvetica Neue tal cual (Regular de marca) */
-    font-size: min(var(--fw), calc((var(--avail) - 2 * var(--sh) - var(--gap) - 1.5rem - var(--ev-x)) / 4.45));
+    font-size: min(var(--fw), calc((var(--avail) - 2 * var(--sh) - 0.4rem - 1.5rem - var(--ev-x)) / var(--kh)));
     width: auto;
     flex: 0 0 auto;
     margin: 0;
@@ -183,10 +184,18 @@
   .home-statement .line { display: block; }
   .home-statement { margin-top: calc(0.5rem - 0.04em); }
   .home-statement .line { text-align: left; }
-  .home-statement .l3 > span { display: block; }
+  /* La frase en tres tamaños de menos a más (Todo < empieza < con un) y el logo ROCE, que mantiene el tamaño del bloque, cierra la escalera. */
+  .home-statement .l1 { font-size: 0.62em; }
+  .home-statement .l2 { font-size: 0.82em; }
+  .home-statement .l3 { font-size: 1em; }
+  /* Vertical: la frase con algo más de aire y el logo separado del texto, para que el bloque ocupe cerca de la mitad de la pantalla. */
+  @media (max-aspect-ratio: 5/4) and (max-width: 599px) {
+    .home-statement .l1, .home-statement .l2, .home-statement .l3 { line-height: 1; }
+    .home-statement .l4 { margin-top: 0.12em; }
+  }
   /* La última palabra es el logo de ROCE: casi el ancho de la palabra que sustituye, pegado a la derecha. */
   /* margin-top: el hueco visible (0,055 em bajo la línea base + 0,054 em) iguala al de las demás líneas (0,109 em). */
-  .home-logo { display: block; margin: 0.054em 0 0 0; height: 1.02em; width: auto; }
+  .home-logo { display: block; margin: 0.054em 0 0 0; height: 1.5em; width: auto; }
   html[data-mode="night"] .home-logo-black, html:not([data-mode="night"]) .home-logo-white { display: none; }
   .visually-hidden { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
 
@@ -300,7 +309,7 @@
     border: 3px solid var(--core); border-radius: 999px;
     box-shadow: 0 0 3px var(--core), 0 0 8px var(--neon), inset 0 0 14px rgba(255, 42, 31, 0.55), inset 0 0 30px rgba(255, 42, 31, 0.25);
     --evp: calc(min(var(--sw), var(--sh)) * 0.09 + 0.4rem);
-    --evfs: clamp(0.72rem, min(9.6cqw, calc(var(--sh) * 0.15)), 2.5rem);
+    --evfs: clamp(0.58rem, min(7.4cqw, calc(var(--sh) * 0.115)), 1.95rem);
     padding-left: var(--evp); padding-right: 0; overflow: visible; position: relative;
     animation: neonOn 1.1s steps(1, end) 1 both;
   }
@@ -372,19 +381,23 @@
   /* Cuadrados anchos (tablet): el nombre de cada espacio cabe entero en una línea. */
   @media (min-width: 600px) {
     .home-square strong.home-name { white-space: nowrap; font-size: clamp(0.8rem, min(5.3cqw, calc(var(--sh) * 0.16)), 2.4rem); }
-    .home-square-event { --evfs: clamp(0.8rem, min(5.3cqw, calc(var(--sh) * 0.16)), 2.4rem); }
+    .home-square-event { --evfs: clamp(0.64rem, min(4.1cqw, calc(var(--sh) * 0.125)), 1.9rem); }
     .home-square small { font-size: clamp(0.55rem, min(3.4cqw, calc(var(--sh) * 0.095)), 1.1rem); }
     .home-name span { display: inline; }
   }
 
   /* Tablet vertical: bloques algo más bajos para que la frase pueda crecer con el ancho. */
   @media (min-width: 600px) and (max-aspect-ratio: 5/4) {
-    .home-main { --shcap: calc(var(--sw) * 0.62); --shfloor: calc((var(--avail) - var(--ev-x)) * 0.11); }
+    .home-main { --kh: 3.62; --shcap: calc(var(--sw) * 0.62); --shfloor: calc((var(--avail) - var(--ev-x)) * 0.075); }
   }
 
   /* Horizontal (escritorio, móvil tumbado): frase a la izquierda y los dos
      cuadrados apilados a la derecha. */
   @media (min-aspect-ratio: 5/4) {
+    /* En horizontal las líneas del texto se escalan (--tx, lo calcula el script) para que el logo ROCE acabe a la altura del borde inferior del cuadrado de Coffee. */
+    .home-statement .l1 { font-size: calc(0.55em * var(--tx, 1)); }
+    .home-statement .l2 { font-size: calc(0.72em * var(--tx, 1)); }
+    .home-statement .l3 { font-size: calc(0.88em * var(--tx, 1)); }
     /* En horizontal el menú ocupa su franja arriba (si no, taparía el cuadrado de la derecha). */
     .home { --pad: 2.5rem; --head: 56px; --foot: 108px; position: relative; }
     .home-head { position: static; height: var(--head); flex-shrink: 0; }
@@ -392,8 +405,8 @@
       padding-bottom: var(--foot); /* el pie flota abajo: los cuadrados no lo pisan */
       --s: min(calc((var(--avail) - var(--gap) - var(--ev-x)) / 2), 30vw);
       /* Los cuadrados ceden ancho (hasta un mínimo) para que la frase pueda crecer hasta tocar el suelo. */
-      --hcap: calc((100dvh - 0.9rem) / 4.45);
-      --sw: max(24rem, min(calc(var(--s) * 1.9), 38vw, calc(100vw - 2 * var(--pad) - 2rem - 4.4 * var(--hcap))));
+      --hcap: calc((100dvh - 0.9rem) / 3.85);
+      --sw: max(min(24rem, 32vw), min(calc(var(--s) * 1.9), 38vw, calc(100vw - 2 * var(--pad) - 2rem - 4.8 * var(--hcap))));
       --sh: var(--s);
       flex-direction: row;
       align-items: center;
@@ -404,11 +417,11 @@
     .home-top { flex: 1; min-width: 0; width: auto; align-self: flex-start; margin-top: calc(-1 * var(--head)); }
     .home-statement {
       /* La frase ocupa TODO el alto de la pantalla: el logo ROCE toca el suelo. */
-      font-size: min(22rem, var(--hcap), calc((100vw - 2 * var(--pad) - var(--sw) - 2rem) / 4.4));
+      font-size: min(22rem, calc((100vw - 2 * var(--pad) - var(--sw) - 2rem) / 3.9));
     }
     /* Cuadrados más anchos: el nombre de cada espacio cabe entero en una línea. */
     .home-square strong.home-name { white-space: nowrap; font-size: clamp(0.8rem, min(5.3cqw, calc(var(--sh) * 0.16)), 2.4rem); }
-    .home-square-event { --evfs: clamp(0.8rem, min(5.3cqw, calc(var(--sh) * 0.16)), 2.4rem); }
+    .home-square-event { --evfs: clamp(0.64rem, min(4.1cqw, calc(var(--sh) * 0.125)), 1.9rem); }
     .home-square small { font-size: clamp(0.55rem, min(3.4cqw, calc(var(--sh) * 0.095)), 1.1rem); }
     .home-name span { display: inline; }
     .home-squares { display: flex; flex-direction: column; justify-content: flex-start; }
@@ -691,11 +704,44 @@
     }
     // Seguro de encaje: en horizontal la frase llega al suelo, pero si por lo que sea (ventana más alta que la pantalla, barras del
     // navegador…) se saliera de la página, se reduce justo lo necesario para que quepa entera.
+    // Escritorio: el logo ROCE acaba a la misma altura que el borde inferior del cuadrado de Coffee, Bakery & Kitchen. El logo se hace tan
+    // ancho como deja la columna de cuadrados y las líneas del texto (--tx) crecen o encogen hasta que su borde inferior coincide.
+    function alignLogoToDay(st) {
+      var day = document.getElementById('chooseDay'), sq = document.querySelector('.home-squares');
+      var logo = document.querySelector('.home-logo-black'); if (getComputedStyle(logo).display === 'none') logo = document.querySelector('.home-logo-white');
+      if (!day || !sq || !logo || !logo.complete || !logo.naturalWidth) return;
+      var target = day.getBoundingClientRect().bottom, lines = st.querySelectorAll('.line');
+      // Borde inferior de las letras del logo: el PNG llega hasta el círculo del ®, y las letras acaban al 94,9 % de su alto.
+      function lbottom() { var r = logo.getBoundingClientRect(); return r.bottom - 0.051 * r.height; }
+      var fs = parseFloat(getComputedStyle(st).fontSize), ratio = logo.getBoundingClientRect().width / fs;
+      var room = sq.getBoundingClientRect().left - 2 * parseFloat(getComputedStyle(document.documentElement).fontSize) - st.getBoundingClientRect().left;
+      var top = st.getBoundingClientRect().top, em = Math.min(room / ratio, (target - top) / 2.4);
+      if (!(em > 40)) return;
+      st.style.fontSize = em + 'px';
+      function bottom(tx) { st.style.setProperty('--tx', tx); return lbottom(); }
+      var b1 = bottom(1), b2 = bottom(1.3), k = (b2 - b1) / 0.3;
+      var tx = k > 1 ? 1 + (target - b1) / k : 1;
+      // el texto más ancho no puede superar el ancho del logo
+      var lw = logo.getBoundingClientRect().width, maxTx = 1.6;
+      st.style.setProperty('--tx', 1);
+      [].forEach.call(lines, function (l, i) { if (i > 2) return; var r = document.createRange(); r.selectNodeContents(l); var w = r.getBoundingClientRect().width; if (w > 0) maxTx = Math.min(maxTx, lw / w); });
+      st.style.setProperty('--tx', Math.max(0.5, Math.min(tx, maxTx)).toFixed(3));
+      // Si por el ancho el bloque no llega al borde inferior del cuadrado de Coffee, el sobrante se reparte entre las líneas:
+      // la primera queda arriba y el logo ROCE acaba justo en esa línea.
+      var short = target - lbottom();
+      if (short > 1) {
+        st.style.height = (st.getBoundingClientRect().height + short) + 'px';
+        st.style.display = 'flex'; st.style.flexDirection = 'column'; st.style.justifyContent = 'space-between';
+      }
+    }
     function fitStatement() {
       var st = document.querySelector('.home-statement'), home = document.querySelector('.home');
       if (!st || !home) return;
       st.style.fontSize = '';
+      st.style.removeProperty('--tx');
+      st.style.height = ''; st.style.display = ''; st.style.flexDirection = ''; st.style.justifyContent = '';
       if (!window.matchMedia('(min-aspect-ratio: 5/4)').matches) return;
+      alignLogoToDay(st);
       var floor = Math.min(home.getBoundingClientRect().bottom, window.innerHeight) - 6, r = st.getBoundingClientRect(), room = floor - r.top;
       if (room > 40 && r.height > room) st.style.fontSize = (parseFloat(getComputedStyle(st).fontSize) * room / r.height) + 'px';
     }
