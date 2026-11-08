@@ -251,7 +251,7 @@
   function shell() {
     root.innerHTML =
       '<div class="mt-nav" role="group" aria-label="Mesas">' +
-      [['day', 'Día', 'tables'], ['wait', 'Lista de espera', 'tables_wait'], ['crm', 'Clientes', 'tables_crm'], ['accounts', 'Cuentas empresa', 'tables_accounts'], ['stats', 'Estadísticas', 'tables_stats'], ['blocks', 'Bloqueos', 'tables_blocks'], ['config', 'Configuración', 'tables_config']].filter(function (v) { return can(v[2]); }).map(function (v) { return '<button type="button" class="ck-chip" data-view="' + v[0] + '" aria-pressed="' + (S.view === v[0]) + '">' + v[1] + '</button>'; }).join('') +
+      [['day', 'Día', 'tables'], ['orders', 'Pedidos app', 'tables'], ['wait', 'Lista de espera', 'tables_wait'], ['crm', 'Clientes', 'tables_crm'], ['accounts', 'Cuentas empresa', 'tables_accounts'], ['stats', 'Estadísticas', 'tables_stats'], ['blocks', 'Bloqueos', 'tables_blocks'], ['config', 'Configuración', 'tables_config']].filter(function (v) { return can(v[2]); }).map(function (v) { return '<button type="button" class="ck-chip" data-view="' + v[0] + '" aria-pressed="' + (S.view === v[0]) + '">' + v[1] + '</button>'; }).join('') +
       '</div><div id="mtBody"></div>';
   }
   // Tamaño de cada mesa: el de su forma × un factor de ancho y de alto (guardado en plan_ctx._tsize).
@@ -427,7 +427,7 @@
     if (!document.getElementById('mtBody')) shell();
     [].forEach.call(root.querySelectorAll('[data-view]'), function (b) { b.setAttribute('aria-pressed', String(b.dataset.view === S.view)); });
     var body = document.getElementById('mtBody');
-    if (S.view === 'day') { renderDay(body); applyView(); } else if (S.view === 'wait') renderWait(body); else if (S.view === 'crm') renderCrm(body); else if (S.view === 'accounts') renderAccounts(body); else if (S.view === 'stats') { if (A.renderStats) A.renderStats(body); else body.innerHTML = '<p class="ad-empty">No se ha cargado la pantalla de estadísticas.</p>'; } else if (S.view === 'blocks') renderBlocks(body); else renderConfig(body);
+    if (S.view === 'day') { renderDay(body); applyView(); } else if (S.view === 'orders') renderOrdersView(body); else if (S.view === 'wait') renderWait(body); else if (S.view === 'crm') renderCrm(body); else if (S.view === 'accounts') renderAccounts(body); else if (S.view === 'stats') { if (A.renderStats) A.renderStats(body); else body.innerHTML = '<p class="ad-empty">No se ha cargado la pantalla de estadísticas.</p>'; } else if (S.view === 'blocks') renderBlocks(body); else renderConfig(body);
   }
   root.addEventListener('click', function (e) {
     var v = e.target.closest('[data-view]');
@@ -439,6 +439,7 @@
     var b = document.getElementById('mtBody'); if (b && !quiet) b.innerHTML = '<p class="ad-empty">Cargando…</p>';
     return loadConfig(quiet === true).then(function () {
       if (S.view === 'day') return loadDay();
+      if (S.view === 'orders') return loadOrdersView();
       if (S.view === 'wait') return api('dining_waitlist?select=*&status=in.(waiting,notified)&want_date=gte.' + today() + '&order=want_date,created_at').then(function (r) { S.waitlist = r || []; });
       if (S.view === 'crm') return Promise.all([A.api('rpc/dining_crm', { method: 'POST', body: {} }), api('dining_customer_notes?select=*').catch(function () { return []; })]).then(function (r) { S.crm = r[0] || []; (r[1] || []).forEach(function (n) { S.notes[n.customer_key] = n; }); });
       if (S.view === 'accounts') return loadConfig(true);
@@ -471,7 +472,7 @@
     var ts = new Date(iso).getTime(), r = { state: 'free', booking: null, block: null };
     S.bookings.forEach(function (b) {
       if (!holds(b) || !(b.table_booking_tables || []).some(function (x) { return x.table_id === t.id; })) return;
-      if (new Date(b.starts_at).getTime() <= ts && ts < new Date(b.ends_at).getTime()) { r.state = b.status === 'seated' ? 'seated' : b.status === 'pending' ? 'pending' : 'booked'; r.booking = b; }
+      if (new Date(b.starts_at).getTime() <= ts && ts < new Date(b.ends_at).getTime()) { r.state = b.status === 'seated' ? (b.bill_at ? 'bill' : 'seated') : b.status === 'pending' ? 'pending' : 'booked'; r.booking = b; }
     });
     if (r.state === 'free') S.blocks.forEach(function (k) {
       if (k.zone_id === t.zone_id && (!k.table_ids || k.table_ids.indexOf(t.id) !== -1) && new Date(k.starts_at).getTime() <= ts && ts < new Date(k.ends_at).getTime()) { r.state = 'blocked'; r.block = k; }
@@ -503,12 +504,12 @@
       S.bookings.forEach(function (b) {
         if (b.status === 'cancelled' || !(b.table_booking_tables || []).some(function (x) { return x.table_id === t.id; })) return;
         var l = Math.round((mins(b.starts_at) - t0) * PXMIN), w = Math.max(24, Math.round((mins(b.ends_at) - mins(b.starts_at)) * PXMIN)) - 2;
-        var st = b.status === 'no_show' ? 'noshow' : b.status === 'seated' ? (b.dessert_at ? 'dessert' : 'seated') : b.status === 'completed' ? 'done' : b.status === 'pending' ? 'pending' : 'booked';
+        var st = b.status === 'no_show' ? 'noshow' : b.status === 'seated' ? (b.bill_at ? 'bill' : b.dessert_at ? 'dessert' : 'seated') : b.status === 'completed' ? 'done' : b.status === 'pending' ? 'pending' : 'booked';
         var many = (b.table_booking_tables || []).length > 1, seats = seatsOf(b), over = b.party > seats;
         var arrived = b.status === 'confirmed' && !!b.arrived_at;
         var late = b.status === 'confirmed' && !b.arrived_at && S.date === today() && Date.now() - Date.parse(b.starts_at) > 15 * 60000;
         var al = allergiesOf(b).length ? ' ⚠' : '', lb = labelsOf(b).length ? ' · ' + labelsOf(b).map(function (k) { return LBL()[k]; }).join(', ') : '';
-        var flags = al + lb + (arrived ? ' · llegó ' + hm(b.arrived_at) : '') + (b.status === 'seated' && b.dessert_at ? ' · postre' : '') + (late ? ' · ¿llega?' : '') + (b.status === 'no_show' ? ' · no vino' : '');
+        var flags = al + lb + (arrived ? ' · llegó ' + hm(b.arrived_at) : '') + (b.status === 'seated' && b.bill_at ? ' · cuenta pedida' : b.status === 'seated' && b.dessert_at ? ' · postre' : '') + (late ? ' · ¿llega?' : '') + (b.status === 'no_show' ? ' · no vino' : '');
         bars += '<button type="button" class="mt-bar is-' + st + (arrived ? ' is-arrived' : '') + (late ? ' is-late' : '') + (over ? ' is-over' : '') + '" data-bid="' + b.id + '" style="left:' + l + 'px;width:' + w + 'px" title="' + esc((b.name || 'Sin nombre') + ' · ' + b.party + ' personas en ' + seats + ' plazas · ' + hm(b.starts_at) + '–' + hm(b.ends_at) + flags + (alText(b) ? ' · ALERGIAS: ' + alText(b) : '') + (b.notes ? ' · ' + b.notes : '')) + '"><b>' + esc(b.name || 'Sin nombre') + '</b> <span>' + b.party + '/' + seats + (many ? ' · juntas' : '') + flags + '</span></button>';
       });
       S.blocks.forEach(function (k) {
@@ -522,7 +523,7 @@
     if (!rows.length) return '<p class="ad-empty">Esta zona no tiene mesas activas.</p>';
     return '<div class="mt-tl"><div class="mt-tl-in" style="min-width:' + (W + 78) + 'px"><div class="mt-row mt-head"><span class="mt-rl"></span><div class="mt-ticks" style="width:' + W + 'px" data-t0="' + t0 + '">' + ticks + nowLbl + '</div></div>' +
       '<div class="mt-body" style="--w:' + W + 'px">' + nowLine + rowsHtml + '</div></div></div>' +
-      '<p class="ad-meta mt-legend"><span class="mt-dot is-booked"></span>Reservada <span class="mt-dot is-pending"></span>Pendiente <span class="mt-dot is-seated"></span>En mesa <span class="mt-dot is-blocked"></span>Bloqueada · en cada barra: personas/plazas de la mesa. Toca un hueco para reservar, una barra para editarla.</p>';
+      '<p class="ad-meta mt-legend"><span class="mt-dot is-booked"></span>Reservada <span class="mt-dot is-pending"></span>Pendiente <span class="mt-dot is-seated"></span>En mesa <span class="mt-dot is-bill"></span>Cuenta pedida <span class="mt-dot is-blocked"></span>Bloqueada · en cada barra: personas/plazas de la mesa. Toca un hueco para reservar, una barra para editarla.</p>';
   }
 
   function renderDay(body) {
@@ -563,12 +564,12 @@
       }).join('') +
       boxes.map(function (b) {
         var t = b.t, o = occupancy(t, iso);
-        var tip = t.name + ' · ' + t.seats_max + ' p.' + (o.booking ? ' · ' + o.booking.name + ' (' + o.booking.party + ')' : o.block ? ' · bloqueada' + (o.block.note ? ': ' + o.block.note : '') : '');
+        var tip = t.name + ' · ' + t.seats_max + ' p.' + (o.booking ? ' · ' + o.booking.name + ' (' + o.booking.party + ')' + (o.state === 'bill' ? ' · cuenta pedida' : '') : o.block ? ' · bloqueada' + (o.block.note ? ': ' + o.block.note : '') : '');
         return '<button type="button" class="mt-t is-' + o.state + (S.sel.indexOf(t.id) !== -1 ? ' is-sel' : '') + (E && E.sel === t.id ? ' is-esel' : '') + ' sh-' + esc(t.shape) + '" data-table="' + t.id + '" title="' + esc(tip) + '" style="--rot:' + b.r + 'deg;left:' + ((b.cx - minx + PAD) / bw * 100).toFixed(2) + '%;top:' + ((b.cy - oy) / bh * 100).toFixed(2) + '%;width:' + (b.w / bw * 100).toFixed(2) + '%;height:' + (b.h / bh * 100).toFixed(2) + '%">' +
           '<b>' + esc(t.name) + '</b>' + (o.booking ? '<i>' + esc(o.booking.name.split(' ')[0]) + '</i>' : '') + '</button>';
       }).join('') + '</div></div>' +
       editBar(E) +
-      '<p class="ad-meta mt-legend"><span class="mt-dot is-free"></span>Libre <span class="mt-dot is-booked"></span>Reservada <span class="mt-dot is-pending"></span>Pendiente de pago <span class="mt-dot is-seated"></span>En mesa <span class="mt-dot is-blocked"></span>Bloqueada</p></div>';
+      '<p class="ad-meta mt-legend"><span class="mt-dot is-free"></span>Libre <span class="mt-dot is-booked"></span>Reservada <span class="mt-dot is-pending"></span>Pendiente de pago <span class="mt-dot is-seated"></span>En mesa <span class="mt-dot is-bill"></span>Cuenta pedida <span class="mt-dot is-blocked"></span>Bloqueada</p></div>';
 
     var list = S.bookings.length ? S.bookings.map(function (b) {
       var tn = bookingTables(b).map(function (t) { return t.name; }).join(' + ');
@@ -728,7 +729,7 @@
     return '<details class="mt-more" id="appDayBox"' + (S.appDayOpen ? ' open' : '') + '><summary>Pedidos de la app de hoy' + (n != null ? ' · ' + n : '') + ' (cobros y devoluciones)</summary>' +
       '<div id="appDay">' + (S.appDayRows ? appDayHtml(S.appDayRows) : '<p class="ad-meta">Cargando…</p>') + '</div></details>';
   }
-  function appDayHtml(rows) {
+  function appDayHtml(rows, label, showDate) {
     if (S.appDayErr) return '<p class="ad-meta">' + esc(S.appDayErr) + '</p>';
     if (!rows.length) return '<p class="ad-meta">Hoy no hay pedidos cobrados por la app.</p>';
     var tot = 0, ret = 0;
@@ -740,9 +741,10 @@
       var btns = o.payment_status === 'paid' && open > 0
         ? '<div style="display:flex;flex-wrap:wrap;gap:0.5rem;margin:0.3rem 0 0.9rem"><button type="button" class="ad-btn is-small is-ghost" data-apprefund="full" data-id="' + o.id + '" data-open="' + open + '" data-ref="' + esc(o.ref) + '">Devolver ' + eur(open) + '</button>' +
           '<button type="button" class="ad-btn is-small is-ghost" data-apprefund="part" data-id="' + o.id + '" data-open="' + open + '" data-ref="' + esc(o.ref) + '">Devolver una parte</button></div>' : '';
-      return '<p><b>' + esc(o.ref) + '</b> · ' + where + ' · ' + esc(o.name || '') + ' · ' + eur(o.total_cents) + ' ' + st + '<br><span class="ad-meta">' + items + '</span></p>' + btns;
+      var when = showDate && o.paid_at ? new Intl.DateTimeFormat('es-ES', { timeZone: TZ, day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).format(new Date(o.paid_at)) + ' · ' : '';
+      return '<p><b>' + esc(o.ref) + '</b> · ' + when + where + ' · ' + esc(o.name || '') + ' · ' + eur(o.total_cents) + ' ' + st + '<br><span class="ad-meta">' + items + '</span></p>' + btns;
     }).join('');
-    return h + '<p class="ad-meta"><b>Cobrado por la app hoy: ' + eur(tot) + (ret ? ' · devuelto ' + eur(ret) : '') + '</b></p>';
+    return h + '<p class="ad-meta"><b>Cobrado por la app ' + (label || 'hoy') + ': ' + eur(tot) + (ret ? ' · devuelto ' + eur(ret) : '') + '</b></p>';
   }
   function loadAppDay() {
     var from = A.madridToISO(S.date + 'T05:00'), to = A.madridToISO(addDays(S.date, 1) + 'T05:00');
@@ -753,6 +755,24 @@
       .catch(function () { S.appDayRows = []; S.appDayErr = 'Los pedidos de la app se activan al ejecutar app_rocecover.sql.'; })
       .then(function () { var el = document.getElementById('appDay'); if (el) el.innerHTML = appDayHtml(S.appDayRows); var sm = document.querySelector('#appDayBox summary'); if (sm) sm.textContent = 'Pedidos de la app de hoy · ' + S.appDayRows.length + ' (cobros y devoluciones)'; });
   }
+  // ─── Pestaña «Pedidos app»: todos los pedidos cobrados (hoy, ayer, última semana o mes) con sus botones de devolución ───
+  var ORD_RANGES = { today: ['Hoy', 0, 'hoy'], yesterday: ['Ayer', 1, 'ayer'], week: ['Últimos 7 días', 6, 'en los últimos 7 días'], month: ['Últimos 30 días', 29, 'en los últimos 30 días'] };
+  function loadOrdersView() {
+    var key = S.ordRange || 'today', n = ORD_RANGES[key][1], t0 = today();
+    var from = A.madridToISO(addDays(t0, -n) + 'T05:00'), to = A.madridToISO(addDays(t0, key === 'yesterday' ? 0 : 1) + 'T05:00');
+    var base = 'app_orders?select=id,ref,mode,table_name,name,total_cents,status,payment_status,paid_at,app_order_items(name,qty,variant)&paid_at=gte.' + encodeURIComponent(from) + '&paid_at=lt.' + encodeURIComponent(to) + '&order=paid_at.desc';
+    return api(base.replace('select=id,', 'select=id,refunded_cents,')).catch(function () { return api(base); })
+      .then(function (rows) { S.ordRows = rows || []; S.ordErr = ''; })
+      .catch(function () { S.ordRows = []; S.ordErr = 'Los pedidos de la app se activan al ejecutar app_rocecover.sql.'; });
+  }
+  function renderOrdersView(body) {
+    var key = S.ordRange || 'today';
+    var h = '<h2 class="ad-sub">Pedidos de la app</h2><p class="ad-meta">Aquí están los pedidos cobrados con tarjeta. Para devolver el dinero, pulsa «Devolver» (todo) o «Devolver una parte» en el pedido.</p>' +
+      '<label class="ad-field" style="max-width:16rem"><span>Periodo</span><select id="ordRange">' + Object.keys(ORD_RANGES).map(function (k) { return '<option value="' + k + '"' + (k === key ? ' selected' : '') + '>' + ORD_RANGES[k][0] + '</option>'; }).join('') + '</select></label>' +
+      '<div id="appDay">' + (S.ordErr ? '<p class="ad-meta">' + esc(S.ordErr) + '</p>' : appDayHtml(S.ordRows || [], ORD_RANGES[key][2], key !== 'today' && key !== 'yesterday')) + '</div>';
+    body.innerHTML = h;
+  }
+  root.addEventListener('change', function (e) { if (e.target && e.target.id === 'ordRange') { S.ordRange = e.target.value; loadOrdersView().then(function () { if (S.view === 'orders') render(); }); } });
   function refundApp(id, amount, manual, reason) {
     var s = A.session();
     return fetch(A.cfg.url + '/functions/v1/redsys', { method: 'POST', headers: { 'Content-Type': 'application/json', apikey: A.cfg.anonKey, Authorization: 'Bearer ' + s.access_token }, body: JSON.stringify({ action: 'app_refund', order_id: id, amount_cents: amount, manual: !!manual, reason: reason || '' }) })
@@ -771,12 +791,12 @@
     }
     if (!confirm('¿Devolver ' + eur(amount) + ' del pedido ' + ref + ' a la tarjeta del cliente? Se hace por Redsys y no se puede deshacer.')) return;
     b.disabled = true;
-    refundApp(id, amount, false).then(function () { flash('Devuelto ' + eur(amount) + ' del pedido ' + ref + '.', 'ok'); S.appDayRows = null; return loadDay().then(function () { render(); }); })
+    refundApp(id, amount, false).then(function () { flash('Devuelto ' + eur(amount) + ' del pedido ' + ref + '.', 'ok'); S.appDayRows = null; return (S.view === 'orders' ? loadOrdersView() : loadDay()).then(function () { render(); }); })
       .catch(function (x) {
         b.disabled = false;
         if (x.code === 'bank_refused' || /código|banco|Pasarela|contactar/i.test(x.message)) {
           if (confirm('El banco no ha podido devolverlo: ' + x.message + '\n\n¿Lo has devuelto ya a mano en el portal del banco? Acepta para registrarlo como devuelto.')) {
-            refundApp(id, amount, true).then(function () { flash('Registrada la devolución de ' + eur(amount) + '.', 'ok'); S.appDayRows = null; return loadDay().then(function () { render(); }); }).catch(function (y) { flash('No se ha podido registrar: ' + y.message, 'error'); });
+            refundApp(id, amount, true).then(function () { flash('Registrada la devolución de ' + eur(amount) + '.', 'ok'); S.appDayRows = null; return (S.view === 'orders' ? loadOrdersView() : loadDay()).then(function () { render(); }); }).catch(function (y) { flash('No se ha podido registrar: ' + y.message, 'error'); });
           }
         } else flash('No se ha podido devolver: ' + x.message, 'error');
       });
@@ -799,6 +819,14 @@
     return false;
   }
   function liveRefresh(force) {
+    if (S.view === 'orders') {
+      var b0 = document.getElementById('mtLive'); if (b0) b0.style.display = '';
+      if (live.pending && !document.hidden && root.offsetParent && !S.busy && !document.querySelector('.ad-modal') && !live.busy) {
+        live.pending = false; live.busy = true;
+        loadOrdersView().then(function () { live.ok = true; live.last = Date.now(); if (S.view === 'orders' && !document.querySelector('.ad-modal')) render(); }).catch(function () { live.ok = false; }).then(function () { live.busy = false; liveBadge(); });
+      }
+      return;
+    }
     var bd = document.getElementById('mtLive'); if (bd) bd.style.display = S.view === 'day' ? '' : 'none';
     if (live.busy || (!force && liveBlocked())) return;
     live.busy = true; live.pending = false;

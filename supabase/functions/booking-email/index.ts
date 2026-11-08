@@ -492,6 +492,75 @@ async function notifyStaff(b: any): Promise<void> {
   }).catch(() => {});
 }
 
+// ─── Pedidos de la app (tabla app_orders) ────────────────────────────────
+//   UPDATE → cobrado            → "Pedido confirmado" (con lo pedido, dónde y el total)
+//   UPDATE → devuelto (más)     → "Devolución de tu pedido"
+// Sin email (invitados que pagan sin cuenta) no se envía nada. Las facturas y los abonos los emite Ágora.
+const AT = {
+  es: {
+    locale: "es-ES", ref: "Pedido", where: "Dónde", total: "Total", mesa: (m: string) => `Mesa ${m}`, pick: "Recoger en el local",
+    okSubject: (r: string) => `Pedido confirmado · ROCE · ${r}`, okTitle: "¡Pedido confirmado!",
+    okMesa: (m: string) => `Hemos recibido tu pedido y lo estamos preparando. Te lo llevamos a la mesa ${m}.`,
+    okPick: "Hemos recibido tu pedido y lo estamos preparando. Cuando esté listo, pasa a recogerlo por el local con tu número de pedido.",
+    help: "¿Algún problema con tu pedido? Escríbenos a reservas@roce.es o por WhatsApp al +34 614 07 31 63.",
+    privacy: "BRUNCH DINNER ETC. SL (ROCE) trata tus datos para gestionar tu pedido. Más información y tus derechos en https://roce.es/privacidad.html o escribiendo a reservas@roce.es.",
+    rfSubject: (r: string) => `Devolución de tu pedido · ROCE · ${r}`, rfTitle: "Devolución realizada",
+    rfIntro: (m: string) => `Hemos devuelto ${m} de tu pedido a la tarjeta con la que pagaste. Según tu banco puede tardar unos días en verse reflejado.`, rfAmount: "Importe devuelto",
+  },
+  en: {
+    locale: "en-GB", ref: "Order", where: "Where", total: "Total", mesa: (m: string) => `Table ${m}`, pick: "Pickup at the venue",
+    okSubject: (r: string) => `Order confirmed · ROCE · ${r}`, okTitle: "Order confirmed!",
+    okMesa: (m: string) => `We have received your order and we are preparing it. We will bring it to table ${m}.`,
+    okPick: "We have received your order and we are preparing it. When it is ready, come and pick it up at the venue with your order number.",
+    help: "Any problem with your order? Write to us at reservas@roce.es or on WhatsApp at +34 614 07 31 63.",
+    privacy: "BRUNCH DINNER ETC. SL (ROCE) processes your data to manage your order. More information and your rights at https://roce.es/privacidad.html or by writing to reservas@roce.es.",
+    rfSubject: (r: string) => `Refund for your order · ROCE · ${r}`, rfTitle: "Refund issued",
+    rfIntro: (m: string) => `We have refunded ${m} of your order to the card you paid with. Depending on your bank it can take a few days to show up.`, rfAmount: "Amount refunded",
+  },
+};
+async function sendAppOrderEmail(kind: "ok" | "refund", o: any, refundedNow = 0): Promise<Response> {
+  if (!o.email) return new Response("no email");
+  const l = o.lang === "en" ? "en" : "es";
+  const t = AT[l];
+  const money = (c: number) => (c / 100).toLocaleString(t.locale, { style: "currency", currency: "EUR", minimumFractionDigits: c % 100 ? 2 : 0 });
+  let title = t.okTitle, intro: string = o.mode === "mesa" ? t.okMesa(String(o.table_name ?? "")) : t.okPick, subject = t.okSubject(o.ref);
+  let rows: string[][] = [[t.ref, o.ref], [t.where, o.mode === "mesa" ? t.mesa(String(o.table_name ?? "")) : t.pick]];
+  let extra = "";
+  if (kind === "ok") {
+    const { data: items } = await serviceClient().from("app_order_items").select("name, qty, variant, extras, unit_cents").eq("order_id", o.id).order("id");
+    const lines = (items ?? []).map((it: any) => {
+      const ex = Array.isArray(it.extras) && it.extras.length ? ` + ${it.extras.join(", ")}` : "";
+      return [`${it.qty}× ${it.name}${it.variant ? ` (${it.variant})` : ""}${ex}`, money(it.unit_cents * it.qty)];
+    });
+    rows = [...rows, ...lines, [t.total, money(o.total_cents)]];
+    extra = `<tr><td style="padding:14px 24px 0;color:#aaa;font:13px/1.5 Arial,sans-serif">${esc(t.help)}</td></tr>`;
+  } else {
+    title = t.rfTitle; intro = t.rfIntro(money(refundedNow)); subject = t.rfSubject(o.ref);
+    rows = [...rows, [t.rfAmount, money(refundedNow)]];
+  }
+  const html = mailShell(`
+<tr><td style="padding:28px 24px 8px;color:#fff;font:32px Arial,sans-serif;text-transform:uppercase">${esc(title)}</td></tr>
+<tr><td style="padding:0 24px 20px;color:#ddd;font:16px/1.5 Arial,sans-serif">${esc(intro)}</td></tr>
+<tr><td style="padding:0 24px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0">${rowsHtml(rows)}</table></td></tr>
+${extra}
+<tr><td style="padding:24px 24px 32px;color:#777;font:11px/1.5 Arial,sans-serif">${esc(t.privacy)}</td></tr>`);
+  const res = await fetch("https://api.brevo.com/v3/smtp/email", {
+    method: "POST",
+    headers: brevoHeaders,
+    body: JSON.stringify({ sender: { name: "ROCE", email: FROM }, replyTo: { email: REPLY_TO, name: "ROCE" }, to: [o.name ? { email: o.email, name: o.name } : { email: o.email }], subject: subject, htmlContent: html }),
+  });
+  if (!res.ok) return new Response("brevo error: " + (await res.text()), { status: 502 });
+  return new Response("sent");
+}
+async function handleAppOrder(p: any): Promise<Response> {
+  const n = p.record, o = p.old_record ?? {};
+  if (p.type !== "UPDATE") return new Response("ignored");
+  if (n.payment_status === "paid" && o.payment_status !== "paid") return await sendAppOrderEmail("ok", n);
+  const now = Number(n.refunded_cents ?? 0), before = Number(o.refunded_cents ?? 0);
+  if (now > before) return await sendAppOrderEmail("refund", n, now - before);
+  return new Response("ignored");
+}
+
 // ─── Reservas de mesa (tabla table_bookings) ─────────────────────────────
 //   INSERT confirmada                → "Reserva confirmada"
 //   INSERT pendiente creada en panel → "Confirma tu reserva": enlace para pagar la fianza con tarjeta
@@ -722,6 +791,9 @@ async function handleTableBooking(p: any): Promise<Response> {
   if (p.type === "INSERT") await syncTableContact(n);
   if (p.type === "UPDATE" && String(o.email ?? "").toLowerCase() !== String(n.email ?? "").toLowerCase()) await syncTableContact(n, o.email || undefined);
   if (p.type === "INSERT") {
+    // La visita que se crea sola al cobrar un pedido de la app (notas «Pedido de la app …») no es una reserva: el cliente recibe el
+    // correo de su pedido (handleAppOrder), no el de «mesa confirmada», y el equipo ya la ve en el plano de RoceCover.
+    if (String(n.notes ?? "").startsWith("Pedido de la app")) return new Response("app order visit: no booking email");
     if (n.status === "confirmed" || n.status === "seated") {
       if (n.source !== "admin") await notifyTableStaff(n, "Reserva de mesa");
       return await sendTableEmail("ok", n);
@@ -982,6 +1054,7 @@ Deno.serve(async (req) => {
   if (!WEBHOOK_SECRET || req.headers.get("x-webhook-secret") !== WEBHOOK_SECRET) {
     return new Response("forbidden", { status: 403 });
   }
+  if (payload.table === "app_orders") return await handleAppOrder(payload);
   if (payload.table === "table_bookings") return await handleTableBooking(payload);
   if (payload.table === "dining_waitlist") return await handleWaitlist(payload);
   if (payload.table !== "bookings") return new Response("ignored");
