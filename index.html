@@ -153,10 +153,10 @@
     --ev-x: calc(var(--ev-n) * (var(--ev-h) + var(--gap)));
     /* La frase se pega arriba y los cuadrados abajo; lo que sobra de alto se reparte: la frase crece (hasta el ancho que cabe)
        y, si no puede crecer más, los cuadrados se hacen más altos. 4,45 = alto de la frase en "em" (5 líneas). */
-    --fw: min(calc((100vw - 2 * var(--pad)) / 4.85), 14rem);
-    --shcap: calc(var(--sw) * 0.55);
+    --fw: min(calc((100vw - 2 * var(--pad)) / 4.0), 14rem);
+    --shcap: calc(var(--sw) * 0.9);
     --shfloor: calc((var(--avail) - var(--ev-x)) * 0.17);
-    --sh: min(var(--shcap), max(var(--shfloor), calc((var(--avail) - var(--ev-x) - var(--gap) - 1.5rem - var(--fw) * 3.2) / 2)));
+    --sh: min(var(--shcap), max(var(--shfloor), calc((var(--avail) - var(--ev-x) - var(--gap) - 1.5rem - var(--fw) * 2.9) / 2)));
     flex: 1;
     min-height: 0;
     display: flex;
@@ -171,7 +171,7 @@
   .home-statement {
     font-family: var(--display);
     font-weight: 400; /* Helvetica Neue tal cual (Regular de marca) */
-    font-size: min(var(--fw), calc((var(--avail) - 2 * var(--sh) - var(--gap) - 1.5rem - var(--ev-x)) / 3.2));
+    font-size: min(var(--fw), calc((var(--avail) - 2 * var(--sh) - var(--gap) - 1.5rem - var(--ev-x)) / 2.9));
     width: auto;
     flex: 0 0 auto;
     margin: 0;
@@ -184,9 +184,9 @@
   .home-statement { margin-top: calc(0.5rem - 0.04em); }
   .home-statement .line { text-align: left; }
   /* La frase en tres tamaños de menos a más (Todo < empieza < con un) y el logo ROCE, que mantiene el tamaño del bloque, cierra la escalera. */
-  .home-statement .l1 { font-size: 0.5em; }
-  .home-statement .l2 { font-size: 0.64em; }
-  .home-statement .l3 { font-size: 0.76em; }
+  .home-statement .l1 { font-size: 0.4em; }
+  .home-statement .l2 { font-size: 0.52em; }
+  .home-statement .l3 { font-size: 0.62em; }
   /* La última palabra es el logo de ROCE: casi el ancho de la palabra que sustituye, pegado a la derecha. */
   /* margin-top: el hueco visible (0,055 em bajo la línea base + 0,054 em) iguala al de las demás líneas (0,109 em). */
   .home-logo { display: block; margin: 0.054em 0 0 0; height: 1.5em; width: auto; }
