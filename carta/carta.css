@@ -451,3 +451,7 @@ html[data-sheet="lgray"] { --sheet: var(--lgray); --ink: #0a0a0a; }
 .cv-hp-row { display: flex; flex-wrap: wrap; gap: 0.35rem; }
 .cv-vg { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.12rem 0.45rem 0.1rem 0.35rem; border: 1.5px solid currentColor; font-size: 0.6rem; font-weight: 700; letter-spacing: 0.1em; line-height: 1.25; text-transform: uppercase; white-space: nowrap; }
 .cv-leaf { width: 0.95rem; height: 0.95rem; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+/* Hoja de «vegano»: junto a los alérgenos, sin insignia */
+.cv-vgl { display: inline-grid; place-items: center; width: 1.2rem; height: 1.2rem; margin-left: 0.15rem; opacity: 0.85; }
+.cv-vgl .cv-leaf { width: 1.1rem; height: 1.1rem; }

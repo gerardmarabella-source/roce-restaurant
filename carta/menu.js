@@ -32,8 +32,8 @@ window.CARTA = {
             {
               title: { es: 'Açaí & Yogur', en: 'Açaí & Yogurt' }, note: { es: 'Todo el día', en: 'All day' },
               items: [
-                { name: 'Dark Açaí', al: [5, 8], nut: [412, 10, 56, 16], price: 10.5, es: 'Açaí, plátano, granola, crema de cacahuete y nibs de cacao.', en: 'Açaí, banana, granola, peanut cream and cacao nibs.' },
-                { name: 'Shaka Açaí', al: [8], nut: [398, 8, 62, 14], price: 10.5, es: 'Açaí, mango, plátano, coco y granola.', en: 'Açaí, mango, banana, coconut and granola.' },
+                { name: 'Dark Açaí', diet: ['veg', 'pesc', 'vegan', 'gf', 'lf'], al: [5, 8], nut: [412, 10, 56, 16], price: 10.5, es: 'Açaí, plátano, granola, crema de cacahuete y nibs de cacao.', en: 'Açaí, banana, granola, peanut cream and cacao nibs.' },
+                { name: 'Shaka Açaí', diet: ['veg', 'pesc', 'vegan', 'gf', 'lf'], al: [8], nut: [398, 8, 62, 14], price: 10.5, es: 'Açaí, mango, plátano, coco y granola.', en: 'Açaí, mango, banana, coconut and granola.' },
                 { name: 'Greek Freak', al: [7, 8], nut: [368, 16, 48, 12], price: 7.5, es: 'Yogur griego, fruta de temporada, granola y miel.', en: 'Greek yogurt, seasonal fruit, granola and honey.' }
               ],
               extras: { title: { es: 'Extras', en: 'Extras' }, list: [[{ es: 'Fruta', en: 'Fruit' }, 2], [{ es: 'Granola', en: 'Granola' }, 1.5], [{ es: 'Crema de cacahuete', en: 'Peanut cream' }, 1.5]] }
@@ -90,17 +90,17 @@ window.CARTA = {
               title: { es: 'Acompañamientos', en: 'Sides' },
               compact: true,
               items: [
-                { name: 'Patatas artesanas', al: [3, 7], nut: [306, 4, 46, 12], price: 3.5 }, { name: 'Garbanzo artesano', nut: [218, 9, 32, 6], price: 3.5 }, { name: 'Frijoles marinados', nut: [176, 8, 28, 4], price: 3.5 },
-                { name: 'Maíz especiado', nut: [196, 5, 30, 6], price: 3.5 }, { name: 'Boniato al carbón', nut: [224, 3, 44, 5], price: 3.5 }
+                { name: 'Patatas artesanas', al: [3, 7], nut: [306, 4, 46, 12], price: 3.5 }, { name: 'Garbanzo artesano', diet: ['veg', 'pesc', 'vegan', 'gf', 'lf'], nut: [218, 9, 32, 6], price: 3.5 }, { name: 'Frijoles marinados', diet: ['veg', 'pesc', 'vegan', 'gf', 'lf'], nut: [176, 8, 28, 4], price: 3.5 },
+                { name: 'Maíz especiado', diet: ['veg', 'pesc', 'vegan', 'gf', 'lf'], nut: [196, 5, 30, 6], price: 3.5 }, { name: 'Boniato al carbón', diet: ['veg', 'pesc', 'vegan', 'gf', 'lf'], nut: [224, 3, 44, 5], price: 3.5 }
               ]
             },
             {
               title: { es: 'Extras', en: 'Extras' }, note: { es: 'Proteína', en: 'Protein' },
               compact: true,
               items: [
-                { name: 'Huevo campero', al: [3], nut: [72, 6, 1, 5], price: 2 }, { name: 'Falafel', al: [11], nut: [188, 8, 24, 7], price: 3.5 }, { name: 'Cottage', al: [7], nut: [82, 11, 3, 3], price: 2.5 },
+                { name: 'Huevo campero', al: [3], nut: [72, 6, 1, 5], price: 2 }, { name: 'Falafel', diet: ['veg', 'pesc', 'vegan', 'gf', 'lf'], al: [11], nut: [188, 8, 24, 7], price: 3.5 }, { name: 'Cottage', al: [7], nut: [82, 11, 3, 3], price: 2.5 },
                 { name: 'Pollo marinado', nut: [166, 27, 4, 5], price: 4.5 }, { name: 'Atún rojo', al: [4], nut: [164, 32, 0, 4], price: 6.5 }, { name: 'Salmón', al: [4], nut: [226, 34, 0, 10], price: 6.5 },
-                { name: 'Filete de ternera', nut: [324, 42, 0, 16], price: 9.5 }, { name: 'Entrecot madurado', nut: [418, 46, 0, 24], price: 15 }, { name: 'Bacon crujiente', nut: [126, 8, 1, 10], price: 2.5 }, { name: 'Hummus de remolacha', al: [11], nut: [118, 4, 12, 6], price: 2.5 }
+                { name: 'Filete de ternera', nut: [324, 42, 0, 16], price: 9.5 }, { name: 'Entrecot madurado', nut: [418, 46, 0, 24], price: 15 }, { name: 'Bacon crujiente', nut: [126, 8, 1, 10], price: 2.5 }, { name: 'Hummus de remolacha', diet: ['veg', 'pesc', 'vegan', 'gf', 'lf'], al: [11], nut: [118, 4, 12, 6], price: 2.5 }
               ]
             }
           ]
