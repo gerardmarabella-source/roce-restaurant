@@ -272,12 +272,12 @@
     privacy_title: { es: 'Política de privacidad', en: 'Privacy Policy' },
     privacy_updated_p: { es: 'Última actualización: noviembre de 2026', en: 'Last updated: November 2026' },
     terms_updated: { es: 'Última actualización: noviembre de 2026', en: 'Last updated: November 2026' },
-    privacy_updated: { es: 'Última actualización: octubre de 2026', en: 'Last updated: October 2026' },
+    privacy_updated: { es: 'Última actualización: noviembre de 2026', en: 'Last updated: November 2026' },
     privacy_h1: { es: '1. Responsable del tratamiento', en: '1. Data controller' },
     privacy_h2: { es: '2. Datos que tratamos y finalidad', en: '2. Data we process and purpose' },
     privacy_p2_intro: {
-      es: 'Tratamos los datos que nos facilitas voluntariamente a través de este sitio web, concretamente:',
-      en: 'We process the data you voluntarily provide through this website, specifically:',
+      es: 'Tratamos los datos que nos facilitas voluntariamente a través de este sitio web y de la app de pedidos (app.roce.es), concretamente:',
+      en: 'We process the data you voluntarily provide through this website and the ordering app (app.roce.es), specifically:',
     },
     privacy_li_contact: {
       es: '<strong>Contacto y reservas:</strong> cuando nos escribes a reservas@roce.es, usas el sistema de reservas de mesa o nos contactas por WhatsApp desde la web (reservas de grupo, alquiler del espacio), tratamos tu nombre, email, teléfono y el contenido del mensaje para gestionar tu solicitud. Si aceptas expresamente recibir comunicaciones al reservar, también te añadimos a nuestra base de datos de clientes (CRM) para contactarte sobre tu reserva y enviarte comunicaciones sobre ROCE (eventos, novedades, ofertas).',
@@ -295,24 +295,44 @@
       es: '<strong>Newsletter:</strong> si dejas tu email en el formulario de suscripción, lo usamos para enviarte comunicaciones comerciales sobre ROCE (aperturas, eventos, novedades).',
       en: '<strong>Newsletter:</strong> if you leave your email in the subscription form, we use it to send you commercial communications about ROCE (openings, events, news).',
     },
+    privacy_li_app: {
+      es: '<strong>App de pedidos (app.roce.es):</strong> si usas la app para pedir a la mesa o para recoger en el local, tratamos los datos necesarios para gestionar tu pedido y tu cuenta. Si creas una cuenta: tu email (o el nombre y el email de tu cuenta de Google si entras con Google) y el nombre que indiques. Si pides como invitado, solo el nombre que nos des para avisarte, sin cuenta ni email. En tu perfil puedes añadir, si quieres, tus apellidos, teléfono, fecha de cumpleaños, género, código postal, preferencias de dieta, cómo nos conociste y los datos de facturación (nombre o razón social, NIF/CIF y dirección) para tus facturas; todos son opcionales. De cada pedido guardamos lo que pides, la mesa o el modo de recogida, la fecha y hora, el importe, el estado del pago, las devoluciones y la nota que dejes para cocina. Si indicas alergias o intolerancias en esa nota, las usaremos solo para preparar tu pedido: no es necesario que incluyas datos de salud. En «Mi cuenta» ves tu historial de pedidos y puedes pedir ayuda por WhatsApp o email. Los filtros de alérgenos y dieta de la carta y las recomendaciones del asistente «Ayuda» se calculan en tu dispositivo: lo que escribes en el asistente no se envía a ROCE ni a terceros. Solo te enviaremos novedades por email o WhatsApp si marcas las casillas correspondientes de tu perfil, que puedes desmarcar cuando quieras. Te enviamos por email el código de acceso, la confirmación del pedido y, si procede, el aviso de una devolución.',
+      en: '<strong>Ordering app (app.roce.es):</strong> if you use the app to order at your table or for pickup, we process the data needed to manage your order and your account. If you create an account: your email (or the name and email of your Google account if you sign in with Google) and the name you give us. If you order as a guest, only the name you give us so we can let you know, with no account and no email. In your profile you can optionally add your last name, phone, birthday, gender, postal code, diet preferences, how you heard about us and billing details (name or company name, tax ID and address) for your invoices; all of these are optional. For each order we keep what you ordered, the table or pickup mode, the date and time, the amount, the payment status, any refunds and the note you leave for the kitchen. If you mention allergies or intolerances in that note, we use them only to prepare your order: you do not need to include health data. In "My account" you can see your order history and ask for help by WhatsApp or email. The allergen and diet filters of the menu and the recommendations of the "Help" assistant are computed on your device: what you type in the assistant is not sent to ROCE or to third parties. We will only send you news by email or WhatsApp if you tick the corresponding boxes in your profile, which you can untick at any time. We email you the access code, the order confirmation and, where applicable, a refund notice.',
+    },
     privacy_p2_cookies: {
       es: 'No realizamos analítica propia. Solo usamos una cookie técnica propia para recordar si has aceptado o rechazado el aviso de cookies, que no requiere consentimiento por ser estrictamente necesaria para el funcionamiento del propio aviso. Si aceptas las cookies, también activamos el Píxel de Meta, que permite medir y mejorar nuestra publicidad en Facebook e Instagram: Meta Platforms Ireland Limited recibe datos de tu navegación en roce.es (por ejemplo, las páginas que visitas y datos del dispositivo) y los trata según su propia política de privacidad. Si aceptas las cookies también cargamos Google Tag Manager (Google Ireland Limited), que gestiona las etiquetas de medición y publicidad que configuramos: Google recibe datos de tu navegación y los trata según su propia política de privacidad. Si rechazas, ni el Píxel ni Google Tag Manager se cargan. Las reservas de mesa las gestiona ROCE con su propio sistema (ver más abajo). Al pagar una fianza o dejar la tarjeta de garantía se te lleva a la página segura de Redsys, que puede instalar sus propias cookies.',
       en: "We don't run our own analytics. We only use our own technical cookie to remember whether you accepted or rejected the cookie notice, which doesn't require consent as it's strictly necessary for the notice itself to work. If you accept cookies, we also enable the Meta Pixel, which lets us measure and improve our advertising on Facebook and Instagram: Meta Platforms Ireland Limited receives data about your browsing on roce.es (for example, the pages you visit and device data) and processes it under its own privacy policy. If you accept cookies we also load Google Tag Manager (Google Ireland Limited), which manages the measurement and advertising tags we configure: Google receives data about your browsing and processes it under its own privacy policy. If you reject, neither the Pixel nor Google Tag Manager is loaded. Table bookings are managed by ROCE with its own system (see below). When you pay a deposit or leave a guarantee card you are taken to the secure Redsys page, which may set its own cookies.",
+    },
+    privacy_p2_app: {
+      es: 'La app de pedidos no usa cookies de publicidad ni de analítica y no carga el Píxel de Meta ni Google Tag Manager. Guarda en tu dispositivo solo datos técnicos necesarios para funcionar (idioma, carrito, mesa, sesión y pedido pendiente de pago), como se explica en la política de cookies.',
+      en: 'The ordering app does not use advertising or analytics cookies and does not load the Meta Pixel or Google Tag Manager. It stores on your device only technical data needed to work (language, cart, table, session and pending payment), as explained in the cookie policy.',
     },
     privacy_h3: { es: '3. Legitimación', en: '3. Legal basis' },
     privacy_p3: {
       es: 'La base legal para el tratamiento de tus datos es el consentimiento que nos das al enviarnos tu email o tu mensaje (art. 6.1.a del RGPD), y en el caso de las reservas, la ejecución de medidas precontractuales a petición tuya (art. 6.1.b del RGPD). Para añadirte a nuestra base de datos de clientes y enviarte comunicaciones comerciales, la base legal es el consentimiento expreso que nos das al aceptarlo durante la reserva. Para las reservas de entradas a eventos, la base legal es la ejecución de la reserva que solicitas (art. 6.1.b del RGPD) y, para los avisos sobre tu evento, la necesidad de prestarte ese servicio. Las novedades y comunicaciones comerciales sobre eventos solo se envían con tu consentimiento, que das marcando la casilla opcional del formulario (art. 6.1.a del RGPD). Para las listas de invitados, la base legal es nuestro interés legítimo en gestionar el acceso al evento y su seguridad y aforo (art. 6.1.f del RGPD), además de la autorización que la persona que te apunta declara tener de ti; puedes oponerte escribiendo a reservas@roce.es.',
       en: 'The legal basis for processing your data is the consent you give us when sending your email or message (art. 6.1.a GDPR), and for bookings, the performance of pre-contractual measures at your request (art. 6.1.b GDPR). To add you to our customer database and send you commercial communications, the legal basis is the explicit consent you give by accepting it during the booking. For event ticket bookings, the legal basis is the performance of the booking you request (art. 6.1.b GDPR) and, for notices about your event, the need to provide you with that service. News and commercial communications about events are only sent with your consent, which you give by ticking the optional box in the form (art. 6.1.a GDPR). For guest lists, the legal basis is our legitimate interest in managing access to the event and its safety and capacity (art. 6.1.f GDPR), together with the authorisation the person adding you states they have from you; you can object by writing to reservas@roce.es.',
     },
+    privacy_p3_app: {
+      es: 'Pedidos y cuenta de la app: la base legal es la ejecución del pedido que haces (art. 6.1.b del RGPD) y, para las obligaciones fiscales y contables, el cumplimiento de obligaciones legales (art. 6.1.c). Los datos opcionales de tu perfil (apellidos, teléfono, cumpleaños, género, código postal, dieta, cómo nos conociste) se tratan con tu consentimiento (art. 6.1.a), igual que las comunicaciones por email o WhatsApp, que solo enviamos si marcas las casillas y puedes retirar cuando quieras. Si escribes alergias o intolerancias en la nota del pedido, nos das tu consentimiento explícito para usarlas solo para atender ese pedido (art. 9.2.a).',
+      en: 'App orders and account: the legal basis is the performance of the order you place (art. 6.1.b GDPR) and, for tax and accounting duties, compliance with legal obligations (art. 6.1.c). The optional profile data (last name, phone, birthday, gender, postal code, diet, how you heard about us) is processed with your consent (art. 6.1.a), as are the email or WhatsApp communications, which we only send if you tick the boxes and which you can withdraw at any time. If you write allergies or intolerances in the order note, you give us your explicit consent to use them only to handle that order (art. 9.2.a).',
+    },
     privacy_h4: { es: '4. Destinatarios', en: '4. Recipients' },
     privacy_p4: {
       es: 'No cedemos tus datos a terceros, salvo obligación legal. Si aceptas las cookies, Meta Platforms Ireland Limited y Google Ireland Limited reciben los datos de navegación recogidos por el Píxel de Meta y por Google Tag Manager (ver política de cookies). Para gestionar las reservas de mesa utilizamos nuestro propio sistema, alojado en Supabase (servidores en la Unión Europea), y Brevo (emails y listas). Las solicitudes que envías por WhatsApp se tratan a través de dicha aplicación. Para la newsletter utilizamos Brevo, plataforma de email marketing que almacena tu email y envía las comunicaciones; actúa como encargado del tratamiento bajo contrato, cumpliendo con el RGPD. Para gestionar las reservas de entradas a eventos utilizamos Supabase, proveedor de la base de datos donde se guardan las reservas, con servidores en la Unión Europea, y Brevo, que envía el email de confirmación y guarda tu contacto en nuestras listas; el aviso interno de cada reserva puede enviarse a través del servicio de formularios Web3Forms. Si pagas con tarjeta, el cobro lo realiza Redsys, el TPV virtual de nuestra entidad bancaria, en su propia página segura: ROCE no recibe ni guarda los datos de tu tarjeta, solo la confirmación del pago. Las facturas en PDF se guardan en Google Drive (Google Ireland Limited), con acceso restringido al equipo de ROCE. Algunos de estos proveedores (como Google o Meta) pueden tratar datos fuera del Espacio Económico Europeo; en ese caso lo hacen con garantías adecuadas (cláusulas contractuales tipo o el Marco de Privacidad de Datos UE-EE. UU.). Todos actúan como encargados del tratamiento bajo contrato.',
       en: "We don't share your data with third parties, except where legally required. If you accept cookies, Meta Platforms Ireland Limited and Google Ireland Limited receive the browsing data collected by the Meta Pixel and Google Tag Manager (see our cookie policy). To manage table bookings we use our own system, hosted on Supabase (servers in the European Union), and Brevo (emails and lists). Requests you send via WhatsApp are handled through that application. For the newsletter we use Brevo, an email marketing platform that stores your email and sends the communications; it acts as a data processor under contract, complying with GDPR. To manage event ticket bookings we use Supabase, the provider of the database where bookings are stored, with servers in the European Union, and Brevo, which sends the confirmation email and stores your contact in our lists; the internal notice of each booking may be sent through the Web3Forms form service. If you pay by card, the payment is processed by Redsys, our bank's virtual POS, on its own secure page: ROCE does not receive or store your card details, only the payment confirmation. Invoices in PDF are stored in Google Drive (Google Ireland Limited), with access restricted to the ROCE team. Some of these providers (such as Google or Meta) may process data outside the European Economic Area; when they do, they rely on appropriate safeguards (standard contractual clauses or the EU-US Data Privacy Framework). All of them act as data processors under contract.",
     },
+    privacy_p4_app: {
+      es: 'Para la app de pedidos, además: Supabase (base de datos y acceso a las cuentas, servidores en la Unión Europea); Brevo (envío del código de acceso, la confirmación del pedido y los avisos de devolución); Redsys (cobro y devoluciones con tarjeta, en su página segura: ROCE no recibe ni guarda los datos de tu tarjeta); Google Ireland Limited, solo si eliges «Continuar con Google» (se carga el script de inicio de sesión de Google, que trata datos según su política); y WhatsApp si nos escribes por ahí. Tu pedido lo ve el equipo de ROCE (sala, cocina, barra y administración) para prepararlo y cobrarlo. Todos actúan como encargados del tratamiento bajo contrato.',
+      en: 'For the ordering app, in addition: Supabase (database and account sign-in, servers in the European Union); Brevo (sending the access code, the order confirmation and refund notices); Redsys (card payments and refunds, on its secure page: ROCE does not receive or store your card details); Google Ireland Limited, only if you choose "Continue with Google" (Google\'s sign-in script is loaded, and it processes data under its own policy); and WhatsApp if you write to us there. Your order is seen by the ROCE team (floor, kitchen, bar and administration) to prepare and charge it. All of them act as data processors under contract.',
+    },
     privacy_h5: { es: '5. Conservación', en: '5. Data retention' },
     privacy_p5: {
       es: 'Conservamos tus datos mientras exista una relación con ROCE (por ejemplo, mientras sigas suscrito a la newsletter) y, en todo caso, hasta que solicites su supresión. Los datos de las reservas de eventos (incluido el DNI, NIE o pasaporte) y de las listas de invitados se conservan mientras sea necesario para gestionar el evento y atender posibles reclamaciones, y durante los plazos que exijan las normas fiscales y mercantiles si hubo cobro. En cuanto a las reservas de mesa, tratamos tu nombre, email, teléfono, las alergias o intolerancias y comentarios que nos indiques, y el historial de tus visitas (número de visitas, no presentaciones y notas del equipo) para atenderte mejor, y los conservamos el tiempo necesario para gestionarlas, atender reclamaciones y cumplir los plazos legales; el equipo puede bloquear nuevas reservas de quien incumpla de forma reiterada. Si reservas con tarjeta de garantía, Redsys (el TPV de nuestro banco) guarda una referencia de tu tarjeta: ROCE no ve ni guarda el número ni el CVV, y solo se cobra la penalización indicada en la reserva si no te presentas o anulas fuera de plazo. Con la lista de espera guardamos tu email y tus datos de contacto solo para avisarte si se libera una mesa.',
       en: 'We keep your data for as long as you have a relationship with ROCE (for example, while you remain subscribed to the newsletter) and, in any case, until you request its deletion. Event booking data (including ID or passport numbers) and guest list data is kept for as long as needed to manage the event and handle any claims, and for the periods required by tax and commercial law if a payment was made. As for table bookings, we process your name, email, phone number, any allergies or intolerances and comments you give us, and your visit history (number of visits, no-shows and team notes) to serve you better, and we keep them as long as needed to manage bookings, handle claims and meet legal periods; the team may block new bookings from guests who repeatedly fail to show up. If you book with a guarantee card, Redsys (our bank\'s payment terminal) keeps a reference to your card: ROCE neither sees nor stores the number or CVV, and the penalty stated in the booking is only charged if you do not show up or cancel late. With the waiting list we keep your email and contact details only to let you know if a table opens up.',
+    },
+    privacy_p5_app: {
+      es: 'App de pedidos: conservamos tu cuenta y tu perfil mientras los mantengas. Puedes borrarlos cuando quieras en «Mi cuenta» → «Borrar mi cuenta»: se eliminan tu perfil y tu acceso, y tus pedidos se conservan sin tu nombre ni tu email durante los plazos que exigen las normas fiscales y mercantiles. Los pedidos hechos como invitado se conservan, con el nombre que nos diste, durante esos mismos plazos.',
+      en: 'Ordering app: we keep your account and profile for as long as you maintain them. You can delete them at any time in "My account" → "Delete my account": your profile and access are removed, and your orders are kept without your name or email for the periods required by tax and commercial law. Orders placed as a guest are kept, with the name you gave us, for those same periods.',
     },
     privacy_h6: { es: '6. Tus derechos', en: '6. Your rights' },
     privacy_p6_intro: {
@@ -329,10 +349,14 @@
       es: 'Para ello, escríbenos a <a href="mailto:reservas@roce.es">reservas@roce.es</a> indicando el derecho que quieres ejercer, adjuntando copia de tu DNI o documento equivalente. También tienes derecho a presentar una reclamación ante la Agencia Española de Protección de Datos (<a href="https://www.aepd.es" target="_blank" rel="noopener">www.aepd.es</a>) si consideras que no hemos tratado tus datos correctamente.',
       en: 'To do so, write to us at <a href="mailto:reservas@roce.es">reservas@roce.es</a> indicating which right you want to exercise, attaching a copy of your ID or equivalent document. You also have the right to file a complaint with the Spanish Data Protection Agency (<a href="https://www.aepd.es" target="_blank" rel="noopener">www.aepd.es</a>) if you believe we haven’t handled your data correctly.',
     },
+    privacy_p6_app: {
+      es: 'Si tienes cuenta en la app, puedes ver y corregir tus datos en «Mi cuenta» y borrarla desde ahí. Para cualquier otro derecho, escríbenos al email indicado.',
+      en: 'If you have an account in the app, you can see and correct your data in "My account" and delete it from there. For any other right, write to us at the email above.',
+    },
     privacy_h7: { es: '7. Menores de edad', en: '7. Minors' },
     privacy_p7: {
-      es: 'Este sitio web no está dirigido a menores de 14 años. Si eres menor de esa edad, no debes facilitarnos tus datos sin el consentimiento de tus padres o tutores legales.',
-      en: "This website isn't aimed at minors under 14. If you're under that age, you shouldn't provide us with your data without the consent of your parents or legal guardians.",
+      es: 'Este sitio web y la app de pedidos no están dirigidos a menores de 14 años. Si eres menor de esa edad, no debes facilitarnos tus datos sin el consentimiento de tus padres o tutores legales.',
+      en: "This website and the ordering app aren't aimed at minors under 14. If you're under that age, you shouldn't provide us with your data without the consent of your parents or legal guardians.",
     },
     privacy_h8: { es: '8. Cambios en esta política', en: '8. Changes to this policy' },
     privacy_p8: {
@@ -390,16 +414,45 @@
       es: 'Si aceptas las cookies, cargamos Google Tag Manager (Google Ireland Limited): se carga un script desde googletagmanager.com que activa las etiquetas de medición y publicidad que configuramos, y Google recibe datos de tu navegación en roce.es. Google los trata según su política, que puedes consultar en <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">policies.google.com/privacy</a>. Si rechazas las cookies, no se carga.',
       en: 'If you accept cookies, we load Google Tag Manager (Google Ireland Limited): a script is loaded from googletagmanager.com that activates the measurement and advertising tags we configure, and Google receives data about your browsing on roce.es. Google processes it under its own policy, available at <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">policies.google.com/privacy</a>. If you reject cookies, it is not loaded.',
     },
+    cookies_h_app: { es: '4. La app de pedidos (app.roce.es)', en: '4. The ordering app (app.roce.es)' },
     cookies_p_meta: {
       es: 'Si aceptas las cookies, activamos el Píxel de Meta (Meta Platforms Ireland Limited): se carga un script desde connect.facebook.net y se envían a Meta datos de tu navegación en roce.es para que podamos medir y mejorar nuestra publicidad en Facebook e Instagram. Meta trata esos datos según su política, que puedes consultar en <a href="https://www.facebook.com/privacy/policy" target="_blank" rel="noopener">facebook.com/privacy/policy</a>. Si rechazas las cookies, el Píxel no se carga.',
       en: 'If you accept cookies, we enable the Meta Pixel (Meta Platforms Ireland Limited): a script is loaded from connect.facebook.net and data about your browsing on roce.es is sent to Meta so we can measure and improve our advertising on Facebook and Instagram. Meta processes that data under its own policy, available at <a href="https://www.facebook.com/privacy/policy" target="_blank" rel="noopener">facebook.com/privacy/policy</a>. If you reject cookies, the Pixel is not loaded.',
     },
-    cookies_h3: { es: '4. Cómo gestionar las cookies', en: '4. How to manage cookies' },
+    cookies_p_app1: {
+      es: 'La app de pedidos no instala cookies propias ni de terceros para publicidad o analítica, y no carga el Píxel de Meta ni Google Tag Manager. Para funcionar usa el almacenamiento local de tu navegador y una memoria caché, estrictamente necesarios para prestarte el servicio que pides, por lo que no requieren tu consentimiento (art. 22.2 de la LSSI-CE):',
+      en: 'The ordering app does not install our own or third-party cookies for advertising or analytics, and it does not load the Meta Pixel or Google Tag Manager. To work it uses your browser\'s local storage and a cache, strictly necessary to provide the service you request, so they do not require your consent (art. 22.2 LSSI-CE):',
+    },
+    cookies_li_app1: {
+      es: 'roce_lang: el idioma que eliges. Se guarda hasta que borres los datos de navegación.',
+      en: 'roce_lang: the language you choose. Kept until you clear your browsing data.',
+    },
+    cookies_li_app2: {
+      es: 'roce_app_v1: tu carrito y la mesa que has escaneado, para que no se pierdan si recargas la página.',
+      en: 'roce_app_v1: your cart and the table you scanned, so they are not lost if you reload the page.',
+    },
+    cookies_li_app3: {
+      es: 'roce_app_session: tu sesión (cuenta o invitado), para no pedirte el acceso en cada visita. Se elimina al cerrar sesión o borrar tu cuenta.',
+      en: 'roce_app_session: your session (account or guest), so we do not ask you to sign in on every visit. Removed when you log out or delete your account.',
+    },
+    cookies_li_app4: {
+      es: 'roce_app_pending: la referencia de un pedido pendiente de pago, para poder confirmarlo al volver de la página de Redsys.',
+      en: 'roce_app_pending: the reference of an order awaiting payment, so it can be confirmed when you return from the Redsys page.',
+    },
+    cookies_li_app5: {
+      es: 'Filtros de la carta y de tu perfil durante la visita (almacenamiento de sesión) y una caché del navegador con los archivos de la app, para que cargue más rápido.',
+      en: 'Menu and profile filters during your visit (session storage) and a browser cache with the app files, so it loads faster.',
+    },
+    cookies_p_app2: {
+      es: 'Si eliges «Continuar con Google», el script de inicio de sesión de Google (accounts.google.com) puede instalar sus propias cookies, y Redsys puede instalar las suyas al pagar: no las controlamos nosotros, las gestionan según sus políticas. Puedes borrar estos datos en cualquier momento desde los ajustes de tu navegador; tendrás que volver a iniciar sesión.',
+      en: 'If you choose "Continue with Google", Google\'s sign-in script (accounts.google.com) may install its own cookies, and Redsys may install its own when you pay: we do not control them, they are managed under their own policies. You can delete this data at any time from your browser settings; you will need to sign in again.',
+    },
+    cookies_h3: { es: '5. Cómo gestionar las cookies', en: '5. How to manage cookies' },
     cookies_p3: {
       es: 'Puedes eliminar la cookie propia y las de terceros en cualquier momento borrando los datos de navegación de tu navegador. Volveremos a mostrarte el aviso en tu siguiente visita. La mayoría de navegadores también te permiten bloquear cookies desde su configuración de privacidad.',
       en: "You can delete our cookie and any third-party cookies at any time by clearing your browser's browsing data. We'll show you the notice again on your next visit. Most browsers also let you block cookies from their privacy settings.",
     },
-    cookies_h4: { es: '5. Más información', en: '5. More information' },
+    cookies_h4: { es: '6. Más información', en: '6. More information' },
     cookies_p4: {
       es: 'Para saber cómo tratamos tus datos personales, consulta nuestra <a href="privacidad.html">política de privacidad</a>.',
       en: 'To find out how we handle your personal data, see our <a href="privacidad.html">privacy policy</a>.',
@@ -410,13 +463,13 @@
     legal_h1: { es: '1. Datos identificativos', en: '1. Identification details' },
     legal_h2: { es: '2. Objeto', en: '2. Purpose' },
     legal_p2: {
-      es: 'Este aviso legal regula el acceso y uso del sitio web roce.es (en adelante, "el sitio web"), del que es titular ROCE. El acceso y uso del sitio web atribuye la condición de usuario e implica la aceptación de las condiciones aquí recogidas.',
-      en: 'This legal disclaimer governs access to and use of the website roce.es (the "website"), owned by ROCE. Accessing and using the website makes you a user and implies acceptance of the conditions set out here.',
+      es: 'Este aviso legal regula el acceso y uso del sitio web roce.es y de la app de pedidos app.roce.es (en adelante, "el sitio web"), de los que es titular ROCE. El acceso y uso del sitio web atribuye la condición de usuario e implica la aceptación de las condiciones aquí recogidas.',
+      en: 'This legal disclaimer governs access to and use of the website roce.es and the ordering app app.roce.es (the "website"), owned by ROCE. Accessing and using the website makes you a user and implies acceptance of the conditions set out here.',
     },
     legal_h3: { es: '3. Condiciones de uso', en: '3. Terms of use' },
     legal_p3: {
-      es: 'El sitio web tiene como finalidad informar sobre ROCE y permitir la solicitud de reservas de mesa o de nuestro espacio privado. El usuario se compromete a hacer un uso adecuado y lícito del sitio web, así como a facilitar información veraz al rellenar cualquier formulario, en particular el de reservas.',
-      en: 'The website is intended to provide information about ROCE and to allow requests for table or private-space bookings. Users agree to make appropriate and lawful use of the website, and to provide truthful information when filling in any form, in particular the booking form.',
+      es: 'El sitio web tiene como finalidad informar sobre ROCE y permitir la solicitud de reservas de mesa o de nuestro espacio privado y hacer pedidos a la mesa o para recoger desde la app. El usuario se compromete a hacer un uso adecuado y lícito del sitio web, así como a facilitar información veraz al rellenar cualquier formulario, en particular el de reservas y los datos de tu pedido.',
+      en: 'The website is intended to provide information about ROCE and to allow requests for table or private-space bookings and to place orders at the table or for pickup from the app. Users agree to make appropriate and lawful use of the website, and to provide truthful information when filling in any form, in particular the booking form and your order details.',
     },
     legal_h4: { es: '4. Propiedad intelectual e industrial', en: '4. Intellectual and industrial property' },
     legal_p4: {
@@ -438,8 +491,8 @@
     terms_title: { es: 'Términos y condiciones', en: 'Terms & Conditions' },
     terms_h1: { es: '1. Objeto', en: '1. Purpose' },
     terms_p1: {
-      es: 'Estos términos y condiciones regulan la solicitud de reservas de mesa y de nuestro espacio privado a través de roce.es. Al enviar el formulario de reservas, aceptas estas condiciones.',
-      en: 'These terms and conditions govern requests for table or private-space bookings made through roce.es. By submitting the booking form, you accept these conditions.',
+      es: 'Estos términos y condiciones regulan la solicitud de reservas de mesa y de nuestro espacio privado a través de roce.es, y los pedidos que hagas con la app de pedidos (app.roce.es). Al enviar el formulario de reservas o al hacer un pedido, aceptas estas condiciones.',
+      en: 'These terms and conditions govern requests for table or private-space bookings made through roce.es, and the orders you place with the ordering app (app.roce.es). By submitting the booking form or placing an order, you accept these conditions.',
     },
     terms_h2: { es: '2. Reservas', en: '2. Bookings' },
     terms_p2: {
@@ -461,12 +514,33 @@
       es: 'Las reservas de nuestro espacio privado están sujetas a un consumo mínimo por persona, que se informa por WhatsApp al gestionar la solicitud. Los detalles concretos (aforo, horario y condiciones) se confirman de forma individual con cada grupo.',
       en: 'Bookings for our private space are subject to a minimum spend per person, communicated over WhatsApp when handling the request. Specific details (capacity, timing and conditions) are confirmed individually with each group.',
     },
-    terms_h5: { es: '6. Modificación de estas condiciones', en: '6. Changes to these terms' },
+    terms_h_app: { es: '6. Pedidos desde la app', en: '6. Orders from the app' },
+    terms_h5: { es: '7. Modificación de estas condiciones', en: '7. Changes to these terms' },
     terms_p5: {
       es: 'ROCE puede actualizar estos términos y condiciones en cualquier momento. Te recomendamos consultarlos periódicamente; la versión vigente es siempre la publicada en esta página.',
       en: 'ROCE may update these terms and conditions at any time. We recommend checking them periodically; the version published on this page is always the one in force.',
     },
-    terms_h6: { es: '7. Legislación aplicable', en: '7. Governing law' },
+    terms_p_app1: {
+      es: 'La app permite pedir a la mesa (escaneando el QR de tu mesa) o para recoger en el local. El pedido se paga al hacerlo, con tarjeta, en la pasarela segura de Redsys. Tu pedido queda confirmado cuando la app te muestra la confirmación y, si has indicado tu email, cuando te llega el correo de confirmación.',
+      en: 'The app lets you order at your table (by scanning your table\'s QR code) or for pickup at the venue. The order is paid when you place it, by card, on the secure Redsys gateway. Your order is confirmed when the app shows you the confirmation and, if you provided your email, when you receive the confirmation email.',
+    },
+    terms_p_app2: {
+      es: 'Los precios incluyen IVA. Algunos platos solo se sirven en determinados horarios y pueden agotarse. Si un artículo de tu pedido no está disponible, ROCE puede anularlo y devolverte su importe.',
+      en: 'Prices include VAT. Some dishes are only served at certain times and may run out. If an item in your order is not available, ROCE may cancel it and refund its price.',
+    },
+    terms_p_app3: {
+      es: 'La carta indica los alérgenos de cada plato y unos valores nutricionales orientativos. Si tienes alguna alergia o intolerancia, avisa a nuestro equipo antes de pedir: pueden existir trazas de otros alérgenos. Los alérgenos de las bebidas los confirma el equipo.',
+      en: 'The menu shows the allergens of each dish and approximate nutritional values. If you have any allergy or intolerance, tell our team before ordering: traces of other allergens may be present. Allergens in drinks are confirmed by our team.',
+    },
+    terms_p_app4: {
+      es: 'Los alimentos y bebidas se elaboran en el momento, por lo que, una vez que tu pedido está en preparación, no se puede cancelar y no existe derecho de desistimiento (art. 103 del texto refundido de la Ley General para la Defensa de los Consumidores y Usuarios). Si hay un error, un producto no disponible o cualquier problema con tu pedido, escríbenos desde «Mi cuenta» (WhatsApp o email) o a reservas@roce.es y, si procede, te devolveremos el importe, total o parcial, a la misma tarjeta con la que pagaste. Según tu banco, puede tardar unos días en verse reflejado.',
+      en: 'Food and drinks are made to order, so once your order is being prepared it cannot be cancelled and there is no right of withdrawal (art. 103 of the consolidated text of the General Law for the Defence of Consumers and Users). If there is a mistake, an unavailable product or any problem with your order, write to us from "My account" (WhatsApp or email) or at reservas@roce.es and, where appropriate, we will refund the amount, in full or in part, to the same card you paid with. Depending on your bank, it may take a few days to show up.',
+    },
+    terms_p_app5: {
+      es: 'Puedes pedir con cuenta (con tu email o con Google) o como invitado. Eres responsable de que tus datos sean veraces y de custodiar tu acceso. Si necesitas factura con datos de empresa, indícalos en tu perfil o escríbenos a reservas@roce.es.',
+      en: 'You can order with an account (with your email or with Google) or as a guest. You are responsible for providing truthful data and for keeping your access safe. If you need an invoice with company details, add them to your profile or write to us at reservas@roce.es.',
+    },
+    terms_h6: { es: '8. Legislación aplicable', en: '8. Governing law' },
     terms_p6: {
       es: 'Estas condiciones se rigen por la legislación española. Para cualquier controversia, las partes se someten a los juzgados y tribunales de Valencia, salvo que la normativa de consumidores establezca otro fuero.',
       en: 'These terms are governed by Spanish law. For any dispute, the parties submit to the courts of Valencia, unless consumer protection law establishes a different jurisdiction.',
