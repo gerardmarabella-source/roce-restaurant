@@ -18,6 +18,8 @@ import { PDFDocument, StandardFonts, rgb } from "npm:pdf-lib@1.17.1";
 
 const BREVO_API_KEY = Deno.env.get("BREVO_API_KEY") ?? "";
 const WEBHOOK_SECRET = Deno.env.get("WEBHOOK_SECRET") ?? "";
+// Compara secretos sin cortar al primer carácter distinto (tiempo constante), para que no se pueda adivinar poco a poco.
+const safeEq = (a: string, b: string): boolean => { if (a.length !== b.length) return false; let d = 0; for (let i = 0; i < a.length; i++) d |= a.charCodeAt(i) ^ b.charCodeAt(i); return d === 0; };
 const SWEEP_SECRET = Deno.env.get("SWEEP_SECRET") ?? "";   // protege los barridos table_sweep / list_sweep (los envía pg_cron)
 const FROM = Deno.env.get("MAIL_FROM") ?? "no-reply@roce.es"; // debe ser un remitente verificado en Brevo
 const REPLY_TO = Deno.env.get("MAIL_REPLY_TO") ?? "reservas@roce.es";
@@ -1040,7 +1042,7 @@ Deno.serve(async (req) => {
   let payload: any = {};
   try { payload = await req.json(); } catch { /* sin cuerpo */ }
   // Los barridos los lanza solo el programador de la base de datos, con la cabecera x-sweep-secret (secreto SWEEP_SECRET).
-  if ((payload.action === "table_sweep" || payload.action === "list_sweep") && (!SWEEP_SECRET || req.headers.get("x-sweep-secret") !== SWEEP_SECRET)) {
+  if ((payload.action === "table_sweep" || payload.action === "list_sweep") && (!SWEEP_SECRET || !safeEq(req.headers.get("x-sweep-secret") ?? "", SWEEP_SECRET))) {
     return new Response("forbidden", { status: 403, headers: CORS });
   }
   if (payload.action === "table_sweep") {
@@ -1051,7 +1053,7 @@ Deno.serve(async (req) => {
     const r = await sweepLists();
     return new Response(await r.text(), { status: r.status, headers: CORS });
   }
-  if (!WEBHOOK_SECRET || req.headers.get("x-webhook-secret") !== WEBHOOK_SECRET) {
+  if (!WEBHOOK_SECRET || !safeEq(req.headers.get("x-webhook-secret") ?? "", WEBHOOK_SECRET)) {
     return new Response("forbidden", { status: 403 });
   }
   if (payload.table === "app_orders") return await handleAppOrder(payload);
