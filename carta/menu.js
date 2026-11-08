@@ -68,7 +68,7 @@ window.CARTA = {
               ]
             },
             {
-              title: { es: 'Pokes', en: 'Pokes' }, note: { es: 'Platos completos en bowl', en: 'Complete bowls' },
+              title: { es: 'Pokes', en: 'Pokes' },
               items: [
                 { name: 'Black Rice Chicken', al: [6, 11], nut: [562, 36, 64, 18], price: 13.5, es: 'Arroz salvaje, pollo, edamame, aguacate, pepino, encurtidos, cebolla encurtida, mezcla verde, sésamo y salsa ROCE.', en: 'Wild rice, chicken, edamame, avocado, cucumber, pickles, pickled onion, mixed greens, sesame and ROCE sauce.' },
                 { name: 'Black Rice Tuna', al: [4, 6, 11], nut: [606, 40, 62, 20], price: 16.5, es: 'Arroz salvaje, atún, edamame, aguacate, pepino, encurtidos, cebolla encurtida, mezcla verde, sésamo y salsa ROCE.', en: 'Wild rice, tuna, edamame, avocado, cucumber, pickles, pickled onion, mixed greens, sesame and ROCE sauce.' },
