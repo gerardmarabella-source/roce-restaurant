@@ -183,8 +183,9 @@
   .home-statement .line { display: block; }
   .home-statement { margin-top: calc(0.5rem - 0.04em); }
   .home-statement .line { text-align: left; }
-  /* La frase en letra más pequeña (0,8) y el logo ROCE de la última línea mantiene el tamaño del bloque: queda más grande que el texto. */
-  .home-statement .line:not(.l4) { font-size: 0.8em; }
+  /* La frase en tres tamaños de menos a más (Todo < empieza < con un) y el logo ROCE, que mantiene el tamaño del bloque, cierra la escalera. */
+  .home-statement .l1 { font-size: 0.66em; }
+  .home-statement .l2 { font-size: 0.84em; }
   /* La última palabra es el logo de ROCE: casi el ancho de la palabra que sustituye, pegado a la derecha. */
   /* margin-top: el hueco visible (0,055 em bajo la línea base + 0,054 em) iguala al de las demás líneas (0,109 em). */
   .home-logo { display: block; margin: 0.054em 0 0 0; height: 1.3em; width: auto; }
@@ -394,7 +395,7 @@
       --s: min(calc((var(--avail) - var(--gap) - var(--ev-x)) / 2), 30vw);
       /* Los cuadrados ceden ancho (hasta un mínimo) para que la frase pueda crecer hasta tocar el suelo. */
       --hcap: calc((100dvh - 0.9rem) / 3.55);
-      --sw: max(24rem, min(calc(var(--s) * 1.9), 38vw, calc(100vw - 2 * var(--pad) - 2rem - 3.6 * var(--hcap))));
+      --sw: max(24rem, min(calc(var(--s) * 1.9), 38vw, calc(100vw - 2 * var(--pad) - 2rem - 3.95 * var(--hcap))));
       --sh: var(--s);
       flex-direction: row;
       align-items: center;
@@ -405,7 +406,7 @@
     .home-top { flex: 1; min-width: 0; width: auto; align-self: flex-start; margin-top: calc(-1 * var(--head)); }
     .home-statement {
       /* La frase ocupa TODO el alto de la pantalla: el logo ROCE toca el suelo. */
-      font-size: min(22rem, var(--hcap), calc((100vw - 2 * var(--pad) - var(--sw) - 2rem) / 3.6));
+      font-size: min(22rem, var(--hcap), calc((100vw - 2 * var(--pad) - var(--sw) - 2rem) / 3.95));
     }
     /* Cuadrados más anchos: el nombre de cada espacio cabe entero en una línea. */
     .home-square strong.home-name { white-space: nowrap; font-size: clamp(0.8rem, min(5.3cqw, calc(var(--sh) * 0.16)), 2.4rem); }
