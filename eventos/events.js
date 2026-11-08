@@ -42,12 +42,19 @@
 
   var list = [];
   var ready;
+  // Última lista recibida (hasta 7 días): la portada pinta ya la franja del próximo evento sin esperar a la red y luego se refresca.
+  var CK = 'roce_events_cache', cached = [];
+  try {
+    var c = JSON.parse(localStorage.getItem(CK) || 'null');
+    if (c && Array.isArray(c.rows) && Date.now() - c.t < 7 * 864e5) cached = c.rows.map(fromRow);
+  } catch (e) {}
+  window.ROCE_EVENTS_CACHED = cached;
   if (backend) {
     ready = fetch(cfg.url + '/rest/v1/events_public?select=*&order=starts_at.asc', {
       headers: { apikey: cfg.anonKey, Authorization: 'Bearer ' + cfg.anonKey }
     }).then(function (r) { if (!r.ok) throw new Error('events ' + r.status); return r.json(); })
-      .then(function (rows) { list = rows.map(fromRow); return list; })
-      .catch(function () { list = []; window.ROCE_EVENTS_ERROR = true; return list; });
+      .then(function (rows) { list = rows.map(fromRow); try { localStorage.setItem(CK, JSON.stringify({ t: Date.now(), rows: rows })); } catch (e) {} return list; })
+      .catch(function () { list = cached.slice(); window.ROCE_EVENTS_ERROR = true; return list; });
   } else {
     list = [];
     ready = Promise.resolve(list);
