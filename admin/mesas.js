@@ -468,6 +468,30 @@
     }
     return opts[0] || '13:00';
   }
+  // Mesas juntas en el plano: las mesas de una misma reserva (a esta hora) se unen con una barra del color de su estado.
+  // Las barras se trazan entre mesas vecinas (árbol de distancia mínima), así que valen para dos mesas o para un grupo de cuatro.
+  function joinLinks(boxes, iso, minx, PAD, oy, bw, bh) {
+    var groups = {}, byId = {};
+    boxes.forEach(function (b) {
+      var o = occupancy(b.t, iso);
+      if (!o.booking || (o.booking.table_booking_tables || []).length < 2) return;
+      var g = groups[o.booking.id] || (groups[o.booking.id] = { st: o.state, bs: [] });
+      g.bs.push(b);
+    });
+    var svg = '';
+    Object.keys(groups).forEach(function (id) {
+      var g = groups[id], bs = g.bs; if (bs.length < 2) return;
+      var inT = [bs[0]], rest = bs.slice(1);
+      while (rest.length) {
+        var best = null;
+        inT.forEach(function (a) { rest.forEach(function (c) { var d = Math.hypot(a.cx - c.cx, a.cy - c.cy); if (!best || d < best.d) best = { a: a, c: c, d: d }; }); });
+        var th = Math.max(14, Math.min(best.a.h, best.a.w, best.c.h, best.c.w) * 0.55);
+        svg += '<line class="mt-link is-' + g.st + '" x1="' + (best.a.cx - minx + PAD).toFixed(1) + '" y1="' + (best.a.cy - oy).toFixed(1) + '" x2="' + (best.c.cx - minx + PAD).toFixed(1) + '" y2="' + (best.c.cy - oy).toFixed(1) + '" stroke-width="' + th.toFixed(1) + '" stroke-linecap="round"/>';
+        inT.push(best.c); rest.splice(rest.indexOf(best.c), 1);
+      }
+    });
+    return svg ? '<svg class="mt-links" viewBox="0 0 ' + bw.toFixed(1) + ' ' + bh.toFixed(1) + '" preserveAspectRatio="none" aria-hidden="true">' + svg + '</svg>' : '';
+  }
   function occupancy(t, iso) {
     var ts = new Date(iso).getTime(), r = { state: 'free', booking: null, block: null };
     S.bookings.forEach(function (b) {
@@ -562,6 +586,7 @@
         if (c.k === 'col') { var cl = ((c.x - c.s / 2 - minx + PAD) / bw * 100).toFixed(2), ct = ((c.y - c.s / 2 - oy) / bh * 100).toFixed(2); return '<i class="mt-ctx is-col' + cs + '"' + da + ' style="left:' + cl + '%;top:' + ct + '%;width:' + (c.s / bw * 100).toFixed(2) + '%;height:' + (c.s / bh * 100).toFixed(2) + '%"></i>'; }
         return '<div class="mt-ctx' + (c.dash ? ' is-dash' : '') + (c.hatch ? ' is-hatch' : '') + (c.round ? ' is-round' : '') + cs + '"' + da + ' style="left:' + ((c.x0 - minx + PAD) / bw * 100).toFixed(2) + '%;top:' + ((c.y0 - oy) / bh * 100).toFixed(2) + '%;width:' + ((c.x1 - c.x0) / bw * 100).toFixed(2) + '%;height:' + ((c.y1 - c.y0) / bh * 100).toFixed(2) + '%"><span>' + esc(c.l) + '</span>' + (cs ? '<b class="mt-rz" aria-label="Cambiar tamaño"></b>' : '') + '</div>';
       }).join('') +
+      joinLinks(boxes, iso, minx, PAD, oy, bw, bh) +
       boxes.map(function (b) {
         var t = b.t, o = occupancy(t, iso);
         var tip = t.name + ' · ' + t.seats_max + ' p.' + (o.booking ? ' · ' + o.booking.name + ' (' + o.booking.party + ')' + (o.state === 'bill' ? ' · cuenta pedida' : '') : o.block ? ' · bloqueada' + (o.block.note ? ': ' + o.block.note : '') : '');
