@@ -25,6 +25,8 @@ const USER = { Id: 2, Name: "ROCE" };
 const POS = { Id: 2, Name: "TPV WEB" };
 const WORKPLACE = { Id: 1, Name: "ROCE" };
 const PAY_METHOD = { Id: 7, Name: "App Online" };
+// Ágora exige un cliente en cada pedido: se usa el «CLIENTE GENÉRICO» que ya existe (Id 1).
+const CUSTOMER = { Id: 1, FiscalName: "CLIENTE GENÉRICO", Cif: "00000000", CountryCode: "ES", Street: "", City: "", Region: "", ZipCode: "", AccountCode: "", ApplySurcharge: false };
 
 async function agoraGet(base: string, token: string, filter: string): Promise<any> {
   const ctl = new AbortController(); const to = setTimeout(() => ctl.abort(), 25_000);
@@ -72,7 +74,7 @@ function buildOrder(serie: string, ord: any, items: any[], agoraOf: Map<string, 
       ProductId: aid, ProductName: p.Name, SaleFormatId: p.BaseSaleFormatId, SaleFormatName: p.Name, SaleFormatRatio: 1.0, MainBarcode: "",
       ProductPrice: money(base), Quantity: it.qty, VatId: p.VatId, VatRate: v.VatRate, SurchargeRate: v.SurchargeRate, UserId: USER.Id,
       UnitPrice: money(it.unit_cents), DiscountRate: 0.0, CashDiscount: 0.0, TotalAmount: money(it.unit_cents * it.qty),
-      UnitCostPrice: 0.0, TotalCostPrice: 0.0,
+      UnitCostPrice: 0.0, TotalCostPrice: 0.0, ProductCostPrice: 0.0, OfferId: null, OfferCode: "", RemovedIngredients: [],
       PreparationTypeId: p.PreparationTypeId ?? null, PreparationTypeName: pt.get(p.PreparationTypeId) ?? "", PLU: p.PLU ?? "",
       FamilyId: p.FamilyId, FamilyName: fam.get(p.FamilyId) ?? "", PreparationOrderId: p.PreparationOrderId ?? null, PreparationOrderName: po.get(p.PreparationOrderId) ?? "",
       PriceListId: 1, Notes: notes,
@@ -93,9 +95,10 @@ function buildOrder(serie: string, ord: any, items: any[], agoraOf: Map<string, 
     // Comandas a cocina/barra solo la primera vez que entra (los reintentos no duplican). Para llevar manda la configuración de Ágora.
     AutoPrepare: "OnlyIfNew", AutoPrint: "Never", GlobalId: ord.id, CustomerDocumentNumber: ord.ref,
     Pos: POS, Workplace: WORKPLACE, User: USER, SaleCenter: { ...SALE_CENTER, Location: mesa ? String(ord.table_name ?? "") : "" },
+    Customer: CUSTOMER, DeliveryAddress: { Street: "", City: "", Region: "", ZipCode: "" }, Discounts: { DiscountRate: 0.0, CashDiscount: 0.0 },
     Notes: notes, Lines: lines,
     Payments: [{
-      MethodId: PAY_METHOD.Id, MethodName: PAY_METHOD.Name, Amount: money(sum), PaidAmount: money(sum), ChangeAmount: 0.0, PosId: POS.Id, IsPrepayment: true,
+      MethodId: PAY_METHOD.Id, MethodName: PAY_METHOD.Name, Amount: money(sum), PaidAmount: money(sum), ChangeAmount: 0.0, TipAmount: 0.0, Date: now, PosId: POS.Id, IsPrepayment: true,
       ExtraInformation: `Pago con tarjeta en la app (Redsys) · ${ord.ref}`,
     }],
   };
