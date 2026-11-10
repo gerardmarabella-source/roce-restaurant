@@ -49,7 +49,7 @@ function madrid(d: Date) {
 }
 const businessDay = (d: Date) => madrid(new Date(d.getTime() - 5 * 3600_000)).slice(0, 10);
 
-function buildOrder(serie: string, ord: any, items: any[], agoraOf: Map<string, number>, prod: Map<number, any>, vats: Map<number, any>, fam: Map<number, string>, pt: Map<number, string>, po: Map<number, string>) {
+function buildOrder(serie: string, ord: any, items: any[], agoraOf: Map<string, number>, prod: Map<number, any>, vats: Map<number, any>, fam: Map<number, string>, pt: Map<number, string>, po: Map<number, string>, status = "Pending", refundCents = 0) {
   const paid = new Date(ord.paid_at ?? ord.created_at), now = madrid(paid);
   const info = (id: number) => {
     const p = prod.get(id); if (!p) throw new Error(`producto ${id} no existe en Ágora`);
@@ -91,7 +91,7 @@ function buildOrder(serie: string, ord: any, items: any[], agoraOf: Map<string, 
   const notes = [ord.name ? `Cliente: ${ord.name}` : "", mesa ? "" : "PARA RECOGER", ord.notes].filter((x) => x && String(x).trim()).join(" · ").slice(0, 300);
   return {
     Serie: serie, Number: ord.agora_number, Type: mesa ? "Table" : "TakeAway", VatIncluded: true, BusinessDay: businessDay(paid), Date: now, DeliveryDate: now,
-    Guests: mesa ? ord.party ?? null : null, Status: "Pending",
+    Guests: mesa ? ord.party ?? null : null, Status: status,
     // Comandas a cocina/barra solo la primera vez que entra (los reintentos no duplican). Para llevar manda la configuración de Ágora.
     AutoPrepare: "OnlyIfNew", AutoPrint: "Never", GlobalId: ord.id, CustomerDocumentNumber: ord.ref,
     Pos: POS, Workplace: WORKPLACE, User: USER, SaleCenter: { ...SALE_CENTER, Location: mesa ? String(ord.table_name ?? "") : "" },
@@ -100,7 +100,11 @@ function buildOrder(serie: string, ord: any, items: any[], agoraOf: Map<string, 
     Payments: [{
       MethodId: PAY_METHOD.Id, MethodName: PAY_METHOD.Name, Amount: money(sum), PaidAmount: money(sum), ChangeAmount: 0.0, TipAmount: 0.0, Date: now, PosId: POS.Id, IsPrepayment: true,
       ExtraInformation: `Pago con tarjeta en la app (Redsys) · ${ord.ref}`,
-    }],
+    }].concat(refundCents > 0 ? [{
+      // Devolución del dinero por Redsys: para anular el pedido en Ágora los pagos tienen que sumar cero.
+      MethodId: PAY_METHOD.Id, MethodName: PAY_METHOD.Name, Amount: -money(refundCents), PaidAmount: -money(refundCents), ChangeAmount: 0.0, TipAmount: 0.0, Date: madrid(new Date()), PosId: POS.Id, IsPrepayment: true,
+      ExtraInformation: `Devolución por Redsys · ${ord.ref}`,
+    }] : []),
   };
 }
 
@@ -148,6 +152,56 @@ async function pushOrders(db: any, base: string, token: string, serie: string) {
     }
   }
   return json({ ok: results.every((x) => x.ok), pushed: results.filter((x) => x.ok).length, results });
+}
+
+// ───────────────────────── Devoluciones de RoceCover → Ágora ─────────────────────────
+// Devolución total de un pedido abierto en Ágora: se anula allí. Devolución parcial o pedido ya facturado: queda marcado para abonar a mano.
+async function refundOrders(db: any, base: string, token: string, serie: string) {
+  const { data: claimed, error } = await db.rpc("app_agora_claim_refunds", { p_limit: 5 });
+  if (error) return { error: "base de datos: " + error.message, results: [] as any[] };
+  const list: any[] = claimed ?? [];
+  if (!list.length) return { results: [] as any[] };
+  let master: any;
+  try { master = await agoraGet(base, token, "Products,Vats,Families,PreparationTypes,PreparationOrders"); }
+  catch (e) { return { error: (e as Error).message.slice(0, 300), results: [] as any[] }; }
+  const prod = new Map<number, any>((master.Products ?? []).map((p: any): [number, any] => [p.Id, p]));
+  const vats = new Map<number, any>((master.Vats ?? []).map((v: any): [number, any] => [v.Id, v]));
+  const fam = new Map<number, string>((master.Families ?? []).map((f: any): [number, string] => [f.Id, f.Name]));
+  const pt = new Map<number, string>((master.PreparationTypes ?? []).map((f: any): [number, string] => [f.Id, f.Name]));
+  const po = new Map<number, string>((master.PreparationOrders ?? []).map((f: any): [number, string] => [f.Id, f.Name]));
+  const { data: menu } = await db.from("app_menu_items").select("key, agora_id");
+  const agoraOf = new Map<string, number>((menu ?? []).filter((m: any) => m.agora_id != null).map((m: any): [string, number] => [m.key, m.agora_id]));
+
+  const results: any[] = [];
+  for (const c of list) {
+    const ord = c.order, items: any[] = c.items ?? [];
+    const total = items.reduce((n, it) => n + it.unit_cents * it.qty, 0);
+    const done = async (st: "sent" | "manual", note: string) => {
+      await db.from("app_orders").update({ agora_refunded_cents: ord.refunded_cents, agora_refund_status: st, agora_refund_note: note, agora_refund_attempts: 0 }).eq("id", ord.id);
+      results.push({ ref: ord.ref, status: st });
+    };
+    try {
+      if (ord.refunded_cents < total) {
+        await done("manual", `Devolución parcial de ${(ord.refunded_cents / 100).toFixed(2).replace(".", ",")} €: ajusta o abona el pedido ${ord.ref} en Ágora`);
+        continue;
+      }
+      const body = { SalesOrders: [buildOrder(serie, ord, items, agoraOf, prod, vats, fam, pt, po, "Cancelled", total)] };
+      const r = await fetch(`${base}/api/import/`, { method: "POST", headers: { "Api-Token": token, "Accept": "application/json", "Content-Type": "application/json; charset=utf-8" }, body: JSON.stringify(body) });
+      const txt = await r.text();
+      if (!r.ok) throw new Error(`Ágora respondió ${r.status}: ${txt.slice(0, 200)}`);
+      // Si el pedido ya estaba facturado, Ágora ignora la anulación sin avisar: se comprueba el estado real.
+      const day = (body.SalesOrders[0] as any).BusinessDay;
+      const chk = await (await fetch(`${base}/api/export/?business-day=${day}&filter=SalesOrders&include-processed`, { headers: { "Api-Token": token } })).json();
+      const found = (chk.SalesOrders ?? []).find((o: any) => o.Serie === serie && o.Number === ord.agora_number);
+      if (found && found.Status === "Cancelled") await done("sent", "Pedido anulado en Ágora");
+      else await done("manual", `El pedido ${ord.ref} ya está facturado en Ágora: haz el abono allí`);
+    } catch (e) {
+      const msg = (e as Error).message.slice(0, 300);
+      await db.from("app_orders").update({ agora_refund_status: "error", agora_refund_note: msg }).eq("id", ord.id);
+      results.push({ ref: ord.ref, status: "error", error: msg });
+    }
+  }
+  return { results };
 }
 
 // ───────────────────────── Precios de Ágora → app ─────────────────────────
@@ -212,6 +266,12 @@ Deno.serve(async (req) => {
   const serie = (Deno.env.get("AGORA_SERIE") ?? "APP").trim();
   let body: any = {};
   try { body = await req.json(); } catch { /* sin cuerpo */ }
-  if (body?.action === "push") return await pushOrders(db, base, token, serie);
+  if (body?.action === "push") {
+    const res = await pushOrders(db, base, token, serie);
+    const ref = await refundOrders(db, base, token, serie);
+    if (!ref.results.length && !ref.error) return res;
+    const o = await res.json();
+    return json({ ...o, refunds: ref.results, refundError: ref.error ?? null }, res.status);
+  }
   return await syncPrices(db, base, token);
 });
