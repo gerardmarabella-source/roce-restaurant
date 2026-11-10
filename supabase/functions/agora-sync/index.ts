@@ -18,7 +18,8 @@ const EXTRA_IDS: Record<string, number> = {
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "*" } });
   const db = sb();
-  const token = Deno.env.get("AGORA_API_TOKEN");
+  // Tolera que el secreto se haya pegado con «API: » delante o con espacios alrededor.
+  const token = (Deno.env.get("AGORA_API_TOKEN") ?? "").replace(/^\s*API\s*:\s*/i, "").trim();
   if (!token) return json({ ok: false, error: "AGORA_API_TOKEN no configurado" }, 500);
   const base = (Deno.env.get("AGORA_URL") ?? "https://roce.tpvvalencia.es").replace(/\/+$/, "");
 
@@ -37,7 +38,7 @@ Deno.serve(async (req) => {
     const ctl = new AbortController(); const to = setTimeout(() => ctl.abort(), 20_000);
     const r = await fetch(`${base}/api/export-master/?filter=Products`, { headers: { "Api-Token": token }, signal: ctl.signal });
     clearTimeout(to);
-    if (!r.ok) return await fail(`Ágora respondió ${r.status}`);
+    if (!r.ok) return await fail(`Ágora respondió ${r.status}` + (r.status === 401 ? ` (el token guardado tiene ${token.length} caracteres)` : ""));
     products = (await r.json()).Products ?? [];
   } catch (e) { return await fail("Ágora no responde: " + (e as Error).message); }
   if (!products.length) return await fail("Ágora no devolvió productos");
