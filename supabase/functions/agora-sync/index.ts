@@ -4,10 +4,10 @@
 //    de las tostadas y del bol. Si Ágora no responde (PC apagado, sin internet) se mantienen los últimos precios y se anota el error.
 //    No hace nada si la última sincronización fue hace menos de 60 s.
 //  · {"action":"push"}: envía a Ágora los pedidos de la app ya pagados (ver agora_pedidos.sql). Cada pedido se importa como
-//    pedido de la serie WP, con sus líneas, extras, nota y el pago «App Online»; Ágora lo manda a cocina/barra y luego factura
+//    pedido de la serie APP, con sus líneas, extras, nota y el pago «App Online»; Ágora lo manda a cocina/barra y luego factura
 //    él (la factura y los abonos los emite Ágora). Es seguro llamarla a menudo: solo envía lo pendiente y reintenta los errores.
 // Secretos: AGORA_API_TOKEN (token del API de Ágora), AGORA_URL (opcional, por defecto https://roce.tpvvalencia.es),
-//           AGORA_SERIE (opcional, serie de pedidos de la app; por defecto WP).
+//           AGORA_SERIE (opcional, serie de pedidos de la app; por defecto APP: una serie de pedidos que NO usa el TPV ni el módulo web de Ágora).
 import { createClient } from "npm:@supabase/supabase-js@2";
 
 const sb = () => createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
@@ -90,7 +90,7 @@ function buildOrder(serie: string, ord: any, items: any[], agoraOf: Map<string, 
   const mesa = ord.mode === "mesa";
   const notes = [ord.name ? `Cliente: ${ord.name}` : "", mesa ? "" : "PARA RECOGER", ord.notes].filter((x) => x && String(x).trim()).join(" · ").slice(0, 300);
   return {
-    Serie: serie, Number: ord.agora_number, Type: mesa ? "Table" : "TakeAway", VatIncluded: true, BusinessDay: businessDay(paid), Date: now,
+    Serie: serie, Number: ord.agora_number, Type: mesa ? "Table" : "TakeAway", VatIncluded: true, BusinessDay: businessDay(paid), Date: now, DeliveryDate: now,
     Guests: mesa ? ord.party ?? null : null, Status: "Pending",
     // Comandas a cocina/barra solo la primera vez que entra (los reintentos no duplican). Para llevar manda la configuración de Ágora.
     AutoPrepare: "OnlyIfNew", AutoPrint: "Never", GlobalId: ord.id, CustomerDocumentNumber: ord.ref,
@@ -209,7 +209,7 @@ Deno.serve(async (req) => {
   const token = (Deno.env.get("AGORA_API_TOKEN") ?? "").replace(/^\s*API\s*:\s*/i, "").trim();
   if (!token) return json({ ok: false, error: "AGORA_API_TOKEN no configurado" }, 500);
   const base = (Deno.env.get("AGORA_URL") ?? "https://roce.tpvvalencia.es").replace(/\/+$/, "");
-  const serie = (Deno.env.get("AGORA_SERIE") ?? "WP").trim();
+  const serie = (Deno.env.get("AGORA_SERIE") ?? "APP").trim();
   let body: any = {};
   try { body = await req.json(); } catch { /* sin cuerpo */ }
   if (body?.action === "push") return await pushOrders(db, base, token, serie);
