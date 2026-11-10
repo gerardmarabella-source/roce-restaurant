@@ -17,6 +17,12 @@ const json = (o: unknown, status = 200) => new Response(JSON.stringify(o), { sta
 const EXTRA_IDS: Record<string, number> = {
   "Bacon": 51, "Aguacate": 52, "Salmón": 53, "Huevo": 54, "Jamón": 55,
   "Fruta": 56, "Granola": 57, "Crema de cacahuete": 58,
+  "Iced": 78, "Doble carga": 94, "Vegetal barista": 95, "Con hielo": 96, "Descafeinado": 77,   // complementos de los cafés
+};
+// En Ágora el precio de un extra es el «precio como complemento» (AddinPrice), que puede ser distinto del precio normal.
+const addinCents = (p: any): number => {
+  const pr = (p?.Prices ?? []).find((x: any) => x.PriceListId === 1) ?? (p?.Prices ?? [])[0];
+  return Math.round(Number(pr?.AddinPrice ?? pr?.MainPrice ?? 0) * 100);
 };
 
 // Datos fijos de Ágora de ROCE (centro de venta «App», usuario ROCE, forma de pago «App Online», TPV WEB).
@@ -62,8 +68,8 @@ function buildOrder(serie: string, ord: any, items: any[], agoraOf: Map<string, 
     const { p, v } = info(aid);
     const addins = (Array.isArray(it.extras) ? it.extras : []).map((name: string) => {
       const eid = EXTRA_IDS[name]; if (!eid) throw new Error(`extra «${name}» sin producto en Ágora`);
-      const e = info(eid), price = (e.p.Prices ?? []).find((x: any) => x.PriceListId === 1) ?? (e.p.Prices ?? [])[0];
-      return { id: eid, ...e, cents: Math.round(Number(price?.MainPrice ?? 0) * 100) };
+      const e = info(eid);
+      return { id: eid, ...e, cents: addinCents(e.p) };
     });
     // Lo que paga el cliente manda: el precio base se calcula restando los extras a lo cobrado, así el total coincide con Redsys.
     const addSum = addins.reduce((n: number, a: any) => n + a.cents, 0);
@@ -222,8 +228,9 @@ async function syncPrices(db: any, base: string, token: string) {
   if (!products.length) return await fail("Ágora no devolvió productos");
 
   // Precio de venta principal en la tarifa 1 («General», IVA incluido). Se ignoran precios no válidos (≤ 0).
-  const price = new Map<number, number>();
+  const price = new Map<number, number>(), addin = new Map<number, number>();
   for (const p of products) {
+    addin.set(p.Id, addinCents(p));
     const pr = (p.Prices ?? []).find((x: any) => x.PriceListId === 1) ?? (p.Prices ?? [])[0];
     const c = pr ? Math.round(Number(pr.MainPrice) * 100) : NaN;
     if (Number.isFinite(c) && c > 0) price.set(p.Id, c);
@@ -240,7 +247,7 @@ async function syncPrices(db: any, base: string, token: string) {
     if (Array.isArray(row.extras) && row.extras.length) {
       let ex = false;
       const nx = row.extras.map((e: any) => {
-        const id = EXTRA_IDS[e.k], cc = id != null ? price.get(id) : undefined;
+        const id = EXTRA_IDS[e.k], cc = id != null ? addin.get(id) : undefined;
         if (cc != null && cc !== e.cents) { ex = true; changes.push(`${row.key} extra ${e.k}: ${e.cents}→${cc}`); return { ...e, cents: cc }; }
         return e;
       });
