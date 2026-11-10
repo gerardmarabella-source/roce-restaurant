@@ -114,13 +114,13 @@ async function pushOrders(db: any, base: string, token: string, serie: string) {
     for (const c of list) await db.from("app_orders").update({ agora_status: "error", agora_error: "Ágora no responde: " + msg }).eq("id", c.order.id);
     return json({ ok: false, error: msg }, 502);
   }
-  const prod = new Map<number, any>((master.Products ?? []).map((p: any) => [p.Id, p]));
-  const vats = new Map<number, any>((master.Vats ?? []).map((v: any) => [v.Id, v]));
-  const fam = new Map<number, string>((master.Families ?? []).map((f: any) => [f.Id, f.Name]));
-  const pt = new Map<number, string>((master.PreparationTypes ?? []).map((f: any) => [f.Id, f.Name]));
-  const po = new Map<number, string>((master.PreparationOrders ?? []).map((f: any) => [f.Id, f.Name]));
+  const prod = new Map<number, any>((master.Products ?? []).map((p: any): [number, any] => [p.Id, p]));
+  const vats = new Map<number, any>((master.Vats ?? []).map((v: any): [number, any] => [v.Id, v]));
+  const fam = new Map<number, string>((master.Families ?? []).map((f: any): [number, string] => [f.Id, f.Name]));
+  const pt = new Map<number, string>((master.PreparationTypes ?? []).map((f: any): [number, string] => [f.Id, f.Name]));
+  const po = new Map<number, string>((master.PreparationOrders ?? []).map((f: any): [number, string] => [f.Id, f.Name]));
   const { data: menu } = await db.from("app_menu_items").select("key, agora_id");
-  const agoraOf = new Map<string, number>((menu ?? []).filter((m: any) => m.agora_id != null).map((m: any) => [m.key, m.agora_id]));
+  const agoraOf = new Map<string, number>((menu ?? []).filter((m: any) => m.agora_id != null).map((m: any): [string, number] => [m.key, m.agora_id]));
 
   const results: any[] = [];
   for (const c of list) {
