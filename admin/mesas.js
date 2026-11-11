@@ -760,13 +760,13 @@
   function appDayHtml(rows, label, showDate) {
     if (S.appDayErr) return '<p class="ad-meta">' + esc(S.appDayErr) + '</p>';
     if (!rows.length) return '<p class="ad-meta">Hoy no hay pedidos cobrados por la app.</p>';
-    var tot = 0, ret = 0;
+    var tot = 0, ret = 0, pend = 0;
     var h = rows.map(function (o) {
-      var rf = Number(o.refunded_cents || 0), open = o.total_cents - rf; tot += o.total_cents; ret += rf;
+      var rf = Number(o.refunded_cents || 0), open = o.total_cents - rf; if (o.payment_status === 'table') pend += o.total_cents; else tot += o.total_cents; ret += rf;
       var items = (o.app_order_items || []).map(function (l) { return l.qty + '× ' + esc(l.name) + (l.variant ? ' (' + esc(l.variant) + ')' : ''); }).join(', ');
       var where = o.mode === 'mesa' ? 'Mesa ' + esc(o.table_name || '') : 'Recoger';
-      var st = o.payment_status === 'refunded' ? '<span class="ad-tag is-red">Devuelto</span>' : rf > 0 ? '<span class="ad-tag">Devuelto ' + eur(rf) + '</span>' : '';
-      var ag = !o.agora_status || (o.payment_status !== 'paid' && o.payment_status !== 'refunded') ? '' :
+      var st = o.payment_status === 'table' ? '<span class="ad-tag is-red" title="El cliente eligió pagar en mesa: cóbrale en el TPV al servirle">A cobrar en mesa</span>' : o.payment_status === 'refunded' ? '<span class="ad-tag is-red">Devuelto</span>' : rf > 0 ? '<span class="ad-tag">Devuelto ' + eur(rf) + '</span>' : '';
+      var ag = !o.agora_status || (o.payment_status !== 'paid' && o.payment_status !== 'table' && o.payment_status !== 'refunded') ? '' :
         o.agora_status === 'sent' ? ' <span class="ad-tag is-green" title="El pedido ya está en Ágora">En Ágora</span>' :
         o.agora_status === 'error' ? ' <span class="ad-tag is-red" title="' + esc(o.agora_error || '') + '">Error al enviar a Ágora</span>' :
         o.agora_status === 'skipped' ? ' <span class="ad-tag" title="Pedido anterior a la conexión con Ágora">Sin enviar a Ágora</span>' :
@@ -775,7 +775,7 @@
       else if (o.agora_refund_status === 'manual') ag += ' <span class="ad-tag is-red" title="' + esc(o.agora_refund_note || '') + '">Abono pendiente en Ágora</span>';
       else if (o.agora_refund_status === 'error') ag += ' <span class="ad-tag is-red" title="' + esc(o.agora_refund_note || '') + '">Error al anular en Ágora</span>';
       var agnote = o.agora_refund_status === 'manual' || o.agora_refund_status === 'error' ? '<div class="ad-meta" style="margin:0.2rem 0 0.4rem">' + esc(o.agora_refund_note || '') + '</div>' : '';
-      var agbtn = agnote + (o.payment_status === 'paid' && o.agora_status === 'error'
+      var agbtn = agnote + ((o.payment_status === 'paid' || o.payment_status === 'table') && o.agora_status === 'error'
         ? '<div style="margin:0.3rem 0 0.4rem"><span class="ad-meta">' + esc(o.agora_error || '') + '</span> <button type="button" class="ad-btn is-small" data-agoraretry="' + o.id + '" data-ref="' + esc(o.ref) + '">Reenviar a Ágora</button></div>' : '');
       var btns = o.payment_status === 'paid' && open > 0
         ? '<div style="display:flex;flex-wrap:wrap;gap:0.5rem;margin:0.3rem 0 0.9rem"><button type="button" class="ad-btn is-small is-ghost" data-apprefund="full" data-id="' + o.id + '" data-open="' + open + '" data-ref="' + esc(o.ref) + '">Devolver ' + eur(open) + '</button>' +
@@ -783,7 +783,7 @@
       var when = showDate && o.paid_at ? new Intl.DateTimeFormat('es-ES', { timeZone: TZ, day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).format(new Date(o.paid_at)) + ' · ' : '';
       return '<p><b>' + esc(o.ref) + '</b> · ' + when + where + ' · ' + esc(o.name || '') + ' · ' + eur(o.total_cents) + ' ' + st + ag + '<br><span class="ad-meta">' + items + '</span></p>' + agbtn + btns;
     }).join('');
-    return h + '<p class="ad-meta"><b>Cobrado por la app ' + (label || 'hoy') + ': ' + eur(tot) + (ret ? ' · devuelto ' + eur(ret) : '') + '</b></p>';
+    return h + '<p class="ad-meta"><b>Cobrado por la app ' + (label || 'hoy') + ': ' + eur(tot) + (ret ? ' · devuelto ' + eur(ret) : '') + '</b>' + (pend ? ' · <b>A cobrar en mesa (no incluido): ' + eur(pend) + '</b>' : '') + '</p>';
   }
   function loadAppDay() {
     var from = A.madridToISO(S.date + 'T05:00'), to = A.madridToISO(addDays(S.date, 1) + 'T05:00');
@@ -806,7 +806,7 @@
   }
   function renderOrdersView(body) {
     var key = S.ordRange || 'today';
-    var h = '<h2 class="ad-sub">Pedidos de la app</h2><p class="ad-meta">Aquí están los pedidos cobrados con tarjeta. Para devolver el dinero, pulsa «Devolver» (todo) o «Devolver una parte» en el pedido.</p>' +
+    var h = '<h2 class="ad-sub">Pedidos de la app</h2><p class="ad-meta">Aquí están los pedidos cobrados con tarjeta y los que el cliente paga en mesa (marcados «A cobrar en mesa»: se cobran en el TPV, no se devuelven desde aquí). Para devolver el dinero, pulsa «Devolver» (todo) o «Devolver una parte» en el pedido.</p>' +
       '<label class="ad-field" style="max-width:16rem"><span>Periodo</span><select id="ordRange">' + Object.keys(ORD_RANGES).map(function (k) { return '<option value="' + k + '"' + (k === key ? ' selected' : '') + '>' + ORD_RANGES[k][0] + '</option>'; }).join('') + '</select></label>' +
       '<div id="appDay">' + (S.ordErr ? '<p class="ad-meta">' + esc(S.ordErr) + '</p>' : appDayHtml(S.ordRows || [], ORD_RANGES[key][2], key !== 'today' && key !== 'yesterday')) + '</div>';
     body.innerHTML = h;
@@ -1385,7 +1385,7 @@
     var tot = rows.reduce(function (n, o) { return n + (o.payment_status === 'paid' ? o.total_cents : 0); }, 0);
     return rows.map(function (o) {
       var items = (o.app_order_items || []).map(function (l) { return l.qty + '× ' + esc(l.name) + (l.variant ? ' (' + esc(l.variant) + ')' : ''); }).join(', ');
-      return '<p><b>' + esc(o.ref) + '</b> · ' + eur(o.total_cents) + ' · ' + esc(APP_ST[o.status] || o.status) + (o.paid_at ? ' · ' + esc(new Intl.DateTimeFormat('es-ES', { timeZone: TZ, hour: '2-digit', minute: '2-digit' }).format(new Date(o.paid_at))) : '') + '<br><span class="ad-meta">' + items + '</span></p>';
+      return '<p><b>' + esc(o.ref) + '</b> · ' + eur(o.total_cents) + ' · ' + esc(APP_ST[o.status] || o.status) + (o.payment_status === 'table' ? ' · <b>a cobrar en mesa</b>' : '') + (o.paid_at ? ' · ' + esc(new Intl.DateTimeFormat('es-ES', { timeZone: TZ, hour: '2-digit', minute: '2-digit' }).format(new Date(o.paid_at))) : '') + '<br><span class="ad-meta">' + items + '</span></p>';
     }).join('') + '<p class="ad-meta"><b>Cobrado por la app en esta visita: ' + eur(tot) + '</b></p>';
   }
   function fmtShort(iso) { return new Intl.DateTimeFormat('es-ES', { timeZone: TZ, day: '2-digit', month: '2-digit', year: '2-digit' }).format(new Date(iso)); }

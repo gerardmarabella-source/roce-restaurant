@@ -94,7 +94,8 @@ function buildOrder(serie: string, ord: any, items: any[], agoraOf: Map<string, 
   });
   const sum = items.reduce((n, it) => n + it.unit_cents * it.qty, 0);
   const mesa = ord.mode === "mesa";
-  const notes = [ord.name ? `Cliente: ${ord.name}` : "", mesa ? "" : "PARA RECOGER", ord.notes].filter((x) => x && String(x).trim()).join(" · ").slice(0, 300);
+  const aTable = ord.payment_status === "table";   // pago en mesa: el pedido entra sin pago y lo cobra el camarero
+  const notes = [aTable ? "COBRAR EN MESA" : "", ord.name ? `Cliente: ${ord.name}` : "", mesa ? "" : "PARA RECOGER", ord.notes].filter((x) => x && String(x).trim()).join(" · ").slice(0, 300);
   return {
     Serie: serie, Number: ord.agora_number, Type: mesa ? "Table" : "TakeAway", VatIncluded: true, BusinessDay: businessDay(paid), Date: now, DeliveryDate: now,
     Guests: mesa ? ord.party ?? null : null, Status: status,
@@ -103,7 +104,7 @@ function buildOrder(serie: string, ord: any, items: any[], agoraOf: Map<string, 
     Pos: POS, Workplace: WORKPLACE, User: USER, SaleCenter: { ...SALE_CENTER, Location: mesa ? String(ord.table_name ?? "") : "" },
     Customer: customer, DeliveryAddress: { Street: "", City: "", Region: "", ZipCode: "" }, Discounts: { DiscountRate: 0.0, CashDiscount: 0.0 },
     Notes: notes, Lines: lines,
-    Payments: [{
+    Payments: aTable ? [] : [{
       MethodId: PAY_METHOD.Id, MethodName: PAY_METHOD.Name, Amount: money(sum), PaidAmount: money(sum), ChangeAmount: 0.0, TipAmount: 0.0, Date: now, PosId: POS.Id, IsPrepayment: true,
       ExtraInformation: `Pago con tarjeta en la app (Redsys) · ${ord.ref}`,
     }].concat(refundCents > 0 ? [{
