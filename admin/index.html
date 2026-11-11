@@ -426,9 +426,25 @@
       .then(function (r) { return r.json().then(function (d) { if (!r.ok) throw new Error(d.error_description || d.msg || d.message || 'auth'); return d; }); });
   }
   function toSession(d) { return { access_token: d.access_token, refresh_token: d.refresh_token, expires_at: Date.now() + (d.expires_in - 60) * 1000, email: (d.user && d.user.email) || (session && session.email) || '' }; }
+  // Varias pestañas con RoceCover: si otra ya renovó la sesión (el token de renovación solo vale una vez), se usa esa en vez de renovar otra vez
+  // (si no, esta pestaña se quedaba con una sesión caducada y todo salía «Sin conexión»). Y en una misma pestaña no se renueva dos veces a la vez.
+  var refreshing = null;
+  function adoptStored() {
+    try {
+      var st = JSON.parse(localStorage.getItem(SESSION_KEY) || 'null');
+      if (st && st.access_token && st.expires_at > Date.now() && (!session || st.access_token !== session.access_token)) { session = st; return true; }
+    } catch (e) {}
+    return false;
+  }
+  window.addEventListener('storage', function (e) { if (e.key === SESSION_KEY) adoptStored(); });
   function refresh() {
+    if (adoptStored()) return Promise.resolve();
     if (!session || !session.refresh_token) return Promise.reject(new Error('sin sesión'));
-    return auth('token?grant_type=refresh_token', { refresh_token: session.refresh_token }).then(function (d) { saveSession(toSession(d)); });
+    if (refreshing) return refreshing;
+    refreshing = auth('token?grant_type=refresh_token', { refresh_token: session.refresh_token }).then(function (d) { saveSession(toSession(d)); })
+      .catch(function (e) { if (adoptStored()) return; throw e; })
+      .then(function () { refreshing = null; }, function (e) { refreshing = null; throw e; });
+    return refreshing;
   }
   function api(path, opt) {
     opt = opt || {};
@@ -1492,7 +1508,7 @@
   window.ROCE_ADMIN = { can: can, api: api, flash: flash, esc: esc, $: $, madridToISO: madridToISO, toInputValue: toInputValue, fmtDate: fmtDate, money: money, cfg: cfg, TZ: TZ, session: function () { return session; } };
 })();
 </script>
-<script src="/admin/mesas.js?v=42"></script>
+<script src="/admin/mesas.js?v=43"></script>
 <script src="/admin/mesas-stats.js?v=1"></script>
 </body>
 </html>
