@@ -114,6 +114,17 @@ function buildOrder(serie: string, ord: any, items: any[], agoraOf: Map<string, 
   };
 }
 
+// A veces Ágora guarda el pedido y corta la respuesta («unexpected end of file»): antes de dar un error se mira si el pedido ya está en Ágora.
+async function existsInAgora(base: string, token: string, serie: string, ord: any): Promise<boolean> {
+  try {
+    const day = businessDay(new Date(ord.paid_at ?? ord.created_at));
+    const r = await fetch(`${base}/api/export/?business-day=${day}&filter=SalesOrders&include-processed`, { headers: { "Api-Token": token }, signal: AbortSignal.timeout(20_000) });
+    if (!r.ok) return false;
+    const d = await r.json();
+    return (d.SalesOrders ?? []).some((o: any) => o.Serie === serie && o.Number === ord.agora_number && o.Status !== "Cancelled");
+  } catch { return false; }
+}
+
 async function pushOrders(db: any, base: string, token: string, serie: string) {
   const { data: claimed, error } = await db.rpc("app_agora_claim", { p_limit: 5 });
   if (error) return json({ ok: false, error: "base de datos: " + error.message }, 500);
@@ -153,6 +164,11 @@ async function pushOrders(db: any, base: string, token: string, serie: string) {
       results.push({ ref: ord.ref, ok: true });
     } catch (e) {
       const msg = (e as Error).message.slice(0, 300);
+      if (await existsInAgora(base, token, serie, ord)) {
+        await db.from("app_orders").update({ agora_status: "sent", agora_error: null, agora_sent_at: new Date().toISOString(), agora_ref: `${serie}-${ord.agora_number}` }).eq("id", ord.id);
+        results.push({ ref: ord.ref, ok: true, note: "ya estaba en Ágora (" + msg + ")" });
+        continue;
+      }
       await db.from("app_orders").update({ agora_status: "error", agora_error: msg }).eq("id", ord.id);
       results.push({ ref: ord.ref, ok: false, error: msg });
     }
