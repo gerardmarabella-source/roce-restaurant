@@ -649,7 +649,7 @@ async function handleTableCharge(req: Request, body: { booking_id?: string; toke
     DS_MERCHANT_TERMINAL: cfg.terminal,
     DS_MERCHANT_IDENTIFIER: card.token,
     DS_MERCHANT_DIRECTPAYMENT: "true",
-    DS_MERCHANT_EXCEPTION_SCA: "MIT",
+    DS_MERCHANT_EXCEP_SCA: "MIT",
     DS_MERCHANT_COF_INI: "N",
     DS_MERCHANT_COF_TYPE: Deno.env.get("REDSYS_COF_TYPE") || "N",
   };
