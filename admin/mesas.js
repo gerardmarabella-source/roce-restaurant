@@ -851,7 +851,16 @@
   // ─── Casi en vivo: la vista del día se refresca sola cada pocos segundos ─────────
   // Solo pide las reservas y los bloqueos (ligero). No toca la pantalla si no ha cambiado nada, ni si estás editando
   // (plano, ventana abierta, escribiendo en un campo, arrastrando) ni si la pestaña no se está viendo.
-  var LIVE_MS = 6000, live = { busy: false, last: 0, ok: false, pending: false };
+  var LIVE_MS = 6000, live = { busy: false, last: 0, ok: false, pending: false, fails: 0 };
+  // «Sin conexión» solo si fallan dos comprobaciones seguidas (o el navegador dice que no hay red): un fallo suelto no lo enciende.
+  function liveFail() { live.fails = (live.fails || 0) + 1; if (live.fails >= 2 || navigator.onLine === false) live.ok = false; }
+  // Si el panel está ocupado (ventana abierta, editando…) y el aviso está en rojo, se comprueba la conexión igualmente con una consulta mínima.
+  function livePing() {
+    if (live.busy || document.hidden) return;
+    live.busy = true;
+    api('dining_blocks?select=id&limit=1').then(function () { live.ok = true; live.fails = 0; live.last = Date.now(); }).catch(liveFail).then(function () { live.busy = false; liveBadge(); });
+  }
+  window.addEventListener('online', function () { live.fails = 0; livePing(); });
   function liveBadge() {
     var b = document.getElementById('mtLive');
     if (!b) { b = document.createElement('div'); b.id = 'mtLive'; b.setAttribute('role', 'status'); b.style.cssText = 'position:fixed;right:0.8rem;bottom:0.8rem;z-index:20;padding:0.25rem 0.6rem;border-radius:999px;background:#0a0a0a;color:#fff;font:600 0.68rem/1.2 inherit;letter-spacing:0.04em;opacity:0.85;pointer-events:none'; root.appendChild(b); }
@@ -870,26 +879,26 @@
       var b0 = document.getElementById('mtLive'); if (b0) b0.style.display = '';
       if (live.pending && !document.hidden && root.offsetParent && !S.busy && !document.querySelector('.ad-modal') && !live.busy) {
         live.pending = false; live.busy = true;
-        loadOrdersView().then(function () { live.ok = true; live.last = Date.now(); if (S.view === 'orders' && !document.querySelector('.ad-modal')) render(); }).catch(function () { live.ok = false; }).then(function () { live.busy = false; liveBadge(); });
-      }
+        loadOrdersView().then(function () { live.ok = true; live.fails = 0; live.last = Date.now(); if (S.view === 'orders' && !document.querySelector('.ad-modal')) render(); }).catch(liveFail).then(function () { live.busy = false; liveBadge(); });
+      } else if (!live.ok) livePing();
       return;
     }
     var bd = document.getElementById('mtLive'); if (bd) bd.style.display = S.view === 'day' ? '' : 'none';
-    if (live.busy || (!force && liveBlocked())) return;
+    if (live.busy || (!force && liveBlocked())) { if (!live.ok) livePing(); return; }
     live.busy = true; live.pending = false;
     var day = S.date, from = A.madridToISO(day + 'T05:00'), to = A.madridToISO(addDays(day, 1) + 'T05:00');
     Promise.all([
       api('table_bookings?select=*,table_booking_tables(table_id)&starts_at=gte.' + encodeURIComponent(from) + '&starts_at=lt.' + encodeURIComponent(to) + '&order=starts_at'),
       api('dining_blocks?select=*&starts_at=lt.' + encodeURIComponent(to) + '&ends_at=gt.' + encodeURIComponent(from) + '&order=starts_at')
     ]).then(function (r) {
-      live.ok = true; live.last = Date.now();
+      live.ok = true; live.fails = 0; live.last = Date.now();
       if (day !== S.date || liveBlocked()) return;   // cambiaste de día o empezaste a editar mientras llegaba
       var nb = r[0] || [], nk = r[1] || [];
       if (JSON.stringify([nb, nk]) !== JSON.stringify([S.bookings, S.blocks])) {
         var rows = S.appDayRows; S.bookings = nb; S.blocks = nk; render(); S.appDayRows = rows;
         if (S.appDayOpen) loadAppDay();
       } else if (S.appDayOpen) loadAppDay();
-    }).catch(function () { live.ok = false; }).then(function () { live.busy = false; liveBadge(); });
+    }).catch(liveFail).then(function () { live.busy = false; liveBadge(); });
   }
   // Canal de tiempo real de Supabase (websocket): avisa al instante de cualquier cambio en reservas, bloqueos, mesas de una reserva y pedidos.
   // Respeta los permisos: solo llegan los cambios que el usuario ya puede ver. Si se corta, se reconecta solo y mientras tanto sigue el refresco periódico.
