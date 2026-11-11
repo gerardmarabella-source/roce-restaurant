@@ -766,11 +766,22 @@
       var items = (o.app_order_items || []).map(function (l) { return l.qty + '× ' + esc(l.name) + (l.variant ? ' (' + esc(l.variant) + ')' : ''); }).join(', ');
       var where = o.mode === 'mesa' ? 'Mesa ' + esc(o.table_name || '') : 'Recoger';
       var st = o.payment_status === 'refunded' ? '<span class="ad-tag is-red">Devuelto</span>' : rf > 0 ? '<span class="ad-tag">Devuelto ' + eur(rf) + '</span>' : '';
+      var ag = !o.agora_status || (o.payment_status !== 'paid' && o.payment_status !== 'refunded') ? '' :
+        o.agora_status === 'sent' ? ' <span class="ad-tag is-green" title="El pedido ya está en Ágora">En Ágora</span>' :
+        o.agora_status === 'error' ? ' <span class="ad-tag is-red" title="' + esc(o.agora_error || '') + '">Error al enviar a Ágora</span>' :
+        o.agora_status === 'skipped' ? ' <span class="ad-tag" title="Pedido anterior a la conexión con Ágora">Sin enviar a Ágora</span>' :
+        ' <span class="ad-tag">Enviando a Ágora…</span>';
+      if (o.agora_refund_status === 'sent') ag += ' <span class="ad-tag is-green" title="' + esc(o.agora_refund_note || '') + '">Anulado en Ágora</span>';
+      else if (o.agora_refund_status === 'manual') ag += ' <span class="ad-tag is-red" title="' + esc(o.agora_refund_note || '') + '">Abono pendiente en Ágora</span>';
+      else if (o.agora_refund_status === 'error') ag += ' <span class="ad-tag is-red" title="' + esc(o.agora_refund_note || '') + '">Error al anular en Ágora</span>';
+      var agnote = o.agora_refund_status === 'manual' || o.agora_refund_status === 'error' ? '<div class="ad-meta" style="margin:0.2rem 0 0.4rem">' + esc(o.agora_refund_note || '') + '</div>' : '';
+      var agbtn = agnote + (o.payment_status === 'paid' && o.agora_status === 'error'
+        ? '<div style="margin:0.3rem 0 0.4rem"><span class="ad-meta">' + esc(o.agora_error || '') + '</span> <button type="button" class="ad-btn is-small" data-agoraretry="' + o.id + '" data-ref="' + esc(o.ref) + '">Reenviar a Ágora</button></div>' : '');
       var btns = o.payment_status === 'paid' && open > 0
         ? '<div style="display:flex;flex-wrap:wrap;gap:0.5rem;margin:0.3rem 0 0.9rem"><button type="button" class="ad-btn is-small is-ghost" data-apprefund="full" data-id="' + o.id + '" data-open="' + open + '" data-ref="' + esc(o.ref) + '">Devolver ' + eur(open) + '</button>' +
           '<button type="button" class="ad-btn is-small is-ghost" data-apprefund="part" data-id="' + o.id + '" data-open="' + open + '" data-ref="' + esc(o.ref) + '">Devolver una parte</button></div>' : '';
       var when = showDate && o.paid_at ? new Intl.DateTimeFormat('es-ES', { timeZone: TZ, day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).format(new Date(o.paid_at)) + ' · ' : '';
-      return '<p><b>' + esc(o.ref) + '</b> · ' + when + where + ' · ' + esc(o.name || '') + ' · ' + eur(o.total_cents) + ' ' + st + '<br><span class="ad-meta">' + items + '</span></p>' + btns;
+      return '<p><b>' + esc(o.ref) + '</b> · ' + when + where + ' · ' + esc(o.name || '') + ' · ' + eur(o.total_cents) + ' ' + st + ag + '<br><span class="ad-meta">' + items + '</span></p>' + agbtn + btns;
     }).join('');
     return h + '<p class="ad-meta"><b>Cobrado por la app ' + (label || 'hoy') + ': ' + eur(tot) + (ret ? ' · devuelto ' + eur(ret) : '') + '</b></p>';
   }
@@ -778,7 +789,7 @@
     var from = A.madridToISO(S.date + 'T05:00'), to = A.madridToISO(addDays(S.date, 1) + 'T05:00');
     var base = 'app_orders?select=id,ref,mode,table_name,name,total_cents,status,payment_status,paid_at,app_order_items(name,qty,variant)&paid_at=gte.' + encodeURIComponent(from) + '&paid_at=lt.' + encodeURIComponent(to) + '&order=paid_at.desc';
     // Con app_devoluciones.sql ejecutado también llega lo ya devuelto; sin él, la lista sale igual y los botones no funcionan todavía.
-    return api(base.replace('select=id,', 'select=id,refunded_cents,')).catch(function () { return api(base); })
+    return api(base.replace('select=id,', 'select=id,refunded_cents,agora_status,agora_error,agora_refund_status,agora_refund_note,')).catch(function () { return api(base.replace('select=id,', 'select=id,refunded_cents,')); }).catch(function () { return api(base); })
       .then(function (rows) { S.appDayRows = rows || []; S.appDayErr = ''; })
       .catch(function () { S.appDayRows = []; S.appDayErr = 'Los pedidos de la app se activan al ejecutar app_rocecover.sql.'; })
       .then(function () { var el = document.getElementById('appDay'); if (el) el.innerHTML = appDayHtml(S.appDayRows); var sm = document.querySelector('#appDayBox summary'); if (sm) sm.textContent = 'Pedidos de la app de hoy · ' + S.appDayRows.length + ' (cobros y devoluciones)'; });
@@ -789,7 +800,7 @@
     var key = S.ordRange || 'today', n = ORD_RANGES[key][1], t0 = today();
     var from = A.madridToISO(addDays(t0, -n) + 'T05:00'), to = A.madridToISO(addDays(t0, key === 'yesterday' ? 0 : 1) + 'T05:00');
     var base = 'app_orders?select=id,ref,mode,table_name,name,total_cents,status,payment_status,paid_at,app_order_items(name,qty,variant)&paid_at=gte.' + encodeURIComponent(from) + '&paid_at=lt.' + encodeURIComponent(to) + '&order=paid_at.desc';
-    return api(base.replace('select=id,', 'select=id,refunded_cents,')).catch(function () { return api(base); })
+    return api(base.replace('select=id,', 'select=id,refunded_cents,agora_status,agora_error,agora_refund_status,agora_refund_note,')).catch(function () { return api(base.replace('select=id,', 'select=id,refunded_cents,')); }).catch(function () { return api(base); })
       .then(function (rows) { S.ordRows = rows || []; S.ordErr = ''; })
       .catch(function () { S.ordRows = []; S.ordErr = 'Los pedidos de la app se activan al ejecutar app_rocecover.sql.'; });
   }
@@ -808,6 +819,14 @@
   }
   root.addEventListener('toggle', function (e) { if (e.target && e.target.id === 'appDayBox') { S.appDayOpen = e.target.open; if (e.target.open) loadAppDay(); } }, true);
   root.addEventListener('click', function (e) {
+    var rb = e.target.closest && e.target.closest('[data-agoraretry]');
+    if (rb) {
+      rb.disabled = true;
+      api('rpc/app_agora_retry', { method: 'POST', body: { p_order: rb.dataset.agoraretry } })
+        .then(function () { flash('Pedido ' + rb.dataset.ref + ' marcado para reenviar a Ágora. Entra en menos de un minuto.', 'ok'); S.appDayRows = null; return (S.view === 'orders' ? loadOrdersView() : loadDay()).then(function () { render(); }); })
+        .catch(function (x) { rb.disabled = false; flash(/forbidden/.test(x && x.message) ? 'No tienes permiso para reenviar pedidos.' : 'No se ha podido reenviar: ' + (x && x.message || x), 'error'); });
+      return;
+    }
     var b = e.target.closest && e.target.closest('[data-apprefund]'); if (!b) return;
     var id = b.dataset.id, open = +b.dataset.open, ref = b.dataset.ref, amount = open;
     if (b.dataset.apprefund === 'part') {
