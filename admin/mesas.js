@@ -611,6 +611,9 @@
       if (b.status === 'seated') a.push('<button class="ad-btn is-small" data-act="done" data-id="' + b.id + '">Terminada</button>');
       if (b.status === 'completed' && !b.cleaned_at) a.push('<button class="ad-btn is-small" data-act="clean" data-id="' + b.id + '">Mesa limpia</button>');
       if (b.status === 'confirmed') a.push('<button class="ad-btn is-small is-ghost" data-act="noshow" data-id="' + b.id + '">No vino</button>');
+      // Con tarjeta de garantía, «No vino» cobra la penalización. Estas dos opciones sirven para cuando se acepta su excusa: no se cobra nada y la tarjeta queda liberada.
+      if (b.status === 'confirmed' && b.payment_status === 'guaranteed' && can('tables_charge')) a.push('<button class="ad-btn is-small is-ghost" data-act="noshowfree" data-id="' + b.id + '">No vino · sin cobrar</button>');
+      if (b.payment_status === 'guaranteed' && can('tables_charge') && (b.status === 'no_show' || (b.status === 'cancelled' && b.late_cancel))) a.push('<button class="ad-btn is-small is-ghost" data-act="forgive" data-id="' + b.id + '">Perdonar: no cobrar</button>');
       if (!cancelled && b.status !== 'completed') a.push('<button class="ad-btn is-small is-ghost" data-act="edit" data-id="' + b.id + '">Editar / ampliar</button>');
       if (!cancelled && b.status !== 'completed') a.push('<button class="ad-btn is-small is-danger" data-act="cancel" data-id="' + b.id + '">Anular</button>');
       if (can('tables_charge') && b.payment_status === 'guaranteed' && (b.status === 'no_show' || b.late_cancel || (b.status === 'confirmed' && new Date(b.starts_at).getTime() < Date.now()))) a.push('<button class="ad-btn is-small is-danger" data-act="charge" data-id="' + b.id + '">Cobrar ' + eur(b.deposit_cents) + ' a la tarjeta</button>');
@@ -1003,6 +1006,14 @@
         return void chargeFee(b, t);
       }
       if (confirm('¿Marcar como "no vino"?' + (b.payment_status === 'paid' ? ' La fianza se queda retenida.' : ''))) patch(id, { status: 'no_show', payment_status: b.payment_status === 'paid' ? 'retained' : b.payment_status }).then(function () { return done(); }).catch(fail);
+    }
+    else if (act === 'noshowfree') {
+      if (!confirm('¿Marcar como "no vino" SIN cobrar nada a ' + (b.name || 'esta reserva') + '? La tarjeta queda liberada y la penalización de ' + eur(b.deposit_cents) + ' ya no se podrá cobrar.')) return;
+      patch(id, { status: 'no_show', payment_status: 'released' }).then(function () { return done('Marcada como "no vino". No se ha cobrado nada y la tarjeta queda liberada.'); }).catch(fail);
+    }
+    else if (act === 'forgive') {
+      if (!confirm('¿No cobrar la penalización de ' + eur(b.deposit_cents) + ' a ' + (b.name || 'esta reserva') + '? La tarjeta queda liberada y ya no se podrá cobrar.')) return;
+      patch(id, { payment_status: 'released' }).then(function () { return done('Penalización perdonada. No se ha cobrado nada y la tarjeta queda liberada.'); }).catch(fail);
     }
     else if (act === 'charge') {
       if (!confirm('¿Cobrar ' + eur(b.deposit_cents) + ' a la tarjeta ' + (b.card_brand || '') + ' ····' + (b.card_last4 || '') + ' de ' + (b.name || 'esta reserva') + '? Es un cobro real.')) return;
