@@ -55,7 +55,7 @@ function madrid(d: Date) {
 }
 const businessDay = (d: Date) => madrid(new Date(d.getTime() - 5 * 3600_000)).slice(0, 10);
 
-function buildOrder(serie: string, ord: any, items: any[], agoraOf: Map<string, number>, prod: Map<number, any>, vats: Map<number, any>, fam: Map<number, string>, pt: Map<number, string>, po: Map<number, string>, status = "Pending", refundCents = 0) {
+function buildOrder(serie: string, ord: any, items: any[], agoraOf: Map<string, number>, prod: Map<number, any>, vats: Map<number, any>, fam: Map<number, string>, pt: Map<number, string>, po: Map<number, string>, status = "Pending", refundCents = 0, customer: any = CUSTOMER) {
   const paid = new Date(ord.paid_at ?? ord.created_at), now = madrid(paid);
   const info = (id: number) => {
     const p = prod.get(id); if (!p) throw new Error(`producto ${id} no existe en Ágora`);
@@ -101,7 +101,7 @@ function buildOrder(serie: string, ord: any, items: any[], agoraOf: Map<string, 
     // Comandas a cocina/barra solo la primera vez que entra (los reintentos no duplican). Para llevar manda la configuración de Ágora.
     AutoPrepare: "OnlyIfNew", AutoPrint: "Never", GlobalId: ord.id, CustomerDocumentNumber: ord.ref,
     Pos: POS, Workplace: WORKPLACE, User: USER, SaleCenter: { ...SALE_CENTER, Location: mesa ? String(ord.table_name ?? "") : "" },
-    Customer: CUSTOMER, DeliveryAddress: { Street: "", City: "", Region: "", ZipCode: "" }, Discounts: { DiscountRate: 0.0, CashDiscount: 0.0 },
+    Customer: customer, DeliveryAddress: { Street: "", City: "", Region: "", ZipCode: "" }, Discounts: { DiscountRate: 0.0, CashDiscount: 0.0 },
     Notes: notes, Lines: lines,
     Payments: [{
       MethodId: PAY_METHOD.Id, MethodName: PAY_METHOD.Name, Amount: money(sum), PaidAmount: money(sum), ChangeAmount: 0.0, TipAmount: 0.0, Date: now, PosId: POS.Id, IsPrepayment: true,
@@ -112,6 +112,32 @@ function buildOrder(serie: string, ord: any, items: any[], agoraOf: Map<string, 
       ExtraInformation: `Devolución por Redsys · ${ord.ref}`,
     }] : []),
   };
+}
+
+// Cliente de Ágora para un pedido: si quien pide tiene datos de empresa (nombre fiscal y NIF) se crea o actualiza como cliente de Ágora
+// y el pedido entra a su nombre, así el ticket o la factura salen con sus datos. Si no tiene (o Ágora no admite el cliente, p. ej. un NIF
+// inválido) el pedido entra igualmente con el cliente genérico y los datos de factura quedan en la nota para facturarlo a mano.
+async function customerFor(db: any, base: string, token: string, uid: string | null | undefined): Promise<{ customer: any; note: string }> {
+  if (!uid) return { customer: CUSTOMER, note: "" };
+  const { data } = await db.rpc("app_agora_customer", { p_uid: uid });
+  if (!data) return { customer: CUSTOMER, note: "" };
+  const note = `FACTURA A: ${data.name} · ${data.tax} · ${[data.address, data.postal, data.city].filter(Boolean).join(", ")}`;
+  const c = {
+    Id: data.id, FiscalName: data.name, BusinessName: data.name, Cif: String(data.tax).toUpperCase().replace(/[\s.-]+/g, ""), CountryCode: "ES",
+    Street: data.address, City: data.city, Region: "", ZipCode: data.postal, Email: data.email, Telephone: data.phone, AccountCode: "", ApplySurcharge: false,
+  };
+  try {
+    if (data.hash !== data.synced) {
+      const r = await fetch(`${base}/api/import/`, {
+        method: "POST", signal: AbortSignal.timeout(20_000),
+        headers: { "Api-Token": token, "Accept": "application/json", "Content-Type": "application/json; charset=utf-8" },
+        body: JSON.stringify({ Customers: [{ ...c, PosGroups: { ValidForAll: true, ValidPosGroups: [] } }] }),
+      });
+      if (!r.ok) throw new Error(`Ágora respondió ${r.status}: ${(await r.text()).slice(0, 160)}`);
+      await db.rpc("app_agora_customer_synced", { p_uid: uid, p_hash: data.hash });
+    }
+    return { customer: c, note: "" };
+  } catch { return { customer: CUSTOMER, note }; }
 }
 
 // A veces Ágora guarda el pedido y corta la respuesta («unexpected end of file»): antes de dar un error se mira si el pedido ya está en Ágora.
@@ -150,7 +176,9 @@ async function pushOrders(db: any, base: string, token: string, serie: string) {
   for (const c of list) {
     const ord = c.order;
     try {
-      const body = { SalesOrders: [buildOrder(serie, ord, c.items ?? [], agoraOf, prod, vats, fam, pt, po)] };
+      const cu = await customerFor(db, base, token, ord.customer_id);
+      const o2 = cu.note ? { ...ord, notes: [ord.notes, cu.note].filter(Boolean).join(" · ") } : ord;
+      const body = { SalesOrders: [buildOrder(serie, o2, c.items ?? [], agoraOf, prod, vats, fam, pt, po, "Pending", 0, cu.customer)] };
       const ctl = new AbortController(); const to = setTimeout(() => ctl.abort(), 25_000);
       const r = await fetch(`${base}/api/import/`, {
         method: "POST", signal: ctl.signal,
@@ -207,7 +235,8 @@ async function refundOrders(db: any, base: string, token: string, serie: string)
         await done("manual", `Devolución parcial de ${(ord.refunded_cents / 100).toFixed(2).replace(".", ",")} €: ajusta o abona el pedido ${ord.ref} en Ágora`);
         continue;
       }
-      const body = { SalesOrders: [buildOrder(serie, ord, items, agoraOf, prod, vats, fam, pt, po, "Cancelled", total)] };
+      const cu = await customerFor(db, base, token, ord.customer_id);
+      const body = { SalesOrders: [buildOrder(serie, ord, items, agoraOf, prod, vats, fam, pt, po, "Cancelled", total, cu.customer)] };
       const r = await fetch(`${base}/api/import/`, { method: "POST", headers: { "Api-Token": token, "Accept": "application/json", "Content-Type": "application/json; charset=utf-8" }, body: JSON.stringify(body) });
       const txt = await r.text();
       if (!r.ok) throw new Error(`Ágora respondió ${r.status}: ${txt.slice(0, 200)}`);
