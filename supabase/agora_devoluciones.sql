@@ -34,3 +34,6 @@ end;
 $$;
 revoke all on function public.app_agora_claim_refunds(integer) from public, anon, authenticated;
 grant execute on function public.app_agora_claim_refunds(integer) to service_role;
+
+-- Cliente con el que entró el pedido en Ágora (1 = genérico): la anulación por devolución lo respeta.
+alter table public.app_orders add column if not exists agora_customer_id integer;

@@ -175,8 +175,10 @@ async function pushOrders(db: any, base: string, token: string, serie: string) {
   const results: any[] = [];
   for (const c of list) {
     const ord = c.order;
+    let custId = 1;   // cliente con el que entra el pedido en Ágora (1 = genérico); se guarda para que una anulación posterior no lo cambie
     try {
       const cu = await customerFor(db, base, token, ord.customer_id);
+      custId = cu.customer.Id;
       const o2 = cu.note ? { ...ord, notes: [ord.notes, cu.note].filter(Boolean).join(" · ") } : ord;
       const body = { SalesOrders: [buildOrder(serie, o2, c.items ?? [], agoraOf, prod, vats, fam, pt, po, "Pending", 0, cu.customer)] };
       const ctl = new AbortController(); const to = setTimeout(() => ctl.abort(), 25_000);
@@ -188,12 +190,12 @@ async function pushOrders(db: any, base: string, token: string, serie: string) {
       clearTimeout(to);
       const txt = await r.text();
       if (!r.ok) throw new Error(`Ágora respondió ${r.status}: ${txt.slice(0, 200)}`);
-      await db.from("app_orders").update({ agora_status: "sent", agora_error: null, agora_sent_at: new Date().toISOString(), agora_ref: `${serie}-${ord.agora_number}` }).eq("id", ord.id);
+      await db.from("app_orders").update({ agora_status: "sent", agora_error: null, agora_sent_at: new Date().toISOString(), agora_ref: `${serie}-${ord.agora_number}`, agora_customer_id: custId }).eq("id", ord.id);
       results.push({ ref: ord.ref, ok: true });
     } catch (e) {
       const msg = (e as Error).message.slice(0, 300);
       if (await existsInAgora(base, token, serie, ord)) {
-        await db.from("app_orders").update({ agora_status: "sent", agora_error: null, agora_sent_at: new Date().toISOString(), agora_ref: `${serie}-${ord.agora_number}` }).eq("id", ord.id);
+        await db.from("app_orders").update({ agora_status: "sent", agora_error: null, agora_sent_at: new Date().toISOString(), agora_ref: `${serie}-${ord.agora_number}`, agora_customer_id: custId }).eq("id", ord.id);
         results.push({ ref: ord.ref, ok: true, note: "ya estaba en Ágora (" + msg + ")" });
         continue;
       }
@@ -235,16 +237,22 @@ async function refundOrders(db: any, base: string, token: string, serie: string)
         await done("manual", `Devolución parcial de ${(ord.refunded_cents / 100).toFixed(2).replace(".", ",")} €: ajusta o abona el pedido ${ord.ref} en Ágora`);
         continue;
       }
-      const cu = await customerFor(db, base, token, ord.customer_id);
+      // La anulación conserva el cliente con el que entró el pedido (genérico si no tenía datos de empresa).
+      const cu = ord.agora_customer_id && ord.agora_customer_id !== 1 ? await customerFor(db, base, token, ord.customer_id) : { customer: CUSTOMER, note: "" };
       const body = { SalesOrders: [buildOrder(serie, ord, items, agoraOf, prod, vats, fam, pt, po, "Cancelled", total, cu.customer)] };
-      const r = await fetch(`${base}/api/import/`, { method: "POST", headers: { "Api-Token": token, "Accept": "application/json", "Content-Type": "application/json; charset=utf-8" }, body: JSON.stringify(body) });
-      const txt = await r.text();
-      if (!r.ok) throw new Error(`Ágora respondió ${r.status}: ${txt.slice(0, 200)}`);
+      // A veces Ágora anula el pedido y corta la respuesta: no se da por fallo hasta comprobar el estado real.
+      let postErr: Error | null = null;
+      try {
+        const r = await fetch(`${base}/api/import/`, { method: "POST", signal: AbortSignal.timeout(25_000), headers: { "Api-Token": token, "Accept": "application/json", "Content-Type": "application/json; charset=utf-8" }, body: JSON.stringify(body) });
+        const txt = await r.text();
+        if (!r.ok) throw new Error(`Ágora respondió ${r.status}: ${txt.slice(0, 200)}`);
+      } catch (e) { postErr = e as Error; }
       // Si el pedido ya estaba facturado, Ágora ignora la anulación sin avisar: se comprueba el estado real.
       const day = (body.SalesOrders[0] as any).BusinessDay;
       const chk = await (await fetch(`${base}/api/export/?business-day=${day}&filter=SalesOrders&include-processed`, { headers: { "Api-Token": token } })).json();
       const found = (chk.SalesOrders ?? []).find((o: any) => o.Serie === serie && o.Number === ord.agora_number);
       if (found && found.Status === "Cancelled") await done("sent", "Pedido anulado en Ágora");
+      else if (postErr) throw postErr;
       else await done("manual", `El pedido ${ord.ref} ya está facturado en Ágora: haz el abono allí`);
     } catch (e) {
       const msg = (e as Error).message.slice(0, 300);
