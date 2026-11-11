@@ -1,4 +1,4 @@
--- Precios de la app desde Ágora: estado de la sincronización y programador cada 10 minutos.
+-- Precios de la app desde Ágora: estado de la sincronización y programador cada minuto.
 -- Ejecutar UNA vez en Supabase → SQL Editor, DESPUÉS de crear la función agora-sync y su secreto AGORA_API_TOKEN.
 create table if not exists public.app_agora_sync (
   id        integer primary key check (id = 1),
@@ -13,7 +13,7 @@ create extension if not exists pg_cron;
 create extension if not exists pg_net;
 select cron.schedule(
   'roce-agora-precios',
-  '*/10 * * * *',
+  '* * * * *',
   $job$
   select net.http_post(
     url := 'https://lhwmtknmjmhktpkcngyz.supabase.co/functions/v1/agora-sync',

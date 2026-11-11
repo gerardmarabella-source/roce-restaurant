@@ -1,8 +1,8 @@
 // Edge Function de Supabase de ROCE: integración con Ágora (TPV).
-//  · Por defecto (sin acción): precios de la app desde Ágora. Ágora manda en los precios: cada 10 minutos (pg_cron, ver
+//  · Por defecto (sin acción): precios de la app desde Ágora. Ágora manda en los precios: cada minuto (pg_cron, ver
 //    agora_sync.sql) pide a Ágora sus productos y copia el precio de cada uno a app_menu_items (price_cents) y a los extras
 //    de las tostadas y del bol. Si Ágora no responde (PC apagado, sin internet) se mantienen los últimos precios y se anota el error.
-//    No hace nada si la última sincronización fue hace menos de 60 s.
+//    No hace nada si la última sincronización fue hace menos de 45 s.
 //  · {"action":"push"}: envía a Ágora los pedidos de la app ya pagados (ver agora_pedidos.sql). Cada pedido se importa como
 //    pedido de la serie APP, con sus líneas, extras, nota y el pago «App Online»; Ágora lo manda a cocina/barra y luego factura
 //    él (la factura y los abonos los emite Ágora). Es seguro llamarla a menudo: solo envía lo pendiente y reintenta los errores.
@@ -212,9 +212,9 @@ async function refundOrders(db: any, base: string, token: string, serie: string)
 
 // ───────────────────────── Precios de Ágora → app ─────────────────────────
 async function syncPrices(db: any, base: string, token: string) {
-  // Freno: una sincronización cada 60 s como mucho (así nadie puede saturar el PC del local llamando a la función).
+  // Freno: una sincronización cada 45 s como mucho (así nadie puede saturar el PC del local llamando a la función; el programador la llama cada minuto).
   const { data: st } = await db.from("app_agora_sync").select("last_run").eq("id", 1).maybeSingle();
-  if (st?.last_run && Date.now() - new Date(st.last_run).getTime() < 60_000) return json({ ok: true, skipped: "reciente" });
+  if (st?.last_run && Date.now() - new Date(st.last_run).getTime() < 45_000) return json({ ok: true, skipped: "reciente" });
   await db.from("app_agora_sync").upsert({ id: 1, last_run: new Date().toISOString() });
 
   const fail = async (msg: string) => {
