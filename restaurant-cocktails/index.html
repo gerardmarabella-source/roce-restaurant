@@ -443,6 +443,18 @@
     .teaser-bg { transform: none; }
   }
 
+
+  /* Pantallas pequeñas o bajas (iPhone SE/mini, Safari con barras, móvil tumbado): el contenido deja de ir «pegado» arriba y abajo
+     y pasa a apilarse en columna; si no cabe, la página se desplaza en vez de montarse un texto sobre otro. */
+  @media (max-height: 660px), (max-width: 359px) {
+    html, body { height: auto; min-height: 100%; overflow-x: hidden; overflow-y: auto; }
+    .teaser-page { height: auto; min-height: 100dvh; display: flex; flex-direction: column; justify-content: space-between; gap: 1.2rem; overflow: visible; }
+    .teaser-top { position: relative; top: auto; margin-top: 3.8rem; flex: none; }
+    .teaser-bottom { position: relative; flex: none; padding-top: 0.5rem; }
+    .teaser-live { max-width: 94vw; }
+    .teaser-live-title { white-space: normal; }
+  }
+  @media (max-height: 660px) and (min-width: 641px) { .teaser-top { margin-top: 1.4rem; } }
 </style>
 </head>
 <body>

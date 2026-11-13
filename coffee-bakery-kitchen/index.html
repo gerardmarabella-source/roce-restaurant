@@ -450,6 +450,18 @@
   /* Tres enlaces (Carta, Reservar mesa, Eventos): en pantallas bajas se compactan para no tocar el logo ni el pie. */
   @media (max-height: 740px) { .teaser-links { gap: 0.2rem; } .teaser-link { font-size: clamp(1.6rem, 7.2vw, 2.3rem); } .teaser-footer { margin-top: 0.3rem; margin-bottom: 0.6rem; } .teaser-footer-minor { margin-bottom: 0.2rem; } }
   @media (max-height: 600px) { .teaser-top { top: 3.6rem; } .teaser-top .lockup { width: clamp(170px, 48vw, 230px); } .teaser-link { font-size: clamp(1.4rem, 6.4vw, 2rem); } }
+
+  /* Pantallas pequeñas o bajas (iPhone SE/mini, Safari con barras, móvil tumbado): el contenido deja de ir «pegado» arriba y abajo
+     y pasa a apilarse en columna; si no cabe, la página se desplaza en vez de montarse un texto sobre otro. */
+  @media (max-height: 660px), (max-width: 359px) {
+    html, body { height: auto; min-height: 100%; overflow-x: hidden; overflow-y: auto; }
+    .teaser-page { height: auto; min-height: 100dvh; display: flex; flex-direction: column; justify-content: space-between; gap: 1.2rem; overflow: visible; }
+    .teaser-top { position: relative; top: auto; margin-top: 3.8rem; flex: none; }
+    .teaser-bottom { position: relative; flex: none; padding-top: 0.5rem; }
+    .teaser-live { max-width: 94vw; }
+    .teaser-live-title { white-space: normal; }
+  }
+  @media (max-height: 660px) and (min-width: 641px) { .teaser-top { margin-top: 1.4rem; } }
 </style>
 </head>
 <body>
