@@ -865,7 +865,16 @@
     var b = document.getElementById('mtLive');
     if (!b) { b = document.createElement('div'); b.id = 'mtLive'; b.setAttribute('role', 'status'); b.style.cssText = 'position:fixed;right:0.8rem;bottom:0.8rem;z-index:20;padding:0.25rem 0.6rem;border-radius:999px;background:#0a0a0a;color:#fff;font:600 0.68rem/1.2 inherit;letter-spacing:0.04em;opacity:0.85;pointer-events:none'; root.appendChild(b); }
     var t = live.last ? new Intl.DateTimeFormat('es-ES', { timeZone: TZ, hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23' }).format(new Date(live.last)) : '';
-    b.innerHTML = '<span style="color:' + (live.ok ? '#3ddc84' : '#ff6b5e') + '">●</span> ' + (live.ok ? (rt.joined ? 'En vivo · al instante' : 'En vivo · ' + t) : 'Sin conexión · reintentando');
+    // «En vivo» solo si de verdad se está recibiendo ahora: canal de tiempo real con latidos recientes, o una actualización de hace menos de 30 s.
+    // Si hace más (el ordenador estuvo dormido, la pestaña en segundo plano…), se dice con la hora de la última actualización, en ámbar, mientras se actualiza.
+    var age = live.last ? Date.now() - live.last : Infinity, chan = rt.joined && rt.lastMsg && Date.now() - rt.lastMsg < 70000;
+    var dot = '#ff6b5e', txt = 'Sin conexión · reintentando';
+    if (live.ok) {
+      if (chan) { dot = '#3ddc84'; txt = 'En vivo · al instante'; }
+      else if (age < 30000) { dot = '#3ddc84'; txt = 'En vivo · ' + t; }
+      else { dot = '#f5c04a'; txt = 'Actualizando… · última ' + (t || '—'); }
+    }
+    b.innerHTML = '<span style="color:' + dot + '">●</span> ' + txt;
   }
   function liveBlocked() {
     if (document.hidden || S.view !== 'day' || S.busy || S.edit || !root.offsetParent) return true;
@@ -902,7 +911,7 @@
   }
   // Canal de tiempo real de Supabase (websocket): avisa al instante de cualquier cambio en reservas, bloqueos, mesas de una reserva y pedidos.
   // Respeta los permisos: solo llegan los cambios que el usuario ya puede ver. Si se corta, se reconecta solo y mientras tanto sigue el refresco periódico.
-  var rt = { ws: null, joined: false, hb: null, ref: 0, tok: '', backoff: 0, next: 0, t: null };
+  var rt = { ws: null, joined: false, hb: null, ref: 0, tok: '', backoff: 0, next: 0, t: null, lastMsg: 0 };
   var RT_TABLES = ['table_bookings', 'table_booking_tables', 'dining_blocks', 'app_orders'];
   function rtSend(topic, event, payload) { try { rt.ws.send(JSON.stringify({ topic: topic, event: event, payload: payload, ref: String(++rt.ref) })); } catch (e) { /* se reconecta */ } }
   function rtDrop() {
@@ -923,6 +932,7 @@
     };
     ws.onmessage = function (m) {
       var d; try { d = JSON.parse(m.data); } catch (e) { return; }
+      rt.lastMsg = Date.now();
       if (d.event === 'phx_reply' && d.topic === 'realtime:rc-live') {
         if (d.payload && d.payload.status === 'ok') { rt.joined = true; rt.backoff = 0; live.pending = true; liveBadge(); }
         else rtDrop();
@@ -933,10 +943,15 @@
     ws.onclose = rtDrop; ws.onerror = function () { try { ws.close(); } catch (e) { /* ya cerrado */ } };
   }
   // Cada 6 s: reconecta si hace falta y refresca si hay algo pendiente, si no hay canal, o como seguro cada minuto.
-  setInterval(function () { rtConnect(); if (live.pending || !rt.joined || Date.now() - live.last > 60000) liveRefresh(false); }, LIVE_MS);
+  setInterval(function () {
+    if (rt.joined && rt.lastMsg && Date.now() - rt.lastMsg > 70000) rtDrop();   // el canal murió sin avisar (portátil dormido, cambio de red…): se reconecta
+    rtConnect(); if (live.pending || !rt.joined || Date.now() - live.last > 60000) liveRefresh(false); liveBadge();
+  }, LIVE_MS);
   rtConnect();
-  document.addEventListener('visibilitychange', function () { if (!document.hidden) liveRefresh(false); });
-  window.addEventListener('focus', function () { liveRefresh(false); });
+  // Al volver a la pestaña o despertar el ordenador: se actualiza ya (sin esperar a los 6 s) si lleva rato sin hacerlo.
+  function wake() { if (document.hidden) return; liveBadge(); if (Date.now() - live.last > 15000) { live.pending = true; rtConnect(); liveRefresh(true); } }
+  document.addEventListener('visibilitychange', wake);
+  window.addEventListener('focus', wake);
   function done(msg) { return loadDay().then(function () { render(); if (msg) flash(msg, 'ok'); }); }
 
   root.addEventListener('click', function (e) {
