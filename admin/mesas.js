@@ -441,7 +441,7 @@
       if (S.view === 'day') return loadDay();
       if (S.view === 'orders') return loadOrdersView();
       if (S.view === 'wait') return api('dining_waitlist?select=*&status=in.(waiting,notified)&want_date=gte.' + today() + '&order=want_date,created_at').then(function (r) { S.waitlist = r || []; });
-      if (S.view === 'crm') return Promise.all([A.api('rpc/dining_crm', { method: 'POST', body: {} }), api('dining_customer_notes?select=*').catch(function () { return []; })]).then(function (r) { S.crm = r[0] || []; (r[1] || []).forEach(function (n) { S.notes[n.customer_key] = n; }); });
+      if (S.view === 'crm') return Promise.all([A.api('rpc/dining_crm', { method: 'POST', body: {} }), api('dining_customer_notes?select=*').catch(function () { return []; }), api('app_customers?select=email,phone,avatar&avatar=not.is.null&limit=500').catch(function () { return []; })]).then(function (r) { S.crm = r[0] || []; (r[1] || []).forEach(function (n) { S.notes[n.customer_key] = n; }); S.crmAv = {}; (r[2] || []).forEach(function (a) { var em = String(a.email || '').trim().toLowerCase(), ph = String(a.phone || '').replace(/\D/g, ''); if (em) S.crmAv[em] = a.avatar; if (ph) S.crmAv[ph] = a.avatar; }); });
       if (S.view === 'accounts') return loadConfig(true);
       if (S.view === 'stats') return Promise.resolve();
       if (S.view === 'blocks') return api('dining_blocks?select=*&ends_at=gt.' + encodeURIComponent(new Date().toISOString()) + '&order=starts_at').then(function (r) { S.blocks = r || []; });
@@ -1382,7 +1382,7 @@
       '<button class="ad-btn is-ghost is-small" id="crmCsv" type="button">Descargar CSV</button></div>' +
       '<p class="ad-meta" style="margin-bottom:0.7rem">' + rows.length + ' clientes · gasto total anotado ' + eur(tot) + '. El gasto de cada visita se anota en la ficha de la reserva; cuando se conecte el TPV (Ágora) se rellenará solo.</p>' +
       '<div class="ad-table-wrap"><table class="ad-table"><thead><tr><th>Cliente</th><th>Visitas</th><th>No shows</th><th>Gasto</th><th>Última visita</th><th>Próximas</th><th>Eventos</th><th></th></tr></thead><tbody>' + rows.map(function (c) {
-        return '<tr' + (c.blocked ? ' class="is-cancelled"' : '') + '><td><b>' + esc(c.name || 'Sin nombre') + '</b> ' + tierTag(tierOf(c.visits, c.spend_cents)) + (c.app_user ? ' <span class="ad-tag">App</span>' : '') + (c.blocked ? ' <span class="ad-tag is-red">bloqueado</span>' : '') + (c.customer_type === 'empresa' ? ' <span class="ad-tag">Empresa' + (c.company ? ': ' + esc(c.company) : '') + '</span>' : '') + (c.customer_type === 'grupo' ? ' <span class="ad-tag">Consumo interno' + (c.company ? ': ' + esc(c.company) : '') + '</span>' : '') + (c.balance_cents ? ' <span class="ad-tag is-red">Saldo ' + eur(c.balance_cents) + '</span>' : '') + (c.tags || []).map(function (k) { return ' ' + tagHtml(k); }).join('') + '<br><span class="ad-meta">' + esc(c.email || '') + (c.phone ? ' · ' + esc(c.phone) : '') + '</span>' + (c.note ? '<br><span class="ad-meta">“' + esc(c.note) + '”</span>' : '') + '</td>' +
+        return '<tr' + (c.blocked ? ' class="is-cancelled"' : '') + '><td>' + avatarOf(c) + '<b>' + esc(c.name || 'Sin nombre') + '</b> ' + tierTag(tierOf(c.visits, c.spend_cents)) + (c.app_user ? ' <span class="ad-tag">App</span>' : '') + (c.blocked ? ' <span class="ad-tag is-red">bloqueado</span>' : '') + (c.customer_type === 'empresa' ? ' <span class="ad-tag">Empresa' + (c.company ? ': ' + esc(c.company) : '') + '</span>' : '') + (c.customer_type === 'grupo' ? ' <span class="ad-tag">Consumo interno' + (c.company ? ': ' + esc(c.company) : '') + '</span>' : '') + (c.balance_cents ? ' <span class="ad-tag is-red">Saldo ' + eur(c.balance_cents) + '</span>' : '') + (c.tags || []).map(function (k) { return ' ' + tagHtml(k); }).join('') + '<br><span class="ad-meta">' + esc(c.email || '') + (c.phone ? ' · ' + esc(c.phone) : '') + '</span>' + (c.note ? '<br><span class="ad-meta">“' + esc(c.note) + '”</span>' : '') + '</td>' +
           '<td>' + c.visits + '</td><td>' + (c.no_shows ? '<b style="color:var(--red)">' + c.no_shows + '</b>' : '0') + '</td><td class="nowrap">' + eur(Number(c.spend_cents || 0)) + (c.visits && Number(c.spend_cents) ? '<br><span class="ad-meta">' + eur(Math.round(Number(c.spend_cents) / c.visits)) + ' / visita</span>' : '') + '</td>' +
           '<td class="nowrap">' + (c.last_visit ? esc(fmtShort(c.last_visit)) : '—') + '</td><td>' + c.upcoming + '</td><td>' + (c.event_visits || 0) + (Number(c.tickets_cents) ? '<br><span class="ad-meta">' + eur(Number(c.tickets_cents)) + '</span>' : '') + '</td>' +
           '<td><button class="ad-btn is-small is-ghost" data-crm="' + esc(c.customer_key) + '">Ficha</button></td></tr>';
@@ -1392,6 +1392,12 @@
   var APP_DIETS = { vegetariana: 'Vegetariana', vegana: 'Vegana', pescetariana: 'Pescetariana', sin_gluten: 'Sin gluten', sin_lactosa: 'Sin lactosa', keto: 'Keto' };
   var APP_GENDER = { masculino: 'Masculino', femenino: 'Femenino', otro: 'Otro', no_decir: 'Prefiere no decirlo' };
   var APP_HEARD = { instagram: 'Instagram', google: 'Google', amigo: 'Un amigo', puerta: 'Pasaba por la puerta', evento: 'Un evento de ROCE', otro: 'Otro' };
+  // Foto de perfil de la app (o la inicial si no tiene) para los clientes con cuenta.
+  function avatarOf(c, big) {
+    if (!c || !c.app_user) return '';
+    var src = (S.crmAv || {})[c.customer_key], ini = String(c.name || '?').trim().charAt(0).toUpperCase() || '?';
+    return '<span class="ad-av' + (big ? ' is-big' : '') + '">' + (src ? '<img src="' + esc(src) + '" alt="">' : esc(ini)) + '</span>';
+  }
   var APP_ST = { pending_payment: 'Sin pagar', paid: 'Pagado', preparing: 'En preparación', ready: 'Listo', served: 'Servido', cancelled: 'Anulado' };
   // Ficha del cliente de la app (perfil + pedidos): lo que alimenta el CRM de forma automática.
   function appBlock(c) {
@@ -1424,7 +1430,7 @@
     }
     var f = e.target.closest('[data-crm]'); if (!f) return;
     var c = S.crm.filter(function (x) { return x.customer_key === f.dataset.crm; })[0]; if (!c) return;
-    modal('<h2>' + esc(c.name || 'Cliente') + '</h2><p class="ad-meta">' + esc(c.email || '') + (c.phone ? ' · ' + esc(c.phone) : '') + '</p>' +
+    modal('<h2>' + avatarOf(c, true) + esc(c.name || 'Cliente') + '</h2><p class="ad-meta">' + esc(c.email || '') + (c.phone ? ' · ' + esc(c.phone) : '') + '</p>' +
       '<div class="mt-crmstats"><div><b>' + c.visits + '</b><span>visitas</span></div><div><b>' + c.no_shows + '</b><span>no shows</span></div><div><b>' + c.cancellations + '</b><span>anulaciones</span></div><div><b>' + eur(Number(c.spend_cents || 0)) + '</b><span>gasto</span></div></div>' +
       appBlock(c) + '<p class="ad-msg is-error" id="cuMsg" hidden></p>' +
       '<div class="mt-two"><label class="ad-field"><span>Tipo de cliente</span><select id="cuType">' + Object.keys(CT).map(function (k) { return '<option value="' + k + '"' + (c.customer_type === k ? ' selected' : '') + '>' + esc(CT[k]) + '</option>'; }).join('') + '</select></label>' +
