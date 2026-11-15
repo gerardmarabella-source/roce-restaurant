@@ -265,6 +265,7 @@ async function refundOrders(db: any, base: string, token: string, serie: string)
 }
 
 // ───────────────────────── Precios de Ágora → app ─────────────────────────
+const AUTO_CATS = ["Cervezas", "Vermuts", "Refrescos", "Aguas"];
 async function syncPrices(db: any, base: string, token: string) {
   // Freno: una sincronización cada 45 s como mucho (así nadie puede saturar el PC del local llamando a la función; el programador la llama cada minuto).
   const { data: st } = await db.from("app_agora_sync").select("last_run").eq("id", 1).maybeSingle();
@@ -290,8 +291,28 @@ async function syncPrices(db: any, base: string, token: string) {
     if (Number.isFinite(c) && c > 0) price.set(p.Id, c);
   }
 
-  const { data: rows, error } = await db.from("app_menu_items").select("key, price_cents, extras, agora_id");
+  const { data: rows, error } = await db.from("app_menu_items").select("key, cat, name, price_cents, extras, agora_id");
   if (error) return await fail("base de datos: " + error.message);
+
+  // Enlace automático de las bebidas nuevas: si un producto de la app aún no tiene id de Ágora, se enlaza con el producto de Ágora que se llame
+  // igual (sin mayúsculas, tildes ni signos). Solo si hay exactamente uno. Lo que no encuentra queda anotado en el detalle, con nombres parecidos de Ágora.
+  const norm = (x: string) => String(x ?? "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, " ").replace(/(\d) ([a-z])/g, "$1$2").trim();
+  const byName = new Map<string, number[]>();
+  for (const p of products) { const k = norm(p.Name); if (k) byName.set(k, [...(byName.get(k) ?? []), p.Id]); }
+  const unlinked: string[] = [], linked: string[] = [];
+  for (const row of rows ?? []) {
+    if (row.agora_id != null || !AUTO_CATS.includes(row.cat)) continue;
+    const ids = byName.get(norm(row.name)) ?? [];
+    if (ids.length === 1) {
+      const { error: le } = await db.from("app_menu_items").update({ agora_id: ids[0] }).eq("key", row.key);
+      if (le) return await fail("no se pudo enlazar " + row.key + ": " + le.message);
+      row.agora_id = ids[0]; linked.push(`${row.name}→${ids[0]}`);
+    } else {
+      const first = norm(row.name).split(" ")[0];
+      const near = products.filter((p: any) => first && norm(p.Name).includes(first)).slice(0, 4).map((p: any) => `${p.Name} (#${p.Id})`);
+      unlinked.push(`${row.name}${ids.length > 1 ? " [varios]" : ""}${near.length ? " ¿" + near.join(" | ") + "?" : ""}`);
+    }
+  }
 
   let changed = 0; const changes: string[] = [];
   for (const row of rows ?? []) {
@@ -313,8 +334,9 @@ async function syncPrices(db: any, base: string, token: string) {
       changed++;
     }
   }
-  await db.from("app_agora_sync").upsert({ id: 1, last_run: new Date().toISOString(), ok: true, error: null, changed, detail: changes.slice(0, 40).join("; ") });
-  return json({ ok: true, products: products.length, changed, changes: changes.slice(0, 40) });
+  const detail = [changes.slice(0, 40).join("; "), linked.length ? "ENLAZADOS: " + linked.join(", ") : "", unlinked.length ? "SIN ENLAZAR: " + unlinked.join(" ; ") : ""].filter(Boolean).join(" || ");
+  await db.from("app_agora_sync").upsert({ id: 1, last_run: new Date().toISOString(), ok: true, error: null, changed, detail: detail.slice(0, 4000) });
+  return json({ ok: true, products: products.length, changed, linked, unlinked, changes: changes.slice(0, 40) });
 }
 
 Deno.serve(async (req) => {
