@@ -23,6 +23,15 @@ const safeEq = (a: string, b: string): boolean => { if (a.length !== b.length) r
 const SWEEP_SECRET = Deno.env.get("SWEEP_SECRET") ?? "";   // protege los barridos table_sweep / list_sweep (los envía pg_cron)
 const FROM = Deno.env.get("MAIL_FROM") ?? "no-reply@roce.es"; // debe ser un remitente verificado en Brevo
 const REPLY_TO = Deno.env.get("MAIL_REPLY_TO") ?? "reservas@roce.es";
+// Destino de los avisos al equipo (nueva reserva, entrada, anulación…). Aparte de REPLY_TO a propósito: llegan siempre a reservas@roce.es aunque la respuesta de los clientes vaya a otro buzón.
+const STAFF_EMAIL = Deno.env.get("STAFF_NOTIFY_EMAIL") ?? "reservas@roce.es";
+// Envía un aviso al equipo y deja constancia en los registros de la función si Brevo lo rechaza (antes un fallo pasaba en silencio).
+async function mailStaff(subject: string, htmlContent: string): Promise<void> {
+  try {
+    const r = await fetch("https://api.brevo.com/v3/smtp/email", { method: "POST", headers: brevoHeaders, body: JSON.stringify({ sender: { name: "ROCE", email: FROM }, to: [{ email: STAFF_EMAIL }], subject, htmlContent }) });
+    if (!r.ok) console.error("aviso al equipo no enviado:", r.status, (await r.text()).slice(0, 300), "·", subject);
+  } catch (e) { console.error("aviso al equipo no enviado:", String(e), "·", subject); }
+}
 const LIST_ATTENDEES = Number(Deno.env.get("BREVO_LIST_ATTENDEES") ?? "0");
 const LIST_NEWSLETTER = Number(Deno.env.get("BREVO_LIST_NEWSLETTER") ?? "0");
 const LIST_RESERVAS = Number(Deno.env.get("BREVO_LIST_RESERVAS") ?? "0"); // lista de Brevo con quien reserva mesa
@@ -481,17 +490,8 @@ async function notifyStaff(b: any): Promise<void> {
   const { data: ev } = await serviceClient().from("events").select("title_es, starts_at").eq("id", b.event_id).single();
   const when = ev ? new Intl.DateTimeFormat("es-ES", { timeZone: "Europe/Madrid", weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" }).format(new Date(ev.starts_at)) : "";
   const total = (b.total_cents / 100).toLocaleString("es-ES", { style: "currency", currency: "EUR" });
-  await fetch("https://api.brevo.com/v3/smtp/email", {
-    method: "POST",
-    headers: brevoHeaders,
-    body: JSON.stringify({
-      sender: { name: "ROCE", email: FROM },
-      to: [{ email: REPLY_TO }],
-      subject: `Reserva pagada · ${ev?.title_es ?? b.event_id} (${b.ref})`,
-      htmlContent: `<p><b>${esc(String(ev?.title_es ?? b.event_id))}</b> · ${esc(when)}</p>
-<p>${esc(b.name)} · ${esc(b.email)} · ${esc(b.phone)}<br>${b.qty} entrada(s) · ${esc(total)} · cobrado con tarjeta<br>Ref. ${esc(b.ref)}</p>`,
-    }),
-  }).catch(() => {});
+  await mailStaff(`Reserva pagada · ${ev?.title_es ?? b.event_id} (${b.ref})`, `<p><b>${esc(String(ev?.title_es ?? b.event_id))}</b> · ${esc(when)}</p>
+<p>${esc(b.name)} · ${esc(b.email)} · ${esc(b.phone)}<br>${b.qty} entrada(s) · ${esc(total)} · cobrado con tarjeta<br>Ref. ${esc(b.ref)}</p>`);
 }
 
 // ─── Pedidos de la app (tabla app_orders) ────────────────────────────────
@@ -708,16 +708,7 @@ async function syncTableContact(n: any, oldEmail?: string): Promise<void> {
 // Aviso interno de cada reserva de mesa nueva o anulada (para el equipo).
 async function notifyTableStaff(b: any, what: string): Promise<void> {
   const when = new Intl.DateTimeFormat("es-ES", { timeZone: "Europe/Madrid", weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" }).format(new Date(b.starts_at));
-  await fetch("https://api.brevo.com/v3/smtp/email", {
-    method: "POST",
-    headers: brevoHeaders,
-    body: JSON.stringify({
-      sender: { name: "ROCE", email: FROM },
-      to: [{ email: REPLY_TO }],
-      subject: `${what} · mesa ${b.ambience === "night" ? "Restaurant & Cocktails" : "Coffee, Bakery & Kitchen"} · ${when} (${b.ref})`,
-      htmlContent: `<p><b>${esc(what)}</b> · ${esc(when)} · ${b.party} persona(s)</p><p>${esc(b.name)} · ${esc(b.email)} · ${esc(b.phone)}<br>${b.notes ? esc(b.notes) + "<br>" : ""}Ref. ${esc(b.ref)}${b.deposit_cents > 0 ? " · fianza " + (b.deposit_cents / 100) + " € (" + esc(b.payment_status) + ")" : ""}</p>`,
-    }),
-  }).catch(() => {});
+  await mailStaff(`${what} · mesa ${b.ambience === "night" ? "Restaurant & Cocktails" : "Coffee, Bakery & Kitchen"} · ${when} (${b.ref})`, `<p><b>${esc(what)}</b> · ${esc(when)} · ${b.party} persona(s)</p><p>${esc(b.name)} · ${esc(b.email)} · ${esc(b.phone)}<br>${b.notes ? esc(b.notes) + "<br>" : ""}Ref. ${esc(b.ref)}${b.deposit_cents > 0 ? " · fianza " + (b.deposit_cents / 100) + " € (" + esc(b.payment_status) + ")" : ""}</p>`);
 }
 
 // ─── Lista de espera (tabla dining_waitlist) ─────────────────────────────
