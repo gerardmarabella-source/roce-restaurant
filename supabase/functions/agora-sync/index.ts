@@ -12,6 +12,19 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 
 const sb = () => createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
 const json = (o: unknown, status = 200) => new Response(JSON.stringify(o), { status, headers: { "Content-Type": "application/json" } });
+// Esta función la llama el programador de la base de datos con la clave pública, así que cualquiera podría llamarla. Por eso:
+//  · hacia fuera solo devuelve contadores (nada de referencias de pedidos, nombres, precios ni mensajes de error);
+//  · el detalle y la acción «formats» exigen la cabecera x-admin-secret (secreto AGORA_ADMIN_SECRET; si no existe, quedan desactivados).
+const safeEq = (a: string, b: string): boolean => { if (a.length !== b.length) return false; let d = 0; for (let i = 0; i < a.length; i++) d |= a.charCodeAt(i) ^ b.charCodeAt(i); return d === 0; };
+async function publicView(res: Response): Promise<Response> {
+  const t = await res.text();
+  try {
+    const o = JSON.parse(t);
+    for (const k of ["results", "refunds", "refundError", "changes", "linked", "unlinked", "keys"]) delete o[k];
+    if (typeof o.error === "string") o.error = "error";
+    return json(o, res.status);
+  } catch { return new Response(t, { status: res.status, headers: { "Content-Type": "application/json" } }); }
+}
 
 // Extras (nombre en la app → producto «EXTRA …» de Ágora). Los de «Más proteína» van por agora_id en su propia fila.
 const EXTRA_IDS: Record<string, number> = {
@@ -60,7 +73,7 @@ async function agoraGet(base: string, token: string, filter: string): Promise<an
   const ctl = new AbortController(); const to = setTimeout(() => ctl.abort(), 25_000);
   try {
     const r = await fetch(`${base}/api/export-master/?filter=${filter}`, { headers: { "Api-Token": token }, signal: ctl.signal });
-    if (!r.ok) throw new Error(`Ágora respondió ${r.status}` + (r.status === 401 ? ` (el token guardado tiene ${token.length} caracteres)` : ""));
+    if (!r.ok) throw new Error(`Ágora respondió ${r.status}`);
     return await r.json();
   } finally { clearTimeout(to); }
 }
@@ -378,7 +391,10 @@ Deno.serve(async (req) => {
   let body: any = {};
   try { body = await req.json(); } catch { /* sin cuerpo */ }
   // Consulta de solo lectura: productos de Ágora con más de un formato de venta (copa/botella…), con sus ids, ratios y precios. Sirve para enlazar la app con los formatos.
+  const adminKey = Deno.env.get("AGORA_ADMIN_SECRET") ?? "";
+  const admin = !!adminKey && safeEq(req.headers.get("x-admin-secret") ?? "", adminKey);
   if (body?.action === "formats") {
+    if (!admin) return json({ ok: false, error: "forbidden" }, 403);
     try {
       const products: any[] = (await agoraGet(base, token, "Products")).Products ?? [];
       const out: any[] = [];
@@ -395,9 +411,10 @@ Deno.serve(async (req) => {
   if (body?.action === "push") {
     const res = await pushOrders(db, base, token, serie);
     const ref = await refundOrders(db, base, token, serie);
-    if (!ref.results.length && !ref.error) return res;
-    const o = await res.json();
-    return json({ ...o, refunds: ref.results, refundError: ref.error ?? null }, res.status);
+    let out = res;
+    if (ref.results.length || ref.error) { const o = await res.json(); out = json({ ...o, refunds: ref.results, refundError: ref.error ?? null }, res.status); }
+    return admin ? out : await publicView(out);
   }
-  return await syncPrices(db, base, token);
+  const out = await syncPrices(db, base, token);
+  return admin ? out : await publicView(out);
 });
