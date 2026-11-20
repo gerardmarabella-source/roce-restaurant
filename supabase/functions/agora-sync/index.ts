@@ -349,6 +349,21 @@ Deno.serve(async (req) => {
   const serie = (Deno.env.get("AGORA_SERIE") ?? "APP").trim();
   let body: any = {};
   try { body = await req.json(); } catch { /* sin cuerpo */ }
+  // Consulta de solo lectura: productos de Ágora con más de un formato de venta (copa/botella…), con sus ids, ratios y precios. Sirve para enlazar la app con los formatos.
+  if (body?.action === "formats") {
+    try {
+      const products: any[] = (await agoraGet(base, token, "Products")).Products ?? [];
+      const out: any[] = [];
+      for (const p of products) {
+        const fk = Object.keys(p).filter((k) => /format/i.test(k) && Array.isArray(p[k]) && p[k].length > 1);
+        if (!fk.length && !(body?.ids ?? []).includes(p.Id)) continue;
+        const o: any = { Id: p.Id, Name: p.Name, BaseSaleFormatId: p.BaseSaleFormatId };
+        for (const k of Object.keys(p)) if (/format/i.test(k)) o[k] = p[k];
+        out.push(o);
+      }
+      return json({ ok: true, keys: Object.keys(products[0] ?? {}), count: products.length, products: out });
+    } catch (e) { return json({ ok: false, error: (e as Error).message }, 502); }
+  }
   if (body?.action === "push") {
     const res = await pushOrders(db, base, token, serie);
     const ref = await refundOrders(db, base, token, serie);
