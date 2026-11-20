@@ -17,12 +17,34 @@ const json = (o: unknown, status = 200) => new Response(JSON.stringify(o), { sta
 const EXTRA_IDS: Record<string, number> = {
   "Bacon": 51, "Aguacate": 52, "Salmón": 53, "Huevo": 54, "Jamón": 55,
   "Fruta": 56, "Granola": 57, "Crema de cacahuete": 58,
+  "Red Bull": 245,   // suplemento de las copas de spirits (+1,50 €)
   "Iced": 78, "Doble carga": 94, "Vegetal barista": 95, "Con hielo": 96, "Descafeinado": 77,   // complementos de los cafés
 };
 // En Ágora el precio de un extra es el «precio como complemento» (AddinPrice), que puede ser distinto del precio normal.
 const addinCents = (p: any): number => {
   const pr = (p?.Prices ?? []).find((x: any) => x.PriceListId === 1) ?? (p?.Prices ?? [])[0];
   return Math.round(Number(pr?.AddinPrice ?? pr?.MainPrice ?? 0) * 100);
+};
+
+// Vinos: qué formato de venta de Ágora se usa según la hoja de la app (la copa y la botella de un mismo vino son formatos del mismo producto, cada uno con su precio).
+// Un vino que solo tiene el formato base (sin copa/botella) se vende por el base.
+// Spirits: cada línea de la app es una copa o un chupito; el chupito se llama «… · Chupito». Si el producto no tiene esos formatos se vende por el base.
+const FORMAT_PREF: Record<string, string> = { "Por copas": "COPA", "Blancos": "BOTELLA", "Rosado": "BOTELLA", "Espumosos": "BOTELLA", "Tintos": "BOTELLA" };
+const SPIRIT_CATS = ["Ginebras", "Vodka", "Licores", "Whisky", "Ron", "Otros chupitos"];
+const prefFor = (key: string): string | null => {
+  const i = String(key).indexOf("|"), cat = i < 0 ? String(key) : String(key).slice(0, i), name = i < 0 ? "" : String(key).slice(i + 1);
+  if (FORMAT_PREF[cat]) return FORMAT_PREF[cat];
+  if (SPIRIT_CATS.includes(cat)) return name.endsWith(" · Chupito") ? "CHUPITO" : "COPA";
+  return null;
+};
+const formatFor = (p: any, itemKey: string): any | null => {
+  const pref = prefFor(itemKey);
+  if (!pref) return null;
+  return (p?.AdditionalSaleFormats ?? []).find((f: any) => !f.DeletionDate && String(f.Name).toUpperCase().startsWith(pref)) ?? null;
+};
+const formatCents = (f: any): number => {
+  const pr = (f?.Prices ?? []).find((x: any) => x.PriceListId === 1) ?? (f?.Prices ?? [])[0];
+  return Math.round(Number(pr?.MainPrice ?? 0) * 100);
 };
 
 // Datos fijos de Ágora de ROCE (centro de venta «App», usuario ROCE, forma de pago «App Online», TPV WEB).
@@ -66,6 +88,7 @@ function buildOrder(serie: string, ord: any, items: any[], agoraOf: Map<string, 
     const aid = agoraOf.get(it.item_key);
     if (!aid) throw new Error(`«${it.name}» (${it.item_key}) no tiene producto en Ágora`);
     const { p, v } = info(aid);
+    const fm = formatFor(p, it.item_key);   // copa/botella (solo vinos); null = formato base
     const addins = (Array.isArray(it.extras) ? it.extras : []).map((name: string) => {
       const eid = EXTRA_IDS[name]; if (!eid) throw new Error(`extra «${name}» sin producto en Ágora`);
       const e = info(eid);
@@ -77,7 +100,7 @@ function buildOrder(serie: string, ord: any, items: any[], agoraOf: Map<string, 
     const notes = [it.variant, it.note].filter((x: string) => x && x.trim()).join(" · ").slice(0, 250);
     return {
       Index: idx, Type: "Standard", CreationDate: now, ParentIndex: null, MenuGroup: "",
-      ProductId: aid, ProductName: p.Name, SaleFormatId: p.BaseSaleFormatId, SaleFormatName: p.Name, SaleFormatRatio: 1.0, MainBarcode: "",
+      ProductId: aid, ProductName: p.Name, SaleFormatId: fm ? fm.Id : p.BaseSaleFormatId, SaleFormatName: fm ? fm.Name : p.Name, SaleFormatRatio: fm ? Number(fm.Ratio) : 1.0, MainBarcode: "",
       ProductPrice: money(base), Quantity: it.qty, VatId: p.VatId, VatRate: v.VatRate, SurchargeRate: v.SurchargeRate, UserId: USER.Id,
       UnitPrice: money(it.unit_cents), DiscountRate: 0.0, CashDiscount: 0.0, TotalAmount: money(it.unit_cents * it.qty),
       UnitCostPrice: 0.0, TotalCostPrice: 0.0, ProductCostPrice: 0.0, OfferId: null, OfferCode: "", RemovedIngredients: [],
@@ -281,6 +304,7 @@ async function syncPrices(db: any, base: string, token: string) {
   try { products = (await agoraGet(base, token, "Products")).Products ?? []; }
   catch (e) { return await fail((e as Error).message); }
   if (!products.length) return await fail("Ágora no devolvió productos");
+  const prodById = new Map<number, any>(products.map((p: any): [number, any] => [p.Id, p]));
 
   // Precio de venta principal en la tarifa 1 («General», IVA incluido). Se ignoran precios no válidos (≤ 0).
   const price = new Map<number, number>(), addin = new Map<number, number>();
@@ -317,7 +341,11 @@ async function syncPrices(db: any, base: string, token: string) {
   let changed = 0; const changes: string[] = [];
   for (const row of rows ?? []) {
     const upd: Record<string, unknown> = {};
-    const c = row.agora_id != null ? price.get(row.agora_id) : undefined;
+    let c = row.agora_id != null ? price.get(row.agora_id) : undefined;
+    if (row.agora_id != null && prefFor(row.key)) {
+      const fm = formatFor(prodById.get(row.agora_id), row.key);
+      if (fm) { const fc = formatCents(fm); c = fc > 0 ? fc : undefined; }
+    }
     if (c != null && c !== row.price_cents) { upd.price_cents = c; changes.push(`${row.key}: ${row.price_cents}→${c}`); }
     if (Array.isArray(row.extras) && row.extras.length) {
       let ex = false;
@@ -349,6 +377,21 @@ Deno.serve(async (req) => {
   const serie = (Deno.env.get("AGORA_SERIE") ?? "APP").trim();
   let body: any = {};
   try { body = await req.json(); } catch { /* sin cuerpo */ }
+  // Consulta de solo lectura: productos de Ágora con más de un formato de venta (copa/botella…), con sus ids, ratios y precios. Sirve para enlazar la app con los formatos.
+  if (body?.action === "formats") {
+    try {
+      const products: any[] = (await agoraGet(base, token, "Products")).Products ?? [];
+      const out: any[] = [];
+      for (const p of products) {
+        const fk = Object.keys(p).filter((k) => /format/i.test(k) && Array.isArray(p[k]) && p[k].length > 1);
+        if (!fk.length && !(body?.ids ?? []).includes(p.Id)) continue;
+        const o: any = { Id: p.Id, Name: p.Name, BaseSaleFormatId: p.BaseSaleFormatId };
+        for (const k of Object.keys(p)) if (/format/i.test(k)) o[k] = p[k];
+        out.push(o);
+      }
+      return json({ ok: true, keys: Object.keys(products[0] ?? {}), count: products.length, products: out });
+    } catch (e) { return json({ ok: false, error: (e as Error).message }, 502); }
+  }
   if (body?.action === "push") {
     const res = await pushOrders(db, base, token, serie);
     const ref = await refundOrders(db, base, token, serie);
