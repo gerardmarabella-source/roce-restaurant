@@ -621,7 +621,7 @@
       if (!cancelled && b.phone) a.push('<a class="ad-btn is-small is-ghost" href="tel:' + esc(String(b.phone).replace(/[^0-9+]/g, '')) + '">Llamar</a>');
       if (!cancelled && b.email) a.push('<a class="ad-btn is-small is-ghost" href="mailto:' + esc(b.email) + '?subject=' + encodeURIComponent('Tu reserva en ROCE · ' + b.ref) + '&body=' + encodeURIComponent('Hola ' + String(b.name || '').split(' ')[0] + ',\n\nSobre tu reserva ' + b.ref + ' (' + dayLabel(b.starts_at) + ', ' + b.party + ' personas):\n\n') + '">Escribir email</a>');
       return '<li class="ad-card mt-bk' + (cancelled ? ' is-past' : '') + '"><div class="ad-date"><b>' + hm(b.starts_at) + '</b><span>' + b.party + ' p.</span></div>' +
-        '<div><div class="ad-name">' + (b.name ? esc(b.name) : '<i>Sin nombre</i>') + ' <span class="ad-tag ' + (b.status === 'seated' ? 'is-green' : b.status === 'cancelled' || b.status === 'no_show' ? 'is-red' : '') + '">' + esc(ST[b.status] || b.status) + '</span>' + (b.kind && b.kind !== 'normal' ? '<span class="ad-tag">' + esc(BK_KIND[b.kind] || b.kind) + '</span>' : '') + tierTag(tierOf((S.crmMap[ckey(b)] || {}).visits, (S.crmMap[ckey(b)] || {}).spend_cents)) + (b.reconfirmed_at && b.status !== 'cancelled' ? '<span class="ad-tag is-green">Reconfirmada</span>' : '') + (b.bar_at && b.status === 'confirmed' ? '<span class="ad-tag">En la barra ' + hm(b.bar_at) + '</span>' : '') + (b.bill_at && b.status === 'seated' ? '<span class="ad-tag">Cuenta pedida ' + hm(b.bill_at) + '</span>' : '') + (b.status === 'completed' && !b.cleaned_at ? '<span class="ad-tag is-red">Limpiar mesa</span>' : '') + (b.arrived_at && b.status !== 'cancelled' ? '<span class="ad-tag is-green">Llegó ' + hm(b.arrived_at) + '</span>' : '') + (b.dessert_at && b.status === 'seated' ? '<span class="ad-tag">Postre ' + hm(b.dessert_at) + '</span>' : '') + (b.prescriber ? '<span class="ad-tag">Prescriptor: ' + esc(presName(b.prescriber)) + '</span>' : '') + (b.spend_cents != null ? '<span class="ad-tag">Gasto ' + eur(b.spend_cents) + '</span>' : '') + (noteOf(b) && noteOf(b).blocked ? '<span class="ad-tag is-red">Cliente bloqueado</span>' : '') + (noteOf(b) && noteOf(b).customer_type === 'empresa' ? '<span class="ad-tag">Empresa' + (noteOf(b).company ? ': ' + esc(noteOf(b).company) : '') + (noteOf(b).balance_cents ? ' · saldo ' + eur(noteOf(b).balance_cents) : '') + '</span>' : '') + (noteOf(b) && noteOf(b).customer_type === 'grupo' ? '<span class="ad-tag">Consumo interno</span>' : '') + tagsOf(b).map(tagHtml).join('') + pay + '</div>' +
+        '<div><div class="ad-name">' + (b.name ? esc(b.name) : '<i>Sin nombre</i>') + ' <span class="ad-tag ' + (b.status === 'seated' ? 'is-green' : b.status === 'cancelled' || b.status === 'no_show' ? 'is-red' : '') + '">' + esc(ST[b.status] || b.status) + '</span>' + (b.kind && b.kind !== 'normal' ? '<span class="ad-tag">' + esc(BK_KIND[b.kind] || b.kind) + '</span>' : '') + trTag(b) + tierTag(tierOf((S.crmMap[ckey(b)] || {}).visits, (S.crmMap[ckey(b)] || {}).spend_cents)) + (b.reconfirmed_at && b.status !== 'cancelled' ? '<span class="ad-tag is-green">Reconfirmada</span>' : '') + (b.bar_at && b.status === 'confirmed' ? '<span class="ad-tag">En la barra ' + hm(b.bar_at) + '</span>' : '') + (b.bill_at && b.status === 'seated' ? '<span class="ad-tag">Cuenta pedida ' + hm(b.bill_at) + '</span>' : '') + (b.status === 'completed' && !b.cleaned_at ? '<span class="ad-tag is-red">Limpiar mesa</span>' : '') + (b.arrived_at && b.status !== 'cancelled' ? '<span class="ad-tag is-green">Llegó ' + hm(b.arrived_at) + '</span>' : '') + (b.dessert_at && b.status === 'seated' ? '<span class="ad-tag">Postre ' + hm(b.dessert_at) + '</span>' : '') + (b.prescriber ? '<span class="ad-tag">Prescriptor: ' + esc(presName(b.prescriber)) + '</span>' : '') + (b.spend_cents != null ? '<span class="ad-tag">Gasto ' + eur(b.spend_cents) + '</span>' : '') + (noteOf(b) && noteOf(b).blocked ? '<span class="ad-tag is-red">Cliente bloqueado</span>' : '') + (noteOf(b) && noteOf(b).customer_type === 'empresa' ? '<span class="ad-tag">Empresa' + (noteOf(b).company ? ': ' + esc(noteOf(b).company) : '') + (noteOf(b).balance_cents ? ' · saldo ' + eur(noteOf(b).balance_cents) : '') + '</span>' : '') + (noteOf(b) && noteOf(b).customer_type === 'grupo' ? '<span class="ad-tag">Consumo interno</span>' : '') + tagsOf(b).map(tagHtml).join('') + pay + '</div>' +
         '<div class="ad-meta">' + esc(zoneName(b.zone_id)) + (tn ? ' · mesa ' + esc(tn) + ' (' + seatsOf(b) + ' plazas' + (b.party > seatsOf(b) ? ' · faltan ' + (b.party - seatsOf(b)) : '') + ')' : '') + ' · ' + esc(b.ambience === 'night' ? 'Restaurant & Cocktails' : 'Coffee, Bakery & Kitchen') + (b.source === 'admin' ? ' · creada en el panel' : '') + '</div>' +
         '<div class="ad-meta">' + esc(b.phone) + (b.email ? ' · ' + esc(b.email) : '') + ' · ' + esc(b.ref) + '</div>' +
         (b.notes ? '<div class="ad-meta">“' + esc(b.notes) + '”</div>' : '') + (noteOf(b) && noteOf(b).note ? '<div class="ad-meta">Nota del cliente: ' + esc(noteOf(b).note) + '</div>' : '') + '</div>' +
@@ -1071,6 +1071,51 @@
   }
 
   // ─── Modales ────────────────────────────────────────────────────────
+  // ─── Pago por transferencia bancaria (con comprobante obligatorio al marcarla como pagada) ───
+  var TR_ST = { pending: 'pendiente', paid: 'pagada' };
+  function trTag(b) {
+    if (b.pay_method !== 'transfer') return '';
+    return '<span class="ad-tag ' + (b.transfer_status === 'paid' ? 'is-green' : 'is-red') + '">Transferencia' + (b.transfer_cents ? ' ' + eur(b.transfer_cents) : '') + ' · ' + TR_ST[b.transfer_status || 'pending'] + '</span>';
+  }
+  function trAuth() { var s = A.session(); return { apikey: A.cfg.anonKey, Authorization: 'Bearer ' + s.access_token }; }
+  function trUpload(file, id) {
+    var name = id + '/' + Date.now() + '-' + String(file.name || 'comprobante').toLowerCase().replace(/[^a-z0-9._-]+/g, '-').slice(-60), h = trAuth();
+    h['Content-Type'] = file.type || 'application/octet-stream';
+    return fetch(A.cfg.url + '/storage/v1/object/booking-proofs/' + name, { method: 'POST', headers: h, body: file })
+      .then(function (r) { if (!r.ok) return r.json().catch(function () { return {}; }).then(function (d) { throw new Error('No se ha podido subir el comprobante' + (d.message ? ': ' + d.message : '') + '. Admite JPG, PNG, WebP o PDF de hasta 10 MB.'); }); return name; });
+  }
+  function trOpen(path) {
+    return fetch(A.cfg.url + '/storage/v1/object/sign/booking-proofs/' + path, { method: 'POST', headers: Object.assign({ 'Content-Type': 'application/json' }, trAuth()), body: JSON.stringify({ expiresIn: 300 }) })
+      .then(function (r) { return r.json().then(function (d) { if (!r.ok || !d.signedURL) throw new Error('No se ha podido abrir el comprobante.'); window.open(A.cfg.url + '/storage/v1' + d.signedURL, '_blank', 'noopener'); }); });
+  }
+  // Bloque de formulario (edición de reserva): método de pago, importe, estado y comprobante.
+  function trBlock(b) {
+    var on = b.pay_method === 'transfer', paid = b.transfer_status === 'paid';
+    return '<details class="mt-more"' + (on ? ' open' : '') + '><summary>Pago por transferencia bancaria' + (on ? ' · ' + TR_ST[b.transfer_status || 'pending'] : '') + '</summary><div class="ad-grid">' +
+      '<label class="ad-field"><span>Método de pago</span><select id="edPm"><option value="">Sin transferencia</option><option value="transfer"' + (on ? ' selected' : '') + '>Transferencia bancaria</option></select></label>' +
+      '<label class="ad-field" data-tr><span>Importe (€)</span><input type="number" id="edTrAmt" min="0" step="0.5" value="' + (b.transfer_cents != null ? b.transfer_cents / 100 : '') + '"></label>' +
+      '<label class="ad-field" data-tr><span>Estado</span><select id="edTrSt"><option value="pending"' + (!paid ? ' selected' : '') + '>Pendiente</option><option value="paid"' + (paid ? ' selected' : '') + '>Pagado</option></select></label>' +
+      '<div class="ad-field full" data-tr><span>Comprobante de pago <b id="edTrReq" style="color:var(--red)">(obligatorio para marcar como pagado)</b></span>' +
+      (b.transfer_proof ? '<p class="ad-meta" style="margin:0 0 0.4rem"><button type="button" class="ad-btn is-small is-ghost" id="edTrView">Ver comprobante guardado</button> Sube otro si quieres sustituirlo.</p>' : '') +
+      '<input type="file" id="edTrFile" accept="image/jpeg,image/png,image/webp,application/pdf"></div></div></details>';
+  }
+  function trWire(m, b) {
+    var q = function (id) { return m.querySelector('#' + id); };
+    function ui() { var on = q('edPm').value === 'transfer'; [].forEach.call(m.querySelectorAll('[data-tr]'), function (e) { e.hidden = !on; }); q('edTrReq').hidden = !(on && q('edTrSt').value === 'paid'); }
+    q('edPm').addEventListener('change', ui); q('edTrSt').addEventListener('change', ui); ui();
+    if (q('edTrView')) q('edTrView').addEventListener('click', function () { trOpen(b.transfer_proof).catch(function (x) { var e = m.querySelector('#edMsg'); if (e) { e.textContent = x.message; e.hidden = false; } }); });
+  }
+  // Valida y guarda; devuelve una promesa (o null si no hay cambios). Lanza un error con mensaje si falta el comprobante.
+  function trSave(m, b) {
+    var q = function (id) { return m.querySelector('#' + id); }, pm = q('edPm').value;
+    if (pm !== 'transfer') return b.pay_method === 'transfer' ? patch(b.id, { pay_method: '', transfer_status: 'pending', transfer_cents: null, transfer_proof: '', transfer_paid_at: null }) : null;
+    var st = q('edTrSt').value, file = q('edTrFile').files[0], amt = q('edTrAmt').value;
+    if (amt === '' || !(+amt >= 0)) throw new Error('Indica el importe de la transferencia.');
+    if (st === 'paid' && !file && !b.transfer_proof) throw new Error('Para marcar la transferencia como pagada hay que adjuntar el comprobante de pago.');
+    return (file ? trUpload(file, b.id) : Promise.resolve(b.transfer_proof)).then(function (path) {
+      return patch(b.id, { pay_method: 'transfer', transfer_status: st, transfer_cents: Math.round(+amt * 100), transfer_proof: path || '', transfer_paid_at: st === 'paid' ? (b.transfer_paid_at || new Date().toISOString()) : null });
+    });
+  }
   function modal(html, onReady) {
     var m = document.createElement('div'); m.className = 'ad-modal'; m.innerHTML = '<div class="ad-sheet">' + html + '</div>';
     document.body.appendChild(m);
@@ -1105,8 +1150,10 @@
       '<label class="mt-pick"><input type="radio" name="nwAuto" value="manual"' + (pre.table ? ' checked' : '') + '> Elegir mesas</label><div class="mt-picks" id="nwPicks"></div></div>' +
       '<details class="mt-more"><summary>Tipo de reserva y cobro</summary><div class="ad-grid">' +
       '<label class="ad-field"><span>Tipo de reserva</span><select id="nwKind"><option value="normal">Reserva normal</option><option value="walkin">Walk-in (sin reserva previa)</option><option value="group">Grupo</option><option value="private">Comida / evento privado</option></select></label>' +
-      '<label class="ad-field"><span>Garantía / cobro</span><select id="nwType"><option value="free">Gratuita (queda confirmada al momento)</option><option value="card">Con tarjeta de garantía (no se cobra; se le envía un email)</option><option value="deposit">Con cobro / fianza (se le envía un email para pagar)</option></select></label>' +
+      '<label class="ad-field"><span>Garantía / cobro</span><select id="nwType"><option value="free">Gratuita (queda confirmada al momento)</option><option value="card">Con tarjeta de garantía (no se cobra; se le envía un email)</option><option value="deposit">Con cobro / fianza (se le envía un email para pagar)</option><option value="transfer">Transferencia bancaria (queda confirmada; el pago se marca aparte)</option></select></label>' +
       '<label class="ad-field" id="nwAmtRow"><span>Importe (€)</span><input type="number" id="nwAmt" min="1" step="0.5" value="20"></label>' +
+      '<label class="ad-field" id="nwTrStRow" hidden><span>Estado de la transferencia</span><select id="nwTrSt"><option value="pending">Pendiente</option><option value="paid">Pagado</option></select></label>' +
+      '<div class="ad-field full" id="nwTrFileRow" hidden><span>Comprobante de pago <b style="color:var(--red)">(obligatorio para marcar como pagado)</b></span><input type="file" id="nwTrFile" accept="image/jpeg,image/png,image/webp,application/pdf"></div>' +
       '</div><p class="ad-hint" id="nwTypeNote" style="margin:0.2rem 0 0.8rem"></p></details>' +
       '<details class="mt-more"><summary>Alergias, etiquetas y notas</summary>' +
       '<div class="ad-field"><span>Alergias, intolerancias y etiquetas</span>' + chips('nwAl', []) + '</div>' +
@@ -1133,8 +1180,9 @@
         q('nwAmt').value = z.deposit_cents > 0 ? z.deposit_cents / 100 : 20; typeUi();
       }
       function typeUi() {
-        var ty = q('nwType').value; q('nwAmtRow').hidden = ty === 'free';
+        var ty = q('nwType').value; q('nwAmtRow').hidden = ty === 'free'; q('nwTrStRow').hidden = ty !== 'transfer'; q('nwTrFileRow').hidden = !(ty === 'transfer' && q('nwTrSt').value === 'paid');
         q('nwTypeNote').textContent = ty === 'card' ? 'Se enviará un email al cliente (obligatorio) con un enlace para dar los datos de su tarjeta como garantía. No se cobra nada salvo no show o anulación tardía. La mesa se le guarda 24 h.'
+          : ty === 'transfer' ? 'La reserva queda confirmada. El cliente paga por transferencia: márcala como pendiente y, cuando llegue, cámbiala a pagada adjuntando el comprobante.'
           : ty === 'deposit' ? 'Se enviará un email al cliente (obligatorio) con un enlace para pagar el importe con tarjeta y confirmar la reserva. La mesa se le guarda 24 h.' : 'Queda confirmada ya; si pones email, se le envía la confirmación.';
       }
       function refreshPicks() {
@@ -1151,7 +1199,7 @@
       if (pre.prefill) { q('nwName').value = pre.prefill.name || ''; q('nwEmail').value = pre.prefill.email || ''; q('nwPhone').value = pre.prefill.phone || ''; q('nwParty').value = pre.prefill.party || 2; }
       ['nwTime', 'nwDate'].forEach(function (id) { q(id).addEventListener('change', function () { pickSvc(); refreshPicks(); }); });
       q('nwZone').addEventListener('change', function () { pickSvc(); depRow(); q('nwPicks').innerHTML = ''; refreshPicks(); });
-      q('nwType').addEventListener('change', typeUi);
+      q('nwType').addEventListener('change', typeUi); q('nwTrSt').addEventListener('change', typeUi);
       q('nwKind').addEventListener('change', function () { if (q('nwKind').value === 'walkin') q('nwSeated').checked = true; });
       [].forEach.call(m.querySelectorAll('input[name="nwAuto"]'), function (r) { r.addEventListener('change', refreshPicks); });
       q('nwForm').addEventListener('submit', function (ev) {
@@ -1161,18 +1209,24 @@
         var tables = manual ? [].map.call(q('nwPicks').querySelectorAll('input:checked'), function (i) { return i.value; }) : null;
         var msg = q('nwMsg'); msg.hidden = true;
         if (manual && !tables.length) { msg.textContent = 'Elige al menos una mesa o deja la asignación automática.'; msg.hidden = false; return; }
-        var ty = q('nwType').value, wantPay = ty !== 'free';
+        var ty = q('nwType').value, wantPay = ty !== 'free' && ty !== 'transfer', isTr = ty === 'transfer';
+        if (isTr) { var _a = q('nwAmt').value; if (_a === '' || !(+_a >= 0)) { msg.textContent = 'Indica el importe de la transferencia.'; msg.hidden = false; return; } if (q('nwTrSt').value === 'paid' && !q('nwTrFile').files[0]) { msg.textContent = 'Para marcar la transferencia como pagada hay que adjuntar el comprobante de pago.'; msg.hidden = false; return; } }
         if (wantPay && !q('nwEmail').value.trim()) { msg.textContent = 'Para pedir la tarjeta o el cobro hace falta el email del cliente.'; msg.hidden = false; return; }
         q('nwGo').disabled = true;
         api('rpc/dining_admin_create', { method: 'POST', body: {
           p_service: q('nwSvc').value, p_starts: at(q('nwDate').value, q('nwTime').value), p_zone: q('nwZone').value, p_party: +q('nwParty').value,
           p_name: q('nwName').value.trim(), p_email: q('nwEmail').value.trim(), p_phone: q('nwPhone').value.trim(), p_notes: q('nwNotes').value.trim(),
           p_tables: tables, p_seated: q('nwSeated').checked, p_request_payment: wantPay, p_hold_hours: 24,
-          p_mode: ty, p_amount_cents: wantPay ? Math.round((+q('nwAmt').value || 0) * 100) : null, p_duration: +q('nwDur').value || null, p_prescriber: q('nwPres').value
+          p_mode: isTr ? 'free' : ty, p_amount_cents: wantPay ? Math.round((+q('nwAmt').value || 0) * 100) : null, p_duration: +q('nwDur').value || null, p_prescriber: q('nwPres').value
         } }).then(function (r) {
           var als = picked(m, 'nwAl'), extra = {}, kd = q('nwKind').value;
           if (als.length) extra.allergy_tags = als; if (kd !== 'normal') extra.kind = kd;
-          return Object.keys(extra).length ? patch(r.id, extra).then(function () { return r; }, function () { return r; }) : r;
+          var after = Object.keys(extra).length ? patch(r.id, extra).then(function () { return r; }, function () { return r; }) : Promise.resolve(r);
+          if (!isTr) return after;
+          var file = q('nwTrFile').files[0], st = q('nwTrSt').value;
+          return after.then(function () { return file ? trUpload(file, r.id) : ''; }).then(function (path) {
+            return patch(r.id, { pay_method: 'transfer', transfer_status: st, transfer_cents: Math.round((+q('nwAmt').value || 0) * 100), transfer_proof: path || '', transfer_paid_at: st === 'paid' ? new Date().toISOString() : null });
+          }).then(function () { return r; });
         }).then(function (r) {
           m.remove(); S.date = q('nwDate').value; S.time = '';
           var word = r.status === 'pending' ? 'Reserva creada. Hemos enviado un email a ' + q('nwEmail').value.trim() + ' para que confirme la reserva con su tarjeta (' + eur(r.deposit_cents) + ').' :
@@ -1219,6 +1273,7 @@
       '</details>' : '') +
       '<details class="mt-more" id="edAppBox"><summary>Pedidos de la app</summary><div id="edApp" class="mt-log"><p class="ad-meta">Se carga al abrir.</p></div></details>' +
       '<details class="mt-more" id="edLogBox"><summary>Historial de cambios</summary><div id="edLog" class="mt-log"><p class="ad-meta">Se carga al abrir.</p></div></details>' +
+      trBlock(b) +
       '<details class="mt-more"><summary>Tipo, duración, prescriptor y gasto</summary><div class="ad-grid">' +
       '<label class="ad-field"><span>Tipo de reserva</span><select id="edKind">' + Object.keys(BK_KIND).map(function (k) { return '<option value="' + k + '"' + ((b.kind || 'normal') === k ? ' selected' : '') + '>' + BK_KIND[k] + '</option>'; }).join('') + '</select></label>' +
       '<label class="ad-field"><span>Duración de la mesa (min)</span><input type="number" id="edDur" min="15" max="600" step="5" value="' + Math.round(dur / 60000) + '"></label>' +
@@ -1286,11 +1341,13 @@
           var msg = q('edMsg'); msg.hidden = true;
           var ids = [].map.call(q('edPicks').querySelectorAll('input:checked'), function (i) { return i.value; });
           if (!ids.length) { msg.textContent = 'Elige al menos una mesa.'; msg.hidden = false; return; }
+          if (q('edPm').value === 'transfer') { var _tf = q('edTrFile').files[0], _ta = q('edTrAmt').value; if (_ta === '' || !(+_ta >= 0)) { msg.textContent = 'Indica el importe de la transferencia.'; msg.hidden = false; return; } if (q('edTrSt').value === 'paid' && !_tf && !b.transfer_proof) { msg.textContent = 'Para marcar la transferencia como pagada hay que adjuntar el comprobante de pago.'; msg.hidden = false; return; } }
           var newStart = starts(), same = new Date(newStart).getTime() === new Date(b.starts_at).getTime();
           [q('edSave'), q('edSeat')].forEach(function (x) { if (x) x.disabled = true; });
           api('rpc/dining_admin_update', { method: 'POST', body: { p_booking: b.id, p_party: +q('edParty').value, p_starts: same ? null : newStart, p_name: q('edName').value.trim(), p_phone: q('edPhone').value.trim(), p_email: q('edEmail').value.trim(), p_notes: q('edNotes').value.trim(), p_tables: ids, p_duration: +q('edDur').value || null, p_prescriber: q('edPres').value } })
             .then(function () { var sp = q('edSpend').value; var cents = sp === '' ? null : Math.round(+sp * 100); return cents !== b.spend_cents ? patch(b.id, { spend_cents: cents }) : null; })
             .then(function () { return patch(b.id, { allergy_tags: picked(m, 'edAl'), kind: q('edKind').value }); })
+            .then(function () { return trSave(m, b); })
             .then(function () {
               if (!can('tables_crm')) return null;   // sin permiso de clientes no se toca la ficha
               var key = ckey({ email: q('edEmail').value, phone: q('edPhone').value }), cur = S.notes[key] || {}, tags = (cur.tags || []).slice();
@@ -1301,6 +1358,7 @@
             .then(function () { m.remove(); S.date = q('edDate').value; return enter().then(function () { flash(seat ? 'Reserva guardada y sentada.' : 'Reserva guardada.', 'ok'); }); })
             .catch(function (x) { [q('edSave'), q('edSeat')].forEach(function (y) { if (y) y.disabled = false; }); msg.textContent = errText(x); msg.hidden = false; });
         }
+        trWire(m, b);
         q('edSave').addEventListener('click', function () { save(false); });
         if (q('edSeat')) q('edSeat').addEventListener('click', function () { save(true); });
       });
