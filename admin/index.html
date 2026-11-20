@@ -137,6 +137,7 @@
   .ad-perms label { display: inline-flex; align-items: center; gap: 0.35rem; cursor: pointer; }
   .ad-perms input { width: auto; margin: 0; }
   .ad-perms.is-grid { display: block; }
+  .ad-perms.is-notify label { display: flex; width: 100%; padding: 0.2rem 0; }
   .ad-permgroup { margin: 0.5rem 0 0.8rem; }
   .ad-permgroup > b { display: block; margin-bottom: 0.25rem; font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; opacity: 0.65; font-weight: 400; }
   .ad-permgroup label { display: flex; margin: 0.2rem 0; }
@@ -310,6 +311,12 @@
         <button class="ad-btn" type="submit" id="teamAdd">Crear y dar acceso</button>
       </form>
       </div>
+      <form class="ad-sheet-inline" id="myNotify" autocomplete="off">
+        <h2 class="ad-sub">Mis avisos por email</h2>
+        <p class="ad-meta" style="margin-bottom:0.6rem">Elige qué avisos quieres recibir en tu correo. El buzón de reservas los recibe todos; estos te llegan además a ti, en copia oculta.</p>
+        <div class="ad-perms is-grid is-notify" id="myNotifyBoxes"></div>
+        <div class="ad-bar" style="justify-content:flex-start;margin-top:0.6rem"><button class="ad-btn is-ghost" type="submit" id="myNotifySave">Guardar mis avisos</button></div>
+      </form>
       <form class="ad-sheet-inline" id="pwForm" autocomplete="off">
         <h2 class="ad-sub">Mi contraseña</h2>
         <div class="ad-bar" style="justify-content:flex-start">
@@ -579,7 +586,7 @@
       $('teamTab').textContent = myRole === 'admin' ? 'Equipo' : 'Mi cuenta';
       $('whoami').textContent = session.email;
       $('loginView').hidden = true; $('appView').hidden = false;
-      applyTabs();
+      applyTabs(); loadMyNotify();
       return loadAll();
     }).catch(function () { saveSession(null); showLogin('La sesión ha caducado. Entra de nuevo.'); });
   }
@@ -1396,6 +1403,25 @@
     crypto.getRandomValues(a); for (var i = 0; i < a.length; i++) o += chars[a[i] % chars.length];
     return o;
   }
+  // ─── Avisos por email de cada persona (los envía booking-email; columna admins.notify) ───
+  var NOTIFY = [['table_new', 'Reservas de mesa nuevas'], ['table_cancelled', 'Reservas de mesa anuladas'], ['table_changed', 'Cambios en una reserva (día, hora o personas)'], ['table_noshow', 'Clientes que no vienen (no show)'], ['table_charged', 'Penalizaciones cobradas'], ['event_paid', 'Entradas de eventos pagadas']];
+  function notifyBoxes(sel) {
+    return NOTIFY.map(function (n) { return '<label><input type="checkbox" data-nk="' + n[0] + '"' + (sel.indexOf(n[0]) !== -1 ? ' checked' : '') + '> ' + esc(n[1]) + '</label>'; }).join('');
+  }
+  function notifyPicked(wrap) { return [].map.call(wrap.querySelectorAll('input[data-nk]:checked'), function (i) { return i.dataset.nk; }); }
+  var NOTIFY_SQL = 'Para activar los avisos ejecuta antes equipo_avisos.sql en Supabase.';
+  function loadMyNotify() {
+    return api('admins?select=email,notify&email=eq.' + encodeURIComponent(String(session.email).toLowerCase())).then(function (rows) {
+      var me = (rows || [])[0] || {}; $('myNotifyBoxes').innerHTML = notifyBoxes(Array.isArray(me.notify) ? me.notify : []); $('myNotifySave').disabled = false;
+    }).catch(function () { $('myNotifyBoxes').innerHTML = '<p class="ad-meta">' + esc(NOTIFY_SQL) + '</p>'; $('myNotifySave').disabled = true; });
+  }
+  $('myNotify').addEventListener('submit', function (e) {
+    e.preventDefault(); var keys = notifyPicked($('myNotifyBoxes')); $('myNotifySave').disabled = true;
+    api('rpc/admin_set_my_notify', { method: 'POST', body: { p_keys: keys } })
+      .then(function () { flash(keys.length ? 'Avisos guardados: recibirás ' + keys.length + ' tipo(s) de aviso en tu correo.' : 'Avisos guardados: no recibirás ninguno en tu correo.', 'ok'); })
+      .catch(function (x) { flash('No se han podido guardar los avisos: ' + x.message, 'error'); })
+      .then(function () { $('myNotifySave').disabled = false; });
+  });
   function permsGrid(cur) {
     return PERMS.map(function (g) {
       return '<div class="ad-permgroup"><b>' + esc(g.group) + '</b>' + g.items.map(function (i) {
@@ -1427,19 +1453,23 @@
   }
   // Se marcan y desmarcan los permisos sin guardar nada; al terminar, un solo botón "Guardar permisos".
   $('teamList').addEventListener('change', function (ev) {
-    var box = ev.target.closest('.ad-perms input'); if (!box) return;
+    var box = ev.target.closest('.ad-perms input'); if (!box || box.dataset.nk) return;   /* los avisos por email no son permisos */
     var wrap = box.closest('.ad-perms'); fixDeps(wrap, box); permsMark(wrap);
   });
   $('teamNewTabs').innerHTML = permsGrid(['checkin']);
   $('teamNewTabs').addEventListener('change', function (ev) { var box = ev.target.closest('input'); if (box) fixDeps($('teamNewTabs'), box); });
   $('teamRole').addEventListener('change', function () { $('teamNewTabs').closest('.ad-field').hidden = $('teamRole').value === 'admin'; });
   function loadTeam() {
-    return api('rpc/admin_team', { method: 'POST', body: {} }).then(function (rows) {
+    return Promise.all([api('rpc/admin_team', { method: 'POST', body: {} }), api('admins?select=email,notify').catch(function () { return null; })]).then(function (res) {
+      var rows = res[0], nmap = {};
+      if (Array.isArray(res[1])) res[1].forEach(function (r) { nmap[String(r.email).toLowerCase()] = Array.isArray(r.notify) ? r.notify : []; });
+      (rows || []).forEach(function (p) { if (nmap[p.email.toLowerCase()]) p.notify = nmap[p.email.toLowerCase()]; else if (Array.isArray(res[1])) p.notify = []; });
       var me = String(session.email).toLowerCase();
       $('teamList').innerHTML = (rows || []).map(function (p) {
         var mine = p.email.toLowerCase() === me;
         var full = ((p.first_name || '') + ' ' + (p.last_name || '')).trim();
         return '<li class="ad-person"><div><b>' + esc(full || p.email) + '</b>' + (full ? ' <span class="ad-meta" style="display:inline">' + esc(p.email) + '</span>' : '') + (mine ? ' <span class="ad-tag">Tú</span>' : '') + ' <span class="ad-tag' + (p.role === 'admin' ? ' is-green' : '') + '">' + (p.role === 'admin' ? 'Administrador' : 'Equipo') + '</span>' +
+          (mine || !Array.isArray(p.notify) ? '' : '<details class="ad-permbox"><summary>Avisos por email (' + p.notify.length + ' de ' + NOTIFY.length + ')</summary><div class="ad-perms is-grid is-notify" data-email="' + esc(p.email) + '">' + notifyBoxes(p.notify) + '</div><div class="ad-bar" style="justify-content:flex-start;margin-top:0.4rem"><button class="ad-btn is-small" type="button" data-act="savenotify" data-email="' + esc(p.email) + '">Guardar avisos</button></div></details>') +
           '<div class="ad-meta">' + (p.has_account
             ? (p.last_sign_in ? 'Último acceso: ' + esc(fmtDate(p.last_sign_in, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })) : 'Cuenta creada, aún no ha entrado')
             : '<span class="ad-tag is-red">Sin cuenta</span> Créala con “Nueva contraseña”') + '</div>' + permsHtml(p) + '</div>' +
@@ -1472,6 +1502,13 @@
   $('teamList').addEventListener('click', function (ev) {
     var btn = ev.target.closest('button[data-email]'); if (!btn) return;
     var email = btn.dataset.email;
+    if (btn.dataset.act === 'savenotify') {
+      var nw = btn.closest('details').querySelector('.ad-perms'), nk = notifyPicked(nw); btn.disabled = true;
+      return void api('admins?email=eq.' + encodeURIComponent(email), { method: 'PATCH', body: { notify: nk } })
+        .then(function () { btn.closest('details').querySelector('summary').textContent = 'Avisos por email (' + nk.length + ' de ' + NOTIFY.length + ')'; flash('Avisos de ' + email + ' guardados (' + nk.length + ' de ' + NOTIFY.length + ').', 'ok'); })
+        .catch(function (x) { flash('No se han podido guardar los avisos: ' + x.message, 'error'); })
+        .then(function () { btn.disabled = false; });
+    }
     if (btn.dataset.act === 'saveperms' || btn.dataset.act === 'resetperms') {
       var box = btn.closest('details'), wrap = box.querySelector('.ad-perms');
       if (btn.dataset.act === 'resetperms') {
