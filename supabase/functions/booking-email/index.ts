@@ -25,10 +25,20 @@ const FROM = Deno.env.get("MAIL_FROM") ?? "no-reply@roce.es"; // debe ser un rem
 const REPLY_TO = Deno.env.get("MAIL_REPLY_TO") ?? "reservas@roce.es";
 // Destino de los avisos al equipo (nueva reserva, entrada, anulación…). Aparte de REPLY_TO a propósito: llegan siempre a reservas@roce.es aunque la respuesta de los clientes vaya a otro buzón.
 const STAFF_EMAIL = Deno.env.get("STAFF_NOTIFY_EMAIL") ?? "reservas@roce.es";
-// Envía un aviso al equipo y deja constancia en los registros de la función si Brevo lo rechaza (antes un fallo pasaba en silencio).
-async function mailStaff(subject: string, htmlContent: string): Promise<void> {
+// Personas del equipo que han marcado este aviso en RoceCover → Equipo (columna admins.notify). Reciben copia oculta; el buzón de reservas los recibe todos.
+async function staffRecipients(key: string): Promise<string[]> {
+  if (!key) return [];
   try {
-    const r = await fetch("https://api.brevo.com/v3/smtp/email", { method: "POST", headers: brevoHeaders, body: JSON.stringify({ sender: { name: "ROCE", email: FROM }, to: [{ email: STAFF_EMAIL }], subject, htmlContent }) });
+    const { data } = await serviceClient().from("admins").select("email").contains("notify", [key]);
+    const base = STAFF_EMAIL.toLowerCase();
+    return [...new Set((data ?? []).map((r: any) => String(r.email ?? "").trim().toLowerCase()).filter((e: string) => e && e !== base))];
+  } catch (e) { console.error("no se han podido leer los avisos del equipo:", String(e)); return []; }
+}
+// Envía un aviso al equipo y deja constancia en los registros de la función si Brevo lo rechaza (antes un fallo pasaba en silencio).
+async function mailStaff(subject: string, htmlContent: string, key = ""): Promise<void> {
+  try {
+    const bcc = (await staffRecipients(key)).map((email) => ({ email }));
+    const r = await fetch("https://api.brevo.com/v3/smtp/email", { method: "POST", headers: brevoHeaders, body: JSON.stringify({ sender: { name: "ROCE", email: FROM }, to: [{ email: STAFF_EMAIL }], ...(bcc.length ? { bcc } : {}), subject, htmlContent }) });
     if (!r.ok) console.error("aviso al equipo no enviado:", r.status, (await r.text()).slice(0, 300), "·", subject);
   } catch (e) { console.error("aviso al equipo no enviado:", String(e), "·", subject); }
 }
@@ -491,7 +501,7 @@ async function notifyStaff(b: any): Promise<void> {
   const when = ev ? new Intl.DateTimeFormat("es-ES", { timeZone: "Europe/Madrid", weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" }).format(new Date(ev.starts_at)) : "";
   const total = (b.total_cents / 100).toLocaleString("es-ES", { style: "currency", currency: "EUR" });
   await mailStaff(`Reserva pagada · ${ev?.title_es ?? b.event_id} (${b.ref})`, `<p><b>${esc(String(ev?.title_es ?? b.event_id))}</b> · ${esc(when)}</p>
-<p>${esc(b.name)} · ${esc(b.email)} · ${esc(b.phone)}<br>${b.qty} entrada(s) · ${esc(total)} · cobrado con tarjeta<br>Ref. ${esc(b.ref)}</p>`);
+<p>${esc(b.name)} · ${esc(b.email)} · ${esc(b.phone)}<br>${b.qty} entrada(s) · ${esc(total)} · cobrado con tarjeta<br>Ref. ${esc(b.ref)}</p>`, "event_paid");
 }
 
 // ─── Pedidos de la app (tabla app_orders) ────────────────────────────────
@@ -706,9 +716,9 @@ async function syncTableContact(n: any, oldEmail?: string): Promise<void> {
 }
 
 // Aviso interno de cada reserva de mesa nueva o anulada (para el equipo).
-async function notifyTableStaff(b: any, what: string): Promise<void> {
+async function notifyTableStaff(b: any, what: string, key = "table_new", extra = ""): Promise<void> {
   const when = new Intl.DateTimeFormat("es-ES", { timeZone: "Europe/Madrid", weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" }).format(new Date(b.starts_at));
-  await mailStaff(`${what} · mesa ${b.ambience === "night" ? "Restaurant & Cocktails" : "Coffee, Bakery & Kitchen"} · ${when} (${b.ref})`, `<p><b>${esc(what)}</b> · ${esc(when)} · ${b.party} persona(s)</p><p>${esc(b.name)} · ${esc(b.email)} · ${esc(b.phone)}<br>${b.notes ? esc(b.notes) + "<br>" : ""}Ref. ${esc(b.ref)}${b.deposit_cents > 0 ? " · fianza " + (b.deposit_cents / 100) + " € (" + esc(b.payment_status) + ")" : ""}</p>`);
+  await mailStaff(`${what} · mesa ${b.ambience === "night" ? "Restaurant & Cocktails" : "Coffee, Bakery & Kitchen"} · ${when} (${b.ref})`, `<p><b>${esc(what)}</b> · ${esc(when)} · ${b.party} persona(s)</p><p>${esc(b.name)} · ${esc(b.email)} · ${esc(b.phone)}<br>${b.notes ? esc(b.notes) + "<br>" : ""}Ref. ${esc(b.ref)}${b.deposit_cents > 0 ? " · fianza " + (b.deposit_cents / 100) + " € (" + esc(b.payment_status) + ")" : ""}</p>${extra}`, key);
 }
 
 // ─── Lista de espera (tabla dining_waitlist) ─────────────────────────────
@@ -795,6 +805,12 @@ async function handleTableBooking(p: any): Promise<Response> {
     return new Response("awaiting payment");
   }
   if (p.type === "UPDATE") {
+    // Avisos opcionales del equipo (se eligen en RoceCover → Equipo): no vino y cambios de día, hora o personas.
+    if (n.status === "no_show" && o.status !== "no_show") await notifyTableStaff(n, "Reserva de mesa: no vino", "table_noshow");
+    if (n.status === o.status && ["confirmed", "pending"].includes(n.status) && !String(n.notes ?? "").startsWith("Pedido de la app") && (n.starts_at !== o.starts_at || n.party !== o.party)) {
+      const fm = (iso: string) => new Intl.DateTimeFormat("es-ES", { timeZone: "Europe/Madrid", weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" }).format(new Date(iso));
+      await notifyTableStaff(n, "Reserva de mesa modificada", "table_changed", `<p>Antes: ${esc(fm(o.starts_at))} · ${esc(String(o.party))} persona(s)<br>Ahora: ${esc(fm(n.starts_at))} · ${esc(String(n.party))} persona(s)</p>`);
+    }
     if (n.payment_status === "paid" && o.payment_status !== "paid" && n.status === "confirmed") {
       await notifyTableStaff(n, "Reserva de mesa (fianza pagada)");
       return await sendTableEmail("ok", n);
@@ -804,7 +820,7 @@ async function handleTableBooking(p: any): Promise<Response> {
       return await sendTableEmail("ok", n);
     }
     if (n.payment_status === "charged" && o.payment_status !== "charged") {
-      await notifyTableStaff(n, "Penalización cobrada");
+      await notifyTableStaff(n, "Penalización cobrada", "table_charged");
       return await sendTableEmail("charge", n);
     }
     // Anulada con poca antelación y tarjeta de garantía: se cobra la penalización sin esperar a nadie
@@ -820,7 +836,7 @@ async function handleTableBooking(p: any): Promise<Response> {
     if (n.status === "cancelled" && o.status !== "cancelled" && ["confirmed", "pending"].includes(o.status)) {
       // Solo se avisa si ya se había confirmado o se había pagado algo: una pendiente que nunca se pagó no merece email.
       if (o.status === "confirmed" || o.payment_status === "paid" || o.payment_status === "guaranteed") {
-        await notifyTableStaff(n, "Reserva de mesa anulada");
+        await notifyTableStaff(n, "Reserva de mesa anulada", "table_cancelled");
         // Anulada y devuelta a la vez (desde el panel): un solo email, el de la devolución.
         return await sendTableEmail(n.payment_status === "refunded" ? "refund" : "cancel", n);
       }
