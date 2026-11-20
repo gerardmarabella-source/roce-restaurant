@@ -17,6 +17,7 @@ const json = (o: unknown, status = 200) => new Response(JSON.stringify(o), { sta
 const EXTRA_IDS: Record<string, number> = {
   "Bacon": 51, "Aguacate": 52, "Salmón": 53, "Huevo": 54, "Jamón": 55,
   "Fruta": 56, "Granola": 57, "Crema de cacahuete": 58,
+  "Red Bull": 245,   // suplemento de las copas de spirits (+1,50 €)
   "Iced": 78, "Doble carga": 94, "Vegetal barista": 95, "Con hielo": 96, "Descafeinado": 77,   // complementos de los cafés
 };
 // En Ágora el precio de un extra es el «precio como complemento» (AddinPrice), que puede ser distinto del precio normal.
@@ -27,9 +28,17 @@ const addinCents = (p: any): number => {
 
 // Vinos: qué formato de venta de Ágora se usa según la hoja de la app (la copa y la botella de un mismo vino son formatos del mismo producto, cada uno con su precio).
 // Un vino que solo tiene el formato base (sin copa/botella) se vende por el base.
+// Spirits: cada línea de la app es una copa o un chupito; el chupito se llama «… · Chupito». Si el producto no tiene esos formatos se vende por el base.
 const FORMAT_PREF: Record<string, string> = { "Por copas": "COPA", "Blancos": "BOTELLA", "Rosado": "BOTELLA", "Espumosos": "BOTELLA", "Tintos": "BOTELLA" };
-const formatFor = (p: any, itemKeyOrCat: string): any | null => {
-  const pref = FORMAT_PREF[String(itemKeyOrCat).split("|")[0]];
+const SPIRIT_CATS = ["Ginebras", "Vodka", "Licores", "Whisky", "Ron", "Otros chupitos"];
+const prefFor = (key: string): string | null => {
+  const i = String(key).indexOf("|"), cat = i < 0 ? String(key) : String(key).slice(0, i), name = i < 0 ? "" : String(key).slice(i + 1);
+  if (FORMAT_PREF[cat]) return FORMAT_PREF[cat];
+  if (SPIRIT_CATS.includes(cat)) return name.endsWith(" · Chupito") ? "CHUPITO" : "COPA";
+  return null;
+};
+const formatFor = (p: any, itemKey: string): any | null => {
+  const pref = prefFor(itemKey);
   if (!pref) return null;
   return (p?.AdditionalSaleFormats ?? []).find((f: any) => !f.DeletionDate && String(f.Name).toUpperCase().startsWith(pref)) ?? null;
 };
@@ -333,8 +342,8 @@ async function syncPrices(db: any, base: string, token: string) {
   for (const row of rows ?? []) {
     const upd: Record<string, unknown> = {};
     let c = row.agora_id != null ? price.get(row.agora_id) : undefined;
-    if (row.agora_id != null && FORMAT_PREF[row.cat]) {
-      const fm = formatFor(prodById.get(row.agora_id), row.cat);
+    if (row.agora_id != null && prefFor(row.key)) {
+      const fm = formatFor(prodById.get(row.agora_id), row.key);
       if (fm) { const fc = formatCents(fm); c = fc > 0 ? fc : undefined; }
     }
     if (c != null && c !== row.price_cents) { upd.price_cents = c; changes.push(`${row.key}: ${row.price_cents}→${c}`); }
