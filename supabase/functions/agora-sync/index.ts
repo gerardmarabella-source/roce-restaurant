@@ -25,6 +25,19 @@ const addinCents = (p: any): number => {
   return Math.round(Number(pr?.AddinPrice ?? pr?.MainPrice ?? 0) * 100);
 };
 
+// Vinos: qué formato de venta de Ágora se usa según la hoja de la app (la copa y la botella de un mismo vino son formatos del mismo producto, cada uno con su precio).
+// Un vino que solo tiene el formato base (sin copa/botella) se vende por el base.
+const FORMAT_PREF: Record<string, string> = { "Por copas": "COPA", "Blancos": "BOTELLA", "Rosado": "BOTELLA", "Espumosos": "BOTELLA", "Tintos": "BOTELLA" };
+const formatFor = (p: any, itemKeyOrCat: string): any | null => {
+  const pref = FORMAT_PREF[String(itemKeyOrCat).split("|")[0]];
+  if (!pref) return null;
+  return (p?.AdditionalSaleFormats ?? []).find((f: any) => !f.DeletionDate && String(f.Name).toUpperCase().startsWith(pref)) ?? null;
+};
+const formatCents = (f: any): number => {
+  const pr = (f?.Prices ?? []).find((x: any) => x.PriceListId === 1) ?? (f?.Prices ?? [])[0];
+  return Math.round(Number(pr?.MainPrice ?? 0) * 100);
+};
+
 // Datos fijos de Ágora de ROCE (centro de venta «App», usuario ROCE, forma de pago «App Online», TPV WEB).
 const SALE_CENTER = { Id: 2, Name: "App" };
 const USER = { Id: 2, Name: "ROCE" };
@@ -66,6 +79,7 @@ function buildOrder(serie: string, ord: any, items: any[], agoraOf: Map<string, 
     const aid = agoraOf.get(it.item_key);
     if (!aid) throw new Error(`«${it.name}» (${it.item_key}) no tiene producto en Ágora`);
     const { p, v } = info(aid);
+    const fm = formatFor(p, it.item_key);   // copa/botella (solo vinos); null = formato base
     const addins = (Array.isArray(it.extras) ? it.extras : []).map((name: string) => {
       const eid = EXTRA_IDS[name]; if (!eid) throw new Error(`extra «${name}» sin producto en Ágora`);
       const e = info(eid);
@@ -77,7 +91,7 @@ function buildOrder(serie: string, ord: any, items: any[], agoraOf: Map<string, 
     const notes = [it.variant, it.note].filter((x: string) => x && x.trim()).join(" · ").slice(0, 250);
     return {
       Index: idx, Type: "Standard", CreationDate: now, ParentIndex: null, MenuGroup: "",
-      ProductId: aid, ProductName: p.Name, SaleFormatId: p.BaseSaleFormatId, SaleFormatName: p.Name, SaleFormatRatio: 1.0, MainBarcode: "",
+      ProductId: aid, ProductName: p.Name, SaleFormatId: fm ? fm.Id : p.BaseSaleFormatId, SaleFormatName: fm ? fm.Name : p.Name, SaleFormatRatio: fm ? Number(fm.Ratio) : 1.0, MainBarcode: "",
       ProductPrice: money(base), Quantity: it.qty, VatId: p.VatId, VatRate: v.VatRate, SurchargeRate: v.SurchargeRate, UserId: USER.Id,
       UnitPrice: money(it.unit_cents), DiscountRate: 0.0, CashDiscount: 0.0, TotalAmount: money(it.unit_cents * it.qty),
       UnitCostPrice: 0.0, TotalCostPrice: 0.0, ProductCostPrice: 0.0, OfferId: null, OfferCode: "", RemovedIngredients: [],
@@ -281,6 +295,7 @@ async function syncPrices(db: any, base: string, token: string) {
   try { products = (await agoraGet(base, token, "Products")).Products ?? []; }
   catch (e) { return await fail((e as Error).message); }
   if (!products.length) return await fail("Ágora no devolvió productos");
+  const prodById = new Map<number, any>(products.map((p: any): [number, any] => [p.Id, p]));
 
   // Precio de venta principal en la tarifa 1 («General», IVA incluido). Se ignoran precios no válidos (≤ 0).
   const price = new Map<number, number>(), addin = new Map<number, number>();
@@ -317,7 +332,11 @@ async function syncPrices(db: any, base: string, token: string) {
   let changed = 0; const changes: string[] = [];
   for (const row of rows ?? []) {
     const upd: Record<string, unknown> = {};
-    const c = row.agora_id != null ? price.get(row.agora_id) : undefined;
+    let c = row.agora_id != null ? price.get(row.agora_id) : undefined;
+    if (row.agora_id != null && FORMAT_PREF[row.cat]) {
+      const fm = formatFor(prodById.get(row.agora_id), row.cat);
+      if (fm) { const fc = formatCents(fm); c = fc > 0 ? fc : undefined; }
+    }
     if (c != null && c !== row.price_cents) { upd.price_cents = c; changes.push(`${row.key}: ${row.price_cents}→${c}`); }
     if (Array.isArray(row.extras) && row.extras.length) {
       let ex = false;
