@@ -45,8 +45,8 @@
       wl_err: 'No hemos podido apuntarte. Revisa el nombre y el email.', wl_close: 'Cerrar', alt_h: 'Prueba con…', alt_days: 'Otros días con mesa', alt_space: 'Ese día sí hay mesa en {space}',
       alt_from: 'desde las {t}', alt_wait: 'Si prefieres este día, apúntate a la lista de espera.',
       card_h: 'Garantía con tarjeta', card_free: 'No se cobra nada ahora',
-      card_note: 'Para confirmar la reserva te pediremos los datos de una tarjeta como garantía. Si no te presentas o anulas con menos de {h} h de antelación, se cobrarán {m} automáticamente a esa tarjeta.',
-      card_consent: 'Autorizo a ROCE a cobrar automáticamente {m} a mi tarjeta si no me presento o anulo con menos de {h} h de antelación',
+      card_note: 'Para confirmar la reserva te pediremos los datos de una tarjeta como garantía. Si no te presentas o anulas con menos de {h} h de antelación, se cobrarán {m} por persona automáticamente a esa tarjeta.',
+      card_consent: 'Autorizo a ROCE a cobrar automáticamente {m} por persona a mi tarjeta si no me presento o anulo con menos de {h} h de antelación',
       go_card: 'Continuar y dar la tarjeta', e_card: 'Debes autorizar la garantía con tarjeta.', day_notice: 'Aviso'
     },
     en: {
@@ -80,8 +80,8 @@
       wl_err: "We couldn't add you. Please check your name and email.", wl_close: 'Close', alt_h: 'Try…', alt_days: 'Other days with tables', alt_space: 'That day there is a table at {space}',
       alt_from: 'from {t}', alt_wait: 'If you prefer this day, join the waiting list.',
       card_h: 'Card guarantee', card_free: 'Nothing is charged now',
-      card_note: "To confirm the booking we will ask for your card details as a guarantee. If you don't show up or cancel less than {h} h in advance, {m} will be charged automatically to that card.",
-      card_consent: "I authorise ROCE to automatically charge {m} to my card if I don't show up or cancel less than {h} h in advance",
+      card_note: "To confirm the booking we will ask for your card details as a guarantee. If you don't show up or cancel less than {h} h in advance, {m} per person will be charged automatically to that card.",
+      card_consent: "I authorise ROCE to automatically charge {m} per person to my card if I don't show up or cancel less than {h} h in advance",
       go_card: 'Continue and enter card', e_card: 'You must authorise the card guarantee.', day_notice: 'Notice'
     }
   };
@@ -263,7 +263,7 @@
   }
   function formHtml() {
     var c = st.chosen; if (!c) return '';
-    var dep = c.o_deposit_cents, hrs = c.o_free_hours, card = c.o_payment_mode === 'card' && dep > 0;
+    var dep = c.o_deposit_cents, hrs = c.o_free_hours, card = c.o_payment_mode === 'card' && dep > 0, pp = 2000;   // en el bloqueo con tarjeta se enseña un texto fijo de 20 € por persona, no el total (que da sensación de pagar mucho)
     var sum = t('summary', { date: dateLabel(st.date), time: c.o_time, party: partyLabel(st.party) });
     var keep = (document.getElementById('mzForm') ? {} : {});
     return '<form class="mz-form" id="mzForm" novalidate><h3 class="mz-h">' + esc(t('form_h')) + '</h3>' +
@@ -279,8 +279,8 @@
         }).join('') + '</div><p class="mz-al-hint">' + esc(t('al_hint')) + '</p></div></div>' +
       '<textarea class="mz-input" name="notes" rows="1" placeholder="' + esc(t('notes')) + '">' + esc(st.f_notes || '') + '</textarea>' +
       infoHtml(c) +
-      (dep > 0 ? '<p class="mz-deposit">' + esc(card ? t('card_note', { m: money(dep), h: hrs }) : t('deposit_note', { m: money(dep), h: hrs })) + '</p>' : '') +
-      (card ? '<label class="mz-check"><input type="checkbox" name="cardok"' + (st.f_cardok ? ' checked' : '') + '><span>' + esc(t('card_consent', { m: money(dep), h: hrs })) + '</span></label>' : '') +
+      (dep > 0 ? '<p class="mz-deposit">' + esc(card ? t('card_note', { m: money(pp), h: hrs }) : t('deposit_note', { m: money(dep), h: hrs })) + '</p>' : '') +
+      (card ? '<label class="mz-check"><input type="checkbox" name="cardok"' + (st.f_cardok ? ' checked' : '') + '><span>' + esc(t('card_consent', { m: money(pp), h: hrs })) + '</span></label>' : '') +
       '<label class="mz-check"><input type="checkbox" name="consent"' + (st.f_consent ? ' checked' : '') + '><span>' + t('consent') + '</span></label>' +
       '<label class="mz-check"><input type="checkbox" name="marketing"' + (st.f_marketing ? ' checked' : '') + '><span>' + esc(t('marketing')) + '</span></label>' +
       '<p class="mz-error" id="mzError"' + (st.error ? '' : ' hidden') + '>' + esc(st.error) + '</p>' +
