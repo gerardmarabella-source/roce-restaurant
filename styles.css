@@ -1,6 +1,6 @@
 @font-face {
   font-family: "Helvetica Neue Web";
-  src: url("/assets/fonts/HelveticaNeue-Regular.woff2") format("woff2");
+  src: url("/assets/fonts/HelveticaNeue-Regular.woff2?v=2") format("woff2");
   font-weight: 400;
   font-style: normal;
   font-display: swap;
@@ -10,7 +10,7 @@
      sobre var(--display) forzaría un negrita sintético (borroso) del
      regular en vez de usar el trazo real de Helvetica Neue Bold. */
   font-family: "Helvetica Neue Web";
-  src: url("/assets/fonts/HelveticaNeue-Bold.woff2") format("woff2");
+  src: url("/assets/fonts/HelveticaNeue-Bold.woff2?v=2") format("woff2");
   font-weight: 700;
   font-style: normal;
   font-display: swap;
@@ -25,7 +25,7 @@
 
   /* Tipografía de marca: Helvetica Neue real (la fuente que usa el negocio). */
   --display: "Helvetica Neue Web", "Helvetica Neue", Arial, sans-serif;
-  --body: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  --body: "Helvetica Neue Web", "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
