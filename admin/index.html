@@ -206,6 +206,18 @@
     <label class="ad-field"><span>Email</span><input type="email" id="lEmail" autocomplete="username" required></label>
     <label class="ad-field"><span>Contraseña</span><input type="password" id="lPass" autocomplete="current-password" required></label>
     <button class="ad-btn" type="submit" style="width:100%">Entrar</button>
+    <p style="margin-top:1rem;text-align:center"><button type="button" id="forgot" style="background:none;border:0;padding:0;font:inherit;font-size:0.85rem;text-decoration:underline;cursor:pointer;color:inherit">He olvidado mi contraseña</button></p>
+  </form>
+</div>
+
+<!-- Contraseña nueva (llega desde el enlace del email de recuperación) -->
+<div id="resetView" hidden>
+  <form class="ad-login" id="resetForm">
+    <h1>Contraseña<br>nueva</h1>
+    <p class="ad-msg is-error" id="resetMsg" hidden></p>
+    <label class="ad-field"><span>Contraseña nueva (mínimo 8 caracteres)</span><input type="password" id="rNew" autocomplete="new-password" minlength="8" required></label>
+    <label class="ad-field"><span>Repítela</span><input type="password" id="rNew2" autocomplete="new-password" minlength="8" required></label>
+    <button class="ad-btn" type="submit" id="rSave" style="width:100%">Guardar y entrar</button>
   </form>
 </div>
 
@@ -493,7 +505,7 @@
 
   // ─── Entrar / salir ─────────────────────────────────────────────────
   function showLogin(msg) {
-    $('appView').hidden = true; $('loginView').hidden = false;
+    $('appView').hidden = true; $('resetView').hidden = true; $('loginView').hidden = false;
     var m = $('loginMsg'); m.hidden = !msg; m.textContent = msg || '';
   }
   $('loginForm').addEventListener('submit', function (e) {
@@ -503,6 +515,34 @@
       .catch(function () { showLogin('Email o contraseña incorrectos.'); });
   });
   $('logout').addEventListener('click', function () { saveSession(null); showLogin(''); });
+
+  // Recuperar la contraseña: se pide el enlace por email y, al abrirlo, se llega aquí con una sesión temporal para elegir la nueva.
+  $('forgot').addEventListener('click', function () {
+    var em = $('lEmail').value.trim();
+    if (!em) { showLogin('Escribe tu email arriba y vuelve a pulsar «He olvidado mi contraseña».'); $('lEmail').focus(); return; }
+    $('forgot').disabled = true;
+    auth('recover?redirect_to=' + encodeURIComponent(location.origin + '/admin/'), { email: em })
+      .then(function () { showLogin('Si ese email tiene cuenta, te hemos enviado un enlace para cambiar la contraseña. Mira también el spam.'); $('loginMsg').classList.remove('is-error'); })
+      .catch(function (x) { showLogin('No se ha podido enviar el enlace: ' + x.message); $('loginMsg').classList.add('is-error'); })
+      .then(function () { $('forgot').disabled = false; });
+  });
+  var resetTok = null;
+  function showReset(msg) { $('appView').hidden = true; $('loginView').hidden = true; $('resetView').hidden = false; var m = $('resetMsg'); m.hidden = !msg; m.textContent = msg || ''; }
+  $('resetForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var a = $('rNew').value, b = $('rNew2').value;
+    if (a.length < 8) { showReset('La contraseña debe tener al menos 8 caracteres.'); return; }
+    if (a !== b) { showReset('Las dos contraseñas no coinciden.'); return; }
+    $('rSave').disabled = true;
+    fetch(cfg.url + '/auth/v1/user', { method: 'PUT', headers: { apikey: cfg.anonKey, Authorization: 'Bearer ' + resetTok.access_token, 'Content-Type': 'application/json' }, body: JSON.stringify({ password: a }) })
+      .then(function (r) { return r.json().then(function (d) { if (!r.ok) throw new Error(d.msg || d.message || d.error_description || 'error'); return d; }); })
+      .then(function (u) {
+        saveSession({ access_token: resetTok.access_token, refresh_token: resetTok.refresh_token, expires_at: resetTok.expires_at, email: u.email || '' });
+        resetTok = null; $('resetView').hidden = true; return start();
+      })
+      .catch(function (x) { showReset('No se ha podido guardar: ' + x.message); })
+      .then(function () { $('rSave').disabled = false; });
+  });
 
   // Pestañas que puede usar esta cuenta (las define un administrador en Equipo). Equipo/"Mi cuenta" siempre se ve.
   // Permisos: las cinco pestañas (events, bookings, checkin, lists, tables) y, dentro de cada una, permisos de detalle.
@@ -1504,7 +1544,15 @@
   document.addEventListener('visibilitychange', function () { if (!document.hidden && Date.now() - lastRefresh >= REFRESH_MS) autoRefresh(); });
 
   // ─── Arranque ───────────────────────────────────────────────────────
-  if (session && session.access_token) start(); else showLogin('');
+  var hp = new URLSearchParams((location.hash || '').replace(/^#/, ''));
+  if (hp.get('type') === 'recovery' && hp.get('access_token')) {
+    resetTok = { access_token: hp.get('access_token'), refresh_token: hp.get('refresh_token') || '', expires_at: Date.now() + ((+hp.get('expires_in') || 3600) - 60) * 1000 };
+    try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
+    showReset('');
+  } else if (hp.get('error_code') || hp.get('error')) {
+    try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
+    showLogin(hp.get('error_code') === 'otp_expired' ? 'El enlace ha caducado o ya se usó. Pide otro con «He olvidado mi contraseña».' : 'No se ha podido abrir el enlace. Pide otro con «He olvidado mi contraseña».');
+  } else if (session && session.access_token) start(); else showLogin('');
   window.ROCE_ADMIN = { can: can, api: api, flash: flash, esc: esc, $: $, madridToISO: madridToISO, toInputValue: toInputValue, fmtDate: fmtDate, money: money, cfg: cfg, TZ: TZ, session: function () { return session; } };
 })();
 </script>
