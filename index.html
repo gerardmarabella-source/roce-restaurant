@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+<!-- Pantalla de entrada (solo la primera vez que se abre una página de ROCE en este dispositivo): fondo negro con el logo centrado hasta que carga la web. -->
+<style id="roceSplashCss">html.splash-on::before{content:"";position:fixed;inset:0;z-index:2147483647;background:#0a0a0a url(/assets/logo/roce-horizontal-white.svg) center / min(56vw,280px) auto no-repeat;transition:opacity .5s ease}html.splash-out::before{opacity:0;pointer-events:none}html.splash-on{overflow:hidden}@media (prefers-reduced-motion:reduce){html.splash-on::before{transition:none}}</style>
+<script>(function(){var d=document.documentElement;try{if(localStorage.getItem('roce_splash'))return;localStorage.setItem('roce_splash','1')}catch(e){return}d.classList.add('splash-on');var t0=Date.now(),done=0;function out(){if(done)return;done=1;setTimeout(function(){d.classList.add('splash-out');setTimeout(function(){d.classList.remove('splash-on','splash-out')},550)},Math.max(0,700-(Date.now()-t0)))}if(document.readyState==='complete')out();else addEventListener('load',out);setTimeout(out,3500)})();</script>
 <link rel="preconnect" href="https://lhwmtknmjmhktpkcngyz.supabase.co" crossorigin>
 <meta charset="UTF-8">
 <meta name="facebook-domain-verification" content="97fpm62p3em57kqqspxh7niyrgvcj8" />
