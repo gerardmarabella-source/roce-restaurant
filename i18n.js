@@ -74,7 +74,7 @@
     // Desplegable de Reservas (home)
     menu_alquiler_link: { es: 'Alquila el espacio', en: 'Rent the space' },
     menu_eventos_title: { es: 'Eventos', en: 'Events' },
-    cta_reservar_mesa: { es: 'Reservar mesa', en: 'Book a table' },
+    cta_reservar_mesa: { es: 'Reservar', en: 'Book' },
     cta_carta: { es: 'Carta', en: 'Menu' },
 
     // Newsletter (widget compartido, usado en home)
