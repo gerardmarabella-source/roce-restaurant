@@ -113,7 +113,7 @@
     document.documentElement.setAttribute('data-mode', hour >= 8 && hour < 20 ? 'day' : 'night');
   })();
 </script>
-<link rel="stylesheet" href="/styles.css?v=74">
+<link rel="stylesheet" href="/styles.css?v=75">
 <style>
   /* Portada minimal: todo cabe SIEMPRE en una pantalla (sin scroll): cabecera,
      frase enorme en zigzag y dos cuadrados para elegir Day (día) o
@@ -127,7 +127,8 @@
     --foot: 88px;
     --pad: 1.25rem;
     --gap: 0.75rem;
-    --avail: calc(100dvh - var(--head) - var(--foot) - 0.25rem);
+    --about-h: 3.1rem; /* línea «qué es ROCE» bajo la frase (se descuenta del alto para que todo siga cabiendo) */
+    --avail: calc(100dvh - var(--head) - var(--foot) - 0.25rem - var(--about-h));
     height: 100dvh;
     display: flex;
     flex-direction: column;
@@ -197,6 +198,9 @@
   html[data-mode="night"] .home-logo-black, html:not([data-mode="night"]) .home-logo-white { display: none; }
   .visually-hidden { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
 
+  .home-about { margin: 0; padding: 0.55rem 0 0; border-top: 1px solid currentColor; font-size: 0.82rem; line-height: 1.35; max-width: 30rem; opacity: 0.85; }
+  .home-about b { display: block; font-size: 0.66rem; letter-spacing: 0.14em; font-weight: 700; opacity: 0.7; margin-bottom: 0.15rem; }
+  @media (max-height: 680px), (min-aspect-ratio: 5/4) { .home { --about-h: 0px; } .home-about { display: none; } }
   .home-squares { display: grid; grid-template-columns: var(--sw); justify-content: center; gap: var(--gap); }
   .home-square {
     container-type: inline-size;
@@ -593,6 +597,7 @@
     </h1>
     </div>
 
+    <p class="home-about"><b data-i18n="home_about_k">QUÉ ES ROCE</b><span data-i18n="home_about">Lo que pasa cuando la gente se junta. Café y cocina de día, cócteles y música de noche.</span></p>
     <div class="home-squares">
       <a class="home-square home-square-event" id="homeEvent" href="/eventos/" hidden>
         <span class="he-live" aria-hidden="true"></span>
@@ -660,8 +665,8 @@
     <button class="cookie-accept" id="cookieAccept" data-i18n="cookie_accept">Aceptar</button>
   </div>
 </div>
-<script src="/cookies.js?v=5"></script>
-<script src="/i18n.js?v=107"></script>
+<script src="/cookies.js?v=6"></script>
+<script src="/i18n.js?v=109"></script>
 <script src="/eventos/config.js?v=2"></script>
 <script src="/eventos/events.js?v=14"></script>
 

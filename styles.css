@@ -220,12 +220,17 @@ html.cookie-open { overflow: hidden; }
 .cookie-reject:hover { background: rgba(236, 231, 221, 0.12); }
 .cookie-accept:hover { transform: translateY(-1px); }
 
-/* Compacto (páginas legales): barra abajo que no tapa el texto. */
-.cookie-banner.is-compact { inset: auto 0 0 0; padding: 0.75rem; background: transparent; -webkit-backdrop-filter: none; backdrop-filter: none; pointer-events: none; overflow: visible; }
-.cookie-banner.is-compact .cookie-card { pointer-events: auto; width: min(100%, 38rem); padding: 1rem 1.1rem; gap: 0.7rem; margin: 0 auto; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35); }
-.cookie-banner.is-compact .cookie-title { font-size: 1.2rem; }
-.cookie-banner.is-compact .cookie-text { font-size: 0.82rem; }
-.cookie-banner.is-compact .cookie-reject, .cookie-banner.is-compact .cookie-accept { min-height: 2.8rem; font-size: 0.95rem; }
+/* Barra compacta (todas las páginas): abajo, redondeada, sin título y sin bloquear la pantalla. Con el aviso +18 abierto se esconde hasta que se responde. */
+.cookie-banner.is-compact { inset: auto 0 0 0; padding: 0.7rem 0.7rem calc(0.7rem + env(safe-area-inset-bottom)); background: transparent; -webkit-backdrop-filter: none; backdrop-filter: none; pointer-events: none; overflow: visible; display: block; }
+.cookie-banner.is-compact .cookie-card { pointer-events: auto; width: min(100%, 30rem); margin: 0 auto; padding: 1rem 1rem 0.9rem; gap: 0.75rem; background: #161616; border: 0; border-radius: 20px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5); animation: cookieUp 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) 0.4s both; }
+.cookie-banner.is-compact .cookie-title { display: none; }
+.cookie-banner.is-compact .cookie-text { font-size: 0.76rem; line-height: 1.42; color: rgba(236, 231, 221, 0.85); }
+.cookie-banner.is-compact .cookie-actions { gap: 0.5rem; }
+.cookie-banner.is-compact .cookie-reject, .cookie-banner.is-compact .cookie-accept { min-height: 2.7rem; padding: 0.5rem 0.8rem; border-radius: 999px; border-width: 1.5px; font-family: var(--display); font-size: 0.85rem; letter-spacing: 0.01em; text-transform: none; font-weight: 700; }
+.cookie-banner.is-compact .cookie-reject { font-weight: 500; }
+html.age-open .cookie-banner { display: none; }
+@keyframes cookieUp { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .cookie-banner.is-compact .cookie-card { animation: none; } }
 
 /* Páginas legales (aviso legal, términos, cookies, privacidad) */
 .legal-wrapper { max-width: 760px; margin: 0 auto; padding: 8rem 1.5rem 5rem; }
