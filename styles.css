@@ -240,3 +240,28 @@ html.cookie-open { overflow: hidden; }
 .legal-wrapper table { width: 100%; border-collapse: collapse; margin: 0.75rem 0 1.5rem; font-size: 0.9rem; }
 .legal-wrapper th, .legal-wrapper td { text-align: left; padding: 0.6rem 0.75rem; border-bottom: 1px solid rgba(10, 10, 10, 0.12); vertical-align: top; }
 .legal-wrapper th { font-family: var(--display); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.03em; }
+
+/* Tablas de las páginas legales en móvil: cada fila pasa a ser un bloque (si no, la tabla ensanchaba la página y había que desplazarla de lado) */
+@media (max-width: 640px) {
+  .legal-wrapper table, .legal-wrapper tbody, .legal-wrapper tr, .legal-wrapper td { display: block; width: 100%; }
+  .legal-wrapper tr:first-child:has(th) { display: none; }
+  .legal-wrapper tr { padding: 0.8rem 0; border-bottom: 1px solid rgba(10, 10, 10, 0.12); }
+  .legal-wrapper td { padding: 0.15rem 0; border: 0; overflow-wrap: anywhere; }
+  .legal-wrapper td:first-child { font-weight: 700; }
+}
+
+/* Móvil táctil: zonas de toque más cómodas (idioma, enlaces del pie, «volver») sin cambiar cómo se ven */
+@media (pointer: coarse) {
+  .lang-switch button { min-width: 2.4rem; min-height: 2.4rem; display: inline-flex; align-items: center; justify-content: center; }
+  [class*="footer"] a, [class*="-foot"] a, .legal-back, .evd-back, .tk-back { display: inline-block; padding-top: 0.5rem; padding-bottom: 0.5rem; }
+  .teaser-footer { line-height: 1.2; }
+}
+
+/* Nombres de marca (brand.js): siempre con la letra de la marca y en mayúsculas */
+.brand-name { font-family: var(--display); text-transform: uppercase; letter-spacing: 0.01em; }
+
+/* Home: el pie tiene un alto fijo; ahí la zona de toque se amplía con un área invisible (sin cambiar el tamaño de nada) */
+@media (pointer: coarse) {
+  .home-foot a, .home-foot .lang-switch button { padding-top: 0; padding-bottom: 0; min-width: 0; min-height: 0; display: inline; position: relative; }
+  .home-foot a::after, .home-foot .lang-switch button::after { content: ""; position: absolute; inset: -10px -8px; }
+}
