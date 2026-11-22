@@ -97,7 +97,6 @@
   .ev-tag .age-badge { width: 1.35rem; height: 1.35rem; flex-shrink: 0; }
   .ev-now { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.3rem 0.65rem; background: #ffffff; color: #0a0a0a; font-family: var(--display); font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase; }
   .ev-now::before { content: ""; width: 0.5rem; height: 0.5rem; border-radius: 50%; background: #ff1f1f; animation: evLive 1.3s ease-in-out infinite; }
-  .ev-low { padding: 0.3rem 0.65rem; border: 1.5px solid #ff5a4d; background: rgba(10, 10, 10, 0.78); color: #ff8a80; font-family: var(--display); font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase; }
   .ev-sold { padding: 0.3rem 0.65rem; background: #ffffff; color: #0a0a0a; font-family: var(--display); font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase; }
   @keyframes evLive { 0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(255, 31, 31, 0.6); } 50% { opacity: 0.25; box-shadow: 0 0 0 5px rgba(255, 31, 31, 0); } }
   @media (prefers-reduced-motion: reduce) { .ev-now::before { animation: none; } .ev-card-img { transition: none; } }
@@ -157,9 +156,9 @@
   </div>
 </div>
 <script src="/cookies.js?v=6"></script>
-<script src="/i18n.js?v=110"></script>
+<script src="/i18n.js?v=111"></script>
 <script src="/eventos/config.js?v=2"></script>
-<script src="/eventos/events.js?v=14"></script>
+<script src="/eventos/events.js?v=15"></script>
 <script>
   // Los eventos están en /eventos/events.js (misma fuente que la compra de entradas).
   (function () {
@@ -180,7 +179,6 @@
     function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
     function t(k, fallback) { return (window.ROCE_I18N && window.ROCE_I18N.t(k)) || fallback; }
 
-    var LOW = /[?&]demo=low/.test(location.search) ? 9999 : 40; // «Quedan N» solo cuando quedan pocas plazas
     var AGE = '<svg class="age-badge" viewBox="0 0 100 100" role="img" aria-label="+18"><circle cx="50" cy="50" r="44" fill="#ffffff" stroke="#e5453a" stroke-width="9"/><text x="44" y="65" text-anchor="middle" font-family="\'Helvetica Neue Web\',\'Helvetica Neue\',Arial,sans-serif" font-weight="700" font-size="46" letter-spacing="-3" fill="#0a0a0a">18</text><text x="77" y="52" text-anchor="middle" font-family="\'Helvetica Neue Web\',\'Helvetica Neue\',Arial,sans-serif" font-weight="700" font-size="30" fill="#0a0a0a">+</text></svg>';
 
     function render() {
@@ -197,8 +195,7 @@
         var monthLabel = U.fmt(e, l, { month: 'long', year: 'numeric' });
         var sold = e.left <= 0;
         var tag = '<span class="ev-tag">' + (e.env === 'night' ? esc(t('ev_night', 'Noche')) + ' ' + AGE : esc(t('ev_day', 'Día'))) + '</span>';
-        var low = !sold && !U.isLive(e) && e.left > 0 && e.left <= LOW;
-        var right = sold ? '<span class="ev-sold">' + esc(t('tk_soldout', 'Agotado')) + '</span>' : (U.isLive(e) ? '<span class="ev-now">' + esc(t('choose_now', 'Ahora')) + '</span>' : (low ? '<span class="ev-low">' + esc(t('ev_left', 'Quedan {n}').replace('{n}', e.left)) + '</span>' : ''));
+        var right = sold ? '<span class="ev-sold">' + esc(t('tk_soldout', 'Agotado')) + '</span>' : (U.isLive(e) ? '<span class="ev-now">' + esc(t('choose_now', 'Ahora')) + '</span>' : '');
         var head = '';
         if (monthLabel !== lastMonth) { lastMonth = monthLabel; head = '<li class="ev-month" role="presentation">' + esc(monthLabel) + '</li>'; }
         return head + '<li><a class="ev-card ' + (e.image ? 'has-img' : 'no-img') + '" data-env="' + e.env + '" href="/eventos/evento/?e=' + encodeURIComponent(e.id) + '">' +

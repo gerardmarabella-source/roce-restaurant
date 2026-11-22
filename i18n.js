@@ -187,7 +187,7 @@
     tk_test_banner: { es: 'Modo prueba: de momento no se cobra nada.', en: 'Test mode: nothing is charged for now.' },
     tk_qty_label: { es: 'Nº de entradas', en: 'Number of tickets' },
     tk_soldout: { es: 'Agotado', en: 'Sold out' },
-    ev_left: { es: 'Quedan {n}', en: '{n} left' },
+    ev_few: { es: 'Quedan pocas unidades', en: 'Only a few left' },
     tk_each: { es: 'Precio por entrada', en: 'Price per ticket' },
     tk_total: { es: 'Total', en: 'Total' },
     tk_free: { es: 'Gratis', en: 'Free' },
