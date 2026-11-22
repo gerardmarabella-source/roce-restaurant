@@ -215,6 +215,7 @@
   .home-square-day.is-closed .home-name { opacity: 0.6; }
   .home-square-day.is-closed small { font-weight: 700; }
   .day-pill { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.3rem 0.7rem; border-radius: 999px; background: #0a0a0a; color: #fff; font-size: 0.72rem; line-height: 1; letter-spacing: 0.04em; white-space: nowrap; }
+  @media (max-width: 380px) { .day-pill .dp-n { display: none; } }
   .day-pill b { font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; }
   .home-square-day { background: var(--white); color: var(--black); border: 2px solid var(--black); }
   .home-square-night { background: var(--black); color: var(--white); border: 2px solid var(--black); }
@@ -692,7 +693,7 @@
           var mm = Number(p.minute || 0), now = hour * 60 + mm, left = now < 600 ? 600 - now : 1440 - now + 600;
           var lt = Math.floor(left / 60) ? Math.floor(left / 60) + ' h' + (left % 60 ? ' ' + (left % 60) + ' min' : '') : (left % 60) + ' min';
           sm.textContent = T(hour < 10 ? 'day_open_am' : 'day_open_pm', 'Cerrado');
-          tp.innerHTML = '<span class="day-pill"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z"/></svg><b>' + T('day_closed', 'Cerrado') + '</b> · ' + T('day_opens_in', 'Abre en {t}').replace('{t}', lt) + '</span>';
+          tp.innerHTML = '<span class="day-pill"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z"/></svg><b>' + T('day_closed', 'Cerrado') + '</b><span class="dp-n"> · ' + T('day_opens_in', 'Abre en {t}').replace('{t}', lt) + '</span></span>';
         }
       }
       renderLive();

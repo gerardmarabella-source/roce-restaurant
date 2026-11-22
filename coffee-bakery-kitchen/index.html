@@ -166,6 +166,8 @@
   .teaser-closed .tc-ic { display: grid; place-items: center; flex: none; width: 2rem; height: 2rem; border-radius: 50%; background: rgba(255, 255, 255, 0.14); }
   .teaser-closed .tc-t { display: flex; flex-direction: column; gap: 0.15rem; min-width: 0; }
   .teaser-closed .tc-t b { font-family: var(--display); font-size: 0.8rem; line-height: 1; letter-spacing: 0.1em; text-transform: uppercase; }
+  .teaser-closed .tc-t b i { font-style: normal; }
+  @media (max-width: 380px) { .teaser-closed .tc-n { display: none; } }
   .teaser-closed .tc-t span { font-size: 0.74rem; line-height: 1.15; opacity: 0.85; }
   .teaser-live-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .teaser-live-time { flex-shrink: 0; }
@@ -570,7 +572,7 @@
       var hour = Number(p.hour), now = hour * 60 + Number(p.minute), open = hour >= 10 && hour < 20;
       el.hidden = open; if (open) return;
       var left = now < 600 ? 600 - now : 1440 - now + 600, h = Math.floor(left / 60), lt = h ? h + ' h' + (left % 60 ? ' ' + (left % 60) + ' min' : '') : (left % 60) + ' min';
-      el.innerHTML = '<span class="tc-ic">' + MOON + '</span><span class="tc-t"><b>' + T('day_closed', 'Cerrado') + ' · ' + T('day_opens_in', 'Abre en {t}').replace('{t}', lt) + '</b><span>' + T(hour < 10 ? 'day_open_am' : 'day_open_pm', '') + '</span></span>';
+      el.innerHTML = '<span class="tc-ic">' + MOON + '</span><span class="tc-t"><b>' + T('day_closed', 'Cerrado') + '<i class="tc-n"> · ' + T('day_opens_in', 'Abre en {t}').replace('{t}', lt) + '</i></b><span>' + T(hour < 10 ? 'day_open_am' : 'day_open_pm', '') + '</span></span>';
     }
     paint(); setInterval(paint, 30000); document.addEventListener('roce:lang', paint);
   })();
