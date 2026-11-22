@@ -257,8 +257,8 @@ begin
     left(trim(coalesce(p_invoice_name, '')), 150), left(upper(trim(coalesce(p_invoice_tax_id, ''))), 20), left(trim(coalesce(p_invoice_address, '')), 250),
     left(upper(regexp_replace(coalesce(p_dni, ''), '[\s.\-]', '', 'g')), 20),
     ev.price_cents * p_qty,
-    -- Con pago online la plaza queda retenida (30 min) hasta que el banco confirma el cobro.
-    case when p_online and ev.price_cents > 0 then 'pending' else 'confirmed' end,
+    -- Con pago la plaza queda retenida (30 min) hasta que el banco confirma el cobro.
+    case when ev.price_cents > 0 then 'pending' else 'confirmed' end,   -- un evento de pago nunca queda confirmado sin cobro (solo lo confirma el banco)
     case when ev.price_cents = 0 then 'free' else 'pending' end
   ) returning ticket_token into v_token;
 
