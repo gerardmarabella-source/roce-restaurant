@@ -259,3 +259,9 @@ html.cookie-open { overflow: hidden; }
 
 /* Nombres de marca (brand.js): siempre con la letra de la marca y en mayúsculas */
 .brand-name { font-family: var(--display); text-transform: uppercase; letter-spacing: 0.01em; }
+
+/* Home: el pie tiene un alto fijo; ahí la zona de toque se amplía con un área invisible (sin cambiar el tamaño de nada) */
+@media (pointer: coarse) {
+  .home-foot a, .home-foot .lang-switch button { padding-top: 0; padding-bottom: 0; min-width: 0; min-height: 0; display: inline; position: relative; }
+  .home-foot a::after, .home-foot .lang-switch button::after { content: ""; position: absolute; inset: -10px -8px; }
+}
