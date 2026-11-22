@@ -211,8 +211,11 @@
     transition: transform 0.25s ease;
   }
   .home-square:hover { transform: translateY(-4px); }
-  .home-square-day.is-closed .home-name { opacity: 0.55; }
+  .home-square-day.is-closed { background: repeating-linear-gradient(135deg, #ffffff 0 11px, #efece4 11px 22px); }
+  .home-square-day.is-closed .home-name { opacity: 0.6; }
   .home-square-day.is-closed small { font-weight: 700; }
+  .day-pill { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.3rem 0.7rem; border-radius: 999px; background: #0a0a0a; color: #fff; font-size: 0.72rem; line-height: 1; letter-spacing: 0.04em; white-space: nowrap; }
+  .day-pill b { font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; }
   .home-square-day { background: var(--white); color: var(--black); border: 2px solid var(--black); }
   .home-square-night { background: var(--black); color: var(--white); border: 2px solid var(--black); }
 
@@ -663,7 +666,7 @@
   </div>
 </div>
 <script src="/cookies.js?v=6"></script>
-<script src="/i18n.js?v=113"></script>
+<script src="/i18n.js?v=114"></script>
 <script src="/eventos/config.js?v=2"></script>
 <script src="/eventos/events.js?v=15"></script>
 
@@ -674,20 +677,24 @@
   (function () {
     function sync() {
       var p = {};
-      new Intl.DateTimeFormat('en-GB', { weekday: 'short', hour: '2-digit', hourCycle: 'h23', timeZone: 'Europe/Madrid' })
+      new Intl.DateTimeFormat('en-GB', { weekday: 'short', hour: '2-digit', minute: '2-digit', hourCycle: 'h23', timeZone: 'Europe/Madrid' })
         .formatToParts(new Date()).forEach(function (x) { p[x.type] = x.value; });
       var hour = Number(p.hour);
       var isDay = hour >= 10 && hour < 20; // Day abierto
-      // Coffee, Bakery & Kitchen: fuera de 10:00-20:00 (hora de España, la veas desde donde la veas) aparece como cerrado.
-      var day = document.getElementById('chooseDay'), sm = day && day.querySelector('small');
-      if (day && sm) {
+      // Coffee, Bakery & Kitchen: fuera de 10:00-20:00 (hora de España, la veas desde donde la veas) aparece como cerrado, con cuenta atrás.
+      var day = document.getElementById('chooseDay'), sm = day && day.querySelector('small'), tp = day && day.querySelector('.home-square-top');
+      if (day && sm && tp) {
         if (!sm.dataset.open) sm.dataset.open = sm.textContent;
-        var lg = window.ROCE_I18N ? window.ROCE_I18N.getLang() : 'es';
-        var key = hour < 10 ? 'day_closed_am' : 'day_closed_pm';
+        var T = function (k, d) { return (window.ROCE_I18N && window.ROCE_I18N.t(k)) || d; };
         day.classList.toggle('is-closed', !isDay);
-        sm.textContent = isDay ? sm.dataset.open : ((window.ROCE_I18N && window.ROCE_I18N.t(key)) || (lg === 'en' ? 'Closed' : 'Cerrado'));
+        if (isDay) { sm.textContent = sm.dataset.open; tp.innerHTML = ''; }
+        else {
+          var mm = Number(p.minute || 0), now = hour * 60 + mm, left = now < 600 ? 600 - now : 1440 - now + 600;
+          var lt = Math.floor(left / 60) ? Math.floor(left / 60) + ' h' + (left % 60 ? ' ' + (left % 60) + ' min' : '') : (left % 60) + ' min';
+          sm.textContent = T(hour < 10 ? 'day_open_am' : 'day_open_pm', 'Cerrado');
+          tp.innerHTML = '<span class="day-pill"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z"/></svg><b>' + T('day_closed', 'Cerrado') + '</b> · ' + T('day_opens_in', 'Abre en {t}').replace('{t}', lt) + '</span>';
+        }
       }
-      document.documentElement.setAttribute('data-mode', hour >= 8 && hour < 20 ? 'day' : 'night');
       renderLive();
     }
 
