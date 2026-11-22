@@ -477,7 +477,7 @@
     <source media="(max-width: 640px)" srcset="/assets/teaser/cocktails-mobile.jpg">
     <img class="teaser-bg" src="/assets/teaser/cocktails-desktop.jpg" alt="">
   </picture>
-  <video class="teaser-bg teaser-vid" id="teaserVid" muted loop playsinline preload="none" poster="/assets/teaser/cocktails-mobile.jpg" aria-hidden="true" hidden>
+  <video class="teaser-bg teaser-vid" id="teaserVid" autoplay muted loop playsinline preload="none" poster="/assets/teaser/cocktails-mobile.jpg" aria-hidden="true" hidden>
     <source src="/assets/teaser/cocktails-loop.mp4?v=2" type="video/mp4">
   </video>
   <button class="teaser-pause" id="teaserPause" type="button" aria-label="Pausar vídeo" hidden>
@@ -562,7 +562,11 @@
     var conn = navigator.connection || {};
     if (conn.saveData || /(^|-)2g$/.test(conn.effectiveType || '') || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     v.hidden = false; v.preload = 'auto';
-    var p = v.play(); if (p && p.then) p.then(function () { b.hidden = false; }).catch(function () { b.hidden = false; b.classList.add('is-paused'); b.setAttribute('aria-label', 'Reproducir vídeo'); }); /* modo ahorro de batería o autoplay bloqueado: se queda la foto y el botón ▶ lo arranca */
+    v.addEventListener('playing', function () { b.hidden = false; b.classList.remove('is-paused'); b.setAttribute('aria-label', 'Pausar vídeo'); });
+    /* Si el móvil bloquea el arranque solo (modo de bajo consumo), arranca con el primer toque en la página (el del aviso +18 o cualquier otro): sin botón de play. */
+    var EV = ['touchend', 'pointerup', 'click', 'keydown'];
+    function arm() { var go = function () { EV.forEach(function (e) { document.removeEventListener(e, go, true); }); v.play().catch(function () {}); }; EV.forEach(function (e) { document.addEventListener(e, go, true); }); }
+    var p = v.play(); if (p && p.catch) p.catch(arm);
     b.addEventListener('click', function () { if (v.paused) { v.play(); b.classList.remove('is-paused'); b.setAttribute('aria-label', 'Pausar vídeo'); } else { v.pause(); b.classList.add('is-paused'); b.setAttribute('aria-label', 'Reproducir vídeo'); } });
   })();
 </script>
