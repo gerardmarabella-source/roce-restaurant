@@ -106,3 +106,7 @@ body.zone-day #mesasApp { --mz-fg: var(--black); --mz-bg: var(--white); --mz-lin
 
 .mz-meal { margin: 1rem 0 0.5rem; font-size: 0.85rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--mz-soft); }
 .mz-slots:empty { display: none; }
+
+/* Primera disponibilidad y ventaja de la cena */
+.mz-first { margin: 0 0 0.9rem; padding: 0.6rem 0.9rem; border-left: 3px solid var(--mz-fg); background: rgba(127, 127, 127, 0.12); font-size: 0.9rem; font-weight: 700; line-height: 1.35; }
+.mz-perk { margin: 0 0 0.6rem; padding: 0.5rem 0.8rem; border: 1px solid var(--mz-fg); font-size: 0.85rem; line-height: 1.35; }

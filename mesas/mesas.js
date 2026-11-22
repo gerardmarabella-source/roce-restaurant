@@ -20,6 +20,7 @@
       dows: ['L', 'M', 'X', 'J', 'V', 'S', 'D'],
       prev: 'Mes anterior', next: 'Mes siguiente', meal_lunch: 'Comida', meal_dinner: 'Cena', cal_closed: 'Cerrado', cal_full: 'Completo', cal_partial: 'Algún turno completo o cerrado', cal_full_in: 'Completo: {n}', cal_closed_in: 'Cerrado: {n}',
       pick_date: 'Elige un día para ver las horas disponibles.',
+      first_avail: 'Primera disponibilidad: {d}', perk_dinner: 'Incluye acceso a {ev}: no necesitas comprar entrada.',
       loading: 'Buscando mesas…', none: 'No quedan mesas ese día para {n}. Prueba otro día o escríbenos por {wa}.', wa_msg: 'Hola, quería reservar mesa para {n} el {date}.',
       err_load: 'No hemos podido consultar las mesas. Inténtalo de nuevo en un momento.',
       day: 'Coffee, Bakery & Kitchen', night: 'Restaurant & Cocktails',
@@ -55,6 +56,7 @@
       dows: ['M', 'T', 'W', 'T', 'F', 'S', 'S'],
       prev: 'Previous month', next: 'Next month', meal_lunch: 'Lunch', meal_dinner: 'Dinner', cal_closed: 'Closed', cal_full: 'Fully booked', cal_partial: 'A service is full or closed', cal_full_in: 'Fully booked: {n}', cal_closed_in: 'Closed: {n}',
       pick_date: 'Pick a day to see the available times.',
+      first_avail: 'First availability: {d}', perk_dinner: 'Includes access to {ev}: no ticket needed.',
       loading: 'Looking for tables…', none: 'No tables left that day for {n}. Try another day or message us on {wa}.', wa_msg: 'Hi, I would like to book a table for {n} on {date}.',
       err_load: "We couldn't check the tables. Please try again in a moment.",
       day: 'Coffee, Bakery & Kitchen', night: 'Restaurant & Cocktails',
@@ -135,10 +137,22 @@
       .then(function (rows) {
         if (my !== seq) return;
         st.grid = rows || []; st.slots = st.grid.filter(function (r) { return r.o_free; }); st.loading = false; render();
-        if (!st.slots.length) loadAlt(my);
+        if (!st.slots.length) { if (st.auto) { st.auto = false; goFirst(addDays(st.date, 0)).then(function (ok) { if (!ok) loadAlt(my); }); } else loadAlt(my); }
       })
       .catch(function () { if (my !== seq) return; st.grid = []; st.slots = []; st.loading = false; st.loadErr = true; render(); });
   }
+  // Primera disponibilidad: abre el calendario en el mes del primer día con mesa, lo selecciona y enseña ya sus horas.
+  // Se usa al entrar (antes de la apertura el primer día es el de la inauguración) y cuando un mes o un turno está completo.
+  function goFirst(from) {
+    var my = ++firstSeq, amb = st.ambience === 'all' ? null : st.ambience;
+    return rpc('dining_next_days', { p_from: from || todayStr(), p_party: st.party, p_ambience: amb }).then(function (rows) {
+      if (my !== firstSeq) return false;
+      var d = (rows || []).filter(function (r) { return r.o_date >= todayStr(); })[0]; if (!d) return false;
+      st.date = d.o_date; st.firstNote = d.o_date; var dd = new Date(d.o_date + 'T12:00:00Z'); st.month = { y: dd.getUTCFullYear(), m: dd.getUTCMonth() };
+      st.auto = false; loadSlots(); return true;
+    }).catch(function () { return false; });
+  }
+  var firstSeq = 0;
   // Sin mesa ese día: otros días con hueco y, si miras un solo espacio, el otro espacio ese mismo día.
   function loadAlt(my) {
     var amb = st.ambience === 'all' ? null : st.ambience, other = amb ? (amb === 'day' ? 'night' : 'day') : null;
@@ -188,6 +202,16 @@
   function noticeHtml() {
     return (st.notices || []).map(function (n) { return '<p class="mz-notice">' + esc(lang() === 'en' ? n.o_en : n.o_es) + '</p>'; }).join('');
   }
+  // Eventos cuya entrada va incluida al reservar cena ese día (eventos/config.js → ROCE_DINNER_ACCESS).
+  function perkFor(date) {
+    var cfg = window.ROCE_DINNER_ACCESS || {}, k, out = null;
+    for (k in cfg) if (cfg[k] && cfg[k].date === date) out = cfg[k];
+    return out;
+  }
+  function firstNoteHtml() {
+    if (!st.firstNote || st.firstNote !== st.date) return '';
+    return '<p class="mz-first">' + esc(t('first_avail', { d: dateLabel(st.date) })) + '</p>';
+  }
   function slotsHtml() {
     if (!st.date) return '<p class="mz-hint">' + esc(t('pick_date')) + '</p>';
     if (st.loading) return '<p class="mz-hint">' + esc(t('loading')) + '</p>';
@@ -203,13 +227,17 @@
       var rows = groups[a], dep = rows[0].o_deposit_cents, hrs = rows[0].o_free_hours, mode = rows[0].o_payment_mode;
       if (!rows.some(function (r) { return r.o_free; }) && st.slots.length === 0 && order.length > 1) { /* se muestra igualmente para poder apuntarse */ }
       h += '<div class="mz-group"><div class="mz-group-h"><span class="mz-group-name">' + esc(t(a)) + '</span>' +
-        (a === 'night' ? '<span class="mz-tag">+18</span>' : '') +
         '<span class="mz-group-note">' + (dep > 0 && mode === 'card' ? '' : dep > 0 ? esc(t('deposit_h', { m: money(dep) })) : esc(t('free_h'))) + '</span></div><div class="mz-slots">';
       // En Restaurant & Cocktails las horas se separan en Comida y Cena (cada turno tiene su cuadrícula).
       var svcs = []; rows.forEach(function (r) { if (svcs.indexOf(r.o_service) === -1) svcs.push(r.o_service); });
       var split = a === 'night';
       svcs.forEach(function (sv) {
-        if (split) h += '</div><p class="mz-meal">' + esc(t(sv === 'night-lunch' ? 'meal_lunch' : 'meal_dinner')) + '</p><div class="mz-slots">';
+        if (split) {
+          h += '</div><p class="mz-meal">' + esc(t(sv === 'night-lunch' ? 'meal_lunch' : 'meal_dinner')) + '</p>';
+          var pk = sv !== 'night-lunch' ? perkFor(st.date) : null;   // la cena es el turno de noche (todo lo que no es la comida)
+          if (pk) h += '<p class="mz-perk">' + esc(t('perk_dinner', { ev: pk.name[lang() === 'en' ? 'en' : 'es'] })) + '</p>';
+          h += '<div class="mz-slots">';
+        }
         rows.filter(function (r) { return r.o_service === sv; }).forEach(function (s) {
           if (s.o_free) h += '<button type="button" class="mz-slot' + (st.chosen && st.chosen.o_starts_at === s.o_starts_at ? ' is-on' : '') + '" data-start="' + esc(s.o_starts_at) + '">' + esc(s.o_time) + '</button>';
           else h += '<button type="button" class="mz-slot is-full" data-wl="' + esc(s.o_time) + '" data-amb="' + esc(s.o_ambience) + '" title="' + esc(t('wl_cta')) + '"><span>' + esc(s.o_time) + '</span><small>' + esc(t('full')) + '</small></button>';
@@ -295,7 +323,7 @@
     var keepScroll = window.scrollY;
     root.innerHTML = p +
       '<div class="mz-step"><span class="mz-label">' + esc(t('date')) + '</span>' + calendarHtml() + '</div>' +
-      '<div class="mz-step"><span class="mz-label">' + esc(t('time')) + '</span>' + (st.date ? noticeHtml() : '') + slotsHtml() + '</div>' + formHtml();
+      '<div class="mz-step"><span class="mz-label">' + esc(t('time')) + '</span>' + (st.date ? firstNoteHtml() + noticeHtml() : '') + slotsHtml() + '</div>' + formHtml();
     if (Math.abs(window.scrollY - keepScroll) > 1) window.scrollTo(0, keepScroll);
     loadCal();
   }
@@ -320,16 +348,16 @@
     if (b.dataset.party) {
       // Más de 8 personas no se reserva por la web: se hace vibrar el aviso de grupos para que lo vean.
       if (+b.dataset.party > 0 && st.party >= MAX_PARTY) { nudgeGroups(); return; }
-      keepForm(); st.party = Math.min(MAX_PARTY, Math.max(1, st.party + (+b.dataset.party))); loadSlots();
+      keepForm(); st.party = Math.min(MAX_PARTY, Math.max(1, st.party + (+b.dataset.party))); st.auto = true; loadSlots();
     } else if (b.dataset.nav) {
       var m = st.month, n = new Date(Date.UTC(m.y, m.m + (+b.dataset.nav), 1)); st.month = { y: n.getUTCFullYear(), m: n.getUTCMonth() }; render();
     } else if (b.dataset.date) {
-      keepForm(); st.date = b.dataset.date; loadSlots();
+      keepForm(); st.date = b.dataset.date; st.firstNote = ''; st.auto = false; loadSlots();
     } else if (b.dataset.wl != null && b.dataset.wl !== undefined && (b.hasAttribute('data-wl'))) {
       keepForm(); st.wait = { time: b.dataset.wl || '', amb: b.dataset.amb || (st.ambience === 'all' ? '' : st.ambience) }; st.waitDone = false; st.error = ''; st.chosen = null; render();
       var wf = document.getElementById('mzWait'); if (wf) wf.scrollIntoView({ behavior: 'smooth', block: 'center' });
     } else if (b.dataset.altdate) {
-      keepForm(); st.date = b.dataset.altdate; var dd = new Date(st.date + 'T12:00:00Z'); st.month = { y: dd.getUTCFullYear(), m: dd.getUTCMonth() }; loadSlots();
+      keepForm(); st.date = b.dataset.altdate; st.firstNote = ''; var dd = new Date(st.date + 'T12:00:00Z'); st.month = { y: dd.getUTCFullYear(), m: dd.getUTCMonth() }; loadSlots();
     } else if (b.dataset.altamb) {
       document.dispatchEvent(new CustomEvent('mesas:ambience', { detail: b.dataset.altamb }));
     } else if (b.dataset.start) {
@@ -339,7 +367,8 @@
         st.chosen = row; st.error = ''; render();
         var f = document.getElementById('mzForm'); if (f) f.scrollIntoView({ behavior: 'smooth', block: 'start' });
       };
-      if (row.o_ambience === 'night' && window.ROCE_AGE) window.ROCE_AGE.ask(choose, function () { setAmbience('day'); });
+      // La restricción +18 es nocturna: solo salta la alerta al elegir una hora de cena (desde las 20:00), no la comida.
+      if (row.o_ambience === 'night' && row.o_service !== 'night-lunch' && window.ROCE_AGE) window.ROCE_AGE.ask(choose, function () { st.chosen = null; render(); }, { age_title: 'age_book_title', age_text: 'age_book_text', age_no: 'age_book_no' });
       else choose();
     }
   });
@@ -404,7 +433,7 @@
   function setAmbience(a) {
     if (a !== 'day' && a !== 'night') a = 'all';
     if (st.ambience === a) return;
-    st.ambience = a; if (st.date) loadSlots(); else render();
+    st.ambience = a; if (st.date) { st.auto = true; loadSlots(); } else { render(); goFirst(); }
   }
 
   window.ROCE_MESAS = { setAmbience: setAmbience };
@@ -422,6 +451,7 @@
   } catch (x) {}
   document.addEventListener('roce:lang', function () { keepForm(); render(); });
   render();
+  if (!st.date) goFirst();
   // Hasta dónde se puede reservar lo decide la configuración (días vista de los turnos), no un número fijo en la web.
   rpc('dining_horizon', {}).then(function (n) { n = parseInt(n, 10); if (n >= 1 && n <= 400 && n !== DAYS_AHEAD) { DAYS_AHEAD = n; st.cal = {}; render(); } }).catch(function () {});
 })();

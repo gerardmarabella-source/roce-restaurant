@@ -122,7 +122,7 @@
 }
 </script>
 <link rel="stylesheet" href="/styles.css?v=78">
-<link rel="stylesheet" href="/mesas/mesas.css?v=13">
+<link rel="stylesheet" href="/mesas/mesas.css?v=14">
 <style>
   .reserve-form-page {
     min-height: 100vh;
@@ -376,7 +376,7 @@
           <span class="rz-floor" data-i18n="rz_up">Primera planta</span>
           <span class="rz-cta"><span class="rz-off" data-i18n="rz_pick">Elegir</span><span class="rz-on" data-i18n="rz_on">✓ Elegido</span></span>
           <span class="rz-name">Restaurant &amp; Cocktails</span>
-          <span class="rz-desc" data-i18n="rz_night_desc">Comida 13:00–16:00 · Cena 20:00–02:00 (+18)</span>
+          <span class="rz-desc" data-i18n="rz_night_desc">Comida 13:00–16:00 · Cena 20:00–02:00</span>
         </button>
         <button type="button" class="reserve-zone" data-zone="day" aria-pressed="false">
           <span class="rz-floor" data-i18n="rz_down">Planta baja</span>
@@ -389,7 +389,6 @@
 
 
     <section id="panelBooking" hidden>
-    <p class="reserve-form-intro reserve-night" id="nightNotice"><svg class="age-badge" viewBox="0 0 100 100" role="img" aria-label="+18"><circle cx="50" cy="50" r="44" fill="#ffffff" stroke="#e5453a" stroke-width="9"/><text x="44" y="65" text-anchor="middle" font-family="'Helvetica Neue Web','Helvetica Neue',Arial,sans-serif" font-weight="700" font-size="46" letter-spacing="-3" fill="#0a0a0a">18</text><text x="77" y="52" text-anchor="middle" font-family="'Helvetica Neue Web','Helvetica Neue',Arial,sans-serif" font-weight="700" font-size="30" fill="#0a0a0a">+</text></svg> <span data-i18n="reservar_night">Reservas de noche solo para mayores de 18 años</span></p>
 
     <div class="cm-widget">
       <div class="group-notice" id="groupNotice">
@@ -470,10 +469,10 @@
   </div>
 </div>
 <script src="/cookies.js?v=6"></script>
-<script src="/i18n.js?v=115"></script>
-<script src="/agegate.js?v=10"></script>
-<script src="/eventos/config.js?v=2"></script>
-<script src="/mesas/mesas.js?v=18"></script>
+<script src="/i18n.js?v=117"></script>
+<script src="/agegate.js?v=11"></script>
+<script src="/eventos/config.js?v=3"></script>
+<script src="/mesas/mesas.js?v=19"></script>
 
 <script>
   const WHATSAPP_NUMBER = '34614073163';
@@ -492,8 +491,7 @@
   const backLink = document.querySelector('.reserve-back');
   function setZone(next) {
     zone = next;
-    // Las reservas de noche son +18: se pide confirmarlo una vez; si no, se pasa a Day.
-    if (next === 'night') window.ROCE_AGE.ask(null, () => setZone('day'));
+    // La restricción +18 es nocturna: no se pregunta al elegir el espacio, sino al elegir una hora de cena (mesas.js).
     zoneTabs.forEach((b) => b.setAttribute('aria-pressed', b.dataset.zone === zone ? 'true' : 'false'));
     backLink.setAttribute('href', zone === 'all' ? '/' : '/' + (zone === 'day' ? 'coffee-bakery-kitchen' : 'restaurant-cocktails') + '/');
     document.body.classList.toggle('zone-day', zone === 'day');
@@ -502,7 +500,6 @@
       const h = '#' + (zone === 'day' ? 'coffee-bakery-kitchen' : 'restaurant-cocktails');
       if (/^(#day|#night|#coffee-bakery-kitchen|#restaurant-cocktails|)$/.test(location.hash) && location.hash !== h) history.replaceState(null, '', location.pathname + location.search + h);
     }
-    document.getElementById('nightNotice').hidden = zone === 'day';
     // Sin espacio elegido (se llega desde otra página) solo se ven las opciones de espacio; el calendario aparece al elegir uno.
     document.getElementById('panelBooking').hidden = zone === 'all';
     const day = zone === 'day';

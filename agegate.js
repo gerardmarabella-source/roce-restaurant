@@ -51,7 +51,8 @@
   }
   function paint() {
     if (!gate) return;
-    gate.querySelectorAll('[data-i18n]').forEach(function (el) { el.textContent = t(el.getAttribute('data-i18n')); });
+    var o = (pending && pending.opts) || {};
+    gate.querySelectorAll('[data-i18n]').forEach(function (el) { var k = el.getAttribute('data-i18n'); el.textContent = o[k] ? t(o[k]) : t(k); });
   }
   function answer(yes) {
     gate.hidden = true; document.documentElement.classList.remove('age-open');
@@ -72,9 +73,10 @@
 
   window.ROCE_AGE = {
     confirmed: confirmed,
-    ask: function (yes, no) {
+    // opts (opcional): claves de texto distintas para este aviso, p. ej. { age_title: 'age_book_title', age_text: 'age_book_text', age_no: 'age_book_no' }
+    ask: function (yes, no, opts) {
       if (confirmed()) { if (yes) yes(); return; }
-      pending = { yes: yes, no: no };
+      pending = { yes: yes, no: no, opts: opts };
       waitForCookies(show);
     }
   };
