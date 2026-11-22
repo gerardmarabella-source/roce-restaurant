@@ -439,8 +439,9 @@
     /* Más grande que antes, pero siempre dentro del ancho ("Reservar" es más corto que el resto). */
     .teaser-link { font-size: clamp(1.9rem, calc((100vw - 2rem) / 8.4), 3.2rem); }
     /* Instagram en su propia línea, debajo de Reservar y Eventos. */
-    .teaser-cta-row { flex-direction: column; align-items: stretch; gap: 0.5rem; }
-    .teaser-insta { position: static; align-self: flex-end; padding: 0; }
+    .teaser-cta-row { flex-direction: column; align-items: stretch; gap: 1rem; }
+    .teaser-insta { position: static; align-self: flex-end; padding: 0; margin-top: 0.2rem; }
+    .teaser-footer { margin-top: 1rem; }
     /* Foto propia para móvil (1080x1920, ya compuesta para vertical) y
        sin el zoom de escritorio. */
     .teaser-bg { transform: none; }
@@ -455,9 +456,10 @@
      y pasa a apilarse en columna; si no cabe, la página se desplaza en vez de montarse un texto sobre otro. */
   @media (max-height: 660px), (max-width: 359px) {
     html, body { height: auto; min-height: 100%; overflow-x: hidden; overflow-y: auto; }
-    .teaser-page { height: auto; min-height: 100dvh; display: flex; flex-direction: column; justify-content: space-between; gap: 1.2rem; overflow: visible; }
-    .teaser-top { position: relative; top: auto; margin-top: 3.8rem; flex: none; }
-    .teaser-bottom { position: relative; flex: none; padding-top: 0.5rem; }
+    .teaser-page { height: auto; min-height: 100dvh; display: flex; flex-direction: column; justify-content: flex-start; gap: 0; overflow: visible; }
+    .teaser-page > picture { display: contents; }   /* la foto es absoluta: que no cuente como bloque ni reparta huecos (el logo bajaba al centro) */
+    .teaser-top { position: relative; top: auto; margin-top: 4.8rem; flex: none; }   /* el logo queda siempre en el mismo sitio, arriba */
+    .teaser-bottom { position: relative; flex: none; margin-top: auto; padding-top: 1.4rem; }   /* y lo de abajo, pegado abajo */
     .teaser-live { max-width: 94vw; }
     .teaser-live-title { white-space: normal; }
   }
