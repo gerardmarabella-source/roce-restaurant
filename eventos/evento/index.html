@@ -70,6 +70,8 @@
   .evd-low-t i { width: 0.5rem; height: 0.5rem; border-radius: 50%; background: var(--hot); box-shadow: 0 0 0 0 rgba(255, 90, 77, 0.7); animation: evdPulse 1.4s ease-out infinite; }
   @keyframes evdPulse { 0% { box-shadow: 0 0 0 0 rgba(255, 90, 77, 0.7); } 70%, 100% { box-shadow: 0 0 0 7px rgba(255, 90, 77, 0); } }
   @media (prefers-reduced-motion: reduce) { .evd-low-t i { animation: none; } }
+  .evd-low-t { text-align: center; }
+  @media (max-width: 380px) { .evd-low-t { font-size: 0.72rem; letter-spacing: 0.04em; gap: 0.35rem; } }
   html[data-env="day"] .evd-low { --hot: #c8271a; --hot2: #e06a1b; }
   @media (min-width: 481px) { .evd-buywrap { flex: 0 0 auto; } }
   .evd-low[hidden] { display: none; }
