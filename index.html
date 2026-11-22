@@ -668,7 +668,7 @@
   </div>
 </div>
 <script src="/cookies.js?v=6"></script>
-<script src="/i18n.js?v=114"></script>
+<script src="/i18n.js?v=115"></script>
 <script src="/eventos/config.js?v=2"></script>
 <script src="/eventos/events.js?v=15"></script>
 
@@ -694,7 +694,7 @@
           var mm = Number(p.minute || 0), now = hour * 60 + mm, left = now < 600 ? 600 - now : 1440 - now + 600;
           var lt = Math.floor(left / 60) ? Math.floor(left / 60) + ' h' + (left % 60 ? ' ' + (left % 60) + ' min' : '') : (left % 60) + ' min';
           sm.textContent = T(hour < 10 ? 'day_open_am' : 'day_open_pm', 'Cerrado');
-          tp.innerHTML = '<span class="day-pill"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z"/></svg><b>' + T('day_closed', 'Cerrado') + '</b><span class="dp-n"> · ' + T('day_opens_in', 'Abre en {t}').replace('{t}', lt) + '</span></span>';
+          tp.innerHTML = '<span class="day-pill"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z"/></svg><b>' + T('day_closed', 'Cerrado') + '</b><span class="dp-n"> · ' + T('day_opens_in', 'Abrimos en {t}').replace('{t}', lt) + '</span></span>';
         }
       }
       renderLive();

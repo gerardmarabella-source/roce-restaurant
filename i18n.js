@@ -190,7 +190,7 @@
     day_closed: { es: 'Cerrado', en: 'Closed' },
     day_open_am: { es: 'Abrimos hoy a las 10:00', en: 'We open today at 10:00' },
     day_open_pm: { es: 'Abrimos mañana a las 10:00', en: 'We open tomorrow at 10:00' },
-    day_opens_in: { es: 'Abre en {t}', en: 'Opens in {t}' },
+    day_opens_in: { es: 'Abrimos en {t}', en: 'We open in {t}' },
     ev_few: { es: 'Quedan pocas unidades', en: 'Only a few left' },
     tk_each: { es: 'Precio por entrada', en: 'Price per ticket' },
     tk_total: { es: 'Total', en: 'Total' },

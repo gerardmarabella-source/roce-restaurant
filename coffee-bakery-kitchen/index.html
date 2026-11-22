@@ -560,7 +560,7 @@
   </div>
 </div>
 <script src="/cookies.js?v=6"></script>
-<script src="/i18n.js?v=114"></script>
+<script src="/i18n.js?v=115"></script>
 <script>
   // Cerrado fuera de 10:00-20:00, siempre hora de España (Madrid), esté donde esté quien mira la página; con cuenta atrás hasta abrir.
   (function () {
@@ -572,7 +572,7 @@
       var hour = Number(p.hour), now = hour * 60 + Number(p.minute), open = hour >= 10 && hour < 20;
       el.hidden = open; if (open) return;
       var left = now < 600 ? 600 - now : 1440 - now + 600, h = Math.floor(left / 60), lt = h ? h + ' h' + (left % 60 ? ' ' + (left % 60) + ' min' : '') : (left % 60) + ' min';
-      el.innerHTML = '<span class="tc-ic">' + MOON + '</span><span class="tc-t"><b>' + T('day_closed', 'Cerrado') + '<i class="tc-n"> · ' + T('day_opens_in', 'Abre en {t}').replace('{t}', lt) + '</i></b><span>' + T(hour < 10 ? 'day_open_am' : 'day_open_pm', '') + '</span></span>';
+      el.innerHTML = '<span class="tc-ic">' + MOON + '</span><span class="tc-t"><b>' + T('day_closed', 'Cerrado') + '<i class="tc-n"> · ' + T('day_opens_in', 'Abrimos en {t}').replace('{t}', lt) + '</i></b><span>' + T(hour < 10 ? 'day_open_am' : 'day_open_pm', '') + '</span></span>';
     }
     paint(); setInterval(paint, 30000); document.addEventListener('roce:lang', paint);
   })();
