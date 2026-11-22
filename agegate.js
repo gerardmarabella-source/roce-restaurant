@@ -10,12 +10,12 @@
   var KEY = 'roce_age_ok';
   var CSS = '.age-gate{position:fixed;inset:0;z-index:590;display:flex;align-items:center;justify-content:center;padding:1.25rem;background:rgba(0,0,0,.86);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);overflow-y:auto}' +
     '.age-gate[hidden]{display:none}' +
-    '.age-card{width:min(100%,30rem);background:#0a0a0a;color:#ece7dd;border:1px solid rgba(236,231,221,.35);padding:1.75rem 1.5rem 1.5rem;display:flex;flex-direction:column;align-items:stretch;gap:1.1rem}' +
-    '.age-badge-lg{width:4.2rem;height:4.2rem}' +
-    '.age-title{font-family:var(--display,"Helvetica Neue",Arial,sans-serif);font-size:clamp(1.7rem,6.4vw,2.4rem);line-height:1;text-wrap:balance;text-transform:uppercase;letter-spacing:.01em;font-weight:400}' +
-    '.age-text{font-size:.95rem;line-height:1.55}' +
-    '.age-actions{display:flex;flex-direction:column;gap:.7rem;margin-top:.4rem}' +
-    '.age-actions button{width:100%;min-height:4.2rem;padding:.8rem 1rem;border:2px solid #ece7dd;border-radius:0;font-family:var(--display,"Helvetica Neue",Arial,sans-serif);font-size:1rem;line-height:1.15;letter-spacing:.05em;text-transform:uppercase;text-align:center;cursor:pointer;-webkit-appearance:none;appearance:none;-webkit-tap-highlight-color:transparent}' +
+    '.age-card{width:min(100%,23rem);background:#0a0a0a;color:#ece7dd;border:1px solid rgba(236,231,221,.35);padding:1.2rem 1.1rem 1.1rem;display:flex;flex-direction:column;align-items:stretch;gap:.75rem}' +
+    '.age-badge-lg{width:2.7rem;height:2.7rem}' +
+    '.age-title{font-family:var(--display,"Helvetica Neue",Arial,sans-serif);font-size:clamp(1.25rem,5vw,1.6rem);line-height:1.05;text-wrap:balance;text-transform:uppercase;letter-spacing:.01em;font-weight:400}' +
+    '.age-text{font-size:.85rem;line-height:1.45}' +
+    '.age-actions{display:flex;flex-direction:column;gap:.5rem;margin-top:.2rem}' +
+    '.age-actions button{width:100%;min-height:2.9rem;padding:.55rem .8rem;border:1.5px solid #ece7dd;border-radius:0;font-family:var(--display,"Helvetica Neue",Arial,sans-serif);font-size:.85rem;line-height:1.15;letter-spacing:.05em;text-transform:uppercase;text-align:center;cursor:pointer;-webkit-appearance:none;appearance:none;-webkit-tap-highlight-color:transparent}' +
     '.age-actions button:focus{outline:none}.age-actions button:focus-visible{outline:2px solid #ece7dd;outline-offset:3px}' +
     '.age-yes{background:#ece7dd;color:#0a0a0a}.age-no{background:transparent;color:#ece7dd}';
   var BADGE = '<svg class="age-badge-lg" viewBox="0 0 100 100" role="img" aria-label="+18"><circle cx="50" cy="50" r="44" fill="#ffffff" stroke="#e5453a" stroke-width="9"/><text x="44" y="65" text-anchor="middle" font-family="\'Helvetica Neue Web\',\'Helvetica Neue\',Arial,sans-serif" font-weight="700" font-size="46" letter-spacing="-3" fill="#0a0a0a">18</text><text x="77" y="52" text-anchor="middle" font-family="\'Helvetica Neue Web\',\'Helvetica Neue\',Arial,sans-serif" font-weight="700" font-size="30" fill="#0a0a0a">+</text></svg>';
