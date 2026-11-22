@@ -228,6 +228,8 @@ html.cookie-open { overflow: hidden; }
 .cookie-banner.is-compact .cookie-actions { gap: 0.5rem; }
 .cookie-banner.is-compact .cookie-reject, .cookie-banner.is-compact .cookie-accept { min-height: 2.7rem; padding: 0.5rem 0.8rem; border-radius: 999px; border-width: 1.5px; font-family: var(--display); font-size: 0.85rem; letter-spacing: 0.01em; text-transform: none; font-weight: 700; }
 .cookie-banner.is-compact .cookie-reject { font-weight: 500; }
+/* (la barra compacta fuerza display:block y tapaba a .is-hidden: al aceptar o rechazar no se cerraba) */
+.cookie-banner.is-compact.is-hidden { display: none; }
 html.age-open .cookie-banner { display: none; }
 @keyframes cookieUp { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .cookie-banner.is-compact .cookie-card { animation: none; } }
