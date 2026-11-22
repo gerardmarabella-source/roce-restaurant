@@ -63,6 +63,9 @@
   .evd-map { display: inline-block; margin-top: 0.6rem; color: inherit; font-size: 0.95rem; }
 
   .evd-bar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; background: var(--bg); border-top: 1px solid var(--line); }
+  .evd-low { max-width: 1000px; margin: 0 auto; padding: 0.6rem var(--pad) 0; font-size: 0.88rem; font-weight: 700; line-height: 1.2; color: #ff5a4d; }
+  html[data-env="day"] .evd-low { color: #b3261e; }
+  .evd-low[hidden] { display: none; }
   .evd-bar-in { max-width: 1000px; margin: 0 auto; padding: 0.85rem var(--pad) calc(0.85rem + env(safe-area-inset-bottom)); display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
   .evd-price { min-width: 0; font-family: var(--display); font-size: 1.7rem; line-height: 1; letter-spacing: -0.01em; }
   .evd-pricenote { display: grid; grid-template-columns: 1.4rem 1fr; gap: 0.8rem; margin-bottom: 1.1rem; font-size: 1.05rem; font-weight: 600; line-height: 1.4; }
@@ -136,6 +139,7 @@
 </main>
 
 <div class="evd-bar" id="evdBar" hidden>
+  <p class="evd-low" id="evdLow" role="status" hidden></p>
   <div class="evd-bar-in">
     <div class="evd-price" id="evdPrice"></div>
     <a class="evd-buy" id="evdBuy" href="#" data-i18n="ev_cta">Comprar entrada</a>
@@ -217,6 +221,7 @@
       $('evdPriceNote').innerHTML = ICON.ticket + '<span>' + esc(e.price[l]) + '</span>';
       var buy = $('evdBuy'); buy.textContent = sold ? t('tk_soldout', 'Agotado') : t('ev_cta', 'Comprar entrada');
       buy.classList.toggle('is-soldout', sold); buy.href = sold ? '#' : '/eventos/entradas/?e=' + encodeURIComponent(e.id);
+      var low = $('evdLow'); low.hidden = sold || !(e.low || /[?&]demo=low/.test(location.search)); low.textContent = t('ev_few', 'Quedan pocas unidades');
       $('evd').hidden = false; $('evdBar').hidden = false;
     }
 
