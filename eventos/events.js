@@ -32,7 +32,7 @@
     return {
       id: r.id, env: r.env, starts_at: r.starts_at, image: r.image_url || '',
       date: parts.year + '-' + parts.month + '-' + parts.day, time: parts.hour + ':' + parts.minute,
-      duration_h: Number(r.duration_h), price_cents: r.price_cents, left: r.spots_left, max_per_order: r.max_per_order,
+      duration_h: Number(r.duration_h), price_cents: r.price_cents, left: r.spots_left, low: !!r.low_stock, max_per_order: r.max_per_order,
       place: { es: r.place_es, en: r.place_en || r.place_es },
       title: { es: r.title_es, en: r.title_en || r.title_es },
       desc: { es: r.desc_es, en: r.desc_en || r.desc_es },
