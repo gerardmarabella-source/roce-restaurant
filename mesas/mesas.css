@@ -14,9 +14,9 @@ body.zone-day #mesasApp { --mz-fg: var(--black); --mz-bg: var(--white); --mz-lin
 .mz-cal-title { font-size: 1.15rem; text-transform: uppercase; letter-spacing: 0.02em; }
 .mz-nav { width: 2.6rem; height: 2.6rem; border: 0; background: transparent; font-size: 1.3rem; cursor: pointer; }
 .mz-nav:disabled { opacity: 0.25; cursor: default; }
-.mz-cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+.mz-cal-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 3px; }
 .mz-dow { text-align: center; font-size: 0.75rem; color: var(--mz-soft); padding-bottom: 0.25rem; }
-.mz-day { aspect-ratio: 1; min-height: 2.6rem; border: 1px solid transparent; background: transparent; font-size: 1.05rem; cursor: pointer; border-radius: 0; }
+.mz-day { aspect-ratio: auto; height: clamp(2.4rem, 11.5vw, 3.2rem); min-width: 0; padding: 0; min-height: 0; border: 1px solid transparent; background: transparent; font-size: 1.05rem; cursor: pointer; border-radius: 0; }
 .mz-day:hover:not(:disabled) { border-color: var(--mz-fg); }
 .mz-day.is-today { border-color: var(--mz-line); }
 .mz-day.is-on { background: var(--mz-fg); color: var(--mz-bg); border-color: var(--mz-fg); }
