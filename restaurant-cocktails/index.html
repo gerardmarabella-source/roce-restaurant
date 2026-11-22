@@ -122,10 +122,6 @@
   /* Vídeo de fondo (bucle corto, sin sonido): solo si el móvil no pide ahorrar datos ni reducir movimiento; si no, se queda la foto. */
   .teaser-vid { z-index: 0; }
   .teaser-vid[hidden] { display: none; }
-  .teaser-pause { position: absolute; z-index: 6; top: 3.6rem; right: 1rem; width: 2.2rem; height: 2.2rem; display: inline-flex; align-items: center; justify-content: center; border: 1px solid rgba(236, 231, 221, 0.55); border-radius: 50%; background: rgba(10, 10, 10, 0.35); color: var(--cream); cursor: pointer; }
-  .teaser-pause[hidden] { display: none; }
-  .teaser-pause.is-paused svg { display: none; }
-  .teaser-pause.is-paused::before { content: ""; border-left: 9px solid currentColor; border-top: 6px solid transparent; border-bottom: 6px solid transparent; margin-left: 3px; }
 
   /* Oscurece la foto de fondo lo justo para que el texto/letras crema
      se sigan leyendo encima, sin taparla del todo. */
@@ -480,9 +476,6 @@
   <video class="teaser-bg teaser-vid" id="teaserVid" autoplay muted loop playsinline preload="none" poster="/assets/teaser/cocktails-mobile.jpg" aria-hidden="true" hidden>
     <source src="/assets/teaser/cocktails-loop.mp4?v=2" type="video/mp4">
   </video>
-  <button class="teaser-pause" id="teaserPause" type="button" aria-label="Pausar vídeo" hidden>
-    <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true"><rect x="6" y="5" width="4" height="14"/><rect x="14" y="5" width="4" height="14"/></svg>
-  </button>
 
   <nav class="teaser-nav">
     <a class="back-home" href="/" aria-label="Volver al inicio">
@@ -558,16 +551,14 @@
 </div>
 <script>
   (function () {
-    var v = document.getElementById('teaserVid'), b = document.getElementById('teaserPause'); if (!v || !b) return;
+    var v = document.getElementById('teaserVid'); if (!v) return;
     var conn = navigator.connection || {};
     if (conn.saveData || /(^|-)2g$/.test(conn.effectiveType || '') || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     v.hidden = false; v.preload = 'auto';
-    v.addEventListener('playing', function () { b.hidden = false; b.classList.remove('is-paused'); b.setAttribute('aria-label', 'Pausar vídeo'); });
-    /* Si el móvil bloquea el arranque solo (modo de bajo consumo), arranca con el primer toque en la página (el del aviso +18 o cualquier otro): sin botón de play. */
+    /* El fondo es el vídeo: arranca solo. Si el móvil lo bloquea (modo de bajo consumo), arranca con el primer toque en la página (el del aviso +18 o cualquier otro). */
     var EV = ['touchend', 'pointerup', 'click', 'keydown'];
     function arm() { var go = function () { EV.forEach(function (e) { document.removeEventListener(e, go, true); }); v.play().catch(function () {}); }; EV.forEach(function (e) { document.addEventListener(e, go, true); }); }
     var p = v.play(); if (p && p.catch) p.catch(arm);
-    b.addEventListener('click', function () { if (v.paused) { v.play(); b.classList.remove('is-paused'); b.setAttribute('aria-label', 'Pausar vídeo'); } else { v.pause(); b.classList.add('is-paused'); b.setAttribute('aria-label', 'Reproducir vídeo'); } });
   })();
 </script>
 <script src="/cookies.js?v=6"></script>
