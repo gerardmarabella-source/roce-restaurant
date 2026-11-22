@@ -56,9 +56,9 @@
     card.insertBefore(title, card.firstChild);
   }
   // En las páginas legales no se bloquea la pantalla, para poder leer la política.
-  if (/\/(cookies|privacidad|aviso-legal|terminos)(\.html)?\/?$/.test(location.pathname)) banner.classList.add('is-compact');
-  else document.documentElement.classList.add('cookie-open');
-  banner.setAttribute('role', 'dialog'); banner.setAttribute('aria-modal', banner.classList.contains('is-compact') ? 'false' : 'true');
+  // Barra compacta abajo en todas las páginas: no tapa la portada ni bloquea la pantalla (no se carga nada de medición hasta aceptar).
+  banner.classList.add('is-compact');
+  banner.setAttribute('role', 'dialog'); banner.setAttribute('aria-modal', 'false');
 
   var acceptBtn = document.getElementById('cookieAccept');
   var rejectBtn = document.getElementById('cookieReject');
