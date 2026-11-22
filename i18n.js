@@ -188,8 +188,6 @@
     tk_qty_label: { es: 'Nº de entradas', en: 'Number of tickets' },
     tk_soldout: { es: 'Agotado', en: 'Sold out' },
     ev_left: { es: 'Quedan {n}', en: '{n} left' },
-    home_about_k: { es: 'QUÉ ES ROCE', en: 'WHAT IS ROCE' },
-    home_about: { es: 'Lo que pasa cuando la gente se junta. Café y cocina de día, cócteles y música de noche.', en: 'What happens when people get together. Coffee and kitchen by day, cocktails and music by night.' },
     tk_each: { es: 'Precio por entrada', en: 'Price per ticket' },
     tk_total: { es: 'Total', en: 'Total' },
     tk_free: { es: 'Gratis', en: 'Free' },
