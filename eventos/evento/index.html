@@ -65,8 +65,16 @@
   .evd-bar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; background: var(--bg); border-top: 1px solid var(--line); }
   .evd-buywrap { display: flex; flex-direction: column; align-items: stretch; gap: 0.35rem; min-width: 0; flex: 1 1 auto; }
   .evd-buywrap .evd-buy { flex: none; }
-  .evd-low { margin: 0; font-size: 0.8rem; font-weight: 700; line-height: 1.2; text-align: center; color: #ff5a4d; }
-  html[data-env="day"] .evd-low { color: #b3261e; }
+  .evd-low { --hot: #ff5a4d; --hot2: #ff9f43; margin: 0; display: flex; flex-direction: column; align-items: stretch; gap: 0.4rem; }
+  .evd-low-t { display: inline-flex; align-items: center; justify-content: center; gap: 0.45rem; font-family: var(--display); font-size: 0.82rem; line-height: 1; letter-spacing: 0.08em; text-transform: uppercase; color: var(--hot); font-weight: 700; }
+  .evd-low-t i { width: 0.5rem; height: 0.5rem; border-radius: 50%; background: var(--hot); box-shadow: 0 0 0 0 rgba(255, 90, 77, 0.7); animation: evdPulse 1.4s ease-out infinite; }
+  .evd-low-bar { display: block; height: 4px; border-radius: 4px; background: rgba(255, 255, 255, 0.14); overflow: hidden; }
+  .evd-low-bar b { display: block; height: 100%; width: 88%; border-radius: 4px; background: linear-gradient(90deg, var(--hot), var(--hot2), var(--hot)); background-size: 200% 100%; animation: evdShine 2.2s linear infinite; }
+  @keyframes evdPulse { 0% { box-shadow: 0 0 0 0 rgba(255, 90, 77, 0.7); } 70%, 100% { box-shadow: 0 0 0 7px rgba(255, 90, 77, 0); } }
+  @keyframes evdShine { from { background-position: 200% 0; } to { background-position: 0 0; } }
+  @media (prefers-reduced-motion: reduce) { .evd-low-t i, .evd-low-bar b { animation: none; } }
+  html[data-env="day"] .evd-low { --hot: #c8271a; --hot2: #e06a1b; }
+  html[data-env="day"] .evd-low-bar { background: rgba(10, 10, 10, 0.12); }
   @media (min-width: 481px) { .evd-buywrap { flex: 0 0 auto; } }
   .evd-low[hidden] { display: none; }
   .evd-bar-in { max-width: 1000px; margin: 0 auto; padding: 0.85rem var(--pad) calc(0.85rem + env(safe-area-inset-bottom)); display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
@@ -226,7 +234,7 @@
       $('evdPriceNote').innerHTML = ICON.ticket + '<span>' + esc(e.price[l]) + '</span>';
       var buy = $('evdBuy'); buy.textContent = sold ? t('tk_soldout', 'Agotado') : t('ev_cta', 'Comprar entrada');
       buy.classList.toggle('is-soldout', sold); buy.href = sold ? '#' : '/eventos/entradas/?e=' + encodeURIComponent(e.id);
-      var low = $('evdLow'); low.hidden = sold || !(e.low || /[?&]demo=low/.test(location.search)); low.textContent = t('ev_few', 'Quedan pocas unidades');
+      var low = $('evdLow'); low.hidden = sold || !(e.low || /[?&]demo=low/.test(location.search)); low.innerHTML = '<span class="evd-low-t"><i aria-hidden="true"></i>' + esc(t('ev_few', 'Quedan pocas unidades')) + '</span><span class="evd-low-bar" aria-hidden="true"><b></b></span>';
       $('evd').hidden = false; $('evdBar').hidden = false;
     }
 
