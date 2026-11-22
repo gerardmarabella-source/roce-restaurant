@@ -257,11 +257,10 @@ html.age-open .cookie-banner { display: none; }
   .legal-wrapper td:first-child { font-weight: 700; }
 }
 
-/* Móvil táctil: zonas de toque más cómodas (idioma, enlaces del pie, «volver») sin cambiar cómo se ven */
+/* Móvil táctil: zonas de toque más cómodas (idioma, enlaces del pie, «volver») con un área invisible alrededor: no cambia ni el tamaño ni la posición de nada */
 @media (pointer: coarse) {
-  .lang-switch button { min-width: 2.4rem; min-height: 2.4rem; display: inline-flex; align-items: center; justify-content: center; }
-  [class*="footer"] a, [class*="-foot"] a, .legal-back, .evd-back, .tk-back { display: inline-block; padding-top: 0.5rem; padding-bottom: 0.5rem; }
-  .teaser-footer { line-height: 1.2; }
+  .lang-switch button, [class*="footer"] a, [class*="-foot"] a, .legal-back, .evd-back, .tk-back { position: relative; }
+  .lang-switch button::after, [class*="footer"] a::after, [class*="-foot"] a::after, .legal-back::after, .evd-back::after, .tk-back::after { content: ""; position: absolute; inset: -9px -7px; }
 }
 
 /* Nombres de marca (brand.js): siempre con la letra de la marca y en mayúsculas */

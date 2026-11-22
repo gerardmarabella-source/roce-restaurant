@@ -88,7 +88,7 @@
      que el usuario le dé al botón. -->
 <link rel="preload" as="image" href="/assets/logo/newsletter-plate.webp" fetchpriority="low">
 <link rel="preload" as="image" href="/assets/logo/newsletter-plate-broken.webp" fetchpriority="low">
-<link rel="stylesheet" href="/styles.css?v=77">
+<link rel="stylesheet" href="/styles.css?v=78">
 <style>
   html, body {
     height: 100%;
@@ -478,7 +478,7 @@
     <img class="teaser-bg" src="/assets/teaser/cocktails-desktop.jpg" alt="">
   </picture>
   <video class="teaser-bg teaser-vid" id="teaserVid" muted loop playsinline preload="none" poster="/assets/teaser/cocktails-mobile.jpg" aria-hidden="true" hidden>
-    <source src="/assets/teaser/cocktails-loop.mp4" type="video/mp4">
+    <source src="/assets/teaser/cocktails-loop.mp4?v=2" type="video/mp4">
   </video>
   <button class="teaser-pause" id="teaserPause" type="button" aria-label="Pausar vídeo" hidden>
     <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true"><rect x="6" y="5" width="4" height="14"/><rect x="14" y="5" width="4" height="14"/></svg>
@@ -562,7 +562,7 @@
     var conn = navigator.connection || {};
     if (conn.saveData || /(^|-)2g$/.test(conn.effectiveType || '') || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     v.hidden = false; v.preload = 'auto';
-    var p = v.play(); if (p && p.then) p.then(function () { b.hidden = false; }).catch(function () { v.hidden = true; });
+    var p = v.play(); if (p && p.then) p.then(function () { b.hidden = false; }).catch(function () { b.hidden = false; b.classList.add('is-paused'); b.setAttribute('aria-label', 'Reproducir vídeo'); }); /* modo ahorro de batería o autoplay bloqueado: se queda la foto y el botón ▶ lo arranca */
     b.addEventListener('click', function () { if (v.paused) { v.play(); b.classList.remove('is-paused'); b.setAttribute('aria-label', 'Pausar vídeo'); } else { v.pause(); b.classList.add('is-paused'); b.setAttribute('aria-label', 'Reproducir vídeo'); } });
   })();
 </script>
