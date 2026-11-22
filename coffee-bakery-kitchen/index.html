@@ -161,6 +161,8 @@
      · NOCHE (urbano): rótulo de neón rojo (el mismo de la home), con la etiqueta «Ahora» pegada arriba. */
   .teaser-live { position: relative; display: inline-flex; align-items: center; gap: 0.7rem; max-width: 92vw; margin-top: 1.3rem; text-decoration: none; font-family: var(--display); font-size: 0.9rem; letter-spacing: 0.05em; text-transform: uppercase; }
   .teaser-live[hidden] { display: none; }
+  .teaser-closed { margin: 1rem 0 0; padding: 0.5rem 1rem; max-width: 92vw; background: #0a0a0a; color: #fff; border-radius: 999px; font-family: var(--display); font-size: 0.78rem; line-height: 1.2; letter-spacing: 0.08em; text-transform: uppercase; text-align: center; }
+  .teaser-closed[hidden] { display: none; }
   .teaser-live-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .teaser-live-time { flex-shrink: 0; }
   @keyframes liveDot { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
@@ -520,6 +522,7 @@
       <span class="teaser-live-title"></span>
       <span class="teaser-live-time"></span>
     </a>
+    <p class="teaser-closed" id="teaserClosed" role="status" hidden></p>
   </div>
 
   <div class="teaser-bottom">
@@ -551,7 +554,21 @@
   </div>
 </div>
 <script src="/cookies.js?v=6"></script>
-<script src="/i18n.js?v=111"></script>
+<script src="/i18n.js?v=113"></script>
+<script>
+  // Cerrado fuera de 10:00-20:00, siempre hora de España (Madrid), esté donde esté quien mira la página.
+  (function () {
+    var el = document.getElementById('teaserClosed'); if (!el) return;
+    function paint() {
+      var hour = Number(new Intl.DateTimeFormat('en-GB', { hour: '2-digit', hourCycle: 'h23', timeZone: 'Europe/Madrid' }).format(new Date()));
+      var open = hour >= 10 && hour < 20, l = window.ROCE_I18N ? window.ROCE_I18N.getLang() : 'es';
+      el.hidden = open; if (open) return;
+      var k = hour < 10 ? 'day_closed_tag_am' : 'day_closed_tag_pm';
+      el.textContent = (window.ROCE_I18N && window.ROCE_I18N.t(k)) || (l === 'en' ? 'Closed now' : 'Cerrado ahora');
+    }
+    paint(); setInterval(paint, 60000); document.addEventListener('roce:lang', paint);
+  })();
+</script>
 <script src="/eventos/config.js?v=2"></script>
 <script src="/eventos/events.js?v=15"></script>
 
