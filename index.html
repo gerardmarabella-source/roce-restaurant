@@ -211,6 +211,12 @@
     transition: transform 0.25s ease;
   }
   .home-square:hover { transform: translateY(-4px); }
+  .home-square-day.is-closed { background: repeating-linear-gradient(135deg, #ffffff 0 11px, #efece4 11px 22px); }
+  .home-square-day.is-closed .home-name { opacity: 0.6; }
+  .home-square-day.is-closed small { font-weight: 700; }
+  .day-pill { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.3rem 0.7rem; border-radius: 999px; background: #0a0a0a; color: #fff; font-size: 0.72rem; line-height: 1; letter-spacing: 0.04em; white-space: nowrap; }
+  @media (max-width: 380px) { .day-pill .dp-n { display: none; } }
+  .day-pill b { font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; }
   .home-square-day { background: var(--white); color: var(--black); border: 2px solid var(--black); }
   .home-square-night { background: var(--black); color: var(--white); border: 2px solid var(--black); }
 
@@ -299,6 +305,7 @@
   .home-square-event[data-env="day"] .he-unit:last-child { padding-right: 0; }
   .home-square-event[data-env="day"].mq-on .he-unit:last-child { padding-right: 2.5rem; }
   .home-square-event[data-env="day"] .he-unit small { margin-left: 0.8rem; }
+  .home-square.home-square-event[data-env="day"] .he-unit strong.home-name, .home-square.home-square-event[data-env="day"] .he-unit small { font-size: var(--evfs); line-height: 1.02; }
   /* «Ahora» simple: punto rojo y la palabra, a la izquierda del texto. */
   .home-square-event[data-env="day"] .he-live { display: none; align-items: center; gap: 0.4rem; flex-shrink: 0; font-family: var(--display); font-size: clamp(0.55rem, 2.6vw, 0.8rem); letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap; }
   .home-square-event[data-env="day"].is-live .he-live { display: inline-flex; }
@@ -311,7 +318,7 @@
     border: 3px solid var(--core); border-radius: 999px;
     box-shadow: 0 0 3px var(--core), 0 0 8px var(--neon), inset 0 0 14px rgba(255, 42, 31, 0.55), inset 0 0 30px rgba(255, 42, 31, 0.25);
     --evp: calc(min(var(--sw), var(--sh)) * 0.09 + 0.4rem);
-    --evfs: clamp(0.58rem, min(7.4cqw, calc(var(--sh) * 0.115)), 1.95rem);
+    --evfs: calc(var(--ev-h) * 0.44); /* el texto del evento (título y fecha) del mismo tamaño que el nombre de los cuadrados (Restaurant & Cocktails) */
     padding-left: var(--evp); padding-right: 0; overflow: visible; position: relative;
     animation: neonOn 1.1s steps(1, end) 1 both;
   }
@@ -383,7 +390,7 @@
   /* Cuadrados anchos (tablet): el nombre de cada espacio cabe entero en una línea. */
   @media (min-width: 600px) {
     .home-square strong.home-name { white-space: nowrap; font-size: clamp(0.8rem, min(5.3cqw, calc(var(--sh) * 0.16)), 2.4rem); }
-    .home-square-event { --evfs: clamp(0.64rem, min(4.1cqw, calc(var(--sh) * 0.125)), 1.9rem); }
+    .home-square-event { --evfs: calc(var(--ev-h) * 0.38); }
     .home-square small { font-size: clamp(0.55rem, min(3.4cqw, calc(var(--sh) * 0.095)), 1.1rem); }
     .home-name span { display: inline; }
   }
@@ -423,7 +430,7 @@
     }
     /* Cuadrados más anchos: el nombre de cada espacio cabe entero en una línea. */
     .home-square strong.home-name { white-space: nowrap; font-size: clamp(0.8rem, min(5.3cqw, calc(var(--sh) * 0.16)), 2.4rem); }
-    .home-square-event { --evfs: clamp(0.64rem, min(4.1cqw, calc(var(--sh) * 0.125)), 1.9rem); }
+    .home-square-event { --evfs: calc(var(--ev-h) * 0.38); }
     .home-square small { font-size: clamp(0.55rem, min(3.4cqw, calc(var(--sh) * 0.095)), 1.1rem); }
     .home-name span { display: inline; }
     .home-squares { display: flex; flex-direction: column; justify-content: flex-start; }
@@ -553,7 +560,7 @@
 
   /* iPhone y móviles de pantalla normal: el letrero LED crece con su franja (antes quedaba enano) y los cuadrados no se comprimen. */
   @media (max-width: 599px) {
-    .home-square-event { --evfs: clamp(0.95rem, calc(var(--ev-h) * 0.42), 1.55rem); padding-left: 1rem; padding-right: 1rem; }
+    .home-square-event { --evfs: calc(var(--ev-h) * 0.44); padding-left: 1rem; padding-right: 1rem; }
     .home-square-event[data-env="night"] { --evp: 1rem; border-width: 2px; }
     .home-square.home-square-event[data-env] .he-unit strong.home-name, .home-square.home-square-event[data-env] .he-unit small { font-size: var(--evfs); line-height: 1.05; }
     .home-square-event[data-env="night"] .he-unit strong, .home-square-event[data-env="night"] .he-unit small { -webkit-text-stroke-width: 1.2px; }
@@ -661,7 +668,7 @@
   </div>
 </div>
 <script src="/cookies.js?v=6"></script>
-<script src="/i18n.js?v=111"></script>
+<script src="/i18n.js?v=114"></script>
 <script src="/eventos/config.js?v=2"></script>
 <script src="/eventos/events.js?v=15"></script>
 
@@ -672,11 +679,24 @@
   (function () {
     function sync() {
       var p = {};
-      new Intl.DateTimeFormat('en-GB', { weekday: 'short', hour: '2-digit', hourCycle: 'h23', timeZone: 'Europe/Madrid' })
+      new Intl.DateTimeFormat('en-GB', { weekday: 'short', hour: '2-digit', minute: '2-digit', hourCycle: 'h23', timeZone: 'Europe/Madrid' })
         .formatToParts(new Date()).forEach(function (x) { p[x.type] = x.value; });
       var hour = Number(p.hour);
       var isDay = hour >= 10 && hour < 20; // Day abierto
-      document.documentElement.setAttribute('data-mode', hour >= 8 && hour < 20 ? 'day' : 'night');
+      // Coffee, Bakery & Kitchen: fuera de 10:00-20:00 (hora de España, la veas desde donde la veas) aparece como cerrado, con cuenta atrás.
+      var day = document.getElementById('chooseDay'), sm = day && day.querySelector('small'), tp = day && day.querySelector('.home-square-top');
+      if (day && sm && tp) {
+        if (!sm.dataset.open) sm.dataset.open = sm.textContent;
+        var T = function (k, d) { return (window.ROCE_I18N && window.ROCE_I18N.t(k)) || d; };
+        day.classList.toggle('is-closed', !isDay);
+        if (isDay) { sm.textContent = sm.dataset.open; tp.innerHTML = ''; }
+        else {
+          var mm = Number(p.minute || 0), now = hour * 60 + mm, left = now < 600 ? 600 - now : 1440 - now + 600;
+          var lt = Math.floor(left / 60) ? Math.floor(left / 60) + ' h' + (left % 60 ? ' ' + (left % 60) + ' min' : '') : (left % 60) + ' min';
+          sm.textContent = T(hour < 10 ? 'day_open_am' : 'day_open_pm', 'Cerrado');
+          tp.innerHTML = '<span class="day-pill"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z"/></svg><b>' + T('day_closed', 'Cerrado') + '</b><span class="dp-n"> · ' + T('day_opens_in', 'Abre en {t}').replace('{t}', lt) + '</span></span>';
+        }
+      }
       renderLive();
     }
 
@@ -789,7 +809,7 @@
     function sig(l) { return l.map(function (e) { return [e.id, e.starts_at, e.env, e.title.es, e.title.en].join('~'); }).join('|'); }
     if (window.ROCE_EVENTS_CACHED && window.ROCE_EVENTS_CACHED.length) EVENTS = window.ROCE_EVENTS_CACHED;
     if (window.ROCE_EVENTS_READY) window.ROCE_EVENTS_READY.then(function (list) { var changed = sig(list) !== sig(EVENTS); EVENTS = list; if (changed) renderLive(); });
-    document.addEventListener('roce:lang', renderLive);
+    document.addEventListener('roce:lang', function () { sync(); renderLive(); });
 
     renderLive();
     sync();

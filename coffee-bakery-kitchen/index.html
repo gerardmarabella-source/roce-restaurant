@@ -161,6 +161,14 @@
      · NOCHE (urbano): rótulo de neón rojo (el mismo de la home), con la etiqueta «Ahora» pegada arriba. */
   .teaser-live { position: relative; display: inline-flex; align-items: center; gap: 0.7rem; max-width: 92vw; margin-top: 1.3rem; text-decoration: none; font-family: var(--display); font-size: 0.9rem; letter-spacing: 0.05em; text-transform: uppercase; }
   .teaser-live[hidden] { display: none; }
+  .teaser-closed { margin: 1rem 0 0; display: inline-flex; align-items: center; gap: 0.7rem; max-width: 92vw; padding: 0.55rem 1rem 0.55rem 0.6rem; background: #0a0a0a; color: #fff; border-radius: 999px; text-align: left; }
+  .teaser-closed[hidden] { display: none; }
+  .teaser-closed .tc-ic { display: grid; place-items: center; flex: none; width: 2rem; height: 2rem; border-radius: 50%; background: rgba(255, 255, 255, 0.14); }
+  .teaser-closed .tc-t { display: flex; flex-direction: column; gap: 0.15rem; min-width: 0; }
+  .teaser-closed .tc-t b { font-family: var(--display); font-size: 0.8rem; line-height: 1; letter-spacing: 0.1em; text-transform: uppercase; }
+  .teaser-closed .tc-t b i { font-style: normal; }
+  @media (max-width: 380px) { .teaser-closed .tc-n { display: none; } }
+  .teaser-closed .tc-t span { font-size: 0.74rem; line-height: 1.15; opacity: 0.85; }
   .teaser-live-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .teaser-live-time { flex-shrink: 0; }
   @keyframes liveDot { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
@@ -520,6 +528,7 @@
       <span class="teaser-live-title"></span>
       <span class="teaser-live-time"></span>
     </a>
+    <p class="teaser-closed" id="teaserClosed" role="status" hidden></p>
   </div>
 
   <div class="teaser-bottom">
@@ -551,7 +560,23 @@
   </div>
 </div>
 <script src="/cookies.js?v=6"></script>
-<script src="/i18n.js?v=111"></script>
+<script src="/i18n.js?v=114"></script>
+<script>
+  // Cerrado fuera de 10:00-20:00, siempre hora de España (Madrid), esté donde esté quien mira la página; con cuenta atrás hasta abrir.
+  (function () {
+    var el = document.getElementById('teaserClosed'); if (!el) return;
+    var MOON = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z"/></svg>';
+    function T(k, d) { return (window.ROCE_I18N && window.ROCE_I18N.t(k)) || d; }
+    function paint() {
+      var p = {}; new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', hourCycle: 'h23', timeZone: 'Europe/Madrid' }).formatToParts(new Date()).forEach(function (x) { p[x.type] = x.value; });
+      var hour = Number(p.hour), now = hour * 60 + Number(p.minute), open = hour >= 10 && hour < 20;
+      el.hidden = open; if (open) return;
+      var left = now < 600 ? 600 - now : 1440 - now + 600, h = Math.floor(left / 60), lt = h ? h + ' h' + (left % 60 ? ' ' + (left % 60) + ' min' : '') : (left % 60) + ' min';
+      el.innerHTML = '<span class="tc-ic">' + MOON + '</span><span class="tc-t"><b>' + T('day_closed', 'Cerrado') + '<i class="tc-n"> · ' + T('day_opens_in', 'Abre en {t}').replace('{t}', lt) + '</i></b><span>' + T(hour < 10 ? 'day_open_am' : 'day_open_pm', '') + '</span></span>';
+    }
+    paint(); setInterval(paint, 30000); document.addEventListener('roce:lang', paint);
+  })();
+</script>
 <script src="/eventos/config.js?v=2"></script>
 <script src="/eventos/events.js?v=15"></script>
 
