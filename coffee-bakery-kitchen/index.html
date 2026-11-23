@@ -102,7 +102,7 @@
   .teaser-page {
     position: relative;
     width: 100vw;
-    height: 100dvh;
+    height: var(--vh, 100dvh);
     color: var(--black);
     overflow: hidden;
     background: var(--cream);
@@ -462,7 +462,7 @@
      y pasa a apilarse en columna; si no cabe, la página se desplaza en vez de montarse un texto sobre otro. */
   @media (max-height: 660px), (max-width: 359px) {
     html, body { height: auto; min-height: 100%; overflow-x: hidden; overflow-y: auto; }
-    .teaser-page { height: auto; min-height: 100dvh; display: flex; flex-direction: column; justify-content: flex-start; gap: 0; overflow: visible; }
+    .teaser-page { height: auto; min-height: var(--vh, 100dvh); display: flex; flex-direction: column; justify-content: flex-start; gap: 0; overflow: visible; }
     .teaser-page > picture { display: contents; }   /* la foto es absoluta: que no cuente como bloque ni reparta huecos (el logo bajaba al centro) */
     .teaser-top { position: relative; top: auto; margin-top: 4.8rem; flex: none; }   /* el logo queda siempre en el mismo sitio, arriba */
     .teaser-bottom { position: relative; flex: none; margin-top: auto; padding-top: 1.4rem; }   /* y lo de abajo, pegado abajo */
@@ -471,6 +471,7 @@
   }
   @media (max-height: 660px) and (min-width: 641px) { .teaser-top { margin-top: 1.4rem; } }
 </style>
+<script src="/vh.js?v=1"></script>
 <script src="/brand.js?v=1" defer></script>
 </head>
 <body>
