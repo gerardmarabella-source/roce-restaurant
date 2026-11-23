@@ -1145,6 +1145,7 @@
       '<label class="ad-field"><span>Nombre (opcional)</span><input type="text" id="nwName" maxlength="80" placeholder="Sin nombre"></label>' +
       '<label class="ad-field"><span>Teléfono</span><input type="tel" id="nwPhone"></label>' +
       '<label class="ad-field"><span>Email</span><input type="email" id="nwEmail" placeholder="para enviarle la confirmación"></label>' +
+      '<div class="ad-field full mt-sugg-wrap"><div class="mt-sugg" id="nwSugg" role="listbox" hidden></div><p class="mt-known" id="nwKnown" hidden></p></div>' +
       '</div>' +
       '<div class="ad-field"><span>Mesas</span><label class="mt-pick"><input type="radio" name="nwAuto" value="auto" checked> Asignar automáticamente</label>' +
       '<label class="mt-pick"><input type="radio" name="nwAuto" value="manual"' + (pre.table ? ' checked' : '') + '> Elegir mesas</label><div class="mt-picks" id="nwPicks"></div></div>' +
@@ -1197,6 +1198,41 @@
       }
       pickSvc(); depRow(); refreshPicks();
       if (pre.prefill) { q('nwName').value = pre.prefill.name || ''; q('nwEmail').value = pre.prefill.email || ''; q('nwPhone').value = pre.prefill.phone || ''; q('nwParty').value = pre.prefill.party || 2; }
+      /* Clientes ya guardados: al escribir nombre, teléfono o email se ofrecen sugerencias y, al elegir una, se rellenan los datos (y las alergias/etiquetas de su ficha). */
+      var plain = function (x) { return String(x || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim(); };
+      var crmReady = S.crmMap && Object.keys(S.crmMap).length ? Promise.resolve() : A.api('rpc/dining_crm', { method: 'POST', body: {} }).then(function (r) { S.crmMap = S.crmMap || {}; (r || []).forEach(function (c) { S.crmMap[c.customer_key] = c; }); }).catch(function () {});
+      function suggest(field) {
+        var box = q('nwSugg'), v = q(field).value, nv = plain(v), dv = v.replace(/\D/g, '');
+        var ok = field === 'nwName' ? nv.length >= 2 : field === 'nwPhone' ? dv.length >= 3 : nv.length >= 3;
+        if (!ok) { box.hidden = true; box.innerHTML = ''; return; }
+        var list = Object.keys(S.crmMap || {}).map(function (k) { return S.crmMap[k]; }).filter(function (c) {
+          if (!c.name && !c.phone && !c.email) return false;
+          if (field === 'nwName') return nv.split(/\s+/).every(function (w) { return plain(c.name).indexOf(w) !== -1; });
+          if (field === 'nwPhone') return String(c.phone || '').replace(/\D/g, '').indexOf(dv) !== -1;
+          return plain(c.email).indexOf(nv) !== -1;
+        }).sort(function (a, b) {
+          var sa = field === 'nwName' && plain(a.name).indexOf(nv) === 0 ? 1 : 0, sb = field === 'nwName' && plain(b.name).indexOf(nv) === 0 ? 1 : 0;
+          return sb - sa || (b.visits || 0) - (a.visits || 0) || String(a.name).localeCompare(String(b.name));
+        }).slice(0, 5);
+        box.innerHTML = list.map(function (c) {
+          return '<button type="button" class="mt-sg" data-ck="' + esc(c.customer_key) + '" role="option"><b>' + esc(c.name || 'Sin nombre') + '</b><span>' + esc([c.phone, c.email].filter(Boolean).join(' · ')) + '</span>' +
+            ((c.visits || c.blocked || c.no_shows) ? '<em>' + (c.blocked ? '⛔ bloqueado · ' : '') + (c.visits ? c.visits + (c.visits === 1 ? ' visita' : ' visitas') : '') + (c.no_shows ? (c.visits ? ' · ' : '') + c.no_shows + ' no-show' : '') + '</em>' : '') + '</button>';
+        }).join('');
+        box.hidden = !list.length;
+      }
+      function pickCustomer(c) {
+        if (c.name) q('nwName').value = c.name; if (c.phone) q('nwPhone').value = c.phone; if (c.email) q('nwEmail').value = c.email;
+        [].forEach.call(m.querySelectorAll('input[name="nwAl"]'), function (i) { if ((c.tags || []).indexOf(i.value) !== -1) i.checked = true; });
+        q('nwSugg').hidden = true; q('nwSugg').innerHTML = '';
+        var kn = q('nwKnown'), bits = [];
+        if (c.visits) bits.push(c.visits + (c.visits === 1 ? ' visita' : ' visitas')); if (c.last_visit) bits.push('última ' + new Date(c.last_visit).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' }));
+        if (c.no_shows) bits.push(c.no_shows + ' no-show'); if ((c.tags || []).length) bits.push('con etiquetas/alergias de su ficha');
+        kn.className = 'mt-known' + (c.blocked ? ' is-blocked' : ''); kn.hidden = false;
+        kn.textContent = (c.blocked ? '⛔ Cliente bloqueado' + (c.blocked_reason ? ': ' + c.blocked_reason : '') + '. ' : '✓ Cliente guardado: datos rellenados. ') + bits.join(' · ') + (c.note ? ' — Nota: ' + c.note : '');
+      }
+      ['nwName', 'nwPhone', 'nwEmail'].forEach(function (id) { q(id).addEventListener('input', function () { q('nwKnown').hidden = true; crmReady.then(function () { suggest(id); }); }); });
+      q('nwSugg').addEventListener('click', function (e) { var b = e.target.closest('.mt-sg'); if (b && S.crmMap[b.dataset.ck]) pickCustomer(S.crmMap[b.dataset.ck]); });
+      m.addEventListener('click', function (e) { if (!e.target.closest('#nwSugg') && ['nwName', 'nwPhone', 'nwEmail'].indexOf(e.target.id) === -1) q('nwSugg').hidden = true; });
       ['nwTime', 'nwDate'].forEach(function (id) { q(id).addEventListener('change', function () { pickSvc(); refreshPicks(); }); });
       q('nwZone').addEventListener('change', function () { pickSvc(); depRow(); q('nwPicks').innerHTML = ''; refreshPicks(); });
       q('nwType').addEventListener('change', typeUi); q('nwTrSt').addEventListener('change', typeUi);
