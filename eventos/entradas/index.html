@@ -130,7 +130,7 @@
 </header>
 
 <main class="tk-wrap">
-  <p class="tk-test" id="tkTest" data-i18n="tk_test_banner">Modo prueba: de momento no se cobra nada.</p>
+  <p class="tk-test" id="tkTest" data-i18n="tk_test_banner" hidden>Modo prueba: de momento no se cobra nada.</p>
 
   <!-- Cabecera con el evento (pasos 1-3) -->
   <div id="tkEvent">
@@ -246,7 +246,7 @@
   </div>
 </div>
 <script src="/cookies.js?v=6"></script>
-<script src="/i18n.js?v=118"></script>
+<script src="/i18n.js?v=119"></script>
 <script src="/assets/js/qrcode.js?v=1"></script>
 <script>
   window.ROCE_EVENTS_READY.then(function () {
@@ -276,6 +276,8 @@
     }
     window.ROCE_PAYMENTS = {
       enabled: false,
+      checked: false,   // ya se sabe si el pago online está activo
+      failed: false,    // no se pudo comprobar
       env: 'test',
       // Pide los datos firmados y redirige al TPV. Devuelve una promesa que solo se
       // resuelve si algo falla (si todo va bien el navegador se va de la página).
@@ -292,13 +294,18 @@
         });
       }
     };
-    if (U.backend && ev.price_cents > 0) {
+    // Antes de vender se comprueba si el pago online está activo (hasta entonces no se puede continuar: así nunca se cae por error en un «modo prueba» sin cobro).
+    function checkPay(tries) {
       payFn({ action: 'status' }).then(function (d) {
-        window.ROCE_PAYMENTS.enabled = !!d.enabled;
-        window.ROCE_PAYMENTS.env = d.env || 'test';
+        var P = window.ROCE_PAYMENTS; P.enabled = !!d.enabled; P.env = d.env || 'test'; P.checked = true; P.failed = false;
         repaint();
-      }).catch(function () {});
+      }).catch(function () {
+        var P = window.ROCE_PAYMENTS;
+        if (tries > 0) { setTimeout(function () { checkPay(tries - 1); }, 1500); return; }
+        P.failed = true; repaint();
+      });
     }
+    if (U.backend && ev.price_cents > 0) checkPay(2);
 
     // ─── Envío de la reserva ────────────────────────────────────────────
     // Con el panel conectado (eventos/config.js) la reserva se guarda en la
@@ -366,14 +373,9 @@
       if (ev.image) { $('tkPoster').querySelector('img').src = ev.image; $('tkPoster').hidden = false; }
       $('tkWhen').textContent = whenText();
       var P = window.ROCE_PAYMENTS, tb = $('tkTest');
-      if (ev.price_cents === 0) {
-        tb.hidden = true; // un evento gratuito no tiene nada que "probar"
-      } else if (P.enabled) {
-        tb.hidden = true; // pago con tarjeta activo: sin avisos de prueba
-      } else {
-        tb.hidden = false;
-        tb.setAttribute('data-i18n', 'tk_test_banner'); tb.textContent = t('tk_test_banner');
-      }
+      // Aviso de prueba solo cuando la web corre sin servidor (desarrollo). Con servidor, o hay pago online o no se vende.
+      tb.hidden = !(ev.price_cents > 0 && !U.backend);
+      if (!tb.hidden) { tb.setAttribute('data-i18n', 'tk_test_banner'); tb.textContent = t('tk_test_banner'); }
       $('ageRow').hidden = ev.env !== 'night';
       $('invBox').hidden = ev.price_cents === 0;
     }
@@ -390,7 +392,9 @@
       hint.classList.toggle('is-alert', ev.left <= 0);
       hint.textContent = ev.left <= 0 ? t('tk_soldout') : '';
       hint.hidden = ev.left > 0;
-      $('to2').disabled = ev.left <= 0;
+      var P = window.ROCE_PAYMENTS, waiting = U.backend && ev.price_cents > 0 && ev.left > 0 && !P.checked;
+      if (waiting) { hint.hidden = false; hint.classList.toggle('is-alert', P.failed); hint.textContent = t(P.failed ? 'tk_check_fail' : 'tk_checking'); }
+      $('to2').disabled = ev.left <= 0 || waiting;
     }
     function paintReview() {
       var o = state.order, l = lang();
@@ -490,6 +494,10 @@
       var btn = $('confirmBtn'), err = $('payError'), o = state.order;
       err.hidden = true; btn.disabled = true; btn.textContent = t('tk_sending');
       var run;
+      if (U.backend && o.total_cents > 0 && !window.ROCE_PAYMENTS.enabled) {
+        // Un evento de pago nunca se reserva sin cobrar.
+        err.textContent = t('tk_nopay'); err.hidden = false; btn.disabled = false; paintConfirm(); return;
+      }
       if (needsPayment()) {
         // 1) se guarda la reserva (la plaza queda retenida 30 min); 2) se va al banco.
         run = (o.booked ? Promise.resolve() : U.book(ev, Object.assign({}, o, { online: true })).then(function (res) {
