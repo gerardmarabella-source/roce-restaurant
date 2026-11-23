@@ -40,6 +40,11 @@
   .tk-steps li { opacity: 0.28; transition: opacity 0.2s ease; }
   .tk-steps li.is-on { opacity: 1; }
   .tk-steps.is-hidden { visibility: hidden; }
+  /* Pantallas estrechas (hasta 380 px): «← Eventos» y los tres pasos van en filas separadas para que «Confirmar» no se salga */
+  @media (max-width: 380px) {
+    .tk-top { flex-wrap: wrap; height: auto; padding-top: 1rem; padding-bottom: 0.4rem; row-gap: 0.7rem; }
+    .tk-steps { width: 100%; justify-content: space-between; gap: 0.4rem; font-size: 0.74rem; }
+  }
 
   .tk-wrap { width: 100%; max-width: 560px; margin: 0 auto; padding: 1rem var(--pad) 3rem; flex: 1; }
   .tk-test { display: inline-block; margin-bottom: 1.25rem; padding: 0.4rem 0.8rem; border: 1px dashed currentColor; font-size: 0.8rem; opacity: 0.75; }
@@ -246,7 +251,7 @@
   </div>
 </div>
 <script src="/cookies.js?v=6"></script>
-<script src="/i18n.js?v=121"></script>
+<script src="/i18n.js?v=122"></script>
 <script src="/assets/js/qrcode.js?v=1"></script>
 <script>
   window.ROCE_EVENTS_READY.then(function () {

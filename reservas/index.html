@@ -273,6 +273,13 @@
   .pe-form select:invalid { color: rgba(255, 255, 255, 0.6); }
   .pe-form select option { color: var(--black); text-transform: none; }
   .pe-form textarea { resize: none; min-height: 3.4rem; }
+  /* Número de personas: etiqueta siempre visible (antes era un placeholder largo que se cortaba en pantallas estrechas y desaparecía al escribir) */
+  .pe-field { display: flex; flex-direction: column; }
+  .pe-lbl { padding-top: 0.85rem; font-family: var(--display); font-size: 0.78rem; letter-spacing: 0.06em; text-transform: uppercase; color: rgba(255, 255, 255, 0.6); }
+  .pe-field input[type="number"] { padding-top: 0.35rem; }
+  .pe-hint { margin-top: 0.3rem; font-size: 0.74rem; letter-spacing: 0.04em; color: rgba(255, 255, 255, 0.55); }
+  body.zone-day .pe-lbl { color: rgba(10, 10, 10, 0.55); }
+  body.zone-day .pe-hint { color: rgba(10, 10, 10, 0.55); }
   .pe-form input[type="number"] { -moz-appearance: textfield; }
   .pe-form input[type="number"]::-webkit-outer-spin-button,
   .pe-form input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
@@ -425,7 +432,11 @@
             <option value="Otro" data-i18n="pe_type_other">Otro</option>
           </select>
         </div>
-        <input type="number" name="personas" min="1" inputmode="numeric" placeholder="Número de personas previsto (aprox)*" data-i18n-placeholder="pe_ph_guests" required>
+        <label class="pe-field">
+          <span class="pe-lbl" data-i18n="pe_lbl_guests">N.º de personas*</span>
+          <input type="number" name="personas" min="1" inputmode="numeric" data-label-key="pe_ph_guests" required>
+          <small class="pe-hint" data-i18n="pe_hint_guests">Aproximado</small>
+        </label>
         <input type="text" name="fecha" placeholder="Fecha aproximada*" data-i18n-placeholder="pe_ph_date" required>
         <textarea name="mensaje" rows="1" placeholder="Mensaje" data-i18n-placeholder="pe_ph_message"></textarea>
 
@@ -469,7 +480,7 @@
   </div>
 </div>
 <script src="/cookies.js?v=6"></script>
-<script src="/i18n.js?v=121"></script>
+<script src="/i18n.js?v=122"></script>
 <script src="/agegate.js?v=12"></script>
 <script src="/eventos/config.js?v=3"></script>
 <script src="/eventos/events.js?v=15"></script>
