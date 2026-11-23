@@ -510,7 +510,7 @@
   function timeline() {
     var base = new Date(A.madridToISO(S.date + 'T00:00')).getTime();
     var svcs = S.services.filter(function (x) { return x.active && (!x.zone_ids || x.zone_ids.indexOf(S.zone) !== -1); });
-    var t0 = svcs.length ? Math.min.apply(null, svcs.map(function (x) { return x.start_min; })) : 600;
+    var t0 = svcs.length ? Math.min.apply(null, svcs.map(function (x) { return x.start_min; })) : 540;
     var t1 = svcs.length ? Math.max.apply(null, svcs.map(function (x) { return x.last_min + x.duration_min; })) : 1560;
     var rows = S.tables.filter(function (t) { return t.zone_id === S.zone && t.active; });
     var mins = function (iso) { return (new Date(iso).getTime() - base) / 60000; };

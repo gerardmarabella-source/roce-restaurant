@@ -10,7 +10,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="format-detection" content="telephone=no, address=no, email=no, date=no">
 <title>ROCE</title>
-<meta name="description" content="ROCE en Valencia (Gran Vía Marqués del Túria 16). De día, Coffee, Bakery &amp; Kitchen, de 10:00 a 20:00. De noche, Restaurant &amp; Cocktails, de miércoles a sábado, de 20:00 a 02:00.">
+<meta name="description" content="ROCE en Valencia (Gran Vía Marqués del Túria 16). De día, Coffee, Bakery &amp; Kitchen, de 9:00 a 20:00. De noche, Restaurant &amp; Cocktails, de miércoles a sábado, de 20:00 a 02:00.">
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link rel="icon" type="image/png" href="/assets/meta/favicon-32.png" sizes="32x32">
 <link rel="apple-touch-icon" href="/assets/meta/apple-touch-icon.png">
@@ -20,9 +20,9 @@
 <meta property="og:locale" content="es_ES">
 <meta property="og:locale:alternate" content="en_GB">
 <meta name="twitter:title" content="ROCE">
-<meta name="twitter:description" content="ROCE en Valencia (Gran Vía Marqués del Túria 16). De día, Coffee, Bakery &amp; Kitchen, de 10:00 a 20:00. De noche, Restaurant &amp; Cocktails, de miércoles a sábado, de 20:00 a 02:00.">
+<meta name="twitter:description" content="ROCE en Valencia (Gran Vía Marqués del Túria 16). De día, Coffee, Bakery &amp; Kitchen, de 9:00 a 20:00. De noche, Restaurant &amp; Cocktails, de miércoles a sábado, de 20:00 a 02:00.">
 <meta property="og:title" content="ROCE">
-<meta property="og:description" content="ROCE en Valencia (Gran Vía Marqués del Túria 16). De día, Coffee, Bakery &amp; Kitchen, de 10:00 a 20:00. De noche, Restaurant &amp; Cocktails, de miércoles a sábado, de 20:00 a 02:00.">
+<meta property="og:description" content="ROCE en Valencia (Gran Vía Marqués del Túria 16). De día, Coffee, Bakery &amp; Kitchen, de 9:00 a 20:00. De noche, Restaurant &amp; Cocktails, de miércoles a sábado, de 20:00 a 02:00.">
 <meta property="og:image" content="https://roce.es/assets/meta/og-image.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -106,7 +106,7 @@
 </script>
 <script>
   // Fondo según la hora de Valencia: claro de 08:00 a 20:00, oscuro el resto.
-  // (El "Ahora" de Day sigue su horario de apertura, 10:00-20:00.) Se fija
+  // (El "Ahora" de Day sigue su horario de apertura, 9:00-20:00.) Se fija
   // antes de pintar para que no parpadee.
   (function () {
     var hour = Number(new Intl.DateTimeFormat('en-GB', { hour: '2-digit', hourCycle: 'h23', timeZone: 'Europe/Madrid' }).format(new Date()));
@@ -621,7 +621,7 @@
         <div class="home-square-bottom">
           <div>
             <strong class="home-name"><span>Coffee, Bakery</span> <span>&amp; Kitchen</span></strong>
-            <small>10:00 – 20:00</small>
+            <small>9:00 – 20:00</small>
           </div>
           <span class="home-square-arrow" aria-hidden="true">→</span>
         </div>
@@ -647,7 +647,7 @@
   </button>
   <a class="reservas-menu-item" href="/coffee-bakery-kitchen/">
     <span class="reservas-menu-title is-long"><span>Coffee, Bakery</span> <span>&amp; Kitchen</span></span>
-    <span class="reservas-menu-sub">10:00 – 20:00</span>
+    <span class="reservas-menu-sub">9:00 – 20:00</span>
   </a>
   <a class="reservas-menu-item" href="/restaurant-cocktails/">
     <span class="reservas-menu-title is-long"><span>Restaurant</span> <span>&amp; Cocktails</span></span>
@@ -668,13 +668,13 @@
   </div>
 </div>
 <script src="/cookies.js?v=6"></script>
-<script src="/i18n.js?v=119"></script>
+<script src="/i18n.js?v=120"></script>
 <script src="/eventos/config.js?v=3"></script>
 <script src="/eventos/events.js?v=15"></script>
 
 <script>
   // Se marca "Ahora" en lo que está abierto según la hora de Valencia (Day de
-  // 10:00 a 20:00, Night de miércoles a sábado) y se actualiza cada minuto.
+  // 9:00 a 20:00, Night de miércoles a sábado) y se actualiza cada minuto.
   // No se recuerda nada: siempre se pregunta.
   (function () {
     function sync() {
@@ -682,8 +682,8 @@
       new Intl.DateTimeFormat('en-GB', { weekday: 'short', hour: '2-digit', minute: '2-digit', hourCycle: 'h23', timeZone: 'Europe/Madrid' })
         .formatToParts(new Date()).forEach(function (x) { p[x.type] = x.value; });
       var hour = Number(p.hour);
-      var isDay = hour >= 10 && hour < 20; // Day abierto
-      // Coffee, Bakery & Kitchen: fuera de 10:00-20:00 (hora de España, la veas desde donde la veas) aparece como cerrado, con cuenta atrás.
+      var isDay = hour >= 9 && hour < 20; // Day abierto
+      // Coffee, Bakery & Kitchen: fuera de 9:00-20:00 (hora de España, la veas desde donde la veas) aparece como cerrado, con cuenta atrás.
       var day = document.getElementById('chooseDay'), sm = day && day.querySelector('small'), tp = day && day.querySelector('.home-square-top');
       if (day && sm && tp) {
         if (!sm.dataset.open) sm.dataset.open = sm.textContent;
@@ -691,7 +691,7 @@
         day.classList.toggle('is-closed', !isDay);
         if (isDay) { sm.textContent = sm.dataset.open; tp.innerHTML = ''; }
         else {
-          var mm = Number(p.minute || 0), now = hour * 60 + mm, left = now < 600 ? 600 - now : 1440 - now + 600;
+          var mm = Number(p.minute || 0), now = hour * 60 + mm, left = now < 540 ? 540 - now : 1440 - now + 540;
           var lt = Math.floor(left / 60) ? Math.floor(left / 60) + ' h' + (left % 60 ? ' ' + (left % 60) + ' min' : '') : (left % 60) + ' min';
           sm.textContent = T('day_opens_in', 'Abrimos en {t}').replace('{t}', lt);
           tp.innerHTML = '<span class="day-pill"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z"/></svg><b>' + T('day_closed', 'Cerrado') + '</b></span>';

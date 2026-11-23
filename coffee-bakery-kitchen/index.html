@@ -9,7 +9,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="format-detection" content="telephone=no, address=no, email=no, date=no">
 <title>ROCE - Coffee, Bakery &amp; Kitchen</title>
-<meta name="description" content="ROCE Coffee, Bakery &amp; Kitchen en Valencia (Marqués del Túria 16). Brunch, café y cocina todos los días de 10:00 a 20:00. Reserva tu mesa online.">
+<meta name="description" content="ROCE Coffee, Bakery &amp; Kitchen en Valencia (Marqués del Túria 16). Brunch, café y cocina todos los días de 9:00 a 20:00. Reserva tu mesa online.">
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link rel="icon" type="image/png" href="/assets/meta/favicon-32.png" sizes="32x32">
 <link rel="apple-touch-icon" href="/assets/meta/apple-touch-icon.png">
@@ -19,9 +19,9 @@
 <meta property="og:locale" content="es_ES">
 <meta property="og:locale:alternate" content="en_GB">
 <meta name="twitter:title" content="ROCE - Coffee, Bakery &amp; Kitchen">
-<meta name="twitter:description" content="ROCE Coffee, Bakery &amp; Kitchen en Valencia (Marqués del Túria 16). Brunch, café y cocina todos los días de 10:00 a 20:00. Reserva tu mesa online.">
+<meta name="twitter:description" content="ROCE Coffee, Bakery &amp; Kitchen en Valencia (Marqués del Túria 16). Brunch, café y cocina todos los días de 9:00 a 20:00. Reserva tu mesa online.">
 <meta property="og:title" content="ROCE - Coffee, Bakery &amp; Kitchen">
-<meta property="og:description" content="ROCE Coffee, Bakery &amp; Kitchen en Valencia (Marqués del Túria 16). Brunch, café y cocina todos los días de 10:00 a 20:00. Reserva tu mesa online.">
+<meta property="og:description" content="ROCE Coffee, Bakery &amp; Kitchen en Valencia (Marqués del Túria 16). Brunch, café y cocina todos los días de 9:00 a 20:00. Reserva tu mesa online.">
 <meta property="og:image" content="https://roce.es/assets/meta/og-image.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -42,7 +42,7 @@
       "parentOrganization": {
         "@id": "https://roce.es/#org"
       },
-      "description": "Coffee, Bakery & Kitchen en Valencia: brunch, café y cocina todos los días de 10:00 a 20:00.",
+      "description": "Coffee, Bakery & Kitchen en Valencia: brunch, café y cocina todos los días de 9:00 a 20:00.",
       "image": "https://roce.es/assets/meta/og-image.png",
       "telephone": "+34614073163",
       "email": "reservas@roce.es",
@@ -66,7 +66,7 @@
             "Saturday",
             "Sunday"
           ],
-          "opens": "10:00",
+          "opens": "09:00",
           "closes": "20:00"
         }
       ],
@@ -559,18 +559,18 @@
   </div>
 </div>
 <script src="/cookies.js?v=6"></script>
-<script src="/i18n.js?v=119"></script>
+<script src="/i18n.js?v=120"></script>
 <script>
-  // Cerrado fuera de 10:00-20:00, siempre hora de España (Madrid), esté donde esté quien mira la página; con cuenta atrás hasta abrir.
+  // Cerrado fuera de 9:00-20:00, siempre hora de España (Madrid), esté donde esté quien mira la página; con cuenta atrás hasta abrir.
   (function () {
     var el = document.getElementById('teaserClosed'); if (!el) return;
     var MOON = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z"/></svg>';
     function T(k, d) { return (window.ROCE_I18N && window.ROCE_I18N.t(k)) || d; }
     function paint() {
       var p = {}; new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', hourCycle: 'h23', timeZone: 'Europe/Madrid' }).formatToParts(new Date()).forEach(function (x) { p[x.type] = x.value; });
-      var hour = Number(p.hour), now = hour * 60 + Number(p.minute), open = hour >= 10 && hour < 20;
+      var hour = Number(p.hour), now = hour * 60 + Number(p.minute), open = hour >= 9 && hour < 20;
       el.hidden = open; if (open) return;
-      var left = now < 600 ? 600 - now : 1440 - now + 600, h = Math.floor(left / 60), lt = h ? h + ' h' + (left % 60 ? ' ' + (left % 60) + ' min' : '') : (left % 60) + ' min';
+      var left = now < 540 ? 540 - now : 1440 - now + 540, h = Math.floor(left / 60), lt = h ? h + ' h' + (left % 60 ? ' ' + (left % 60) + ' min' : '') : (left % 60) + ' min';
       el.innerHTML = '<span class="tc-ic">' + MOON + '</span><span class="tc-t"><b>' + T('day_closed', 'Cerrado') + '</b><span>' + T('day_opens_in', 'Abrimos en {t}').replace('{t}', lt) + '</span></span>';
     }
     paint(); setInterval(paint, 30000); document.addEventListener('roce:lang', paint);
