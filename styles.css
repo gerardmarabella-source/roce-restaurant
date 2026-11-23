@@ -222,12 +222,17 @@ html.cookie-open { overflow: hidden; }
 
 /* Barra compacta (todas las páginas): abajo, redondeada, sin título y sin bloquear la pantalla. Con el aviso +18 abierto se esconde hasta que se responde. */
 .cookie-banner.is-compact { inset: auto 0 0 0; padding: 0.7rem 0.7rem calc(0.7rem + env(safe-area-inset-bottom)); background: transparent; -webkit-backdrop-filter: none; backdrop-filter: none; pointer-events: none; overflow: visible; display: block; }
-.cookie-banner.is-compact .cookie-card { pointer-events: auto; width: min(100%, 30rem); margin: 0 auto; padding: 1rem 1rem 0.9rem; gap: 0.75rem; background: #161616; border: 0; border-radius: 20px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5); animation: cookieUp 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) 0.4s both; }
-.cookie-banner.is-compact .cookie-title { display: none; }
-.cookie-banner.is-compact .cookie-text { font-size: 0.76rem; line-height: 1.42; color: rgba(236, 231, 221, 0.85); }
+.cookie-banner.is-compact .cookie-card { pointer-events: auto; width: min(100%, 30rem); margin: 0 auto; padding: 1rem 1rem 0.9rem; gap: 0.75rem; background: var(--cream); color: var(--black); border: 2px solid #fff; border-radius: 20px; box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.6), 0 14px 44px rgba(0, 0, 0, 0.55); animation: cookieUp 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) 0.4s both; }
+.cookie-banner.is-compact .cookie-title { display: flex; align-items: center; gap: 0.55rem; font-size: 1.15rem; line-height: 1; letter-spacing: 0.04em; }
+.cookie-banner.is-compact .cookie-title::before { content: ""; flex: none; width: 1.7rem; height: 1.7rem; background: var(--black); -webkit-mask: var(--cookie-ic) center / contain no-repeat; mask: var(--cookie-ic) center / contain no-repeat; }
+.cookie-banner.is-compact { --cookie-ic: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M21 12.2A9 9 0 1 1 11.8 3a4.2 4.2 0 0 0 4.7 4.8 3.5 3.5 0 0 0 4.5 4.4Z'/%3E%3Ccircle cx='8.5' cy='10' r='1' fill='black'/%3E%3Ccircle cx='12' cy='15' r='1' fill='black'/%3E%3Ccircle cx='15.5' cy='11.5' r='.9' fill='black'/%3E%3Ccircle cx='7.8' cy='14.8' r='.8' fill='black'/%3E%3C/svg%3E"); }
+.cookie-banner.is-compact .cookie-text { font-size: 0.78rem; line-height: 1.42; color: rgba(10, 10, 10, 0.82); }
+.cookie-banner.is-compact .cookie-text a { color: var(--black); }
 .cookie-banner.is-compact .cookie-actions { gap: 0.5rem; }
 .cookie-banner.is-compact .cookie-reject, .cookie-banner.is-compact .cookie-accept { min-height: 2.7rem; padding: 0.5rem 0.8rem; border-radius: 999px; border-width: 1.5px; font-family: var(--display); font-size: 0.85rem; letter-spacing: 0.01em; text-transform: none; font-weight: 700; }
-.cookie-banner.is-compact .cookie-reject { font-weight: 500; }
+.cookie-banner.is-compact .cookie-accept { background: var(--black); color: var(--cream); border-color: var(--black); }
+.cookie-banner.is-compact .cookie-reject { font-weight: 600; background: transparent; color: var(--black); border-color: var(--black); }
+.cookie-banner.is-compact .cookie-reject:hover { background: rgba(10, 10, 10, 0.08); }
 /* (la barra compacta fuerza display:block y tapaba a .is-hidden: al aceptar o rechazar no se cerraba) */
 .cookie-banner.is-compact.is-hidden { display: none; }
 html.age-open .cookie-banner { display: none; }

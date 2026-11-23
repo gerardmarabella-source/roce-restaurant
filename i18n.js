@@ -47,7 +47,7 @@
     gl_err_sold: { es: 'Ya no quedan plazas para tantas personas. Escríbenos a reservas@roce.es.', en: 'There are no longer enough spots. Write to reservas@roce.es.' },
     gl_err_data: { es: 'Revisa tus datos y los nombres.', en: 'Check your details and the names.' },
     gl_err_net: { es: 'No se ha podido guardar. Inténtalo de nuevo.', en: 'Could not save. Please try again.' },
-    cookie_title: { es: 'Tu privacidad', en: 'Your privacy' },
+    cookie_title: { es: 'Cookies', en: 'Cookies' },
     age_title: { es: 'De noche, solo mayores de 18', en: 'After dark, 18+ only' },
     age_text: { es: 'En Restaurant & Cocktails la restricción de +18 es nocturna: desde las 20:00 (cena y fiesta). ¿Tienes 18 años o más?', en: 'At Restaurant & Cocktails the 18+ rule applies at night: from 8 pm (dinner and party). Are you 18 or older?' },
     age_book_title: { es: 'Reserva de noche: solo +18', en: 'Night booking: 18+ only' },
