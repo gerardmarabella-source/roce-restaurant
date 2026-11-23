@@ -135,6 +135,8 @@
     pe_ph_email: { es: 'Email', en: 'Email' },
     pe_ph_type: { es: 'Tipo de evento*', en: 'Event type*' },
     pe_ph_guests: { es: 'Número de personas previsto (aprox)*', en: 'Expected number of guests (approx.)*' },
+    pe_lbl_guests: { es: 'N.º de personas*', en: 'No. of guests*' },
+    pe_hint_guests: { es: 'Aproximado', en: 'Approximate' },
     pe_ph_date: { es: 'Fecha aproximada*', en: 'Approximate date*' },
     pe_ph_message: { es: 'Mensaje', en: 'Message' },
     pe_type_birthday: { es: 'Cumpleaños', en: 'Birthday' },
