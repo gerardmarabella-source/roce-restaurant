@@ -183,6 +183,8 @@
     evd_ig_err: { es: 'No se ha podido crear la imagen.', en: 'Could not create the image.' },
     evd_copied: { es: 'Enlace copiado', en: 'Link copied' },
     ev_cta: { es: 'Comprar entrada', en: 'Get tickets' },
+    ev_loading: { es: 'Cargando agenda…', en: 'Loading events…' },
+    ev_error: { es: 'No hemos podido cargar la agenda. Inténtalo de nuevo en un momento.', en: "We couldn't load the events. Please try again in a moment." },
     ev_empty: { es: 'Muy pronto publicaremos aquí los próximos eventos.', en: 'We will soon publish the upcoming events here.' },
     // Compra de entradas / reserva de plaza (/eventos/entradas/)
     tk_back_events: { es: '← Eventos', en: '← Events' },
@@ -397,6 +399,8 @@
       en: "Remember whether you accepted or rejected the cookie notice, so we don't show it to you again.",
     },
     cookies_td_owner: { es: 'Propia (ROCE)', en: 'First-party (ROCE)' },
+    cookies_td_purpose_lang: { es: 'Recordar tu idioma (español o inglés) para que la web y la app de pedidos se vean igual.', en: 'Remember your language (Spanish or English) so the website and the ordering app look the same.' },
+    cookies_td_duration_lang: { es: '1 año', en: '1 year' },
     cookies_td_duration: {
       es: 'Persistente, hasta que borres los datos de navegación de tu dispositivo',
       en: 'Persistent, until you clear your device’s browsing data',
@@ -561,10 +565,21 @@
 
   var currentLang = 'es';
 
+  /* El idioma se comparte entre roce.es y app.roce.es con una cookie técnica de preferencia en .roce.es (el almacenamiento local no se comparte entre dominios).
+     La última elección, hecha en cualquiera de las dos, manda. */
+  function readLangCookie() { var m = (document.cookie || '').match(/(?:^|;\s*)roce_lang=(es|en)/); return m ? m[1] : null; }
+  function writeLangCookie(l) {
+    try {
+      var dom = /(^|\.)roce\.es$/.test(location.hostname) ? '; domain=.roce.es' : '';
+      document.cookie = 'roce_lang=' + l + dom + '; path=/; max-age=31536000; SameSite=Lax' + (location.protocol === 'https:' ? '; Secure' : '');
+    } catch (e) {}
+  }
   function detectLang() {
     var saved = null;
+    var ck = readLangCookie();
+    if (ck) { try { localStorage.setItem(STORAGE_KEY, ck); } catch (e) {} return ck; }
     try { saved = localStorage.getItem(STORAGE_KEY); } catch (e) {}
-    if (saved === 'en' || saved === 'es') return saved;
+    if (saved === 'en' || saved === 'es') { writeLangCookie(saved); return saved; }
     var nav = (navigator.language || (navigator.languages && navigator.languages[0]) || 'es').toLowerCase();
     return nav.indexOf('en') === 0 ? 'en' : 'es';
   }
@@ -618,6 +633,7 @@
 
   function setLang(lang) {
     try { localStorage.setItem(STORAGE_KEY, lang); } catch (e) {}
+    writeLangCookie(lang);
     applyLang(lang);
   }
 

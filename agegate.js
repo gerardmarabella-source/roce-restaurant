@@ -75,7 +75,7 @@
     confirmed: confirmed,
     // opts (opcional): claves de texto distintas para este aviso, p. ej. { age_title: 'age_book_title', age_text: 'age_book_text', age_no: 'age_book_no' }
     ask: function (yes, no, opts) {
-      if (confirmed()) { if (yes) yes(); return; }
+      if (confirmed() && !(opts && opts.force)) { if (yes) yes(); return; }   // opts.force: se vuelve a preguntar aunque ya se haya confirmado antes
       pending = { yes: yes, no: no, opts: opts };
       waitForCookies(show);
     }

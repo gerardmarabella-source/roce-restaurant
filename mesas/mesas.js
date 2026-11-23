@@ -202,10 +202,12 @@
   function noticeHtml() {
     return (st.notices || []).map(function (n) { return '<p class="mz-notice">' + esc(lang() === 'en' ? n.o_en : n.o_es) + '</p>'; }).join('');
   }
-  // Eventos cuya entrada va incluida al reservar cena ese día (eventos/config.js → ROCE_DINNER_ACCESS).
+  // Cualquier día con un evento de noche: quien reserva cena tiene el acceso incluido. Los eventos vienen de events.js (misma fuente que la agenda).
+  var evs = [];
+  if (window.ROCE_EVENTS_READY) window.ROCE_EVENTS_READY.then(function (l) { evs = l || []; render(); }).catch(function () {});
   function perkFor(date) {
-    var cfg = window.ROCE_DINNER_ACCESS || {}, k, out = null;
-    for (k in cfg) if (cfg[k] && cfg[k].date === date) out = cfg[k];
+    var out = null;
+    evs.forEach(function (e) { if (e.env === 'night' && e.date === date) out = { name: e.title }; });
     return out;
   }
   function firstNoteHtml() {
@@ -368,7 +370,11 @@
         var f = document.getElementById('mzForm'); if (f) f.scrollIntoView({ behavior: 'smooth', block: 'start' });
       };
       // La restricción +18 es nocturna: solo salta la alerta al elegir una hora de cena (desde las 20:00), no la comida.
-      if (row.o_ambience === 'night' && row.o_service !== 'night-lunch' && window.ROCE_AGE) window.ROCE_AGE.ask(choose, function () { st.chosen = null; render(); }, { age_title: 'age_book_title', age_text: 'age_book_text', age_no: 'age_book_no' });
+      if (row.o_ambience === 'night' && row.o_service !== 'night-lunch' && window.ROCE_AGE) {
+        // Dentro de un mismo día basta con aceptar una vez; al cambiar de día y elegir otra hora de noche se vuelve a pedir.
+        if (st.ageDay === st.date) choose();
+        else window.ROCE_AGE.ask(function () { st.ageDay = st.date; choose(); }, function () { st.chosen = null; render(); }, { age_title: 'age_book_title', age_text: 'age_book_text', age_no: 'age_book_no', force: true });
+      }
       else choose();
     }
   });

@@ -193,7 +193,7 @@
   </div>
 </div>
 <script src="/cookies.js?v=6"></script>
-<script src="/i18n.js?v=117"></script>
+<script src="/i18n.js?v=118"></script>
 <script>
   window.ROCE_EVENTS_READY.then(function () {
     var U = window.ROCE_EVENT_UTIL, id = new URLSearchParams(location.search).get('e'), e = U.find(id);
@@ -238,10 +238,10 @@
       var sold = e.left <= 0;
       $('evdPrice').textContent = e.price_cents > 0 ? U.money(e.price_cents, l) : t('evd_free', 'Entrada libre');
       $('evdPriceNote').innerHTML = ICON.ticket + '<span>' + esc(e.price[l]) + '</span>';
-      var perk = (window.ROCE_DINNER_ACCESS || {})[e.id], dn = $('evdDinner');
+      var cfgPk = (window.ROCE_DINNER_ACCESS || {})[e.id] || {}, perk = e.env === 'night' && e.price_cents > 0 ? { date: e.date, drink: !!cfgPk.drink } : null, dn = $('evdDinner');   // cualquier evento de noche de pago: reservar cena da el acceso
       $('evdBar').classList.toggle('has-perk', !!perk); dn.hidden = !perk;
       if (perk) { dn.textContent = t('evd_dinner', 'Reservar cena · incluye acceso'); dn.href = '/reservas/?d=' + encodeURIComponent(perk.date) + '#restaurant-cocktails'; }
-      var buy = $('evdBuy'); buy.textContent = sold ? t('tk_soldout', 'Agotado') : perk ? t('evd_party', 'Solo fiesta · {price} con copa').replace('{price}', U.money(e.price_cents, l)) : t('ev_cta', 'Comprar entrada');
+      var buy = $('evdBuy'); buy.textContent = sold ? t('tk_soldout', 'Agotado') : perk ? t('evd_party', 'Solo fiesta · {price} con copa').replace('{price}', U.money(e.price_cents, l)).replace(/ con copa$| with a drink$/, perk.drink ? '$&' : '') : t('ev_cta', 'Comprar entrada');
       buy.classList.toggle('is-soldout', sold); buy.href = sold ? '#' : '/eventos/entradas/?e=' + encodeURIComponent(e.id);
       var low = $('evdLow'); low.hidden = sold || !(e.low || /[?&]demo=low/.test(location.search)); low.innerHTML = '<span class="evd-low-t"><i aria-hidden="true"></i>' + esc(t('ev_few', 'Quedan pocas unidades')) + '</span>';
       $('evd').hidden = false; $('evdBar').hidden = false;
