@@ -49,7 +49,7 @@
   if (!banner.querySelector('.cookie-card')) {
     var card = document.createElement('div'); card.className = 'cookie-card';
     var title = document.createElement('p'); title.className = 'cookie-title';
-    title.setAttribute('data-i18n', 'cookie_title'); title.textContent = 'Tu privacidad';
+    title.setAttribute('data-i18n', 'cookie_title'); title.textContent = 'Cookies';
     card.appendChild(title);
     while (banner.firstChild) card.appendChild(banner.firstChild);
     banner.appendChild(card);
