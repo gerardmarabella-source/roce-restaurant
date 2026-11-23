@@ -609,6 +609,7 @@
       if (b.status === 'seated' && !b.dessert_at) a.push('<button class="ad-btn is-small is-ghost" data-act="dessert" data-id="' + b.id + '">Postre</button>');
       if (b.status === 'seated' && !b.bill_at) a.push('<button class="ad-btn is-small is-ghost" data-act="bill" data-id="' + b.id + '">Cuenta pedida</button>');
       if (b.status === 'seated') a.push('<button class="ad-btn is-small" data-act="done" data-id="' + b.id + '">Terminada</button>');
+      if (b.status === 'seated') a.push('<button class="ad-btn is-small is-ghost" data-act="unseat" data-id="' + b.id + '" title="Si la sentaste sin querer: vuelve a Confirmada">Deshacer sentado</button>');
       if (b.status === 'completed' && !b.cleaned_at) a.push('<button class="ad-btn is-small" data-act="clean" data-id="' + b.id + '">Mesa limpia</button>');
       if (b.status === 'confirmed') a.push('<button class="ad-btn is-small is-ghost" data-act="noshow" data-id="' + b.id + '">No vino</button>');
       // Con tarjeta de garantía, «No vino» cobra la penalización. Estas dos opciones sirven para cuando se acepta su excusa: no se cobra nada y la tarjeta queda liberada.
@@ -952,6 +953,12 @@
   function wake() { if (document.hidden) return; liveBadge(); if (Date.now() - live.last > 15000) { live.pending = true; rtConnect(); liveRefresh(true); } }
   document.addEventListener('visibilitychange', wake);
   window.addEventListener('focus', wake);
+  /* Deshacer «sentar» (por pulsarlo sin querer): vuelve a Confirmada y quita las marcas de mesa (postre, cuenta). La hora de llegada solo se quita si es reciente (de hace menos de 15 min) o no tiene sentido con la hora de la reserva. */
+  function unseatBody(b) {
+    var body = { status: 'confirmed', dessert_at: null, bill_at: null }, ar = b.arrived_at ? new Date(b.arrived_at).getTime() : 0;
+    if (ar && (Date.now() - ar < 15 * 60000 || Math.abs(ar - new Date(b.starts_at).getTime()) > 12 * 3600000)) body.arrived_at = null;
+    return body;
+  }
   function done(msg) { return loadDay().then(function () { render(); if (msg) flash(msg, 'ok'); }); }
 
   root.addEventListener('click', function (e) {
@@ -1017,6 +1024,7 @@
     else if (act === 'bill') patch(id, { bill_at: new Date().toISOString() }).then(function () { return done('Anotado: han pedido la cuenta.'); }).catch(fail);
     else if (act === 'clean') patch(id, { cleaned_at: new Date().toISOString() }).then(function () { return done('Mesa limpia.'); }).catch(fail);
     else if (act === 'dessert') patch(id, { dessert_at: new Date().toISOString() }).then(function () { return done('Anotado: van por el postre.'); }).catch(fail);
+    else if (act === 'unseat') patch(id, unseatBody(b)).then(function () { return done('Vuelve a Confirmada: ya no está sentada.'); }).catch(fail);
     else if (act === 'edit') openEdit(b);
     else if (act === 'done') patch(id, { status: 'completed' }).then(function () { return done(); }).catch(fail);
     else if (act === 'noshow') {
@@ -1316,7 +1324,7 @@
       '<label class="ad-field"><span>Prescriptor</span><select id="edPres">' + presOptions(b.prescriber) + '</select></label>' +
       '<label class="ad-field"><span>Gasto de la visita (€)</span><input type="number" id="edSpend" min="0" step="0.01" value="' + (b.spend_cents != null ? b.spend_cents / 100 : '') + '" placeholder="se rellenará con el TPV"></label></div></details>' +
       '<div class="mt-foot"><button type="button" class="ad-btn is-ghost" data-close>Cerrar</button>' +
-      '<button type="button" class="ad-btn is-ghost" id="edSave">Guardar</button>' + (canSeat ? '<button type="button" class="ad-btn" id="edSeat">Guardar y sentar</button>' : '') + '</div>',
+      '<button type="button" class="ad-btn is-ghost" id="edSave">Guardar</button>' + (canSeat ? '<button type="button" class="ad-btn" id="edSeat">Guardar y sentar</button>' : '<button type="button" class="ad-btn is-ghost" id="edUnseat" title="Si la sentaste sin querer">Deshacer sentado</button>') + '</div>',
       function (m) {
         var q = function (id) { return m.querySelector('#' + id); };
         function starts() { return at(q('edDate').value, q('edTime').value); }
@@ -1395,6 +1403,11 @@
             .catch(function (x) { [q('edSave'), q('edSeat')].forEach(function (y) { if (y) y.disabled = false; }); msg.textContent = errText(x); msg.hidden = false; });
         }
         trWire(m, b);
+        if (q('edUnseat')) q('edUnseat').addEventListener('click', function () {
+          q('edUnseat').disabled = true;
+          patch(b.id, unseatBody(b)).then(function () { m.remove(); return enter().then(function () { flash('Vuelve a Confirmada: ya no está sentada.', 'ok'); }); })
+            .catch(function (x) { q('edUnseat').disabled = false; var em = q('edMsg'); em.textContent = errText(x); em.hidden = false; });
+        });
         q('edSave').addEventListener('click', function () { save(false); });
         if (q('edSeat')) q('edSeat').addEventListener('click', function () { save(true); });
       });
