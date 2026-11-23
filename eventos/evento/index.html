@@ -217,7 +217,7 @@
     function paint() {
       var l = lang(), title = e.title[l], when = U.fmt(e, l, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) + ' · ' + U.range(e), floor = U.floor(e, l);
       document.title = title + ' — ROCE Valencia';
-      $('evdTag').innerHTML = (e.env === 'night' ? esc(t('ev_night', 'Noche')) + ' ' + AGE : esc(t('ev_day', 'Día'))) + ' · ROCE';
+      $('evdTag').innerHTML = (e.env === 'night' ? esc(t('ev_night', 'Noche')) : esc(t('ev_day', 'Día'))) + ' · ROCE';
       $('evdTitle').textContent = title;
       $('evdWhen').textContent = when;
       $('evdPlace').innerHTML = esc(t('tk_address', 'ROCE · Marqués del Túria 16, Valencia')) + (floor ? '<small>' + esc(floor) + '</small>' : '');

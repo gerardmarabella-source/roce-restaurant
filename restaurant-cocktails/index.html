@@ -680,7 +680,7 @@
   initNewsletterWidget();
 
   // Aviso de espacio +18: una vez por visita; quien no confirma va a Day.
-  window.ROCE_AGE.ask(null, () => { location.href = '/coffee-bakery-kitchen/'; });
+  // Sin aviso de edad al entrar: el +18 (nocturno) solo se pregunta al reservar una hora de cena (mesas.js).
 
   // Evento en marcha de este ambiente (según su hora de inicio y su duración).
   (function () {

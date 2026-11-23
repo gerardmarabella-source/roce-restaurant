@@ -361,7 +361,7 @@
 
     // ─── Pintado ────────────────────────────────────────────────────────
     function paintEvent() {
-      $('tkEnv').innerHTML = ev.env === 'night' ? t('ev_night') + ' ' + AGE : t('ev_day');
+      $('tkEnv').innerHTML = ev.env === 'night' ? t('ev_night') : t('ev_day');
       $('tkTitle').textContent = ev.title[lang()];
       if (ev.image) { $('tkPoster').querySelector('img').src = ev.image; $('tkPoster').hidden = false; }
       $('tkWhen').textContent = whenText();

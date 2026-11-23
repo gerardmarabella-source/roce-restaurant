@@ -207,7 +207,7 @@
         var day = U.fmt(e, l, { day: 'numeric' });
         var monthLabel = U.fmt(e, l, { month: 'long', year: 'numeric' });
         var sold = e.left <= 0;
-        var tag = '<span class="ev-tag">' + (e.env === 'night' ? esc(t('ev_night', 'Noche')) + ' ' + AGE : esc(t('ev_day', 'Día'))) + '</span>';
+        var tag = '<span class="ev-tag">' + (e.env === 'night' ? esc(t('ev_night', 'Noche')) : esc(t('ev_day', 'Día'))) + '</span>';
         var right = sold ? '<span class="ev-sold">' + esc(t('tk_soldout', 'Agotado')) + '</span>' : (U.isLive(e) ? '<span class="ev-now">' + esc(t('choose_now', 'Ahora')) + '</span>' : '');
         var head = '';
         if (monthLabel !== lastMonth) { lastMonth = monthLabel; head = '<li class="ev-month" role="presentation">' + esc(monthLabel) + '</li>'; }
