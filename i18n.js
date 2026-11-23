@@ -16,7 +16,7 @@
     gl_title: { es: 'Lista de invitados', en: 'Guest list' },
     gl_rule: { es: 'Puedes apuntar hasta {n} personas. Entran sin pagar entrada.', en: 'You can add up to {n} people. They get in without paying.' },
     gl_until: { es: 'Puedes cambiarla hasta el {date}.', en: 'You can change it until {date}.' },
-    gl_night: { es: 'Restaurant & Cocktails es un espacio +18: todos los invitados deben ser mayores de 18 años.', en: 'Restaurant & Cocktails is an 18+ space: all guests must be 18 or older.' },
+    gl_night: { es: 'De noche, Restaurant & Cocktails es +18: todos los invitados deben ser mayores de 18 años.', en: 'At night, Restaurant & Cocktails is 18+: all guests must be 18 or older.' },
     gl_closed: { es: 'Esta lista ya está cerrada. Si necesitas cambiar algo, escríbenos a reservas@roce.es.', en: 'This list is now closed. If you need to change anything, write to reservas@roce.es.' },
     gl_you: { es: 'Tus datos', en: 'Your details' },
     gl_host: { es: 'Tu nombre', en: 'Your name' },
@@ -48,8 +48,11 @@
     gl_err_data: { es: 'Revisa tus datos y los nombres.', en: 'Check your details and the names.' },
     gl_err_net: { es: 'No se ha podido guardar. Inténtalo de nuevo.', en: 'Could not save. Please try again.' },
     cookie_title: { es: 'Tu privacidad', en: 'Your privacy' },
-    age_title: { es: 'Estás entrando en un espacio +18', en: "You're entering an 18+ space" },
-    age_text: { es: 'Las reservas de noche son para mayores de 18 años. ¿Tienes 18 años o más?', en: 'Evening bookings are for guests aged 18 and over. Are you 18 or older?' },
+    age_title: { es: 'De noche, solo mayores de 18', en: 'After dark, 18+ only' },
+    age_text: { es: 'En Restaurant & Cocktails la restricción de +18 es nocturna: desde las 20:00 (cena y fiesta). ¿Tienes 18 años o más?', en: 'At Restaurant & Cocktails the 18+ rule applies at night: from 8 pm (dinner and party). Are you 18 or older?' },
+    age_book_title: { es: 'Reserva de noche: solo +18', en: 'Night booking: 18+ only' },
+    age_book_text: { es: 'Las cenas y la fiesta (desde las 20:00) son para mayores de 18 años. ¿Tienes 18 años o más?', en: 'Dinner and the party (from 8 pm) are for guests aged 18 and over. Are you 18 or older?' },
+    age_book_no: { es: 'No, elegir otro horario', en: 'No, pick another time' },
     age_yes: { es: 'Sí, tengo 18 o más', en: "Yes, I'm 18 or older" },
     ev_day: { es: 'Día', en: 'Day' },
     ev_night: { es: 'Noche', en: 'Night' },
@@ -101,7 +104,7 @@
     rz_label: { es: '1 · Elige dónde quieres reservar', en: '1 · Choose where to book' },
     rz_up: { es: 'Primera planta', en: 'First floor' },
     rz_down: { es: 'Planta baja', en: 'Ground floor' },
-    rz_night_desc: { es: 'Comida 13:00–16:00 · Cena 20:00–02:00 (+18)', en: 'Lunch 13:00–16:00 · Dinner 20:00–02:00 (18+)' },
+    rz_night_desc: { es: 'Comida 13:00–16:00 · Cena 20:00–02:00', en: 'Lunch 13:00–16:00 · Dinner 20:00–02:00' },
     rz_day_desc: { es: 'Todos los días 10:00–20:00', en: 'Every day 10:00–20:00' },
     rz_pick: { es: 'Elegir', en: 'Choose' },
     rz_on: { es: '✓ Elegido', en: '✓ Chosen' },
@@ -164,6 +167,9 @@
     evd_info: { es: 'Información del evento', en: 'Event information' },
     evd_place: { es: 'Lugar', en: 'Venue' },
     evd_poster: { es: 'Ver el cartel', en: 'View the poster' },
+    evd_dinner: { es: 'Reservar cena · incluye acceso', en: 'Book dinner · access included' },
+    evd_party: { es: 'Solo fiesta · {price} con copa', en: 'Party only · {price} with a drink' },
+    evd_dinner_note: { es: 'Si reservas cena ya tienes el acceso: no necesitas comprar entrada.', en: "If you book dinner you're already in: no ticket needed." },
     evd_age: { es: 'Evento solo para mayores de 18 años.', en: 'This is an 18+ event.' },
     evd_qr: { es: 'Recibirás tu entrada con QR por email al comprar. Es personal: enséñala en la puerta.', en: 'You will receive your QR ticket by email after buying. It is personal: show it at the door.' },
     evd_refund: { es: 'Las entradas no se devuelven ni se cambian. Solo si el evento se cancela o se aplaza te devolvemos el importe.', en: 'Tickets are non-refundable and non-exchangeable. Only if the event is cancelled or postponed will we refund you.' },
@@ -177,6 +183,8 @@
     evd_ig_err: { es: 'No se ha podido crear la imagen.', en: 'Could not create the image.' },
     evd_copied: { es: 'Enlace copiado', en: 'Link copied' },
     ev_cta: { es: 'Comprar entrada', en: 'Get tickets' },
+    ev_loading: { es: 'Cargando agenda…', en: 'Loading events…' },
+    ev_error: { es: 'No hemos podido cargar la agenda. Inténtalo de nuevo en un momento.', en: "We couldn't load the events. Please try again in a moment." },
     ev_empty: { es: 'Muy pronto publicaremos aquí los próximos eventos.', en: 'We will soon publish the upcoming events here.' },
     // Compra de entradas / reserva de plaza (/eventos/entradas/)
     tk_back_events: { es: '← Eventos', en: '← Events' },
@@ -391,6 +399,8 @@
       en: "Remember whether you accepted or rejected the cookie notice, so we don't show it to you again.",
     },
     cookies_td_owner: { es: 'Propia (ROCE)', en: 'First-party (ROCE)' },
+    cookies_td_purpose_lang: { es: 'Recordar tu idioma (español o inglés) para que la web y la app de pedidos se vean igual.', en: 'Remember your language (Spanish or English) so the website and the ordering app look the same.' },
+    cookies_td_duration_lang: { es: '1 año', en: '1 year' },
     cookies_td_duration: {
       es: 'Persistente, hasta que borres los datos de navegación de tu dispositivo',
       en: 'Persistent, until you clear your device’s browsing data',
@@ -555,10 +565,21 @@
 
   var currentLang = 'es';
 
+  /* El idioma se comparte entre roce.es y app.roce.es con una cookie técnica de preferencia en .roce.es (el almacenamiento local no se comparte entre dominios).
+     La última elección, hecha en cualquiera de las dos, manda. */
+  function readLangCookie() { var m = (document.cookie || '').match(/(?:^|;\s*)roce_lang=(es|en)/); return m ? m[1] : null; }
+  function writeLangCookie(l) {
+    try {
+      var dom = /(^|\.)roce\.es$/.test(location.hostname) ? '; domain=.roce.es' : '';
+      document.cookie = 'roce_lang=' + l + dom + '; path=/; max-age=31536000; SameSite=Lax' + (location.protocol === 'https:' ? '; Secure' : '');
+    } catch (e) {}
+  }
   function detectLang() {
     var saved = null;
+    var ck = readLangCookie();
+    if (ck) { try { localStorage.setItem(STORAGE_KEY, ck); } catch (e) {} return ck; }
     try { saved = localStorage.getItem(STORAGE_KEY); } catch (e) {}
-    if (saved === 'en' || saved === 'es') return saved;
+    if (saved === 'en' || saved === 'es') { writeLangCookie(saved); return saved; }
     var nav = (navigator.language || (navigator.languages && navigator.languages[0]) || 'es').toLowerCase();
     return nav.indexOf('en') === 0 ? 'en' : 'es';
   }
@@ -612,6 +633,7 @@
 
   function setLang(lang) {
     try { localStorage.setItem(STORAGE_KEY, lang); } catch (e) {}
+    writeLangCookie(lang);
     applyLang(lang);
   }
 

@@ -13,7 +13,7 @@
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link rel="icon" type="image/png" href="/assets/meta/favicon-32.png" sizes="32x32">
 <link rel="apple-touch-icon" href="/assets/meta/apple-touch-icon.png">
-<script src="/eventos/config.js?v=2"></script>
+<script src="/eventos/config.js?v=3"></script>
 <script src="/eventos/events.js?v=15"></script>
 <script>
   // El color de la página es el del ambiente del evento: Day claro, Night
@@ -246,7 +246,7 @@
   </div>
 </div>
 <script src="/cookies.js?v=6"></script>
-<script src="/i18n.js?v=115"></script>
+<script src="/i18n.js?v=118"></script>
 <script src="/assets/js/qrcode.js?v=1"></script>
 <script>
   window.ROCE_EVENTS_READY.then(function () {
@@ -361,7 +361,7 @@
 
     // ─── Pintado ────────────────────────────────────────────────────────
     function paintEvent() {
-      $('tkEnv').innerHTML = ev.env === 'night' ? t('ev_night') + ' ' + AGE : t('ev_day');
+      $('tkEnv').innerHTML = ev.env === 'night' ? t('ev_night') : t('ev_day');
       $('tkTitle').textContent = ev.title[lang()];
       if (ev.image) { $('tkPoster').querySelector('img').src = ev.image; $('tkPoster').hidden = false; }
       $('tkWhen').textContent = whenText();

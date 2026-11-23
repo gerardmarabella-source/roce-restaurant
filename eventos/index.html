@@ -134,8 +134,14 @@
     <button type="button" class="ev-chip" data-filter="night" aria-pressed="false" data-i18n="ev_night">Noche</button>
   </div>
 
-  <ol class="ev-list" id="evList"></ol>
-  <p class="ev-empty" id="evEmpty" data-i18n="ev_empty" hidden>Muy pronto publicaremos aquí los próximos eventos.</p>
+  <ol class="ev-list" id="evList">
+    <!-- Primer evento ya en el HTML (lo ve el buscador y quien llega sin JavaScript); el script lo sustituye por la agenda real y lo quita cuando pasa. -->
+    <li class="ev-static" data-until="2026-12-12"><a class="ev-card has-img" data-env="night" href="/eventos/evento/?e=roce-urban-party-1211">
+      <img class="ev-card-img" src="https://lhwmtknmjmhktpkcngyz.supabase.co/storage/v1/object/public/event-images/mw2i8hg2-rcq08x.jpg" alt="" width="800" height="1000">
+      <span class="ev-card-body"><span class="ev-card-kicker">vie • 23:00 – 02:00</span><h2 class="ev-card-name">ROCE OPENING FRIDAY</h2><span class="ev-card-meta">vie, 11 dic · ROCE · Planta baja</span><span class="ev-card-price">14€ - Una copa incluida</span></span></a></li>
+  </ol>
+  <p class="ev-loading" id="evLoading" role="status" data-i18n="ev_loading">Cargando agenda…</p>
+  <p class="ev-empty" id="evEmpty" hidden></p>
 </main>
 
 <footer class="ev-foot">
@@ -156,8 +162,8 @@
   </div>
 </div>
 <script src="/cookies.js?v=6"></script>
-<script src="/i18n.js?v=115"></script>
-<script src="/eventos/config.js?v=2"></script>
+<script src="/i18n.js?v=118"></script>
+<script src="/eventos/config.js?v=3"></script>
 <script src="/eventos/events.js?v=15"></script>
 <script>
   // Los eventos están en /eventos/events.js (misma fuente que la compra de entradas).
@@ -166,6 +172,12 @@
     var U = window.ROCE_EVENT_UTIL;
     var list = document.getElementById('evList');
     var empty = document.getElementById('evEmpty');
+    var loadingEl = document.getElementById('evLoading');
+    var loaded = false; // hasta que llega la agenda (o la caché) no se anuncia nunca «no hay eventos»
+    // Tarjeta del primer evento ya escrita en el HTML: se quita cuando el evento pasa y, si sigue vigente, ocupa el sitio de «Cargando…» hasta que llega la agenda.
+    var stat = list.querySelector('.ev-static');
+    if (stat && stat.getAttribute('data-until') <= (window.ROCE_EVENT_UTIL ? U.today() : '')) { stat.remove(); stat = null; }
+    if (stat) loadingEl.hidden = true;
     var view = document.documentElement.getAttribute('data-view');
     var filter = 'all'; // 'all' | 'day' | 'night'
     // "Volver" lleva siempre a la home.
@@ -182,6 +194,7 @@
     var AGE = '<svg class="age-badge" viewBox="0 0 100 100" role="img" aria-label="+18"><circle cx="50" cy="50" r="44" fill="#ffffff" stroke="#e5453a" stroke-width="9"/><text x="44" y="65" text-anchor="middle" font-family="\'Helvetica Neue Web\',\'Helvetica Neue\',Arial,sans-serif" font-weight="700" font-size="46" letter-spacing="-3" fill="#0a0a0a">18</text><text x="77" y="52" text-anchor="middle" font-family="\'Helvetica Neue Web\',\'Helvetica Neue\',Arial,sans-serif" font-weight="700" font-size="30" fill="#0a0a0a">+</text></svg>';
 
     function render() {
+      if (!loaded) return;
       var l = lang();
       var upcoming = EVENTS.filter(function (e) {
         return (e.date >= U.today() || U.isLive(e)) && (filter === 'all' || e.env === filter);
@@ -194,7 +207,7 @@
         var day = U.fmt(e, l, { day: 'numeric' });
         var monthLabel = U.fmt(e, l, { month: 'long', year: 'numeric' });
         var sold = e.left <= 0;
-        var tag = '<span class="ev-tag">' + (e.env === 'night' ? esc(t('ev_night', 'Noche')) + ' ' + AGE : esc(t('ev_day', 'Día'))) + '</span>';
+        var tag = '<span class="ev-tag">' + (e.env === 'night' ? esc(t('ev_night', 'Noche')) : esc(t('ev_day', 'Día'))) + '</span>';
         var right = sold ? '<span class="ev-sold">' + esc(t('tk_soldout', 'Agotado')) + '</span>' : (U.isLive(e) ? '<span class="ev-now">' + esc(t('choose_now', 'Ahora')) + '</span>' : '');
         var head = '';
         if (monthLabel !== lastMonth) { lastMonth = monthLabel; head = '<li class="ev-month" role="presentation">' + esc(monthLabel) + '</li>'; }
@@ -209,7 +222,10 @@
             '<span class="ev-card-price">' + esc(e.price[l]) + '</span>' +
           '</span></a></li>';
       }).join('');
-      empty.hidden = upcoming.length > 0;
+      var showEmpty = loaded && upcoming.length === 0;
+      loadingEl.hidden = loaded;
+      empty.hidden = !showEmpty;
+      if (showEmpty) empty.textContent = window.ROCE_EVENTS_ERROR ? t('ev_error', 'No hemos podido cargar la agenda. Inténtalo de nuevo en un momento.') : t('ev_empty', 'Muy pronto publicaremos aquí los próximos eventos.');
     }
 
     document.querySelectorAll('.ev-chip').forEach(function (chip) {
@@ -224,7 +240,9 @@
 
     document.addEventListener('roce:lang', render);
     setInterval(render, 60000);
-    window.ROCE_EVENTS_READY.then(function (list) { EVENTS = list; render(); });
+    // Primera pintura con la última agenda guardada (si la hay): así el evento aparece al momento y nunca se ve la agenda vacía.
+    if (window.ROCE_EVENTS_CACHED && window.ROCE_EVENTS_CACHED.length) { EVENTS = window.ROCE_EVENTS_CACHED; loaded = true; render(); }
+    window.ROCE_EVENTS_READY.then(function (list) { EVENTS = list; loaded = true; render(); });
   })();
 </script>
 </body>

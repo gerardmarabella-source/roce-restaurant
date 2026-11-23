@@ -13,7 +13,7 @@
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link rel="icon" type="image/png" href="/assets/meta/favicon-32.png" sizes="32x32">
 <link rel="apple-touch-icon" href="/assets/meta/apple-touch-icon.png">
-<script src="/eventos/config.js?v=2"></script>
+<script src="/eventos/config.js?v=3"></script>
 <script src="/eventos/events.js?v=15"></script>
 <script>
   // El color de la página es el del ambiente del evento: Day claro, Night oscuro.
@@ -75,6 +75,13 @@
   html[data-env="day"] .evd-low { --hot: #c8271a; --hot2: #e06a1b; }
   @media (min-width: 481px) { .evd-buywrap { flex: 0 0 auto; } }
   .evd-low[hidden] { display: none; }
+  /* Eventos con la entrada incluida al reservar cena: dos acciones (reservar cena / solo fiesta) a todo el ancho */
+  .evd-buy.evd-dinner { background: transparent; color: var(--fg); }
+  .evd-buy.evd-dinner[hidden] { display: none; }
+  .evd-bar.has-perk .evd-price { display: none; }
+  .evd-bar.has-perk .evd-buywrap { flex: 1 1 auto; gap: 0.5rem; max-width: 30rem; margin-left: auto; }
+  .evd-bar.has-perk .evd-buy { width: 100%; padding: 0.85rem 0.9rem; font-size: clamp(0.82rem, 3.8vw, 1rem); white-space: nowrap; }
+
   .evd-bar-in { max-width: 1000px; margin: 0 auto; padding: 0.85rem var(--pad) calc(0.85rem + env(safe-area-inset-bottom)); display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
   .evd-price { min-width: 0; font-family: var(--display); font-size: 1.7rem; line-height: 1; letter-spacing: -0.01em; }
   .evd-pricenote { display: grid; grid-template-columns: 1.4rem 1fr; gap: 0.8rem; margin-bottom: 1.1rem; font-size: 1.05rem; font-weight: 600; line-height: 1.4; }
@@ -152,6 +159,7 @@
     <div class="evd-price" id="evdPrice"></div>
     <div class="evd-buywrap">
       <p class="evd-low" id="evdLow" role="status" hidden></p>
+      <a class="evd-buy evd-dinner" id="evdDinner" href="#" hidden></a>
       <a class="evd-buy" id="evdBuy" href="#" data-i18n="ev_cta">Comprar entrada</a>
     </div>
   </div>
@@ -185,7 +193,7 @@
   </div>
 </div>
 <script src="/cookies.js?v=6"></script>
-<script src="/i18n.js?v=115"></script>
+<script src="/i18n.js?v=118"></script>
 <script>
   window.ROCE_EVENTS_READY.then(function () {
     var U = window.ROCE_EVENT_UTIL, id = new URLSearchParams(location.search).get('e'), e = U.find(id);
@@ -209,7 +217,7 @@
     function paint() {
       var l = lang(), title = e.title[l], when = U.fmt(e, l, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) + ' · ' + U.range(e), floor = U.floor(e, l);
       document.title = title + ' — ROCE Valencia';
-      $('evdTag').innerHTML = (e.env === 'night' ? esc(t('ev_night', 'Noche')) + ' ' + AGE : esc(t('ev_day', 'Día'))) + ' · ROCE';
+      $('evdTag').innerHTML = (e.env === 'night' ? esc(t('ev_night', 'Noche')) : esc(t('ev_day', 'Día'))) + ' · ROCE';
       $('evdTitle').textContent = title;
       $('evdWhen').textContent = when;
       $('evdPlace').innerHTML = esc(t('tk_address', 'ROCE · Marqués del Túria 16, Valencia')) + (floor ? '<small>' + esc(floor) + '</small>' : '');
@@ -230,7 +238,10 @@
       var sold = e.left <= 0;
       $('evdPrice').textContent = e.price_cents > 0 ? U.money(e.price_cents, l) : t('evd_free', 'Entrada libre');
       $('evdPriceNote').innerHTML = ICON.ticket + '<span>' + esc(e.price[l]) + '</span>';
-      var buy = $('evdBuy'); buy.textContent = sold ? t('tk_soldout', 'Agotado') : t('ev_cta', 'Comprar entrada');
+      var cfgPk = (window.ROCE_DINNER_ACCESS || {})[e.id] || {}, perk = e.env === 'night' && e.price_cents > 0 ? { date: e.date, drink: !!cfgPk.drink } : null, dn = $('evdDinner');   // cualquier evento de noche de pago: reservar cena da el acceso
+      $('evdBar').classList.toggle('has-perk', !!perk); dn.hidden = !perk;
+      if (perk) { dn.textContent = t('evd_dinner', 'Reservar cena · incluye acceso'); dn.href = '/reservas/?d=' + encodeURIComponent(perk.date) + '#restaurant-cocktails'; }
+      var buy = $('evdBuy'); buy.textContent = sold ? t('tk_soldout', 'Agotado') : perk ? t('evd_party', 'Solo fiesta · {price} con copa').replace('{price}', U.money(e.price_cents, l)).replace(/ con copa$| with a drink$/, perk.drink ? '$&' : '') : t('ev_cta', 'Comprar entrada');
       buy.classList.toggle('is-soldout', sold); buy.href = sold ? '#' : '/eventos/entradas/?e=' + encodeURIComponent(e.id);
       var low = $('evdLow'); low.hidden = sold || !(e.low || /[?&]demo=low/.test(location.search)); low.innerHTML = '<span class="evd-low-t"><i aria-hidden="true"></i>' + esc(t('ev_few', 'Quedan pocas unidades')) + '</span>';
       $('evd').hidden = false; $('evdBar').hidden = false;
