@@ -534,9 +534,9 @@
   @media (max-width: 640px) {
     .teaser-cta-row { display: grid; grid-template-columns: 1fr; justify-items: end; row-gap: 1.6rem; }
     .teaser-links { justify-self: start; }
-    .roce-ticket { margin-bottom: -0.3rem; margin-top: 0.3rem; margin-right: 1.6rem; }
+    .roce-ticket { margin-bottom: -0.3rem; margin-top: 0.3rem; margin-right: -0.15rem; }
   }
-  @media (min-width: 641px) { .teaser-cta-row { position: static; } .roce-ticket { position: absolute; right: 3.5rem; bottom: 1rem; } .rt-ghost, .rt-paper { width: calc(30ch + 2.4rem); padding-left: 1.2rem; padding-right: 1.2rem; } .rt-paper { transform: rotate(3deg); } .roce-ticket.is-open .rt-paper { transform: rotate(-1deg); } }
+  @media (min-width: 641px) { .teaser-cta-row { position: static; } .roce-ticket { position: absolute; right: 0.85rem; bottom: 1rem; } .rt-ghost, .rt-paper { width: calc(30ch + 2.4rem); padding-left: 1.2rem; padding-right: 1.2rem; } .rt-paper { transform: rotate(3deg); } .roce-ticket.is-open .rt-paper { transform: rotate(-1deg); } }
   /* Pantallas medias: el pie (idioma y enlaces legales) llega hasta la derecha, así que el ticket se queda en la esquina derecha pero por encima del pie. */
   @media (min-width: 641px) and (max-width: 1099px) { .roce-ticket { bottom: 5.6rem; } }
   .teaser-nav .teaser-insta { position: static; font-size: calc(clamp(0.58rem, 3.4vw, 1.1rem) * 1.12); font-weight: 400; line-height: 1; gap: 0.3rem; align-items: center; }
@@ -607,7 +607,7 @@
         <a class="teaser-cta teaser-link" href="/eventos/" data-i18n="menu_eventos_title">Eventos</a>
       </div>
       
-      <div class="roce-ticket" id="roceTicket" data-roce-ticket></div>
+      <div class="roce-ticket" id="roceTicket" data-roce-ticket="side"></div>
 
     </div>
 
@@ -792,6 +792,6 @@
   })();
 </script>
 
-<script src="/ticket.js?v=1"></script>
+<script src="/ticket.js?v=5"></script>
 </body>
 </html>
