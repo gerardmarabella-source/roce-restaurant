@@ -86,7 +86,7 @@
     min-height: 100vh;
     background: var(--black);
     color: var(--white);
-    padding: 6.25rem 1.5rem 1rem;
+    padding: 2.2rem 1.5rem 1rem;
     display: flex;
     justify-content: center;
   }
@@ -124,8 +124,7 @@
   .reserve-zone[aria-pressed="true"] .rz-on { display: inline; }
   body.zone-day .reserve-zone[aria-pressed="true"] { background: var(--black); color: var(--white); }
   /* Day: cabecera y zona de reservas en blanco con letras negras. */
-  .topbar, .reserve-form-page { transition: background 0.3s ease, color 0.3s ease; }
-  body.zone-day .topbar { background: var(--white); }
+  .reserve-form-page { transition: background 0.3s ease, color 0.3s ease; }
   body.zone-day .reserve-form-page { background: var(--white); color: var(--black); }
   body.zone-day .reserve-back { color: var(--black); }
   /* ...y lo mismo con "Alquila el espacio" y el pie. */
@@ -189,8 +188,6 @@
 
   /* Header negro y logo en blanco en esta página; sin botón de reservar
      (ya estamos en la página de reservas). */
-  .topbar { background: var(--black); backdrop-filter: none; -webkit-backdrop-filter: none; }
-  .nav-logo { height: 56px; }
 
   /* Alquiler del espacio: sección plegada al final de la página; todo el
      detalle se resuelve por WhatsApp con un mensaje ya precompuesto. */
@@ -332,9 +329,6 @@
 </head>
 <body>
 
-<header class="topbar">
-  <a href="/" aria-label="ROCE — inicio"><img class="nav-logo" id="navLogo" src="/assets/logo/roce-horizontal-white.svg" alt="ROCE"></a>
-</header>
 
 <main class="reserve-form-page">
   <div class="reserve-form-wrap">
@@ -471,7 +465,6 @@
     // Sin espacio elegido (se llega desde otra página) solo se ven las opciones de espacio; el calendario aparece al elegir uno.
     document.getElementById('panelBooking').hidden = zone === 'all';
     const day = zone === 'day';
-    document.getElementById('navLogo').setAttribute('src', '/assets/logo/roce-horizontal-' + (day ? 'black' : 'white') + '.svg');
     if (window.ROCE_MESAS) window.ROCE_MESAS.setAmbience(zone);
   }
   zoneTabs.forEach((b) => b.addEventListener('click', () => {
