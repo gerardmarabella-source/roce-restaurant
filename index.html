@@ -803,8 +803,8 @@
       { t: '' },
       row(en ? 'Kitchen' : 'Cocina', 'healthy', 650, 200),
       row(en ? 'Coffee' : 'Café', 'specialty', 650, 200),
-      row('Bakery', 'unhealthy', 1100, 200),
-      row('', en ? 'but really tasty ;)' : 'pero muy rica ;)', 0, 1100),
+      row('Bakery', en ? 'not so healthy' : 'no tan healthy', 1100, 200),
+      row('', en ? 'but really tasty ;)' : 'pero muy rico ;)', 0, 1100),
       { t: '' },
       { t: en ? 'Ground floor · No booking' : 'Planta baja · Sin reserva', pre: 250 },
       { t: 'Gran Vía Marqués del Túria, 16', pre: 120 },
@@ -817,24 +817,24 @@
   function later(fn, ms) { timers.push(setTimeout(fn, ms)); }
   function print(instant) {
     clearTimers(); body.innerHTML = ''; body.style.maxHeight = '';
-    var L = lines(), delay = 250, STEP = 32;
+    var L = lines(), K = 0.8, delay = 200, STEP = 32 * K;
     L.forEach(function (ln) {
       var el = document.createElement(ln.href ? 'a' : 'span'); el.className = 'rt-l' + (ln.top ? ' rt-top' : '');
       if (ln.href) el.href = ln.href;
       if (instant || reduce) { el.textContent = ln.t; body.appendChild(el); return; }
-      delay += ln.pre || 0;
-      if (!ln.t) { later(function () { body.appendChild(el); }, delay); delay += 260; return; }
+      delay += (ln.pre || 0) * K;
+      if (!ln.t) { later(function () { body.appendChild(el); }, delay); delay += 260 * K; return; }
       later(function () { body.appendChild(el); el.classList.add('rt-cur'); }, delay);
-      var step = ln.fast ? 12 : STEP, firstRight = -1;
+      var step = ln.fast ? 10 : STEP, firstRight = -1;
       for (var q = ln.cut || 0; q < ln.t.length; q++) if (ln.cut != null && ln.t.charAt(q) !== ' ') { firstRight = q; break; }
       for (var k = 0; k < ln.t.length; k++) {
-        if (ln.cut != null && k === firstRight && ln.pc) delay += ln.pc;       // pausa entre la palabra de la izquierda y la de la derecha
+        if (ln.cut != null && k === firstRight && ln.pc) delay += ln.pc * K;       // pausa entre la palabra de la izquierda y la de la derecha
         var instantSpace = ln.cut != null && k >= ln.cut && k < firstRight;    // el hueco entre columnas no se "teclea"
         if (!instantSpace) delay += step;
         (function (n, d) { later(function () { el.textContent = ln.t.slice(0, n + 1); }, d); })(k, delay);
       }
       (function (d) { later(function () { el.classList.remove('rt-cur'); }, d + 60); })(delay);
-      delay += 160;
+      delay += 160 * K;
     });
   }
   function setOpen(v, instant) {
