@@ -155,7 +155,7 @@
   var firstSeq = 0;
   // Sin mesa ese día: otros días con hueco y, si miras un solo espacio, el otro espacio ese mismo día.
   function loadAlt(my) {
-    var amb = st.ambience === 'all' ? null : st.ambience, other = amb ? (amb === 'day' ? 'night' : 'day') : null;
+    var amb = st.ambience === 'all' ? null : st.ambience, other = amb === 'day' ? 'night' : null;
     var p1 = rpc('dining_next_days', { p_from: st.date, p_party: st.party, p_ambience: amb }).catch(function () { return []; });
     var p2 = other ? rpc('dining_slots', { p_date: st.date, p_party: st.party, p_ambience: other }).catch(function () { return []; }) : Promise.resolve([]);
     Promise.all([p1, p2]).then(function (r) {
