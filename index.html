@@ -794,22 +794,22 @@
   var head = document.getElementById('rtHead'), body = document.getElementById('rtBody');
   var W = 30, reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
   function lang() { return window.ROCE_I18N && window.ROCE_I18N.getLang ? window.ROCE_I18N.getLang() : 'es'; }
-  function row(l, r) { return l + new Array(Math.max(1, W - l.length - r.length) + 1).join(' ') + r; }
+  function row(l, r, pc, pre) { return { t: l + new Array(Math.max(1, W - l.length - r.length) + 1).join(' ') + r, cut: l.length, pc: pc || 0, pre: pre || 0 }; }
   function lines() {
     var en = lang() === 'en';
     return [
-      { t: new Array(W + 1).join('-') },
-      { t: en ? 'ALL DAY KITCHEN' : 'ALL DAY KITCHEN', b: 1, top: 1 },
+      { t: new Array(W + 1).join('-'), fast: 1 },
+      { t: 'ALL DAY KITCHEN', top: 1, pre: 300 },
       { t: '' },
-      { t: row(en ? 'Kitchen' : 'Cocina', 'healthy') },
-      { t: row(en ? 'Coffee' : 'Café', 'specialty') },
-      { t: row('Bakery', 'unhealthy') },
-      { t: row('', en ? 'but really tasty ;)' : 'pero muy rica ;)') },
+      row(en ? 'Kitchen' : 'Cocina', 'healthy', 650, 200),
+      row(en ? 'Coffee' : 'Café', 'specialty', 650, 200),
+      row('Bakery', 'unhealthy', 1100, 200),
+      row('', en ? 'but really tasty ;)' : 'pero muy rica ;)', 0, 1100),
       { t: '' },
-      { t: en ? 'Ground floor · No booking' : 'Planta baja · Sin reserva' },
-      { t: 'Gran Vía Marqués del Túria, 16' },
+      { t: en ? 'Ground floor · No booking' : 'Planta baja · Sin reserva', pre: 250 },
+      { t: 'Gran Vía Marqués del Túria, 16', pre: 120 },
       { t: '' },
-      { t: en ? 'See menu ↗' : 'Ver carta ↗', href: 'https://app.roce.es/' }
+      { t: en ? 'See menu ↗' : 'Ver carta ↗', href: 'https://app.roce.es/', pre: 250 }
     ];
   }
   var open = false, viaHover = false, timers = [], hoverT = 0, leaveT = 0, pointer = 'mouse';
@@ -817,20 +817,24 @@
   function later(fn, ms) { timers.push(setTimeout(fn, ms)); }
   function print(instant) {
     clearTimers(); body.innerHTML = ''; body.style.maxHeight = '';
-    var L = lines(), delay = 0;
+    var L = lines(), delay = 250, STEP = 32;
     L.forEach(function (ln) {
-      var el = document.createElement(ln.href ? 'a' : 'span'); el.className = 'rt-l' + (ln.b ? ' rt-b' : '') + (ln.top ? ' rt-top' : '');
-      if (ln.href) { el.href = ln.href; }
-      if (instant || reduce || !ln.t) {
-        if (instant || reduce) { el.textContent = ln.t; body.appendChild(el); return; }
-        later(function () { body.appendChild(el); }, delay); delay += 90; return;
-      }
+      var el = document.createElement(ln.href ? 'a' : 'span'); el.className = 'rt-l' + (ln.top ? ' rt-top' : '');
+      if (ln.href) el.href = ln.href;
+      if (instant || reduce) { el.textContent = ln.t; body.appendChild(el); return; }
+      delay += ln.pre || 0;
+      if (!ln.t) { later(function () { body.appendChild(el); }, delay); delay += 260; return; }
       later(function () { body.appendChild(el); el.classList.add('rt-cur'); }, delay);
-      var k = 0; var step = 11;
-      for (; k < ln.t.length; k++) (function (n) { later(function () { el.textContent = ln.t.slice(0, n + 1); }, delay + (n + 1) * step); })(k);
-      delay += ln.t.length * step + 40;
-      later(function () { el.classList.remove('rt-cur'); }, delay);
-      delay += 80;
+      var step = ln.fast ? 12 : STEP, firstRight = -1;
+      for (var q = ln.cut || 0; q < ln.t.length; q++) if (ln.cut != null && ln.t.charAt(q) !== ' ') { firstRight = q; break; }
+      for (var k = 0; k < ln.t.length; k++) {
+        if (ln.cut != null && k === firstRight && ln.pc) delay += ln.pc;       // pausa entre la palabra de la izquierda y la de la derecha
+        var instantSpace = ln.cut != null && k >= ln.cut && k < firstRight;    // el hueco entre columnas no se "teclea"
+        if (!instantSpace) delay += step;
+        (function (n, d) { later(function () { el.textContent = ln.t.slice(0, n + 1); }, d); })(k, delay);
+      }
+      (function (d) { later(function () { el.classList.remove('rt-cur'); }, d + 60); })(delay);
+      delay += 160;
     });
   }
   function setOpen(v, instant) {
