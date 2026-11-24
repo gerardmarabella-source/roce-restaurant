@@ -15,7 +15,7 @@
 
   var STR = {
     es: {
-      party: 'Personas', date: 'Fecha', time: 'Hora', person: 'persona', people: 'personas',
+      party: 'Personas', date: 'Fecha', time: 'Hora', person: 'persona', people: 'personas', stub_h: 'Tu mesa', stub_day: 'Día', stub_time: 'Hora', stub_party: 'Personas', stub_where: 'Dónde', stub_where_v: 'Restaurant & Cocktails · Primera planta', step_pick_time: 'Elige hora', step_pick_date: 'Elige día', pers: 'pers.', go_arrow: '→', change: 'Cambiar', sun: 'Comida', moon: 'Cena',
       months: ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'],
       dows: ['L', 'M', 'X', 'J', 'V', 'S', 'D'],
       prev: 'Mes anterior', next: 'Mes siguiente', meal_lunch: 'Comida', meal_dinner: 'Cena', cal_closed: 'Cerrado', cal_full: 'Completo', cal_partial: 'Algún turno completo o cerrado', cal_full_in: 'Completo: {n}', cal_closed_in: 'Cerrado: {n}',
@@ -48,10 +48,10 @@
       card_h: 'Garantía con tarjeta', card_free: 'No se cobra nada ahora',
       card_note: 'Para confirmar la reserva te pediremos los datos de una tarjeta como garantía. Si no te presentas o anulas con menos de {h} h de antelación, se cobrarán {m} por persona automáticamente a esa tarjeta.',
       card_consent: 'Autorizo a ROCE a cobrar automáticamente {m} por persona a mi tarjeta si no me presento o anulo con menos de {h} h de antelación',
-      go_card: 'Continuar y dar la tarjeta', e_card: 'Debes autorizar la garantía con tarjeta.', day_notice: 'Aviso'
+      go_card: 'Continuar', e_card: 'Debes autorizar la garantía con tarjeta.', day_notice: 'Aviso'
     },
     en: {
-      party: 'Guests', date: 'Date', time: 'Time', person: 'guest', people: 'guests',
+      party: 'Guests', date: 'Date', time: 'Time', person: 'guest', people: 'guests', stub_h: 'Your table', stub_day: 'Day', stub_time: 'Time', stub_party: 'Guests', stub_where: 'Where', stub_where_v: 'Restaurant & Cocktails · First floor', step_pick_time: 'Pick time', step_pick_date: 'Pick day', pers: 'guests', go_arrow: '→', change: 'Change', sun: 'Lunch', moon: 'Dinner',
       months: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
       dows: ['M', 'T', 'W', 'T', 'F', 'S', 'S'],
       prev: 'Previous month', next: 'Next month', meal_lunch: 'Lunch', meal_dinner: 'Dinner', cal_closed: 'Closed', cal_full: 'Fully booked', cal_partial: 'A service is full or closed', cal_full_in: 'Fully booked: {n}', cal_closed_in: 'Closed: {n}',
@@ -84,7 +84,7 @@
       card_h: 'Card guarantee', card_free: 'Nothing is charged now',
       card_note: "To confirm the booking we will ask for your card details as a guarantee. If you don't show up or cancel less than {h} h in advance, {m} per person will be charged automatically to that card.",
       card_consent: "I authorise ROCE to automatically charge {m} per person to my card if I don't show up or cancel less than {h} h in advance",
-      go_card: 'Continue and enter card', e_card: 'You must authorise the card guarantee.', day_notice: 'Notice'
+      go_card: 'Continue', e_card: 'You must authorise the card guarantee.', day_notice: 'Notice'
     }
   };
   var MAX_PARTY = 8, DAYS_AHEAD = 60;
@@ -106,6 +106,15 @@
   function todayStr() { return new Intl.DateTimeFormat('en-CA', { timeZone: TZ }).format(new Date()); }
   function addDays(s, n) { var d = new Date(s + 'T12:00:00Z'); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); }
   function partyLabel(n) { return n + ' ' + (n === 1 ? t('person') : t('people')); }
+  function shortDate(s) {
+    return new Intl.DateTimeFormat(lang() === 'en' ? 'en-GB' : 'es-ES', { timeZone: 'UTC', weekday: 'short', day: 'numeric', month: 'short' }).format(new Date(s + 'T12:00:00Z')).replace(/\./g, '');
+  }
+  var ICON_SUN = '<svg class="mz-ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.2" fill="currentColor"/><g stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 2.5v2.6M12 18.9v2.6M2.5 12h2.6M18.9 12h2.6M5.3 5.3l1.9 1.9M16.8 16.8l1.9 1.9M18.7 5.3l-1.9 1.9M7.2 16.8l-1.9 1.9"/></g></svg>';
+  var ICON_MOON = '<svg class="mz-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.6A8.2 8.2 0 0 1 9.4 4a8.2 8.2 0 1 0 10.6 10.6Z" fill="currentColor"/></svg>';
+  var ICON_STAR = '<svg class="mz-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l2.4 6.6L21 9.3l-5.2 4.3L17.5 21 12 17.2 6.5 21l1.7-7.4L3 9.3l6.6-.7L12 2Z" fill="currentColor"/></svg>';
+  var ICON_CLOCK = '<svg class="mz-ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 7v5.2l3.2 1.9" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
+  var ICON_LOCK = '<svg class="mz-ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10.5" width="14" height="10" rx="1.5" fill="currentColor"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5" fill="none" stroke="currentColor" stroke-width="1.9"/></svg>';
+  var ICON_CHECK = '<svg class="mz-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 12.8l4.6 4.6L19.5 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   function dateLabel(s) {
     return new Intl.DateTimeFormat(lang() === 'en' ? 'en-GB' : 'es-ES', { timeZone: 'UTC', weekday: 'long', day: 'numeric', month: 'long' }).format(new Date(s + 'T12:00:00Z'));
   }
@@ -212,11 +221,11 @@
   }
   function firstNoteHtml() {
     if (!st.firstNote || st.firstNote !== st.date) return '';
-    return '<p class="mz-first">' + esc(t('first_avail', { d: dateLabel(st.date) })) + '</p>';
+    return '<p class="mz-first">' + ICON_CLOCK + '<span>' + esc(t('first_avail', { d: dateLabel(st.date) })) + '</span></p>';
   }
   function slotsHtml() {
     if (!st.date) return '<p class="mz-hint">' + esc(t('pick_date')) + '</p>';
-    if (st.loading) return '<p class="mz-hint">' + esc(t('loading')) + '</p>';
+    if (st.loading) return '<div class="mz-skel" role="status" aria-label="' + esc(t('loading')) + '">' + new Array(9).join('<i></i>') + '</div>';
     if (st.loadErr) return '<p class="mz-error">' + esc(t('err_load')) + '</p>';
     var h = '';
     if (!st.slots || !st.slots.length) {
@@ -228,20 +237,22 @@
     order.forEach(function (a) {
       var rows = groups[a], dep = rows[0].o_deposit_cents, hrs = rows[0].o_free_hours, mode = rows[0].o_payment_mode;
       if (!rows.some(function (r) { return r.o_free; }) && st.slots.length === 0 && order.length > 1) { /* se muestra igualmente para poder apuntarse */ }
-      h += '<div class="mz-group"><div class="mz-group-h"><span class="mz-group-name">' + esc(t(a)) + '</span>' +
-        '<span class="mz-group-note">' + (dep > 0 && mode === 'card' ? '' : dep > 0 ? esc(t('deposit_h', { m: money(dep) })) : esc(t('free_h'))) + '</span></div><div class="mz-slots">';
+      // Con un solo espacio (Restaurant & Cocktails) no se repite su nombre bajo el calendario: ya se dice arriba dónde se reserva.
+      var gnote = (dep > 0 && mode === 'card' ? '' : dep > 0 ? esc(t('deposit_h', { m: money(dep) })) : esc(t('free_h'))), gname = order.length > 1 ? esc(t(a)) : '';
+      h += '<div class="mz-group">' + (gname || gnote ? '<div class="mz-group-h">' + (gname ? '<span class="mz-group-name">' + gname + '</span>' : '') +
+        (gnote ? '<span class="mz-group-note">' + gnote + '</span>' : '') + '</div>' : '') + '<div class="mz-slots">';
       // En Restaurant & Cocktails las horas se separan en Comida y Cena (cada turno tiene su cuadrícula).
       var svcs = []; rows.forEach(function (r) { if (svcs.indexOf(r.o_service) === -1) svcs.push(r.o_service); });
       var split = a === 'night';
       svcs.forEach(function (sv) {
         if (split) {
-          h += '</div><p class="mz-meal">' + esc(t(sv === 'night-lunch' ? 'meal_lunch' : 'meal_dinner')) + '</p>';
+          h += '</div><p class="mz-meal">' + (sv === 'night-lunch' ? ICON_SUN : ICON_MOON) + '<span>' + esc(t(sv === 'night-lunch' ? 'meal_lunch' : 'meal_dinner')) + '</span></p>';
           var pk = sv !== 'night-lunch' ? perkFor(st.date) : null;   // la cena es el turno de noche (todo lo que no es la comida)
-          if (pk) h += '<p class="mz-perk">' + esc(t('perk_dinner', { ev: pk.name[lang() === 'en' ? 'en' : 'es'] })) + '</p>';
+          if (pk) h += '<p class="mz-perk">' + ICON_STAR + '<span>' + esc(t('perk_dinner', { ev: pk.name[lang() === 'en' ? 'en' : 'es'] })) + '</span></p>';
           h += '<div class="mz-slots">';
         }
         rows.filter(function (r) { return r.o_service === sv; }).forEach(function (s) {
-          if (s.o_free) h += '<button type="button" class="mz-slot' + (st.chosen && st.chosen.o_starts_at === s.o_starts_at ? ' is-on' : '') + '" data-start="' + esc(s.o_starts_at) + '">' + esc(s.o_time) + '</button>';
+          if (s.o_free) h += '<button type="button" class="mz-slot' + (st.chosen && st.chosen.o_starts_at === s.o_starts_at ? ' is-on' : '') + '" data-start="' + esc(s.o_starts_at) + '" aria-pressed="' + (st.chosen && st.chosen.o_starts_at === s.o_starts_at ? 'true' : 'false') + '"><span>' + esc(s.o_time) + '</span>' + (st.chosen && st.chosen.o_starts_at === s.o_starts_at ? ICON_CHECK : '') + '</button>';
           else h += '<button type="button" class="mz-slot is-full" data-wl="' + esc(s.o_time) + '" data-amb="' + esc(s.o_ambience) + '" title="' + esc(t('wl_cta')) + '"><span>' + esc(s.o_time) + '</span><small>' + esc(t('full')) + '</small></button>';
         });
       });
@@ -291,41 +302,63 @@
     var end = lang() === 'en' ? c.o_end_en : c.o_end_es;
     return '<p class="mz-info">' + esc(t('info_dur', { d: fmtDur(c.o_duration) })) + ' ' + esc(t('info_grace', { g: c.o_grace || 15 })) + (end ? ' ' + esc(end) : '') + '</p>';
   }
+  function field(label, input, cls) { return '<label class="mz-field' + (cls ? ' ' + cls : '') + '"><span class="mz-fl">' + esc(label) + '</span>' + input + '</label>'; }
+  function stubHtml(c) {
+    var row = function (k, v) { return '<div class="mz-stub-r"><span>' + esc(k) + '</span><b>' + esc(v) + '</b></div>'; };
+    return '<div class="mz-stub" role="group" aria-label="' + esc(t('stub_h')) + '">' +
+      '<div class="mz-stub-top"><button type="button" class="mz-stub-change" data-goto="mzStepDate">' + esc(t('change')) + '</button></div>' +
+      '<p class="mz-stub-h">' + esc(t('stub_h')) + '</p><span class="mz-stub-sep"></span>' +
+      row(t('stub_day'), dateLabel(st.date).replace(/^./, function (ch) { return ch.toUpperCase(); })) + row(t('stub_time'), c.o_time) + row(t('stub_party'), partyLabel(st.party)) + row(t('stub_where'), t('stub_where_v')) + '</div>';
+  }
   function formHtml() {
     var c = st.chosen; if (!c) return '';
     var dep = c.o_deposit_cents, hrs = c.o_free_hours, card = c.o_payment_mode === 'card' && dep > 0, pp = 2000;   // en el bloqueo con tarjeta se enseña un texto fijo de 20 € por persona, no el total (que da sensación de pagar mucho)
-    var sum = t('summary', { date: dateLabel(st.date), time: c.o_time, party: partyLabel(st.party) });
-    var keep = (document.getElementById('mzForm') ? {} : {});
-    return '<form class="mz-form" id="mzForm" novalidate><h3 class="mz-h">' + esc(t('form_h')) + '</h3>' +
-      '<p class="mz-summary">' + esc(sum) + ' · ' + esc(t(c.o_ambience)) + '</p>' +
-      '<input class="mz-input" name="name" type="text" autocomplete="name" placeholder="' + esc(t('name')) + '" value="' + esc(st.f_name || '') + '" required>' +
-      '<input class="mz-input" name="email" type="email" autocomplete="email" inputmode="email" placeholder="' + esc(t('email')) + '" value="' + esc(st.f_email || '') + '" required>' +
-      '<input class="mz-input" name="phone" type="tel" autocomplete="tel" inputmode="tel" placeholder="' + esc(t('phone')) + '" value="' + esc(st.f_phone || '') + '" required>' +
-      '<div class="mz-allergies"><span class="mz-label">' + esc(t('allergies')) + '</span>' +
+    var label = st.busy ? t('working') : (card ? t('go_card') : dep > 0 ? t('go_pay', { m: money(dep) }) : t('go_free'));
+    return '<form class="mz-form" id="mzForm" novalidate><h3 class="mz-h">' + esc(t('form_h')) + '</h3>' + stubHtml(c) +
+      field(t('name'), '<input class="mz-input" name="name" type="text" autocomplete="name" value="' + esc(st.f_name || '') + '" required>') +
+      field(t('email'), '<input class="mz-input" name="email" type="email" autocomplete="email" inputmode="email" value="' + esc(st.f_email || '') + '" required>') +
+      field(t('phone'), '<input class="mz-input" name="phone" type="tel" autocomplete="tel" inputmode="tel" value="' + esc(st.f_phone || '') + '" required>') +
+      '<div class="mz-allergies"><span class="mz-fl">' + esc(t('allergies')) + '</span>' +
         '<div class="mz-yn"><button type="button" class="mz-yn-b' + (st.f_alyes ? ' is-on' : '') + '" data-alyes="1" aria-pressed="' + (st.f_alyes ? 'true' : 'false') + '">' + esc(t('yes')) + '</button>' +
         '<button type="button" class="mz-yn-b' + (st.f_alyes ? '' : ' is-on') + '" data-alyes="0" aria-pressed="' + (st.f_alyes ? 'false' : 'true') + '">' + esc(t('no')) + '</button></div>' +
         '<div class="mz-al-wrap"' + (st.f_alyes ? '' : ' hidden') + '><div class="mz-al-list">' + Object.keys(t('al')).map(function (k) {
           return '<label class="mz-al"><input type="checkbox" name="al" value="' + k + '"' + ((st.f_al || []).indexOf(k) !== -1 ? ' checked' : '') + '><span>' + esc(t('al')[k]) + '</span></label>';
         }).join('') + '</div><p class="mz-al-hint">' + esc(t('al_hint')) + '</p></div></div>' +
-      '<textarea class="mz-input" name="notes" rows="1" placeholder="' + esc(t('notes')) + '">' + esc(st.f_notes || '') + '</textarea>' +
+      field(t('notes'), '<textarea class="mz-input" name="notes" rows="2">' + esc(st.f_notes || '') + '</textarea>') +
       infoHtml(c) +
-      (dep > 0 ? '<p class="mz-deposit">' + esc(card ? t('card_note', { m: money(pp), h: hrs }) : t('deposit_note', { m: money(dep), h: hrs })) + '</p>' : '') +
+      (dep > 0 ? '<p class="mz-deposit">' + ICON_LOCK + '<span>' + esc(card ? t('card_note', { m: money(pp), h: hrs }) : t('deposit_note', { m: money(dep), h: hrs })) + '</span></p>' : '') +
       (card ? '<label class="mz-check"><input type="checkbox" name="cardok"' + (st.f_cardok ? ' checked' : '') + '><span>' + esc(t('card_consent', { m: money(pp), h: hrs })) + '</span></label>' : '') +
       '<label class="mz-check"><input type="checkbox" name="consent"' + (st.f_consent ? ' checked' : '') + '><span>' + t('consent') + '</span></label>' +
       '<label class="mz-check"><input type="checkbox" name="marketing"' + (st.f_marketing ? ' checked' : '') + '><span>' + esc(t('marketing')) + '</span></label>' +
       '<p class="mz-error" id="mzError"' + (st.error ? '' : ' hidden') + '>' + esc(st.error) + '</p>' +
-      '<button type="submit" class="mz-go" id="mzGo"' + (st.busy ? ' disabled' : '') + '>' + esc(st.busy ? t('working') : (card ? t('go_card') : dep > 0 ? t('go_pay', { m: money(dep) }) : t('go_free'))) + '</button></form>';
+      '<button type="submit" class="mz-go" id="mzGo"' + (st.busy ? ' disabled' : '') + '><span>' + esc(label) + '</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button></form>';
   }
 
+  // Barra de pasos (fija arriba): qué llevas elegido y atajo para volver a cada paso.
+  function barHtml() {
+    var it = [
+      { k: 'mzStepParty', on: true, txt: st.party + ' ' + t('pers') },
+      { k: 'mzStepDate', on: !!st.date, txt: st.date ? shortDate(st.date).replace(/,/g, '') : t('step_pick_date') },
+      { k: 'mzStepTime', on: !!st.chosen, txt: st.chosen ? st.chosen.o_time : t('step_pick_time') }
+    ];
+    return '<nav class="mz-bar" aria-label="' + esc(t('stub_h')) + '">' + it.map(function (x, i) {
+      return '<button type="button" class="mz-bar-i' + (x.on ? ' is-done' : '') + '" data-goto="' + x.k + '"><span>' + esc(x.txt) + '</span></button>';
+    }).join('') + '</nav>';
+  }
+
+  var gnEl = document.getElementById('groupNotice');   // el aviso de grupos vive bajo el selector de personas
   function render() {
-    var p = '<div class="mz-step mz-step-party"><span class="mz-label">' + esc(t('party')) + '</span><div class="mz-stepper">' +
+    var word = partyLabel(st.party).replace(/^\d+\s*/, '');
+    var party = '<section class="mz-step mz-step-party" id="mzStepParty"><div class="mz-sh"><span class="mz-label">' + esc(t('party')) + '</span></div><div class="mz-stepper">' +
       '<button type="button" class="mz-pm" data-party="-1" aria-label="-"' + (st.party <= 1 ? ' disabled' : '') + '>&minus;</button>' +
-      '<span class="mz-party" aria-live="polite">' + st.party + '</span>' +
-      '<button type="button" class="mz-pm' + (st.party >= MAX_PARTY ? ' is-max' : '') + '" data-party="1" aria-label="+">+</button></div></div>';
+      '<span class="mz-party" aria-live="polite"><b>' + st.party + '</b><small>' + esc(word) + '</small></span>' +
+      '<button type="button" class="mz-pm' + (st.party >= MAX_PARTY ? ' is-max' : '') + '" data-party="1" aria-label="+">+</button></div><div class="mz-party-note"></div></section>';
+    var date = '<section class="mz-step" id="mzStepDate"><div class="mz-sh"><span class="mz-label">' + esc(t('date')) + '</span>' + (st.date ? '<span class="mz-val">' + esc(shortDate(st.date).replace(/,/g, '')) + '</span>' : '') + '</div>' + calendarHtml() + '</section>';
+    var time = '<section class="mz-step" id="mzStepTime"><div class="mz-sh"><span class="mz-label">' + esc(t('time')) + '</span>' + (st.chosen ? '<span class="mz-val">' + esc(st.chosen.o_time) + '</span>' : '') + '</div>' +
+      (st.date ? firstNoteHtml() + noticeHtml() : '') + slotsHtml() + '</section>';
     var keepScroll = window.scrollY;
-    root.innerHTML = p +
-      '<div class="mz-step"><span class="mz-label">' + esc(t('date')) + '</span>' + calendarHtml() + '</div>' +
-      '<div class="mz-step"><span class="mz-label">' + esc(t('time')) + '</span>' + (st.date ? firstNoteHtml() + noticeHtml() : '') + slotsHtml() + '</div>' + formHtml();
+    root.innerHTML = barHtml() + '<div class="mz-cols"><div class="mz-col mz-col-a">' + party + date + '</div><div class="mz-col mz-col-b">' + time + formHtml() + '</div></div>';
+    var slot = root.querySelector('.mz-party-note'); if (slot && gnEl) slot.appendChild(gnEl);
     if (Math.abs(window.scrollY - keepScroll) > 1) window.scrollTo(0, keepScroll);
     loadCal();
   }
@@ -340,6 +373,7 @@
   // ─── Eventos ────────────────────────────────────────────────────────
   root.addEventListener('click', function (e) {
     var b = e.target.closest('button'); if (!b || b.disabled) return;
+    if (b.dataset.goto) { var gt = document.getElementById(b.dataset.goto); if (gt) gt.scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
     if (b.dataset.alyes != null) {
       st.f_alyes = b.dataset.alyes === '1';
       var fm = b.closest('.mz-allergies');
