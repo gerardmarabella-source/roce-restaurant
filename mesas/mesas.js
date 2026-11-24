@@ -48,7 +48,7 @@
       card_h: 'Garantía con tarjeta', card_free: 'No se cobra nada ahora',
       card_note: 'Para confirmar la reserva te pediremos los datos de una tarjeta como garantía. Si no te presentas o anulas con menos de {h} h de antelación, se cobrarán {m} por persona automáticamente a esa tarjeta.',
       card_consent: 'Autorizo a ROCE a cobrar automáticamente {m} por persona a mi tarjeta si no me presento o anulo con menos de {h} h de antelación',
-      go_card: 'Continuar y dar la tarjeta', e_card: 'Debes autorizar la garantía con tarjeta.', day_notice: 'Aviso'
+      go_card: 'Continuar', e_card: 'Debes autorizar la garantía con tarjeta.', day_notice: 'Aviso'
     },
     en: {
       party: 'Guests', date: 'Date', time: 'Time', person: 'guest', people: 'guests', stub_h: 'Your table', stub_day: 'Day', stub_time: 'Time', stub_party: 'Guests', stub_where: 'Where', stub_where_v: 'Restaurant & Cocktails · First floor', step_pick_time: 'Pick time', step_pick_date: 'Pick day', pers: 'guests', go_arrow: '→', change: 'Change', sun: 'Lunch', moon: 'Dinner',
@@ -84,7 +84,7 @@
       card_h: 'Card guarantee', card_free: 'Nothing is charged now',
       card_note: "To confirm the booking we will ask for your card details as a guarantee. If you don't show up or cancel less than {h} h in advance, {m} per person will be charged automatically to that card.",
       card_consent: "I authorise ROCE to automatically charge {m} per person to my card if I don't show up or cancel less than {h} h in advance",
-      go_card: 'Continue and enter card', e_card: 'You must authorise the card guarantee.', day_notice: 'Notice'
+      go_card: 'Continue', e_card: 'You must authorise the card guarantee.', day_notice: 'Notice'
     }
   };
   var MAX_PARTY = 8, DAYS_AHEAD = 60;
