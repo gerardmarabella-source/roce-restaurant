@@ -313,7 +313,7 @@
   .back-home { display: inline-flex; padding: 0.3rem; margin-left: -0.3rem; color: inherit; line-height: 0; transition: transform 0.2s ease; }
   .back-home:hover { transform: translateX(-4px); }
   .back-home svg { width: 2rem; height: 2rem; }
-  .teaser-nav .newsletter-toggle img { display: block; height: clamp(0.85rem, 2.6vw, 1.1rem); width: auto; }
+  .teaser-nav .newsletter-toggle img { display: block; height: clamp(0.58rem, 3.4vw, 1.1rem); width: auto; }
 
   /* Instagram: abajo a la derecha, grande, a la altura de la última línea de los enlaces. */
   .teaser-insta { position: absolute; right: 1rem; bottom: 0.65rem; display: inline-flex; align-items: baseline; gap: 0.35rem; color: inherit; text-decoration: none; font-family: var(--display); font-size: clamp(1.1rem, 2.4vw, 2rem); letter-spacing: 0.02em; text-transform: uppercase; white-space: nowrap; }
@@ -510,13 +510,13 @@
   .roce-ticket { position: relative; z-index: 6; color: #0a0a0a; width: max-content; }
   .rt-ghost { visibility: hidden; pointer-events: none; padding: 0.8rem 1rem 1.05rem; }
   .rt-paper { position: absolute; right: 0; bottom: 0; width: max-content; min-width: 100%; box-sizing: border-box; background: #fbfbfa; padding: 0.8rem 1rem 1.05rem; clip-path: polygon(0 0, 100% 0, 100.00% calc(100% - 3px), 96.67% calc(100% - 6px), 93.33% calc(100% - 4px), 90.00% calc(100% - 6px), 86.67% calc(100% - 6px), 83.33% calc(100% - 3px), 80.00% calc(100% - 3px), 76.67% calc(100% - 4px), 73.33% calc(100% - 6px), 70.00% calc(100% - 4px), 66.67% calc(100% - 1px), 63.33% calc(100% - 1px), 60.00% calc(100% - 6px), 56.67% calc(100% - 4px), 53.33% calc(100% - 3px), 50.00% calc(100% - 5px), 46.67% calc(100% - 4px), 43.33% calc(100% - 6px), 40.00% calc(100% - 1px), 36.67% calc(100% - 0px), 33.33% calc(100% - 3px), 30.00% calc(100% - 2px), 26.67% calc(100% - 1px), 23.33% calc(100% - 0px), 20.00% calc(100% - 4px), 16.67% calc(100% - 6px), 13.33% calc(100% - 5px), 10.00% calc(100% - 5px), 6.67% calc(100% - 0px), 3.33% calc(100% - 4px), 0.00% calc(100% - 3px));
-    transform: translateX(1rem) rotate(3deg); transform-origin: 100% 100%; transition: transform 0.35s cubic-bezier(.2,.8,.2,1); filter: drop-shadow(0 6px 12px rgba(0,0,0,0.5)); }
+    transform: translateX(0.5rem) rotate(3deg); transform-origin: 100% 100%; transition: transform 0.35s cubic-bezier(.2,.8,.2,1); filter: drop-shadow(0 6px 12px rgba(0,0,0,0.5)); }
   .roce-ticket.is-open .rt-paper { transform: translateX(-0.25rem) rotate(-1deg); }
-  .rt-head { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; width: 100%; margin: 0; padding: 0; border: 0; background: none; color: inherit; cursor: pointer; text-align: left; font-family: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace; font-weight: 400; text-transform: uppercase; font-size: 2.9vw; line-height: 1.45; letter-spacing: -0.01em; white-space: pre; -webkit-tap-highlight-color: transparent; }
+  .rt-head { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; width: 100%; margin: 0; padding: 0; border: 0; background: none; color: inherit; cursor: pointer; text-align: left; font-family: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace; font-weight: 400; text-transform: uppercase; font-size: max(9px, 2.9vw); line-height: 1.45; letter-spacing: -0.01em; white-space: pre; -webkit-tap-highlight-color: transparent; }
   .rt-ghost .rt-head { cursor: default; }
   .rt-arr { display: inline-block; transition: transform 0.3s ease; }
   .roce-ticket.is-open .rt-arr { transform: rotate(180deg); }
-  .rt-body { overflow: hidden; font-family: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace; font-size: 2.9vw; line-height: 1.45; white-space: pre; letter-spacing: -0.01em; transition: max-height 0.28s ease; }
+  .rt-body { overflow: hidden; font-family: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace; font-size: max(9px, 2.9vw); line-height: 1.45; white-space: pre; letter-spacing: -0.01em; transition: max-height 0.28s ease; }
   .rt-body .rt-l { display: block; min-height: 1.45em; }
   .rt-body a { color: inherit; text-decoration: underline; text-decoration-thickness: 1.5px; text-underline-offset: 2px; }
   .rt-body .rt-top { margin-top: 0.45rem; }
@@ -527,10 +527,10 @@
   @media (max-width: 640px) {
     .teaser-cta-row { display: grid; grid-template-columns: 1fr; justify-items: end; row-gap: 1.6rem; }
     .teaser-links { justify-self: start; }
-    .roce-ticket { margin-bottom: -0.3rem; margin-top: 0.3rem; margin-right: -1rem; }
+    .roce-ticket { margin-bottom: -0.3rem; margin-top: 0.3rem; }
   }
-  @media (min-width: 641px) { .roce-ticket { position: absolute; right: -1rem; bottom: 0.5rem; } .rt-head { font-size: 0.78rem; } .rt-body { font-size: 0.78rem; } .rt-ghost, .rt-paper { padding-left: 1.2rem; padding-right: 1.2rem; } .rt-paper { transform: translateX(1.2rem) rotate(3deg); } .roce-ticket.is-open .rt-paper { transform: translateX(-0.4rem) rotate(-1deg); } }
-  .teaser-nav .teaser-insta { position: static; font-size: calc(clamp(0.85rem, 2.6vw, 1.1rem) * 1.12); font-weight: 400; line-height: 1; gap: 0.3rem; align-items: center; }
+  @media (min-width: 641px) { .roce-ticket { position: absolute; right: 0; bottom: 0.5rem; } .rt-head { font-size: 0.78rem; } .rt-body { font-size: 0.78rem; } .rt-ghost, .rt-paper { padding-left: 1.2rem; padding-right: 1.2rem; } .rt-paper { transform: translateX(0.6rem) rotate(3deg); } .roce-ticket.is-open .rt-paper { transform: translateX(-0.4rem) rotate(-1deg); } }
+  .teaser-nav .teaser-insta { position: static; font-size: calc(clamp(0.58rem, 3.4vw, 1.1rem) * 1.12); font-weight: 400; line-height: 1; gap: 0.3rem; align-items: center; }
 </style>
 <script src="/vh.js?v=1"></script>
 <script src="/brand.js?v=1" defer></script>
