@@ -79,6 +79,9 @@
     menu_eventos_title: { es: 'Eventos', en: 'Events' },
     cta_reservar_mesa: { es: 'Reservar', en: 'Book' },
     cta_carta: { es: 'Carta', en: 'Menu' },
+    ticket_h: { es: 'Brunch Bakery Coffee', en: 'Brunch Bakery Coffee' },
+    ticket_s: { es: 'Planta baja · Sin reserva', en: 'Ground floor · No booking' },
+    ticket_c: { es: 'Ver carta ↗', en: 'See menu ↗' },
 
     // Newsletter (widget compartido, usado en home)
     newsletter_text: { es: 'Entérate antes que nadie de todo.', en: 'Be the first to know.' },
