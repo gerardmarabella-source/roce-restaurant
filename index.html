@@ -186,6 +186,10 @@
   }
   /* Logo + leyenda como una sola imagen (tipografía exacta pedida por
      el usuario), no logo + texto por separado. */
+  /* Halo de lectura: una sombra suave y localizada detrás del logo y de "Restaurant & Cocktails" (se funde en los bordes, no tapa la foto) + un contorno de sombra fino en el propio logo. */
+  .teaser-top::before { content: ""; position: absolute; z-index: -1; left: 50%; top: -1.6rem; width: min(125vw, 36rem); height: calc(100% + 3rem); transform: translateX(-50%); pointer-events: none;
+    background: radial-gradient(ellipse 50% 50% at 50% 50%, rgba(5, 6, 8, 0.6) 0%, rgba(5, 6, 8, 0.44) 38%, rgba(5, 6, 8, 0.18) 66%, rgba(5, 6, 8, 0) 100%); }
+  .teaser-top .lockup { filter: drop-shadow(0 1px 6px rgba(0, 0, 0, 0.5)); }
   .teaser-top .lockup {
     width: clamp(220px, 32vw, 380px);
     height: auto;
