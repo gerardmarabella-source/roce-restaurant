@@ -504,8 +504,8 @@
 
   /* Ticket de brunch (planta baja): solo asoma el titular por el borde inferior derecho; al dejar el ratón encima un rato
      o al tocarlo se "imprime" el texto y el papel crece hacia arriba. */
-  /* Letra del ticket continua (sin saltos entre móvil, tablet y escritorio): crece con el ancho de pantalla (10,5 px a 280 px, 13 px desde ~324 px) hasta 15 px. El papel mide siempre 30 caracteres y se ajusta a la letra, así que nunca se sale del espacio disponible. */
-  .roce-ticket { --rt-fs: clamp(10.5px, calc((100vw - 90px) / 18), 15px); position: relative; z-index: 6; color: #0a0a0a; width: max-content; font-family: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace; font-size: var(--rt-fs); }
+  /* Letra del ticket continua (sin saltos entre móvil, tablet y escritorio): crece con el ancho de pantalla, de 9 px a 12,5 px (el tamaño que ya tenía en escritorio). El papel mide siempre 30 caracteres y se ajusta a la letra. */
+  .roce-ticket { --rt-fs: clamp(9px, 2.9vw, 12.5px); position: relative; z-index: 6; color: #0a0a0a; width: max-content; font-family: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace; font-size: var(--rt-fs); }
   .rt-ghost { visibility: hidden; pointer-events: none; box-sizing: border-box; width: calc(30ch + 2rem); padding: 0.8rem 1rem 1.05rem; }
   .rt-paper { position: absolute; right: 0; bottom: 0; width: calc(30ch + 2rem); box-sizing: border-box; will-change: transform; backface-visibility: hidden; background: #fbfbfa; padding: 0.8rem 1rem 1.05rem; clip-path: polygon(0 0, 100% 0, 100.00% calc(100% - 3px), 96.67% calc(100% - 6px), 93.33% calc(100% - 4px), 90.00% calc(100% - 6px), 86.67% calc(100% - 6px), 83.33% calc(100% - 3px), 80.00% calc(100% - 3px), 76.67% calc(100% - 4px), 73.33% calc(100% - 6px), 70.00% calc(100% - 4px), 66.67% calc(100% - 1px), 63.33% calc(100% - 1px), 60.00% calc(100% - 6px), 56.67% calc(100% - 4px), 53.33% calc(100% - 3px), 50.00% calc(100% - 5px), 46.67% calc(100% - 4px), 43.33% calc(100% - 6px), 40.00% calc(100% - 1px), 36.67% calc(100% - 0px), 33.33% calc(100% - 3px), 30.00% calc(100% - 2px), 26.67% calc(100% - 1px), 23.33% calc(100% - 0px), 20.00% calc(100% - 4px), 16.67% calc(100% - 6px), 13.33% calc(100% - 5px), 10.00% calc(100% - 5px), 6.67% calc(100% - 0px), 3.33% calc(100% - 4px), 0.00% calc(100% - 3px));
     transform: rotate(3deg); transform-origin: 100% 100%; transition: transform 0.35s cubic-bezier(.2,.8,.2,1); filter: drop-shadow(0 6px 12px rgba(0,0,0,0.5)); }
@@ -530,6 +530,8 @@
     .roce-ticket { margin-bottom: -0.3rem; margin-top: 0.3rem; margin-right: 1.6rem; }
   }
   @media (min-width: 641px) { .teaser-cta-row { position: static; } .roce-ticket { position: absolute; right: 3.5rem; bottom: 1rem; } .rt-ghost, .rt-paper { width: calc(30ch + 2.4rem); padding-left: 1.2rem; padding-right: 1.2rem; } .rt-paper { transform: rotate(3deg); } .roce-ticket.is-open .rt-paper { transform: rotate(-1deg); } }
+  /* Pantallas medias: el pie (idioma y enlaces legales) llega hasta la derecha, así que el ticket se queda en la esquina derecha pero por encima del pie. */
+  @media (min-width: 641px) and (max-width: 1099px) { .roce-ticket { bottom: 5.6rem; } }
   .teaser-nav .teaser-insta { position: static; font-size: calc(clamp(0.58rem, 3.4vw, 1.1rem) * 1.12); font-weight: 400; line-height: 1; gap: 0.3rem; align-items: center; }
 </style>
 <script src="/vh.js?v=1"></script>
