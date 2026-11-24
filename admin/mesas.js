@@ -635,7 +635,7 @@
       '<div class="ad-bar"><div class="mt-day"><button class="ad-btn is-ghost is-small" data-dayn="-1" aria-label="Día anterior">←</button>' +
       '<input type="date" id="mtDate" value="' + S.date + '"><button class="ad-btn is-ghost is-small" data-dayn="1" aria-label="Día siguiente">→</button>' +
       '<button class="ad-btn is-ghost is-small" data-dayn="0">Hoy</button></div>' +
-      '<span class="mt-topbtns"><button class="ad-btn is-ghost" id="mtPrint" type="button">Imprimir día</button><button class="ad-btn" id="mtNew" type="button">+ Nueva reserva</button></span></div>' +
+      '<span class="mt-topbtns">' + (can('tables_blocks') ? '<button class="ad-btn is-ghost" id="mtHold" type="button">Bloquear mesa</button>' : '') + '<button class="ad-btn is-ghost" id="mtPrint" type="button">Imprimir día</button><button class="ad-btn" id="mtNew" type="button">+ Nueva reserva</button></span></div>' +
       '<p class="ad-meta mt-sum"><b>' + esc(dayLabel(S.date)) + '</b> · ' + live.length + ' reservas · ' + covers + ' comensales' + (deposits ? ' · fianzas cobradas ' + eur(deposits) : '') + '</p>' +
       '<div class="mt-vtoggle" role="group"><button type="button" class="ck-chip" data-mode="timeline" aria-pressed="' + (S.mode === 'timeline') + '">Línea de tiempo</button><button type="button" class="ck-chip" data-mode="map" aria-pressed="' + (S.mode === 'map') + '">Mapa</button></div>' +
       '<div class="ad-bar mt-mapbar"><div class="mt-zones" role="group">' + zones.map(function (z) { return '<button type="button" class="ck-chip" data-zone="' + z.id + '" aria-pressed="' + (z.id === S.zone) + '">' + esc(z.name_es) + '</button>'; }).join('') + '</div>' +
@@ -1000,6 +1000,7 @@
       S.edit.tsize = S.edit.tsize || {}; S.edit.tsize[S.edit.sel] = k1; S.edit.ctxDirty = true; return void render();
     }
     if (t.dataset.rot != null && S.edit && S.edit.sel) { var cr = tcur(S.edit.sel).rot, dd = +t.dataset.rot, nr = t.dataset.rot === '0' ? 0 : (((cr + dd) % 360) + 360) % 360; setCh(S.edit.sel, { rot: nr }); return void render(); }
+    if (t.id === 'mtHold') return void openHold({});
     if (t.id === 'mtShowCx') { S.showCancelled = !S.showCancelled; return void render(); }
     if (t.id === 'mtNew') return void openNew({});
     if (t.id === 'mtPrint') return void printDay();
@@ -1013,7 +1014,10 @@
       }
       if (o.state === 'free') return void openNew({ table: tb });
       if (o.booking) return void openEdit(o.booking);
-      if (o.block) flash('Mesa bloqueada: ' + (o.block.note || 'sin motivo') + '. Quita el bloqueo en la pestaña Bloqueos.', 'error');
+      if (o.block) {
+        if (can('tables_blocks') && o.block.id) { if (confirm('Mesa bloqueada: ' + (o.block.note || 'sin motivo') + '.\n\n¿Quitar el bloqueo? Volverá a poder reservarse.')) api('dining_blocks?id=eq.' + o.block.id, { method: 'DELETE', prefer: 'return=minimal' }).then(function () { return done('Bloqueo quitado.'); }).catch(fail); return; }
+        flash('Mesa bloqueada: ' + (o.block.note || 'sin motivo') + '.', 'error');
+      }
       return;
     }
     var id = t.dataset.id, act = t.dataset.act; if (!act) return;
@@ -1141,6 +1145,36 @@
     }).join('');
   }
 
+  /* Bloquear una mesa a mano (retenerla mientras se espera una reserva). Solo con el permiso «Bloqueos de mesas» (se da desde Equipo). */
+  function openHold(pre) {
+    var zone = pre.zone || (pre.table ? pre.table.zone_id : S.zone), preIds = pre.tables || (pre.table ? [pre.table.id] : []);
+    var html = '<h2>Bloquear mesa</h2><p class="ad-meta">Retén una mesa mientras esperas a que se confirme una reserva: nadie podrá reservarla (tampoco desde la web) hasta que pase el tiempo o quites el bloqueo.</p><p class="ad-msg is-error" id="hdMsg" hidden></p><form id="hdForm"><div class="ad-grid">' +
+      '<label class="ad-field"><span>Día</span><input type="date" id="hdDate" value="' + (pre.date || S.date) + '" required></label>' +
+      '<label class="ad-field"><span>Desde</span><input type="time" id="hdTime" step="300" value="' + esc(pre.time || S.time || timeOptions()[0] || '13:00') + '" required></label>' +
+      '<label class="ad-field"><span>Durante</span><select id="hdDur"><option value="60">1 hora</option><option value="90">1 h 30</option><option value="120" selected>2 horas</option><option value="180">3 horas</option><option value="240">4 horas</option></select></label>' +
+      '<label class="ad-field"><span>Zona</span><select id="hdZone">' + S.zones.map(function (z) { return '<option value="' + z.id + '"' + (z.id === zone ? ' selected' : '') + '>' + esc(z.name_es) + '</option>'; }).join('') + '</select></label></div>' +
+      '<div class="ad-field"><span>Mesas</span><div class="mt-picks" id="hdPicks"></div></div>' +
+      '<label class="ad-field"><span>Nota (para qué se retiene)</span><input type="text" id="hdNote" maxlength="120" value="Esperando reserva" placeholder="Esperando reserva de…"></label>' +
+      '<div class="mt-foot"><button type="button" class="ad-btn is-ghost" data-close>Cancelar</button><button type="submit" class="ad-btn" id="hdGo">Bloquear</button></div></form>';
+    modal(html, function (m) {
+      var q = function (id) { return m.querySelector('#' + id); };
+      function picks(keep) { q('hdPicks').innerHTML = tablesPicker(q('hdZone').value, keep || [], []); }
+      picks(preIds); q('hdZone').addEventListener('change', function () { picks([]); });
+      q('hdForm').addEventListener('submit', function (ev) {
+        ev.preventDefault();
+        var msg = q('hdMsg'); msg.hidden = true;
+        var ids = [].map.call(q('hdPicks').querySelectorAll('input:checked'), function (i) { return i.value; });
+        if (!ids.length) { msg.textContent = 'Elige al menos una mesa.'; msg.hidden = false; return; }
+        var date = q('hdDate').value, starts = at(date, q('hdTime').value), ends = new Date(new Date(starts).getTime() + (+q('hdDur').value) * 60000).toISOString();
+        var clash = date === S.date ? S.bookings.filter(function (b) { return holds(b) && (b.table_booking_tables || []).some(function (x) { return ids.indexOf(x.table_id) !== -1; }) && b.starts_at < ends && b.ends_at > starts; }) : [];
+        if (clash.length && !confirm('Ya hay ' + clash.length + ' reserva(s) en esa franja (' + clash.slice(0, 3).map(function (b) { return b.name + ' ' + hm(b.starts_at); }).join(', ') + '). El bloqueo no las anula. ¿Bloquear igualmente?')) return;
+        q('hdGo').disabled = true;
+        api('dining_blocks', { method: 'POST', body: { zone_id: q('hdZone').value, table_ids: ids, starts_at: starts, ends_at: ends, note: q('hdNote').value.trim(), created_by: A.session().email || '' }, prefer: 'return=minimal' })
+          .then(function () { m.remove(); S.date = date; return enter().then(function () { flash('Mesa bloqueada hasta las ' + hm(ends) + '. Para quitarla, toca la mesa bloqueada en el mapa.', 'ok'); }); })
+          .catch(function (x) { q('hdGo').disabled = false; msg.textContent = errText(x); msg.hidden = false; });
+      });
+    });
+  }
   function openNew(pre) {
     if (pre.tables && pre.tables.length) pre.table = pre.tables[0];
     var preIds = pre.tables && pre.tables.length ? pre.tables.map(function (t) { return t.id; }) : (pre.table ? [pre.table.id] : []);
@@ -1175,7 +1209,7 @@
       '<label class="ad-field"><span>Duración de la mesa (min)</span><input type="number" id="nwDur" min="15" max="600" step="5" placeholder="la del turno"></label>' +
       '<label class="ad-field"><span>Prescriptor</span><select id="nwPres">' + presOptions('') + '</select></label></div></details>' +
       '<label class="mt-check"><input type="checkbox" id="nwSeated"> Sentar ahora (cliente que ya está aquí)</label>' +
-      '<div class="mt-foot"><button type="button" class="ad-btn is-ghost" data-close>Cancelar</button><button type="submit" class="ad-btn" id="nwGo">Crear reserva</button></div></form>';
+      '<div class="mt-foot"><button type="button" class="ad-btn is-ghost" data-close>Cancelar</button>' + (can('tables_blocks') ? '<button type="button" class="ad-btn is-ghost" id="nwHold" title="Retener la mesa sin crear la reserva">Bloquear mesa</button>' : '') + '<button type="submit" class="ad-btn" id="nwGo">Crear reserva</button></div></form>';
     modal(html, function (m) {
       var q = function (id) { return m.querySelector('#' + id); };
       function pickSvc() {
@@ -1249,6 +1283,7 @@
       q('nwType').addEventListener('change', typeUi); q('nwTrSt').addEventListener('change', typeUi);
       q('nwKind').addEventListener('change', function () { if (q('nwKind').value === 'walkin') q('nwSeated').checked = true; });
       [].forEach.call(m.querySelectorAll('input[name="nwAuto"]'), function (r) { r.addEventListener('change', refreshPicks); });
+      if (q('nwHold')) q('nwHold').addEventListener('click', function () { var ids = [].map.call(q('nwPicks').querySelectorAll('input:checked'), function (i) { return i.value; }); m.remove(); openHold({ date: q('nwDate').value, time: q('nwTime').value, zone: q('nwZone').value, tables: ids.length ? ids : preIds }); });
       q('nwForm').addEventListener('submit', function (ev) {
         ev.preventDefault();
         var zoneRow = S.zones.filter(function (x) { return x.id === q('nwZone').value; })[0];
