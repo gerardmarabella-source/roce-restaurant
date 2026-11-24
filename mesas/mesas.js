@@ -306,7 +306,7 @@
   function stubHtml(c) {
     var row = function (k, v) { return '<div class="mz-stub-r"><span>' + esc(k) + '</span><b>' + esc(v) + '</b></div>'; };
     return '<div class="mz-stub" role="group" aria-label="' + esc(t('stub_h')) + '">' +
-      '<div class="mz-stub-top"><span>ROCE · VALENCIA</span><button type="button" class="mz-stub-change" data-goto="mzStepDate">' + esc(t('change')) + '</button></div>' +
+      '<div class="mz-stub-top"><button type="button" class="mz-stub-change" data-goto="mzStepDate">' + esc(t('change')) + '</button></div>' +
       '<p class="mz-stub-h">' + esc(t('stub_h')) + '</p><span class="mz-stub-sep"></span>' +
       row(t('stub_day'), dateLabel(st.date).replace(/^./, function (ch) { return ch.toUpperCase(); })) + row(t('stub_time'), c.o_time) + row(t('stub_party'), partyLabel(st.party)) + row(t('stub_where'), t('stub_where_v')) + '</div>';
   }

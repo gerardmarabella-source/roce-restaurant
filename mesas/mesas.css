@@ -90,7 +90,7 @@
 .mz-group-note { margin-left: auto; font-size: 0.78rem; color: var(--mz-soft); text-transform: uppercase; letter-spacing: 0.06em; }
 .mz-slots { display: grid; grid-template-columns: repeat(auto-fill, minmax(5.2rem, 1fr)); gap: 0.55rem; }
 .mz-slots:empty { display: none; }
-.mz-slot { display: flex; align-items: center; justify-content: center; gap: 0.4rem; min-height: 3.3rem; border: 1px solid var(--mz-line2); background: var(--mz-fill); font-family: var(--mz-mono); font-size: 1.02rem; letter-spacing: 0.02em; cursor: pointer; border-radius: 0; transition: background 0.15s, border-color 0.15s, transform 0.12s; animation: mzIn 0.3s ease both; }
+.mz-slot { display: flex; align-items: center; justify-content: center; gap: 0.4rem; min-height: 3.1rem; border: 1px solid var(--mz-line2); background: var(--mz-fill); font-family: var(--display); font-size: 1rem; letter-spacing: 0; cursor: pointer; border-radius: 0; transition: background 0.15s, border-color 0.15s, transform 0.12s; animation: mzIn 0.3s ease both; }
 .mz-slot:nth-child(2) { animation-delay: 0.03s; } .mz-slot:nth-child(3) { animation-delay: 0.06s; } .mz-slot:nth-child(4) { animation-delay: 0.09s; } .mz-slot:nth-child(5) { animation-delay: 0.12s; } .mz-slot:nth-child(n+6) { animation-delay: 0.15s; }
 @keyframes mzIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 .mz-slot:hover { border-color: var(--mz-ink); background: var(--mz-fill2); transform: translateY(-2px); }
@@ -124,14 +124,14 @@
 /* El ticket con el resumen de la reserva */
 .mz-stub { margin: 0 0 1.6rem; padding: 1rem 1.15rem 1.7rem; background: #fbfbfa; color: #0a0a0a; font-family: var(--mz-mono); transform: rotate(-0.7deg);
   clip-path: polygon(0 0, 100% 0, 100% calc(100% - 4px), 96% calc(100% - 7px), 92% calc(100% - 3px), 88% calc(100% - 6px), 84% calc(100% - 2px), 80% calc(100% - 7px), 76% calc(100% - 4px), 72% calc(100% - 6px), 68% calc(100% - 1px), 64% calc(100% - 6px), 60% calc(100% - 3px), 56% calc(100% - 7px), 52% calc(100% - 2px), 48% calc(100% - 6px), 44% calc(100% - 4px), 40% calc(100% - 7px), 36% calc(100% - 1px), 32% calc(100% - 5px), 28% calc(100% - 3px), 24% calc(100% - 7px), 20% calc(100% - 2px), 16% calc(100% - 6px), 12% calc(100% - 4px), 8% calc(100% - 7px), 4% calc(100% - 2px), 0 calc(100% - 5px)); }
-.mz-stub-top { display: flex; align-items: center; justify-content: space-between; font-size: 0.68rem; letter-spacing: 0.16em; }
+.mz-stub-top { display: flex; align-items: center; justify-content: flex-end; font-size: 0.68rem; letter-spacing: 0.16em; }
 .mz-stub-change { padding: 0.2rem 0; border: 0; background: none; color: #0a0a0a; font-family: var(--mz-mono); font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
-.mz-stub-h { margin: 0.5rem 0 0.1rem; font-family: var(--display); font-size: 1.9rem; font-weight: 700; line-height: 1; letter-spacing: -0.01em; text-transform: uppercase; }
+.mz-stub-h { margin: 0.5rem 0 0.1rem; font-family: var(--display); font-size: 1.9rem; font-weight: 400; line-height: 1; letter-spacing: -0.01em; text-transform: uppercase; }
 .mz-stub-sep { display: block; height: 0; margin: 0.75rem 0 0.3rem; border-top: 1.5px dashed rgba(10, 10, 10, 0.5); }
 .mz-stub-r { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; padding: 0.45rem 0; border-bottom: 1px dotted rgba(10, 10, 10, 0.35); font-size: 0.82rem; }
 .mz-stub-r:last-child { border-bottom: 0; }
-.mz-stub-r span { text-transform: uppercase; letter-spacing: 0.1em; font-size: 0.68rem; opacity: 0.65; white-space: nowrap; }
-.mz-stub-r b { font-weight: 700; text-align: right; }
+.mz-stub-r > span { text-transform: uppercase; letter-spacing: 0.1em; font-size: 0.68rem; opacity: 0.65; white-space: nowrap; }
+.mz-stub-r b { font-weight: 400; text-align: right; }
 
 .mz-field { display: block; margin: 0 0 1rem; }
 .mz-field .mz-fl { margin-bottom: 0.45rem; }
