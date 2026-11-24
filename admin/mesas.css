@@ -214,3 +214,4 @@
 .mt-sg em { grid-column: 2; grid-row: 1 / span 2; align-self: center; font-style: normal; font-size: 0.74rem; opacity: 0.8; white-space: nowrap; }
 .mt-known { margin: 0.2rem 0 0; padding: 0.5rem 0.7rem; font-size: 0.82rem; line-height: 1.4; border-left: 3px solid #2e9d5b; background: rgba(46, 157, 91, 0.12); }
 .mt-known.is-blocked { border-left-color: #e5453a; background: rgba(229, 69, 58, 0.14); font-weight: 600; }
+.mt-cx { margin: 0 0 0.6rem; }
