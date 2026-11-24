@@ -8,13 +8,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="format-detection" content="telephone=no, address=no, email=no, date=no">
 <title>Reserva tu mesa — ROCE</title>
-<meta name="description" content="Reserva tu mesa en ROCE, Valencia: comidas todos los días en Coffee, Bakery &amp; Kitchen y cenas de miércoles a sábado en Restaurant &amp; Cocktails. Para grupos de más de 8 personas, escríbenos por WhatsApp.">
+<meta name="description" content="Reserva tu mesa en ROCE, Valencia: comidas y cenas en Restaurant &amp; Cocktails. Para grupos de más de 8 personas, escríbenos por WhatsApp.">
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link rel="icon" type="image/png" href="/assets/meta/favicon-32.png" sizes="32x32">
 <link rel="apple-touch-icon" href="/assets/meta/apple-touch-icon.png">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Reserva tu mesa — ROCE">
-<meta property="og:description" content="Reserva tu mesa en ROCE, Valencia: comidas todos los días en Coffee, Bakery &amp; Kitchen y cenas de miércoles a sábado en Restaurant &amp; Cocktails. Para grupos de más de 8 personas, escríbenos por WhatsApp.">
+<meta property="og:description" content="Reserva tu mesa en ROCE, Valencia: comidas y cenas en Restaurant &amp; Cocktails. Para grupos de más de 8 personas, escríbenos por WhatsApp.">
 <meta property="og:image" content="https://roce.es/assets/meta/og-image.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -106,7 +106,6 @@
           "closes": "20:00"
         }
       ],
-      "acceptsReservations": "https://roce.es/reservas/#coffee-bakery-kitchen",
       "sameAs": [
         "https://www.instagram.com/somosroce"
       ]
@@ -377,19 +376,13 @@
     <a class="reserve-back" href="/restaurant-cocktails/" data-i18n="back_to_home">&larr; Volver a ROCE</a>
     <div class="reserve-head">
       <h1 data-i18n-html="reservar_h1">Reserva<br>tu mesa</h1>
-      <p class="reserve-zones-label" data-i18n="rz_label">1 · Elige dónde quieres reservar</p>
-      <div class="reserve-zones" role="group" aria-label="Restaurant &amp; Cocktails / Coffee, Bakery &amp; Kitchen">
+      <p class="reserve-zones-label" data-i18n="rz_label" hidden>1 · Elige dónde quieres reservar</p>
+      <div class="reserve-zones" role="group" aria-label="Restaurant &amp; Cocktails" hidden>
         <button type="button" class="reserve-zone" data-zone="night" aria-pressed="false">
           <span class="rz-floor" data-i18n="rz_up">Primera planta</span>
           <span class="rz-cta"><span class="rz-off" data-i18n="rz_pick">Elegir</span><span class="rz-on" data-i18n="rz_on">✓ Elegido</span></span>
           <span class="rz-name">Restaurant &amp; Cocktails</span>
           <span class="rz-desc" data-i18n="rz_night_desc">Comida 13:00–16:00 · Cena 20:00–02:00</span>
-        </button>
-        <button type="button" class="reserve-zone" data-zone="day" aria-pressed="false">
-          <span class="rz-floor" data-i18n="rz_down">Planta baja</span>
-          <span class="rz-cta"><span class="rz-off" data-i18n="rz_pick">Elegir</span><span class="rz-on" data-i18n="rz_on">✓ Elegido</span></span>
-          <span class="rz-name">Coffee, Bakery &amp; Kitchen</span>
-          <span class="rz-desc" data-i18n="rz_day_desc">Todos los días 9:00–20:00</span>
         </button>
       </div>
     </div>
@@ -484,7 +477,7 @@
 <script src="/agegate.js?v=12"></script>
 <script src="/eventos/config.js?v=3"></script>
 <script src="/eventos/events.js?v=15"></script>
-<script src="/mesas/mesas.js?v=20"></script>
+<script src="/mesas/mesas.js?v=21"></script>
 
 <script>
   const WHATSAPP_NUMBER = '34614073163';
@@ -527,9 +520,8 @@
   }));
   document.addEventListener('mesas:ambience', (e) => setZone(e.detail));
   // En la dirección: #restaurant-cocktails / #coffee-bakery-kitchen (los antiguos #night y #day siguen valiendo).
-  if (location.hash === '#coffee-bakery-kitchen' || location.hash === '#day') setZone('day');
-  else if (location.hash === '#restaurant-cocktails' || location.hash === '#night') setZone('night');
-  else setZone('all');
+  // Solo Restaurant & Cocktails tiene reservas de mesa: cualquier enlace (también los antiguos #day / #coffee-bakery-kitchen) abre ese motor.
+  setZone('night');
 
   const alquilerDetails = document.getElementById('alquilerDetails');
   function openAlquilerIfTargeted() {
