@@ -516,6 +516,7 @@
   .rt-body { overflow: hidden; font-family: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace; font-size: max(9px, 2.9vw); line-height: 1.45; white-space: pre; letter-spacing: -0.01em; transition: max-height 0.28s ease; }
   .rt-body .rt-l { display: block; min-height: 1.45em; }
   .rt-body a { color: inherit; text-decoration: underline; text-decoration-thickness: 1.5px; text-underline-offset: 2px; }
+  .rt-body .rt-go { display: block; margin-top: 0.8em; padding: 0.35em 0; }
   .rt-body .rt-top { margin-top: 0.45rem; }
   .rt-cur::after { content: ""; display: inline-block; width: 0.55em; height: 1em; margin-left: 1px; vertical-align: -0.12em; background: currentColor; animation: rtBlink 0.8s steps(1) infinite; }
   @keyframes rtBlink { 50% { opacity: 0; } }
@@ -804,9 +805,7 @@
       row('', en ? 'but really tasty ;)' : 'pero muy rico ;)', 0, 1100),
       { t: '' },
       { t: en ? 'Ground floor · No booking' : 'Planta baja · Sin reserva', pre: 250 },
-      { t: 'Gran Vía Marqués del Túria, 16', pre: 120 },
-      { t: '' },
-      { t: en ? 'See menu ↗' : 'Ver carta ↗', href: 'https://app.roce.es/', pre: 250 }
+      { t: 'Gran Vía Marqués del Túria, 16', pre: 120 }
     ];
   }
   var open = false, viaHover = false, timers = [], hoverT = 0, leaveT = 0, pointer = 'mouse';
@@ -814,14 +813,16 @@
   function later(fn, ms) { timers.push(setTimeout(fn, ms)); }
   function print(instant) {
     clearTimers(); body.innerHTML = ''; body.style.maxHeight = '';
+    var area = document.createElement('div'); area.className = 'rt-print'; body.appendChild(area);
+    var go = document.createElement('a'); go.className = 'rt-go'; go.href = 'https://app.roce.es/'; go.textContent = lang() === 'en' ? 'See menu ↗' : 'Ver carta ↗'; body.appendChild(go);   // visible desde el primer toque, al pie del papel
     var L = lines(), K = 0.8, delay = 200, STEP = 32 * K;
     L.forEach(function (ln) {
       var el = document.createElement(ln.href ? 'a' : 'span'); el.className = 'rt-l' + (ln.top ? ' rt-top' : '');
       if (ln.href) el.href = ln.href;
-      if (instant || reduce) { el.textContent = ln.t; body.appendChild(el); return; }
+      if (instant || reduce) { el.textContent = ln.t; area.appendChild(el); return; }
       delay += (ln.pre || 0) * K;
-      if (!ln.t) { later(function () { body.appendChild(el); }, delay); delay += 260 * K; return; }
-      later(function () { body.appendChild(el); el.classList.add('rt-cur'); }, delay);
+      if (!ln.t) { later(function () { area.appendChild(el); }, delay); delay += 260 * K; return; }
+      later(function () { area.appendChild(el); el.classList.add('rt-cur'); }, delay);
       var step = ln.fast ? 10 : STEP, firstRight = -1;
       for (var q = ln.cut || 0; q < ln.t.length; q++) if (ln.cut != null && ln.t.charAt(q) !== ' ') { firstRight = q; break; }
       for (var k = 0; k < ln.t.length; k++) {
