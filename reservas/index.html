@@ -294,7 +294,12 @@
   /* En esta página el pie queda pegado a la sección de alquiler. */
   .site-footer { padding-top: 2.5rem; }
   /* Negrita real (Helvetica Neue Bold) solo en el titular y la dirección del footer. */
-  .site-footer .footer-info p { font-family: var(--display); font-weight: 700; }
+  .site-footer .footer-logo { display: block; width: min(86vw, 32rem); margin: 0 auto 1.6rem; }
+  .site-footer .footer-instagram { display: inline-flex; align-items: center; gap: 0.35rem; margin-top: 0; padding: 0; border-radius: 0; background: none; color: var(--cream); font-family: var(--display); font-size: 1.1rem; font-weight: 400; letter-spacing: 0.02em; text-transform: uppercase; }
+  .site-footer .footer-instagram:hover { transform: none; opacity: 0.8; }
+  /* Ticket de brunch (ticket.js) en el margen derecho del pie, como en la portada. */
+  .footer-ticket { display: flex; justify-content: flex-end; margin: 1.8rem 1.6rem 0 0; }
+  @media (min-width: 641px) { .footer-ticket { margin-right: 3.5rem; } }
   .pe-details > summary {
     display: flex;
     align-items: center;
@@ -405,13 +410,9 @@
 </section>
 
 <footer class="site-footer">
-  <img class="footer-logo" id="footerLogo" src="/assets/logo/roce-tilted-white.svg" alt="ROCE">
-  <div class="footer-info">
-    <p class="footer-headline">Restaurant &amp; Cocktails</p>
-    <p class="footer-line">Marqués del Túria 16</p>
-    <p class="footer-line">Valencia (Spain)</p>
-  </div>
-  <a class="footer-instagram" href="https://www.instagram.com/somosroce" target="_blank" rel="noopener">@somosroce <svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-0.02em"><path d="M7 17L17 7M8 7h9v9"/></svg></a>
+  <img class="footer-logo" id="footerLogo" src="/assets/logo/roce-horizontal-white.svg" alt="ROCE" width="744" height="289">
+  <a class="footer-instagram" href="https://www.instagram.com/somosroce" target="_blank" rel="noopener">@somosroce <span class="footer-insta-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-0.02em"><path d="M7 17L17 7M8 7h9v9"/></svg></span></a>
+  <div class="footer-ticket"><div class="roce-ticket" data-roce-ticket></div></div>
   <div class="footer-bottom">
     <span class="lang-switch">
       <button type="button" data-lang="es">ES</button>
@@ -433,6 +434,7 @@
 <script src="/cookies.js?v=6"></script>
 <script src="/i18n.js?v=123"></script>
 <script src="/agegate.js?v=12"></script>
+<script src="/ticket.js?v=1"></script>
 <script src="/eventos/config.js?v=3"></script>
 <script src="/eventos/events.js?v=15"></script>
 <script src="/mesas/mesas.js?v=21"></script>
@@ -466,8 +468,6 @@
     // Sin espacio elegido (se llega desde otra página) solo se ven las opciones de espacio; el calendario aparece al elegir uno.
     document.getElementById('panelBooking').hidden = zone === 'all';
     const day = zone === 'day';
-    document.querySelector('.footer-headline').textContent = day ? 'Coffee, Bakery & Kitchen' : 'Restaurant & Cocktails';
-    document.getElementById('footerLogo').setAttribute('src', '/assets/logo/roce-tilted-' + (day ? 'black' : 'white') + '.svg');
     document.getElementById('navLogo').setAttribute('src', '/assets/logo/roce-horizontal-' + (day ? 'black' : 'white') + '.svg');
     if (window.ROCE_MESAS) window.ROCE_MESAS.setAmbience(zone);
   }
