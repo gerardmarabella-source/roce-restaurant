@@ -596,7 +596,9 @@
       editBar(E) +
       '<p class="ad-meta mt-legend"><span class="mt-dot is-free"></span>Libre <span class="mt-dot is-booked"></span>Reservada <span class="mt-dot is-pending"></span>Pendiente de pago <span class="mt-dot is-seated"></span>En mesa <span class="mt-dot is-bill"></span>Cuenta pedida <span class="mt-dot is-blocked"></span>Bloqueada</p></div>';
 
-    var list = S.bookings.length ? S.bookings.map(function (b) {
+    /* Las anuladas no salen en la lista del día (solo ensucian); un botón las muestra si hace falta */
+    var cxN = S.bookings.filter(function (b) { return b.status === 'cancelled'; }).length, shownBk = S.showCancelled ? S.bookings : S.bookings.filter(function (b) { return b.status !== 'cancelled'; });
+    var list = shownBk.length ? shownBk.map(function (b) {
       var tn = bookingTables(b).map(function (t) { return t.name; }).join(' + ');
       var cancelled = b.status === 'cancelled' || b.status === 'no_show';
       var PSL = { paid: 'pagada', pending: 'sin pagar', refunded: 'devuelta', retained: 'retenida', guaranteed: 'tarjeta guardada', charging: 'cobrando…', charged: 'cobrada', released: 'tarjeta liberada' };
@@ -639,7 +641,7 @@
       '<div class="ad-bar mt-mapbar"><div class="mt-zones" role="group">' + zones.map(function (z) { return '<button type="button" class="ck-chip" data-zone="' + z.id + '" aria-pressed="' + (z.id === S.zone) + '">' + esc(z.name_es) + '</button>'; }).join('') + '</div>' +
       '<button type="button" class="ad-btn is-small ' + (S.join ? '' : 'is-ghost') + '" id="mtJoin">' + (S.join ? 'Terminar de juntar' : 'Juntar mesas') + '</button>' +
       (S.mode === 'map' ? '<span class="mt-time"><button type="button" class="ad-btn is-ghost is-small" data-tstep="-1" aria-label="Hora anterior">‹</button><label>Mapa a las <select id="mtTime">' + opts.map(function (t) { return '<option' + (t === S.time ? ' selected' : '') + '>' + t + '</option>'; }).join('') + '</select></label><button type="button" class="ad-btn is-ghost is-small" data-tstep="1" aria-label="Hora siguiente">›</button></span>' : '') + '</div>' +
-      (S.join ? joinBar() : '') + (S.mode === 'map' ? map : timeline()) + '<h2 class="ad-sub">Reservas del día</h2><ul class="ad-list" id="mtList">' + list + '</ul>' + appDayBox();
+      (S.join ? joinBar() : '') + (S.mode === 'map' ? map : timeline()) + '<h2 class="ad-sub">Reservas del día</h2>' + (cxN ? '<p class="mt-cx"><button type="button" class="ad-btn is-small is-ghost" id="mtShowCx">' + (S.showCancelled ? 'Ocultar anuladas' : 'Mostrar anuladas (' + cxN + ')') + '</button></p>' : '') + '<ul class="ad-list" id="mtList">' + list + '</ul>' + appDayBox();
     var tlEl = body.querySelector('.mt-tl');
     if (tlEl) {
       var key = S.date + S.zone;
@@ -998,6 +1000,7 @@
       S.edit.tsize = S.edit.tsize || {}; S.edit.tsize[S.edit.sel] = k1; S.edit.ctxDirty = true; return void render();
     }
     if (t.dataset.rot != null && S.edit && S.edit.sel) { var cr = tcur(S.edit.sel).rot, dd = +t.dataset.rot, nr = t.dataset.rot === '0' ? 0 : (((cr + dd) % 360) + 360) % 360; setCh(S.edit.sel, { rot: nr }); return void render(); }
+    if (t.id === 'mtShowCx') { S.showCancelled = !S.showCancelled; return void render(); }
     if (t.id === 'mtNew') return void openNew({});
     if (t.id === 'mtPrint') return void printDay();
     if (t.dataset.table && S.edit) { S.edit.sel = t.dataset.table; S.edit.csel = ''; return void render(); }
