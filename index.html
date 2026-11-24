@@ -511,6 +511,7 @@
   .roce-ticket.is-open .rt-paper { transform: rotate(-1deg); }
   .rt-head { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; width: 100%; margin: 0; padding: 0; border: 0; background: none; color: inherit; cursor: pointer; text-align: left; font-family: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace; font-weight: 400; text-transform: uppercase; font-size: max(9px, 2.9vw); line-height: 1.45; letter-spacing: -0.01em; white-space: pre; -webkit-tap-highlight-color: transparent; }
   .rt-ghost .rt-head { cursor: default; }
+  .roce-ticket:not(.is-open) .rt-paper { cursor: pointer; -webkit-tap-highlight-color: transparent; }
   .rt-arr { display: inline-block; transition: transform 0.3s ease; }
   .roce-ticket.is-open .rt-arr { transform: rotate(180deg); }
   .rt-body { overflow: hidden; font-family: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace; font-size: max(9px, 2.9vw); line-height: 1.45; white-space: pre; letter-spacing: -0.01em; transition: max-height 0.28s ease; }
@@ -853,6 +854,9 @@
     if (pointer === 'mouse' && open && viaHover) { viaHover = false; return; }   // abierto con el ratón: un clic lo deja fijo
     viaHover = false; setOpen(!open);
   });
+  // Cerrado, toda la tira de papel (también el margen blanco) abre el ticket, no solo la línea de texto.
+  var paper = box.querySelector('.rt-paper');
+  paper.addEventListener('click', function (e) { if (open || head.contains(e.target) || e.target.closest('a')) return; head.click(); });
   document.addEventListener('click', function (e) { if (open && !box.contains(e.target)) setOpen(false); });
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && open) setOpen(false); });
   document.querySelectorAll('[data-lang]').forEach(function (b) { b.addEventListener('click', function () { if (open) setTimeout(function () { clearTimers(); print(true); }, 60); }); });
