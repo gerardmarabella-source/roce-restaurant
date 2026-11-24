@@ -505,21 +505,31 @@
   }
   @media (max-height: 660px) and (min-width: 641px) { .teaser-top { margin-top: 1.4rem; } }
 
-  /* Ticket de brunch (planta baja): asoma por el borde inferior derecho y lleva a la carta. */
-  .roce-ticket { display: block; position: relative; z-index: 3; width: max-content; margin-right: -1rem; color: #0a0a0a; text-decoration: none; transform: rotate(3deg); transform-origin: 100% 100%; transition: transform 0.25s ease; filter: drop-shadow(0 6px 12px rgba(0,0,0,0.5)); }
-  .roce-ticket:hover, .roce-ticket:focus-visible { transform: rotate(1deg) translateY(-3px); }
-  .rt-paper { background: #fbfbfa; padding: 0.8rem 1.7rem 1.15rem 0.85rem; clip-path: polygon(0 0, 100% 0, 100.00% calc(100% - 3px), 96.67% calc(100% - 6px), 93.33% calc(100% - 4px), 90.00% calc(100% - 6px), 86.67% calc(100% - 6px), 83.33% calc(100% - 3px), 80.00% calc(100% - 3px), 76.67% calc(100% - 4px), 73.33% calc(100% - 6px), 70.00% calc(100% - 4px), 66.67% calc(100% - 1px), 63.33% calc(100% - 1px), 60.00% calc(100% - 6px), 56.67% calc(100% - 4px), 53.33% calc(100% - 3px), 50.00% calc(100% - 5px), 46.67% calc(100% - 4px), 43.33% calc(100% - 6px), 40.00% calc(100% - 1px), 36.67% calc(100% - 0px), 33.33% calc(100% - 3px), 30.00% calc(100% - 2px), 26.67% calc(100% - 1px), 23.33% calc(100% - 0px), 20.00% calc(100% - 4px), 16.67% calc(100% - 6px), 13.33% calc(100% - 5px), 10.00% calc(100% - 5px), 6.67% calc(100% - 0px), 3.33% calc(100% - 4px), 0.00% calc(100% - 3px)); }
-  .rt-h { display: block; font-family: var(--display); font-weight: 700; text-transform: uppercase; font-size: 3.3vw; line-height: 1.02; letter-spacing: -0.01em; white-space: nowrap; }
-  .rt-mono { margin-top: 0.55rem; font-family: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace; font-size: 2.8vw; line-height: 1.4; white-space: nowrap; letter-spacing: -0.01em; }
-  .rt-mono span { display: block; }
-  .rt-mono .rt-go { display: inline-block; margin-top: 0.25rem; text-decoration: underline; text-decoration-thickness: 1.5px; text-underline-offset: 2px; }
+  /* Ticket de brunch (planta baja): solo asoma el titular por el borde inferior derecho; al dejar el ratón encima un rato
+     o al tocarlo se "imprime" el texto y el papel crece hacia arriba. */
+  .roce-ticket { position: relative; z-index: 6; color: #0a0a0a; width: max-content; }
+  .rt-ghost { visibility: hidden; pointer-events: none; padding: 0.8rem 1rem 1.05rem; }
+  .rt-paper { position: absolute; right: 0; bottom: 0; width: max-content; min-width: 100%; box-sizing: border-box; background: #fbfbfa; padding: 0.8rem 1rem 1.05rem; clip-path: polygon(0 0, 100% 0, 100.00% calc(100% - 3px), 96.67% calc(100% - 6px), 93.33% calc(100% - 4px), 90.00% calc(100% - 6px), 86.67% calc(100% - 6px), 83.33% calc(100% - 3px), 80.00% calc(100% - 3px), 76.67% calc(100% - 4px), 73.33% calc(100% - 6px), 70.00% calc(100% - 4px), 66.67% calc(100% - 1px), 63.33% calc(100% - 1px), 60.00% calc(100% - 6px), 56.67% calc(100% - 4px), 53.33% calc(100% - 3px), 50.00% calc(100% - 5px), 46.67% calc(100% - 4px), 43.33% calc(100% - 6px), 40.00% calc(100% - 1px), 36.67% calc(100% - 0px), 33.33% calc(100% - 3px), 30.00% calc(100% - 2px), 26.67% calc(100% - 1px), 23.33% calc(100% - 0px), 20.00% calc(100% - 4px), 16.67% calc(100% - 6px), 13.33% calc(100% - 5px), 10.00% calc(100% - 5px), 6.67% calc(100% - 0px), 3.33% calc(100% - 4px), 0.00% calc(100% - 3px));
+    transform: translateX(1rem) rotate(3deg); transform-origin: 100% 100%; transition: transform 0.35s cubic-bezier(.2,.8,.2,1); filter: drop-shadow(0 6px 12px rgba(0,0,0,0.5)); }
+  .roce-ticket.is-open .rt-paper { transform: translateX(-0.25rem) rotate(-1deg); }
+  .rt-head { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; width: 100%; margin: 0; padding: 0; border: 0; background: none; color: inherit; cursor: pointer; text-align: left; font-family: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace; font-weight: 400; text-transform: uppercase; font-size: 2.9vw; line-height: 1.45; letter-spacing: -0.01em; white-space: pre; -webkit-tap-highlight-color: transparent; }
+  .rt-ghost .rt-head { cursor: default; }
+  .rt-arr { display: inline-block; transition: transform 0.3s ease; }
+  .roce-ticket.is-open .rt-arr { transform: rotate(180deg); }
+  .rt-body { overflow: hidden; font-family: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace; font-size: 2.9vw; line-height: 1.45; white-space: pre; letter-spacing: -0.01em; transition: max-height 0.28s ease; }
+  .rt-body .rt-l { display: block; min-height: 1.45em; }
+  .rt-body a { color: inherit; text-decoration: underline; text-decoration-thickness: 1.5px; text-underline-offset: 2px; }
+  .rt-body .rt-top { margin-top: 0.45rem; }
+  .rt-cur::after { content: ""; display: inline-block; width: 0.55em; height: 1em; margin-left: 1px; vertical-align: -0.12em; background: currentColor; animation: rtBlink 0.8s steps(1) infinite; }
+  @keyframes rtBlink { 50% { opacity: 0; } }
+  .rt-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  @media (prefers-reduced-motion: reduce) { .rt-paper, .rt-arr, .rt-body { transition: none; } .rt-cur::after { animation: none; } }
   @media (max-width: 640px) {
     .teaser-cta-row { display: grid; grid-template-columns: 1fr; justify-items: end; row-gap: 1.6rem; }
     .teaser-links { justify-self: start; }
-    .roce-ticket { margin-bottom: -0.5rem; margin-top: 0.3rem; }
+    .roce-ticket { margin-bottom: -0.3rem; margin-top: 0.3rem; margin-right: -1rem; }
   }
-  @media (max-width: 359px) { .rt-paper { padding-left: 0.7rem; } }
-  @media (min-width: 641px) { .roce-ticket { position: absolute; right: -0.9rem; bottom: 0.5rem; margin-right: 0; width: max-content; } .rt-h { font-size: 1.1rem; } .rt-mono { font-size: 0.76rem; } .rt-paper { padding-right: 1.9rem; padding-left: 1rem; } }
+  @media (min-width: 641px) { .roce-ticket { position: absolute; right: -1rem; bottom: 0.5rem; } .rt-head { font-size: 0.78rem; } .rt-body { font-size: 0.78rem; } .rt-ghost, .rt-paper { padding-left: 1.2rem; padding-right: 1.2rem; } .rt-paper { transform: translateX(1.2rem) rotate(3deg); } .roce-ticket.is-open .rt-paper { transform: translateX(-0.4rem) rotate(-1deg); } }
   .teaser-nav .teaser-insta { position: static; font-size: calc(clamp(0.85rem, 2.6vw, 1.1rem) * 1.12); font-weight: 400; line-height: 1; gap: 0.3rem; align-items: center; }
 </style>
 <script src="/vh.js?v=1"></script>
@@ -586,12 +596,13 @@
         <a class="teaser-cta teaser-link" href="/eventos/" data-i18n="menu_eventos_title">Eventos</a>
       </div>
       
-      <a class="roce-ticket" href="https://app.roce.es" aria-label="Brunch, bakery, coffee · Planta baja, sin reserva · Ver carta">
+      <div class="roce-ticket" id="roceTicket">
+        <div class="rt-ghost" aria-hidden="true"><span class="rt-head"><span>Brunch · Bakery · Coffee</span><span class="rt-arr">↑</span></span></div>
         <div class="rt-paper">
-          <span class="rt-h" data-i18n="ticket_h">Brunch Bakery Coffee</span>
-          <div class="rt-mono"><span data-i18n="ticket_s">Planta baja · Sin reserva</span><span class="rt-go" data-i18n="ticket_c">Ver carta ↗</span></div>
+          <button type="button" class="rt-head" id="rtHead" aria-expanded="false" aria-controls="rtBody"><span>Brunch · Bakery · Coffee</span><span class="rt-arr" aria-hidden="true">↑</span></button>
+          <div class="rt-body" id="rtBody" aria-live="off"></div>
         </div>
-      </a>
+      </div>
 
     </div>
 
@@ -776,5 +787,78 @@
   })();
 </script>
 
+<script>
+// Ticket de brunch: asoma solo el titular; con el ratón encima un rato o al tocar, se imprime el texto y el papel crece.
+(function () {
+  var box = document.getElementById('roceTicket'); if (!box) return;
+  var head = document.getElementById('rtHead'), body = document.getElementById('rtBody');
+  var W = 30, reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function lang() { return window.ROCE_I18N && window.ROCE_I18N.getLang ? window.ROCE_I18N.getLang() : 'es'; }
+  function row(l, r) { return l + new Array(Math.max(1, W - l.length - r.length) + 1).join(' ') + r; }
+  function lines() {
+    var en = lang() === 'en';
+    return [
+      { t: new Array(W + 1).join('-') },
+      { t: en ? 'ALL DAY KITCHEN' : 'ALL DAY KITCHEN', b: 1, top: 1 },
+      { t: '' },
+      { t: row(en ? 'Kitchen' : 'Cocina', 'healthy') },
+      { t: row(en ? 'Coffee' : 'Café', 'specialty') },
+      { t: row('Bakery', 'unhealthy') },
+      { t: row('', en ? 'but really tasty ;)' : 'pero muy rica ;)') },
+      { t: '' },
+      { t: en ? 'Ground floor · No booking' : 'Planta baja · Sin reserva' },
+      { t: 'Gran Vía Marqués del Túria, 16' },
+      { t: '' },
+      { t: en ? 'See menu ↗' : 'Ver carta ↗', href: 'https://app.roce.es/' }
+    ];
+  }
+  var open = false, viaHover = false, timers = [], hoverT = 0, leaveT = 0, pointer = 'mouse';
+  function clearTimers() { timers.forEach(clearTimeout); timers = []; }
+  function later(fn, ms) { timers.push(setTimeout(fn, ms)); }
+  function print(instant) {
+    clearTimers(); body.innerHTML = ''; body.style.maxHeight = '';
+    var L = lines(), delay = 0;
+    L.forEach(function (ln) {
+      var el = document.createElement(ln.href ? 'a' : 'span'); el.className = 'rt-l' + (ln.b ? ' rt-b' : '') + (ln.top ? ' rt-top' : '');
+      if (ln.href) { el.href = ln.href; }
+      if (instant || reduce || !ln.t) {
+        if (instant || reduce) { el.textContent = ln.t; body.appendChild(el); return; }
+        later(function () { body.appendChild(el); }, delay); delay += 90; return;
+      }
+      later(function () { body.appendChild(el); el.classList.add('rt-cur'); }, delay);
+      var k = 0; var step = 11;
+      for (; k < ln.t.length; k++) (function (n) { later(function () { el.textContent = ln.t.slice(0, n + 1); }, delay + (n + 1) * step); })(k);
+      delay += ln.t.length * step + 40;
+      later(function () { el.classList.remove('rt-cur'); }, delay);
+      delay += 80;
+    });
+  }
+  function setOpen(v, instant) {
+    if (v === open) return; open = v;
+    box.classList.toggle('is-open', open); head.setAttribute('aria-expanded', open ? 'true' : 'false');
+    if (open) print(instant);
+    else {
+      clearTimers(); body.style.maxHeight = body.scrollHeight + 'px'; void body.offsetHeight; body.style.maxHeight = '0px';
+      later(function () { if (!open) { body.innerHTML = ''; body.style.maxHeight = ''; } }, 300);
+    }
+  }
+  // Ratón: al dejarlo encima un rato se abre y al salir se cierra. Táctil/teclado: toca para abrir o cerrar.
+  box.addEventListener('pointerenter', function (e) { pointer = e.pointerType; if (e.pointerType !== 'mouse') return; clearTimeout(leaveT); clearTimeout(hoverT); if (!open) hoverT = setTimeout(function () { viaHover = true; setOpen(true); }, 350); });
+  box.addEventListener('pointerleave', function (e) { if (e.pointerType !== 'mouse') return; clearTimeout(hoverT); if (viaHover) { clearTimeout(leaveT); leaveT = setTimeout(function () { viaHover = false; setOpen(false); }, 250); } });
+  box.addEventListener('pointerdown', function (e) { pointer = e.pointerType; });
+  head.addEventListener('click', function () {
+    clearTimeout(hoverT); clearTimeout(leaveT);
+    if (pointer === 'mouse' && open && viaHover) { viaHover = false; return; }   // abierto con el ratón: un clic lo deja fijo
+    viaHover = false; setOpen(!open);
+  });
+  document.addEventListener('click', function (e) { if (open && !box.contains(e.target)) setOpen(false); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && open) setOpen(false); });
+  document.querySelectorAll('[data-lang]').forEach(function (b) { b.addEventListener('click', function () { if (open) setTimeout(function () { clearTimers(); print(true); }, 60); }); });
+  // Texto completo para lectores de pantalla y buscadores (el efecto de escritura es solo visual).
+  var sr = document.createElement('p'); sr.className = 'rt-sr';
+  sr.innerHTML = 'Brunch, Bakery, Coffee. All day kitchen. Planta baja, sin reserva. Gran Vía Marqués del Túria, 16. <a href="https://app.roce.es/">Ver carta</a>';
+  box.appendChild(sr);
+})();
+</script>
 </body>
 </html>
