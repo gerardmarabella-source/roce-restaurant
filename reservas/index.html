@@ -80,46 +80,50 @@
 }
 </script>
 <link rel="stylesheet" href="/styles.css?v=79">
-<link rel="stylesheet" href="/mesas/mesas.css?v=14">
+<link rel="stylesheet" href="/mesas/mesas.css?v=19">
 <style>
   .reserve-form-page {
     min-height: 100vh;
-    background: var(--black);
+    background: radial-gradient(120% 50% at 50% -8%, #1a1a1d 0%, var(--black) 62%);
     color: var(--white);
     padding: 2.2rem 1.5rem 1rem;
     display: flex;
     justify-content: center;
   }
   .reserve-form-wrap { width: 100%; max-width: 520px; }
+  @media (min-width: 960px) { .reserve-form-wrap { max-width: 1080px; } .reserve-form-page { padding-top: 3rem; } }
   .reserve-form-wrap h1 {
     font-family: var(--display);
     font-weight: 400;
-    font-size: clamp(2.6rem, 8.5vw, 4rem);
-    line-height: 0.95;
+    font-size: clamp(3rem, 12vw, 5.6rem);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 0.9;
     text-transform: uppercase;
     margin-bottom: 0.75rem;
   }
   /* Título a la izquierda y, al lado, el selector Day / Night. */
-  .reserve-head { display: flex; flex-direction: column; align-items: flex-start; gap: 1rem; margin-bottom: 0.75rem; }
+  .reserve-head { display: flex; flex-direction: column; align-items: flex-start; gap: 1.1rem; margin-bottom: 1.8rem; }
   .reserve-head h1 { margin-bottom: 0; }
   /* Selector de espacio: dos "plantas" apiladas como en el local (alta arriba, baja abajo). Cada una dice qué es, su horario y que se pulsa. */
   .reserve-zones-label { margin: 0 0 0.6rem; font-size: 0.8rem; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.7; }
-  .reserve-zones { display: flex; flex-direction: column; align-items: stretch; gap: 0.6rem; width: 100%; max-width: 34rem; padding-bottom: 0.2rem; }
+  .reserve-zones { display: flex; flex-direction: column; align-items: stretch; gap: 0.6rem; width: 100%; max-width: 34rem; padding-bottom: 0; }
   .reserve-zone {
     display: grid; grid-template-columns: 1fr auto; grid-template-areas: "floor cta" "name name" "desc desc"; row-gap: 0.35rem; column-gap: 1rem; align-items: center;
-    width: 100%; box-sizing: border-box; padding: 1rem 1.15rem 1.05rem;
-    border: 2px solid currentColor; background: transparent; color: inherit; text-align: left; cursor: pointer;
+    width: 100%; box-sizing: border-box; padding: 0.9rem 1.1rem 0.95rem;
+    border: 1px solid rgba(236, 231, 221, 0.3); background: transparent; color: inherit; text-align: left; cursor: pointer;
     font-family: var(--display); text-transform: uppercase; transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
   }
-  .reserve-zone:hover { background: rgba(127, 127, 127, 0.16); transform: translateY(-2px); }
+  .reserve-zone:hover { background: rgba(127, 127, 127, 0.16); }
   .rz-floor { grid-area: floor; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.14em; opacity: 0.7; }
   .rz-cta { grid-area: cta; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.1em; white-space: nowrap; }
   .rz-off::after { content: " →"; }
   .rz-on { display: none; }
-  .rz-name { grid-area: name; font-weight: 700; font-size: clamp(1.15rem, 5vw, 1.55rem); line-height: 1.05; letter-spacing: 0.02em; }
+  .rz-name { grid-area: name; font-weight: 700; font-size: clamp(1.05rem, 4.4vw, 1.3rem); line-height: 1.05; letter-spacing: 0.02em; }
   .rz-desc { grid-area: desc; font-size: 0.8rem; line-height: 1.3; letter-spacing: 0.03em; text-transform: none; opacity: 0.75; }
   #panelBooking[hidden] { display: none; }
-  .reserve-zone[aria-pressed="true"] { background: var(--white); color: var(--black); }
+  .reserve-zone[aria-pressed="true"] { background: rgba(236, 231, 221, 0.06); color: var(--white); cursor: default; }
+  .reserve-zone[aria-pressed="true"]:hover { background: rgba(236, 231, 221, 0.06); }
   .reserve-zone[aria-pressed="true"] .rz-off { display: none; }
   .reserve-zone[aria-pressed="true"] .rz-on { display: inline; }
   body.zone-day .reserve-zone[aria-pressed="true"] { background: var(--black); color: var(--white); }
@@ -158,33 +162,40 @@
   .group-notice {
     display: flex;
     align-items: flex-start;
-    gap: 0.9rem;
-    margin: 0 0 1.25rem;
-    padding: 1rem 1.1rem;
-    background: #ececec;
-    border-radius: 6px;
-    color: var(--black);
-    font-size: 0.95rem;
+    gap: 0.7rem;
+    margin: 0;
+    padding: 0.8rem 0.95rem;
+    border: 1px dashed rgba(236, 231, 221, 0.3);
+    background: rgba(236, 231, 221, 0.04);
+    color: rgba(236, 231, 221, 0.78);
+    font-size: 0.82rem;
     line-height: 1.45;
   }
   .group-notice a { color: inherit; text-decoration: underline; }
   /* Se pulsa "+" con 8 personas: el aviso vibra y se ilumina para llamar la atención. */
   .group-notice.is-shake { animation: gnShake 0.65s cubic-bezier(.36, .07, .19, .97) both, gnGlow 1.8s ease-out both; }
   @keyframes gnShake { 10%, 90% { transform: translateX(-2px); } 20%, 80% { transform: translateX(5px); } 30%, 50%, 70% { transform: translateX(-9px); } 40%, 60% { transform: translateX(9px); } }
-  @keyframes gnGlow { 0% { box-shadow: 0 0 0 0 rgba(229, 69, 58, 0.9); background: #ffe3df; } 100% { box-shadow: 0 0 0 16px rgba(229, 69, 58, 0); background: #ececec; } }
+  @keyframes gnGlow { 0% { box-shadow: 0 0 0 0 rgba(229, 69, 58, 0.9); background: rgba(229, 69, 58, 0.28); } 100% { box-shadow: 0 0 0 16px rgba(229, 69, 58, 0); background: rgba(236, 231, 221, 0.04); } }
   @media (prefers-reduced-motion: reduce) { .group-notice.is-shake { animation: gnGlow 1.8s ease-out both; } }
-  .group-notice svg { width: 1.3rem; height: 1.3rem; flex-shrink: 0; margin-top: 0.1rem; color: var(--black); }
+  .group-notice svg { width: 1.1rem; height: 1.1rem; flex-shrink: 0; margin-top: 0.1rem; color: var(--cream); }
+  .group-notice svg rect, .group-notice svg circle + circle { fill: #0a0a0a; }
 
   .reserve-back {
-    display: inline-block;
-    margin-bottom: 1.5rem;
-    font-size: 0.8rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-bottom: 1.6rem;
+    padding: 0.5rem 0.95rem;
+    border: 1px solid rgba(236, 231, 221, 0.3);
+    border-radius: 999px;
+    font-size: 0.74rem;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.12em;
     text-decoration: none;
     color: var(--white);
-    opacity: 0.85;
+    transition: background 0.18s, color 0.18s;
   }
+  .reserve-back:hover { background: var(--cream); color: var(--black); }
 
   /* Header negro y logo en blanco en esta página; sin botón de reservar
      (ya estamos en la página de reservas). */
@@ -434,7 +445,7 @@
 <script src="/ticket.js?v=1"></script>
 <script src="/eventos/config.js?v=3"></script>
 <script src="/eventos/events.js?v=15"></script>
-<script src="/mesas/mesas.js?v=22"></script>
+<script src="/mesas/mesas.js?v=25"></script>
 
 <script>
   const WHATSAPP_NUMBER = '34614073163';
