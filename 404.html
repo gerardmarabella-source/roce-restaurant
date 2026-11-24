@@ -3,13 +3,85 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ROCE</title>
+<title>404 · ROCE</title>
 <meta name="robots" content="noindex,follow">
-<meta http-equiv="refresh" content="0; url=/">
-<script>location.replace('/');</script>
-<style>html,body{background:#0a0a0a;color:#ece7dd;font-family:"Helvetica Neue",Arial,sans-serif}a{color:inherit}</style>
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="stylesheet" href="/styles.css?v=79">
+<style>
+  html, body { margin: 0; min-height: 100%; background: var(--black); color: var(--cream); }
+  body { min-height: 100dvh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1.6rem; padding: 2rem 1rem 2.4rem; box-sizing: border-box; font-family: var(--display); }
+  .nf-logo { display: block; width: clamp(7rem, 30vw, 10rem); height: auto; }
+  .nf-code { margin: 0; font-weight: 700; font-size: clamp(4.6rem, 22vw, 9rem); line-height: 0.82; letter-spacing: -0.03em; }
+  .nf-sub { margin: 0; text-align: center; font-size: clamp(1rem, 4.4vw, 1.35rem); line-height: 1.25; max-width: 24rem; text-wrap: balance; }
+
+  /* El ticket: sale "impreso" desde arriba, línea a línea. */
+  .nf-ticket { width: min(23rem, 100%); box-sizing: border-box; color: #0a0a0a; background: #fbfbfa; padding: 1.1rem 1.1rem 1.7rem; transform: rotate(-1.4deg);
+    filter: drop-shadow(0 10px 22px rgba(0, 0, 0, 0.55));
+    clip-path: polygon(0 0, 100% 0, 100% calc(100% - 4px), 96% calc(100% - 7px), 92% calc(100% - 3px), 88% calc(100% - 6px), 84% calc(100% - 2px), 80% calc(100% - 7px), 76% calc(100% - 4px), 72% calc(100% - 6px), 68% calc(100% - 1px), 64% calc(100% - 6px), 60% calc(100% - 3px), 56% calc(100% - 7px), 52% calc(100% - 2px), 48% calc(100% - 6px), 44% calc(100% - 4px), 40% calc(100% - 7px), 36% calc(100% - 1px), 32% calc(100% - 5px), 28% calc(100% - 3px), 24% calc(100% - 7px), 20% calc(100% - 2px), 16% calc(100% - 6px), 12% calc(100% - 4px), 8% calc(100% - 7px), 4% calc(100% - 2px), 0 calc(100% - 5px));
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace; font-size: clamp(0.5rem, 3.15vw, 0.86rem); line-height: 1.5; }
+  .nf-ticket .nf-l { display: flex; align-items: baseline; gap: 0.4rem; white-space: nowrap; opacity: 0; animation: nfPrint 0.01s linear forwards; }
+  .nf-ticket .nf-l i { flex: 1; min-width: 0.5rem; border-bottom: 1.5px dotted rgba(10, 10, 10, 0.55); transform: translateY(-0.2em); }
+  .nf-ticket .nf-c { justify-content: center; text-align: center; }
+  .nf-ticket .nf-sep { display: block; height: 0; border-top: 1.5px dashed rgba(10, 10, 10, 0.55); margin: 0.55rem 0; opacity: 0; animation: nfPrint 0.01s linear forwards; }
+  .nf-ticket .nf-big { font-weight: 700; letter-spacing: 0.02em; }
+  .nf-ticket .nf-gap { height: 0.7rem; }
+  .nf-ticket .nf-stamp { display: inline-block; margin: 0.5rem 0 0; padding: 0.15rem 0.55rem; border: 2px solid #c5271c; color: #c5271c; font-weight: 700; letter-spacing: 0.12em; transform: rotate(-7deg); opacity: 0; animation: nfStamp 0.25s cubic-bezier(.2, 1.6, .4, 1) 3.6s forwards; }
+  @keyframes nfPrint { to { opacity: 1; } }
+  @keyframes nfStamp { from { opacity: 0; transform: rotate(-7deg) scale(2.2); } to { opacity: 1; transform: rotate(-7deg) scale(1); } }
+  @media (prefers-reduced-motion: reduce) { .nf-ticket .nf-l, .nf-ticket .nf-sep, .nf-ticket .nf-stamp { animation: none; opacity: 1; } }
+
+  .nf-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.7rem; }
+  .nf-btn { display: inline-block; padding: 0.8rem 1.5rem; border-radius: 999px; border: 2px solid var(--cream); color: var(--cream); text-decoration: none; font-family: var(--display); font-size: 0.95rem; letter-spacing: 0.02em; text-transform: uppercase; transition: transform 0.15s ease, background 0.15s ease, color 0.15s ease; }
+  .nf-btn:hover, .nf-btn:focus-visible { background: var(--cream); color: var(--black); transform: translateY(-2px); }
+  .nf-btn.is-solid { background: var(--cream); color: var(--black); }
+  .nf-btn.is-solid:hover, .nf-btn.is-solid:focus-visible { background: transparent; color: var(--cream); }
+  .nf-hint { margin: 0; font-size: 0.78rem; opacity: 0.55; text-align: center; }
+</style>
 </head>
 <body>
-<p><a href="/">ROCE</a></p>
+  <img class="nf-logo" src="/assets/logo/roce-horizontal-white.svg" alt="ROCE" width="516" height="150">
+  <h1 class="nf-code">404</h1>
+  <p class="nf-sub" id="nfSub">Esta página no estaba en la carta.</p>
+
+  <div class="nf-ticket" role="img" aria-label="Ticket 404: la página que buscabas está agotada" id="nfTicket">
+    <div class="nf-l nf-c nf-big" style="animation-delay:.3s">ROCE · VALENCIA</div>
+    <div class="nf-l nf-c" style="animation-delay:.6s" id="nfNo">TICKET Nº 404</div>
+    <span class="nf-sep" style="animation-delay:.9s"></span>
+    <div class="nf-l" style="animation-delay:1.2s"><span id="nfL1">1x Página que buscabas</span><i></i><span id="nfR1">AGOTADA</span></div>
+    <div class="nf-l" style="animation-delay:1.6s"><span id="nfL2">1x Brunch</span><i></i><span id="nfR2">planta baja</span></div>
+    <div class="nf-l" style="animation-delay:2s"><span id="nfL3">1x Cóctel</span><i></i><span id="nfR3">primera planta</span></div>
+    <div class="nf-l" style="animation-delay:2.4s"><span id="nfL4">1x Sentido de orientación</span><i></i><span>0,00</span></div>
+    <span class="nf-sep" style="animation-delay:2.8s"></span>
+    <div class="nf-l nf-big" style="animation-delay:3.1s"><span id="nfT">TOTAL</span><i></i><span>0,00 €</span></div>
+    <div class="nf-gap"></div>
+    <div class="nf-l nf-c" style="animation-delay:3.4s" id="nfBye">Gracias por perderte con nosotros ;)</div>
+    <div class="nf-l nf-c"><span class="nf-stamp" id="nfStamp">NO ENCONTRADA</span></div>
+  </div>
+
+  <div class="nf-actions">
+    <a class="nf-btn is-solid" href="/" id="nfHome">Volver a ROCE</a>
+    <a class="nf-btn" href="/reservas/" id="nfBook">Reservar mesa</a>
+  </div>
+  <p class="nf-hint" id="nfHint">Si te han pasado este enlace, el que lo escribió también se ha perdido.</p>
+
+<script>
+  // Español por defecto; en inglés si el navegador está en inglés.
+  (function () {
+    var en = /^en/i.test(navigator.language || '');
+    if (!en) return;
+    document.documentElement.lang = 'en';
+    var T = {
+      nfSub: "This page wasn't on the menu.", nfNo: 'TICKET No. 404',
+      nfL1: '1x Page you wanted', nfR1: 'SOLD OUT', nfL2: '1x Brunch', nfR2: 'ground floor',
+      nfL3: '1x Cocktail', nfR3: 'first floor', nfL4: '1x Sense of direction', nfT: 'TOTAL',
+      nfBye: 'Thanks for getting lost with us ;)', nfStamp: 'NOT FOUND',
+      nfHome: 'Back to ROCE', nfBook: 'Book a table',
+      nfHint: 'If someone sent you this link, they got lost too.'
+    };
+    Object.keys(T).forEach(function (k) { var el = document.getElementById(k); if (el) el.textContent = T[k]; });
+    document.title = '404 · ROCE';
+    document.getElementById('nfTicket').setAttribute('aria-label', 'Ticket 404: the page you wanted is sold out');
+  })();
+</script>
 </body>
 </html>
