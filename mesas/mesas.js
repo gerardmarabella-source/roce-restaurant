@@ -228,8 +228,10 @@
     order.forEach(function (a) {
       var rows = groups[a], dep = rows[0].o_deposit_cents, hrs = rows[0].o_free_hours, mode = rows[0].o_payment_mode;
       if (!rows.some(function (r) { return r.o_free; }) && st.slots.length === 0 && order.length > 1) { /* se muestra igualmente para poder apuntarse */ }
-      h += '<div class="mz-group"><div class="mz-group-h"><span class="mz-group-name">' + esc(t(a)) + '</span>' +
-        '<span class="mz-group-note">' + (dep > 0 && mode === 'card' ? '' : dep > 0 ? esc(t('deposit_h', { m: money(dep) })) : esc(t('free_h'))) + '</span></div><div class="mz-slots">';
+      // Con un solo espacio (Restaurant & Cocktails) no se repite su nombre bajo el calendario: ya se dice arriba dónde se reserva.
+      var gnote = (dep > 0 && mode === 'card' ? '' : dep > 0 ? esc(t('deposit_h', { m: money(dep) })) : esc(t('free_h'))), gname = order.length > 1 ? esc(t(a)) : '';
+      h += '<div class="mz-group">' + (gname || gnote ? '<div class="mz-group-h">' + (gname ? '<span class="mz-group-name">' + gname + '</span>' : '') +
+        (gnote ? '<span class="mz-group-note">' + gnote + '</span>' : '') + '</div>' : '') + '<div class="mz-slots">';
       // En Restaurant & Cocktails las horas se separan en Comida y Cena (cada turno tiene su cuadrícula).
       var svcs = []; rows.forEach(function (r) { if (svcs.indexOf(r.o_service) === -1) svcs.push(r.o_service); });
       var split = a === 'night';
