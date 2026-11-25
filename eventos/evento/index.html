@@ -216,8 +216,8 @@
     };
     var MAPS = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent('ROCE Marqués del Túria 16 Valencia');
 
-    // ¿Quedan mesas para cenar ese día? Si la cena está llena (o ese día no hay cena), no se ofrece «Reservar cena · incluye acceso»:
-    // solo queda comprar la entrada. null = sin comprobar o sin conexión (entonces se ofrece como siempre).
+    // ¿Quedan mesas para cenar ese día? Si la cena está llena (o ese día no hay cena), no se ofrece «Reservar cena · incluye acceso»;
+    // queda «Solo fiesta · precio con copa». null = sin comprobar o sin conexión (entonces se ofrece como siempre).
     var dinnerOpen = null;
     function checkDinner() {
       var B = window.ROCE_BACKEND || {};
@@ -255,8 +255,8 @@
       var sold = e.left <= 0;
       $('evdPrice').textContent = e.price_cents > 0 ? U.money(e.price_cents, l) : t('evd_free', 'Entrada libre');
       $('evdPriceNote').innerHTML = ICON.ticket + '<span>' + esc(e.price[l]) + '</span>';
-      var cfgPk = (window.ROCE_DINNER_ACCESS || {})[e.id] || {}, perk = e.env === 'night' && e.price_cents > 0 && dinnerOpen !== false ? { date: e.date, drink: !!cfgPk.drink } : null, dn = $('evdDinner');   // cualquier evento de noche de pago: reservar cena da el acceso
-      $('evdBar').classList.toggle('has-perk', !!perk); dn.hidden = !perk;
+      var cfgPk = (window.ROCE_DINNER_ACCESS || {})[e.id] || {}, perk = e.env === 'night' && e.price_cents > 0 ? { date: e.date, drink: !!cfgPk.drink } : null, dn = $('evdDinner');   // cualquier evento de noche de pago: reservar cena da el acceso
+      $('evdBar').classList.toggle('has-perk', !!perk); dn.hidden = !perk || dinnerOpen === false;   // la copa del «solo fiesta» no depende de la cena (la cena es arriba y el evento abajo): solo se esconde el botón de cenar
       if (perk) { dn.textContent = t('evd_dinner', 'Reservar cena · incluye acceso'); dn.href = '/reservas/?d=' + encodeURIComponent(perk.date) + '#restaurant-cocktails'; }
       var buy = $('evdBuy'); buy.textContent = sold ? t('tk_soldout', 'Agotado') : perk ? t('evd_party', 'Solo fiesta · {price} con copa').replace('{price}', U.money(e.price_cents, l)).replace(/ con copa$| with a drink$/, perk.drink ? '$&' : '') : t('ev_cta', 'Comprar entrada');
       buy.classList.toggle('is-soldout', sold); buy.href = sold ? '#' : '/eventos/entradas/?e=' + encodeURIComponent(e.id);
