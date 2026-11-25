@@ -196,11 +196,12 @@
   .ad-dinner { border: 1px solid rgba(236, 231, 221, 0.3); padding: 0.9rem 1rem 0.5rem; margin: 0.4rem 0 1rem; }
   .ad-dinner[hidden] { display: none; }
   .ad-dinner .ad-check { margin-bottom: 0.7rem; }
-  .ad-times { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0.2rem 0 0.4rem; }
+  /* Horas que regalan la entrada: cuadrícula que se adapta al ancho (también en móvil) y casillas de tamaño fijo (sin heredar el 100 % de los campos). */
+  .ad-times { display: grid; grid-template-columns: repeat(auto-fill, minmax(4.8rem, 1fr)); gap: 0.45rem; margin: 0.2rem 0 0.6rem; }
   .ad-times[hidden] { display: none; }
-  .ad-time { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.4rem 0.7rem; border: 1px solid rgba(236, 231, 221, 0.35); cursor: pointer; font-size: 0.9rem; user-select: none; }
-  .ad-time input { accent-color: var(--fg); }
-  .ad-time:has(input:checked) { background: var(--fg); color: var(--bg); }
+  .ad-time, .ad-field .ad-time { display: flex; align-items: center; justify-content: center; gap: 0.45rem; min-height: 2.6rem; padding: 0.4rem 0.5rem; border: 1px solid rgba(10, 10, 10, 0.45); cursor: pointer; font-size: 0.95rem; line-height: 1; white-space: nowrap; user-select: none; }
+  .ad-field .ad-time input, .ad-time input { flex: none; width: 1rem; height: 1rem; min-width: 0; margin: 0; padding: 0; border: 0; background: none; accent-color: var(--fg); -webkit-appearance: checkbox; appearance: auto; }
+  .ad-time.is-on { background: var(--fg); color: var(--bg); }
   @media (max-width: 560px) { .ad-grid { grid-template-columns: 1fr; } .ad-table { font-size: 0.8rem; } }
 </style>
 <link rel="stylesheet" href="/admin/mesas.css?v=25">
@@ -845,11 +846,13 @@
 
   // Horas de cena que se pueden marcar como «regalan la entrada» (de 20:00 a 23:30, cada media hora).
   var DINNER_TIMES = []; for (var hh = 20; hh <= 23; hh++) { DINNER_TIMES.push(hh + ':00', hh + ':30'); }
-  $('fTimes').innerHTML = DINNER_TIMES.map(function (x) { return '<label class="ad-time"><input type="checkbox" value="' + x + '">' + x + '</label>'; }).join('');
+  $('fTimes').innerHTML = DINNER_TIMES.map(function (x) { return '<label class="ad-time"><input type="checkbox" value="' + x + '" autocomplete="off">' + x + '</label>'; }).join('');
   function syncDinner() {
     var night = $('fEnv').value === 'night';
     $('fDinnerBox').hidden = !night; $('fTimesWrap').hidden = !(night && $('fDinner').checked);
   }
+  function paintTimes() { [].forEach.call($('fTimes').querySelectorAll('.ad-time'), function (l) { l.classList.toggle('is-on', l.querySelector('input').checked); }); }
+  $('fTimes').addEventListener('change', paintTimes);
   $('fEnv').addEventListener('change', syncDinner); $('fDinner').addEventListener('change', syncDinner);
 
   function openForm(e, asCopy) {
@@ -861,7 +864,7 @@
     $('fDinner').checked = !!v.dinner_access; $('fDrink').checked = !!v.drink_included;
     var vt = (v.dinner_times || []).map(function (x) { return String(x).slice(0, 5); });
     [].forEach.call($('fTimes').querySelectorAll('input'), function (i) { i.checked = vt.indexOf(i.value) !== -1 || vt.indexOf('0' + i.value) !== -1; });
-    syncDinner();
+    paintTimes(); syncDinner();
     $('fTitleEs').value = v.title_es; $('fTitleEn').value = v.title_en; $('fDescEs').value = v.desc_es; $('fDescEn').value = v.desc_en;
     $('fFloor').value = floorKey(v.place_es);
     $('fPrice').value = v.price_cents / 100; $('fVat').value = v.vat_percent == null ? 10 : v.vat_percent; $('fDur').value = v.duration_h; $('fCap').value = v.capacity; $('fMax').value = v.max_per_order;
@@ -891,6 +894,7 @@
     if (dOn || dDrink || events.some(function (x) { return 'dinner_access' in x; })) {
       row.dinner_access = dOn; row.drink_included = dDrink;
       row.dinner_times = dOn ? [].map.call($('fTimes').querySelectorAll('input:checked'), function (i) { return i.value; }) : [];
+      if (row.dinner_times.length === DINNER_TIMES.length) row.dinner_times = [];   // todas marcadas = todas las reservas de cena
     }
     if (!row.title_es) return fail('Falta el título.');
     if (!$('fStart').value) return fail('Falta la fecha y hora.');
