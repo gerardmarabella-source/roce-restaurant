@@ -33,7 +33,7 @@
       deposit_note: 'Para confirmar la reserva se cobra una fianza de {m} con tarjeta. Si cancelas con al menos {h} h de antelación te la devolvemos; si no, la retenemos. Con tu visita no se cobra nada más: es a cuenta de la consumición.',
       go_free: 'Reservar mesa', go_pay: 'Pagar {m} y reservar', working: 'Un momento…',
       e_bad_data: 'Revisa el nombre, el email y el teléfono.', e_consent: 'Debes aceptar la política de privacidad.',
-      e_no_table: 'Esa mesa se acaba de ocupar. Elige otra hora.', e_too_late: 'Esa hora ya no admite reservas. Elige otra.',
+      e_no_table: 'Esa mesa se acaba de ocupar. Elige otra hora.', dinner_big: 'Para cenar más de {n} personas, @@WA@@ o a @@MAIL@@.', dinner_big_wa: 'escríbenos por WhatsApp', e_too_late: 'Esa hora ya no admite reservas. Elige otra.',
       e_blocked: 'No podemos aceptar esta reserva. Escríbenos a reservas@roce.es.',
       e_closed: 'Ese día no abrimos para reservas.', e_too_many: 'Has llegado al máximo de 10 reservas activas con este email.',
       e_network: 'No hemos podido completar la reserva. Inténtalo de nuevo.', e_pay: 'No hemos podido abrir el pago. Tu mesa queda retenida unos minutos: vuelve a pulsar el botón.',
@@ -69,7 +69,7 @@
       deposit_note: 'To confirm the booking we charge a {m} deposit by card. If you cancel at least {h} h in advance we refund it; otherwise we keep it. Nothing else is charged for your visit: it goes towards your bill.',
       go_free: 'Book table', go_pay: 'Pay {m} and book', working: 'One moment…',
       e_bad_data: 'Please check your name, email and phone.', e_consent: 'You must accept the privacy policy.',
-      e_no_table: 'That table was just taken. Please choose another time.', e_too_late: 'That time no longer takes bookings. Choose another.',
+      e_no_table: 'That table was just taken. Please choose another time.', dinner_big: 'For dinner with more than {n} people, @@WA@@ or at @@MAIL@@.', dinner_big_wa: 'message us on WhatsApp', e_too_late: 'That time no longer takes bookings. Choose another.',
       e_blocked: 'We cannot accept this booking. Please write to reservas@roce.es.',
       e_closed: "We're not taking bookings that day.", e_too_many: 'You have reached the maximum of 10 active bookings with this email.',
       e_network: "We couldn't complete the booking. Please try again.", e_pay: "We couldn't open the payment. Your table is held for a few minutes: press the button again.",
@@ -267,6 +267,13 @@
       });
       h += '</div>' + (dep > 0 && mode === 'card' ? '' : dep > 0 ? '<p class="mz-note">' + esc(t('deposit_free_until', { h: hrs })) + '</p>' : '') + '</div>';
     });
+    // La cena puede admitir por la web grupos más pequeños que la comida: si se pide más, se dice cómo reservarla.
+    var dl = st.dinnerLimit, dow = new Date(st.date + 'T12:00:00Z').getUTCDay() || 7;
+    if (dl && st.party > dl.o_max_party && (dl.o_days || []).indexOf(dow) !== -1 && !(st.grid || []).some(function (r) { return r.o_service === 'night'; })) {
+      var waBig = 'https://wa.me/' + WA_NUMBER + '?text=' + encodeURIComponent(t('wa_msg', { n: partyLabel(st.party), date: dateLabel(st.date) }));
+      h += '<div class="mz-group"><p class="mz-meal">' + ICON_MOON + '<span>' + esc(t('meal_dinner')) + '</span></p><p class="mz-hint">' +
+        esc(t('dinner_big', { n: dl.o_max_party })).replace('@@WA@@', '<a class="mz-wa" href="' + esc(waBig) + '" target="_blank" rel="noopener">' + esc(t('dinner_big_wa')) + '</a>').replace('@@MAIL@@', '<a class="mz-wa" href="mailto:reservas@roce.es">reservas@roce.es</a>') + '</p></div>';
+    }
     // Alternativas cuando no hay nada libre
     if (st.slots && !st.slots.length && st.alt) {
       var alt = '';
@@ -506,6 +513,8 @@
   document.addEventListener('roce:lang', function () { keepForm(); render(); });
   render();
   if (!st.date) goFirst();
+  // Grupo máximo que admite la cena por la web (si la base de datos aún no tiene la función, no se avisa).
+  rpc('dining_web_limits', {}).then(function (rows) { st.dinnerLimit = (rows || []).filter(function (r) { return r.o_service === 'night'; })[0] || null; if (st.dinnerLimit && st.party > st.dinnerLimit.o_max_party) { keepForm(); render(); } }).catch(function () {});
   // Hasta dónde se puede reservar lo decide la configuración (días vista de los turnos), no un número fijo en la web.
   rpc('dining_horizon', {}).then(function (n) { n = parseInt(n, 10); if (n >= 1 && n <= 400 && n !== DAYS_AHEAD) { DAYS_AHEAD = n; st.cal = {}; render(); } }).catch(function () {});
 })();
