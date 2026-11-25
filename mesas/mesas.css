@@ -14,7 +14,7 @@
 
 /* ── Barra de pasos fija ─────────────────────────────────────── */
 .mz-bar { position: sticky; top: 0; z-index: 60; display: flex; gap: 0.4rem; margin: 0 -1.5rem 1.6rem; padding: 0.65rem 1.5rem; background: rgba(10, 10, 10, 0.88); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); border-bottom: 1px solid var(--mz-line); }
-.mz-bar-i { flex: 1 1 0; min-width: 0; display: flex; align-items: center; justify-content: center; padding: 0.6rem 0.4rem; border: 1px solid var(--mz-line); background: transparent; color: var(--mz-soft); font-size: 0.7rem; letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer; transition: color 0.2s, border-color 0.2s, background 0.2s; }
+.mz-bar-i { flex: 1 1 auto; min-width: 0; display: flex; align-items: center; justify-content: center; padding: 0.6rem 0.4rem; border: 1px solid var(--mz-line); background: transparent; color: var(--mz-soft); font-size: 0.7rem; letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer; transition: color 0.2s, border-color 0.2s, background 0.2s; }
 .mz-bar-i:hover { border-color: var(--mz-line2); color: var(--mz-ink); }
 .mz-bar-i span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .mz-bar-i.is-done { background: var(--mz-ink); border-color: var(--mz-ink); color: #0a0a0a; font-weight: 700; }
@@ -35,14 +35,14 @@
 
 /* ── 01 Personas ─────────────────────────────────────────────── */
 .mz-stepper { display: flex; align-items: center; justify-content: space-between; padding: 0.5rem; border: 1px solid var(--mz-line2); }
-.mz-pm { width: 3.6rem; height: 3.6rem; border: 0; background: var(--mz-fill); font-size: 1.7rem; line-height: 1; cursor: pointer; border-radius: 0; transition: background 0.18s, color 0.18s, transform 0.12s; }
+.mz-pm { width: 3.2rem; height: 3.2rem; border: 0; background: var(--mz-fill); font-size: 1.5rem; line-height: 1; cursor: pointer; border-radius: 0; transition: background 0.18s, color 0.18s, transform 0.12s; }
 .mz-pm:hover:not(:disabled) { background: var(--mz-ink); color: #0a0a0a; }
 .mz-pm:active:not(:disabled) { transform: scale(0.94); }
 .mz-pm:disabled { opacity: 0.3; cursor: default; }
 .mz-pm.is-max { opacity: 0.45; }
 .mz-party { display: flex; align-items: baseline; justify-content: center; gap: 0.6rem; min-width: 8rem; }
-.mz-party b { font-size: 2.9rem; font-weight: 700; line-height: 1; letter-spacing: -0.02em; }
-.mz-party small { font-size: 0.78rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--mz-soft); }
+.mz-party b { font-size: 2rem; font-weight: 700; line-height: 1; letter-spacing: -0.02em; }
+.mz-party small { font-size: 0.74rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--mz-soft); }
 .mz-party-note { margin-top: 0.9rem; }
 
 /* ── 02 Fecha: calendario ────────────────────────────────────── */
@@ -183,3 +183,13 @@
 .mz-slot { position: relative; }
 .mz-slot.is-perk .mz-ic:last-child { position: absolute; top: 0.3rem; right: 0.3rem; width: 0.62rem; height: 0.62rem; color: var(--mz-hot); }
 .mz-slot.is-perk.is-on .mz-ic:last-child { color: #c5271c; }
+
+/* Pantallas muy estrechas (≤ 340 px): barra de pasos y selector de personas más compactos para que no se corte el texto. */
+@media (max-width: 340px) {
+  .mz-bar { gap: 0.3rem; padding-left: 1rem; padding-right: 1rem; margin-left: -1rem; margin-right: -1rem; }
+  .mz-bar-i { padding: 0.55rem 0.3rem; font-size: 0.62rem; letter-spacing: 0.02em; }
+  .mz-stepper { padding: 0.35rem; }
+  .mz-pm { width: 2.9rem; height: 2.9rem; font-size: 1.3rem; }
+  .mz-party { min-width: 0; gap: 0.4rem; }
+  .mz-party small { font-size: 0.66rem; letter-spacing: 0.1em; }
+}
