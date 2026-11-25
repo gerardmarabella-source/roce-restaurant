@@ -242,6 +242,9 @@
       $('evdMedia').innerHTML = e.image
         ? '<button type="button" class="evd-poster" aria-label="' + esc(t('evd_poster', 'Ver el cartel')) + '"><img src="' + esc(e.image) + '" alt="' + esc(title) + '" draggable="false"></button>'
         : '<div class="evd-nopic"><b>' + esc(U.fmt(e, l, { day: 'numeric' })) + '</b><span>' + esc(U.fmt(e, l, { month: 'long' })) + '</span></div>';
+      // Si la foto no carga, se enseña la fecha en grande en vez de un hueco en negro.
+      var pim = $('evdMedia').querySelector('img');
+      if (pim) pim.addEventListener('error', function () { $('evdMedia').innerHTML = '<div class="evd-nopic"><b>' + esc(U.fmt(e, l, { day: 'numeric' })) + '</b><span>' + esc(U.fmt(e, l, { month: 'long' })) + '</span></div>'; });
       $('evdDesc').textContent = e.desc[l] || '';
       $('evdDesc').hidden = !e.desc[l];
       var facts = [];

@@ -135,10 +135,6 @@
   </div>
 
   <ol class="ev-list" id="evList">
-    <!-- Primer evento ya en el HTML (lo ve el buscador y quien llega sin JavaScript); el script lo sustituye por la agenda real y lo quita cuando pasa. -->
-    <li class="ev-static" data-until="2026-12-12"><a class="ev-card has-img" data-env="night" href="/eventos/evento/?e=roce-urban-party-1211">
-      <img class="ev-card-img" src="https://lhwmtknmjmhktpkcngyz.supabase.co/storage/v1/object/public/event-images/mw2i8hg2-rcq08x.jpg" alt="" width="800" height="1000">
-      <span class="ev-card-body"><span class="ev-card-kicker">vie • 23:00 – 02:00</span><h2 class="ev-card-name">ROCE OPENING FRIDAY</h2><span class="ev-card-meta">vie, 11 dic · ROCE · Planta baja</span><span class="ev-card-price">14€ - Una copa incluida</span></span></a></li>
   </ol>
   <p class="ev-loading" id="evLoading" role="status" data-i18n="ev_loading">Cargando agenda…</p>
   <p class="ev-empty" id="evEmpty" hidden></p>
@@ -212,7 +208,7 @@
         var head = '';
         if (monthLabel !== lastMonth) { lastMonth = monthLabel; head = '<li class="ev-month" role="presentation">' + esc(monthLabel) + '</li>'; }
         return head + '<li><a class="ev-card ' + (e.image ? 'has-img' : 'no-img') + '" data-env="' + e.env + '" href="/eventos/evento/?e=' + encodeURIComponent(e.id) + '">' +
-          (e.image ? '<img class="ev-card-img" src="' + esc(e.image) + '" alt="" loading="lazy">' : '') +
+          (e.image ? '<img class="ev-card-img" src="' + esc(e.image) + '" alt="">' : '') +
           '<span class="ev-card-top">' + tag + right + '</span>' +
           (e.image ? '' : '<span class="ev-card-date"><b>' + esc(day) + '</b><span>' + esc(mon) + '</span></span>') +
           '<span class="ev-card-body">' +
@@ -222,6 +218,15 @@
             '<span class="ev-card-price">' + esc(e.price[l]) + '</span>' +
           '</span></a></li>';
       }).join('');
+      // Si una foto no carga (p. ej. se cambió en RoceCover y la copia guardada apunta a la antigua), la tarjeta pasa a mostrar la fecha en grande en vez de quedarse en negro.
+      [].forEach.call(list.querySelectorAll('img.ev-card-img'), function (img) {
+        img.addEventListener('error', function () {
+          var card = img.closest('.ev-card'); if (!card) return;
+          var ev = upcoming.filter(function (e) { return card.getAttribute('href').indexOf(encodeURIComponent(e.id)) !== -1; })[0];
+          card.classList.remove('has-img'); card.classList.add('no-img'); img.remove();
+          if (ev) card.querySelector('.ev-card-top').insertAdjacentHTML('afterend', '<span class="ev-card-date"><b>' + esc(U.fmt(ev, l, { day: 'numeric' })) + '</b><span>' + esc(U.fmt(ev, l, { month: 'short' }).replace('.', '')) + '</span></span>');
+        });
+      });
       var showEmpty = loaded && upcoming.length === 0;
       loadingEl.hidden = loaded;
       empty.hidden = !showEmpty;

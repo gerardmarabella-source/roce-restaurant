@@ -375,7 +375,7 @@
     function paintEvent() {
       $('tkEnv').innerHTML = ev.env === 'night' ? t('ev_night') : t('ev_day');
       $('tkTitle').textContent = ev.title[lang()];
-      if (ev.image) { $('tkPoster').querySelector('img').src = ev.image; $('tkPoster').hidden = false; }
+      if (ev.image) { var pi = $('tkPoster').querySelector('img'); pi.onerror = function () { $('tkPoster').hidden = true; }; pi.src = ev.image; $('tkPoster').hidden = false; }
       $('tkWhen').textContent = whenText();
       var P = window.ROCE_PAYMENTS, tb = $('tkTest');
       // Aviso de prueba solo cuando la web corre sin servidor (desarrollo). Con servidor, o hay pago online o no se vende.
