@@ -412,7 +412,7 @@
       <div class="ad-field full ad-dinner" id="fDinnerBox" hidden>
         <label class="ad-check"><input type="checkbox" id="fDinner"> Reservar cena regala la entrada a este evento</label>
         <div id="fTimesWrap" hidden>
-          <span class="ad-hint" style="display:block;margin:0 0 0.4rem">Horas de reserva (Restaurant &amp; Cocktails, ese día) que regalan la entrada. Si no marcas ninguna, valen todas las horas de cena.</span>
+          <span class="ad-hint" style="display:block;margin:0 0 0.4rem">Horas de reserva (Restaurant &amp; Cocktails, ese día) que regalan la entrada. Cada hora cubre su media hora (21:00 incluye las llegadas hasta las 21:29). Si no marcas ninguna, valen todas las horas de cena.</span>
           <div class="ad-times" id="fTimes"></div>
         </div>
         <label class="ad-check"><input type="checkbox" id="fDrink"> La entrada suelta lleva una copa incluida (sale en el botón de compra)</label>
@@ -1632,7 +1632,7 @@
   window.ROCE_ADMIN = { can: can, api: api, flash: flash, esc: esc, $: $, madridToISO: madridToISO, toInputValue: toInputValue, fmtDate: fmtDate, money: money, cfg: cfg, TZ: TZ, session: function () { return session; } };
 })();
 </script>
-<script src="/admin/mesas.js?v=50"></script>
+<script src="/admin/mesas.js?v=51"></script>
 <script src="/admin/mesas-stats.js?v=1"></script>
 </body>
 </html>

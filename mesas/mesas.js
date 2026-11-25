@@ -220,7 +220,9 @@
     evs.forEach(function (e) { if (e.env === 'night' && e.date === date && e.dinner && e.dinner.on) out = { name: e.title, times: e.dinner.times || null }; });
     return out;
   }
-  function perkHas(pk, time) { return !!pk && (!pk.times || pk.times.indexOf(String(time).slice(0, 5)) !== -1); }
+  // Las horas del evento se marcan cada media hora; con llegadas cada 10 min, 21:00 cubre 21:00, 21:10 y 21:20.
+  function halfHour(time) { var x = String(time).slice(0, 5); return x.slice(0, 3) + (+x.slice(3) < 30 ? '00' : '30'); }
+  function perkHas(pk, time) { return !!pk && (!pk.times || pk.times.indexOf(halfHour(time)) !== -1); }
   function firstNoteHtml() {
     if (!st.firstNote || st.firstNote !== st.date) return '';
     return '<p class="mz-first">' + ICON_CLOCK + '<span>' + esc(t('first_avail', { d: dateLabel(st.date) })) + '</span></p>';
