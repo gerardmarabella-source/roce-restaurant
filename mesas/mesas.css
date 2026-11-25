@@ -178,3 +178,8 @@
 .mz-sel { display: block; margin: 0.6rem 0 0.9rem; font-size: 0.7rem; color: var(--mz-soft); text-transform: uppercase; letter-spacing: 0.14em; }
 .mz-sel select { display: block; width: 100%; margin-top: 0.45rem; padding: 0.9rem 0.9rem; border: 1px solid var(--mz-line2); background: var(--mz-fill); font-size: 16px; text-transform: none; color: var(--mz-ink); border-radius: 0; }
 .mz-sel option { color: #0a0a0a; text-transform: none; }
+
+/* Horas de cena que regalan la entrada a un evento: una estrella en la esquina. */
+.mz-slot { position: relative; }
+.mz-slot.is-perk .mz-ic:last-child { position: absolute; top: 0.3rem; right: 0.3rem; width: 0.62rem; height: 0.62rem; color: var(--mz-hot); }
+.mz-slot.is-perk.is-on .mz-ic:last-child { color: #c5271c; }

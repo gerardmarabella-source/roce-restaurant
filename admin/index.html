@@ -193,6 +193,14 @@
   .ad-check { display: flex; align-items: center; gap: 0.6rem; margin: 0.4rem 0 1rem; }
   .ad-check input { width: 1.1rem; height: 1.1rem; accent-color: var(--fg); }
   .ad-hint { font-size: 0.78rem; opacity: 0.6; margin-top: 0.25rem; }
+  .ad-dinner { border: 1px solid rgba(236, 231, 221, 0.3); padding: 0.9rem 1rem 0.5rem; margin: 0.4rem 0 1rem; }
+  .ad-dinner[hidden] { display: none; }
+  .ad-dinner .ad-check { margin-bottom: 0.7rem; }
+  .ad-times { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0.2rem 0 0.4rem; }
+  .ad-times[hidden] { display: none; }
+  .ad-time { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.4rem 0.7rem; border: 1px solid rgba(236, 231, 221, 0.35); cursor: pointer; font-size: 0.9rem; user-select: none; }
+  .ad-time input { accent-color: var(--fg); }
+  .ad-time:has(input:checked) { background: var(--fg); color: var(--bg); }
   @media (max-width: 560px) { .ad-grid { grid-template-columns: 1fr; } .ad-table { font-size: 0.8rem; } }
 </style>
 <link rel="stylesheet" href="/admin/mesas.css?v=25">
@@ -400,6 +408,14 @@
       <label class="ad-field"><span>Duración (horas)</span><input type="number" id="fDur" min="0.5" step="0.5" value="2" required></label>
       <label class="ad-field"><span>Plazas totales</span><input type="number" id="fCap" min="0" step="1" value="30" required></label>
       <label class="ad-field"><span>Máx. entradas por reserva</span><input type="number" id="fMax" min="1" max="20" step="1" value="6" required></label>
+      <div class="ad-field full ad-dinner" id="fDinnerBox" hidden>
+        <label class="ad-check"><input type="checkbox" id="fDinner"> Reservar cena regala la entrada a este evento</label>
+        <div id="fTimesWrap" hidden>
+          <span class="ad-hint" style="display:block;margin:0 0 0.4rem">Horas de reserva (Restaurant &amp; Cocktails, ese día) que regalan la entrada. Si no marcas ninguna, valen todas las horas de cena.</span>
+          <div class="ad-times" id="fTimes"></div>
+        </div>
+        <label class="ad-check"><input type="checkbox" id="fDrink"> La entrada suelta lleva una copa incluida (sale en el botón de compra)</label>
+      </div>
       <div class="ad-field full"><span>Imagen de cabecera (opcional)</span>
         <div class="ad-img"><img id="imgPrev" alt="" hidden><em id="imgEmpty">Sin imagen</em></div>
         <div class="ad-img-actions">
@@ -827,12 +843,25 @@
   var FLOORS = { ground: { es: 'Planta baja', en: 'Ground floor' }, first: { es: 'Primera planta', en: 'First floor' } };
   function floorKey(es) { return /primera|first|alta|upper/i.test(es || '') ? 'first' : 'ground'; }
 
+  // Horas de cena que se pueden marcar como «regalan la entrada» (de 20:00 a 23:30, cada media hora).
+  var DINNER_TIMES = []; for (var hh = 20; hh <= 23; hh++) { DINNER_TIMES.push(hh + ':00', hh + ':30'); }
+  $('fTimes').innerHTML = DINNER_TIMES.map(function (x) { return '<label class="ad-time"><input type="checkbox" value="' + x + '">' + x + '</label>'; }).join('');
+  function syncDinner() {
+    var night = $('fEnv').value === 'night';
+    $('fDinnerBox').hidden = !night; $('fTimesWrap').hidden = !(night && $('fDinner').checked);
+  }
+  $('fEnv').addEventListener('change', syncDinner); $('fDinner').addEventListener('change', syncDinner);
+
   function openForm(e, asCopy) {
     editing = e && !asCopy ? e : null;
     $('evFormTitle').textContent = editing ? 'Editar evento' : (asCopy ? 'Duplicar evento' : 'Nuevo evento');
     $('evFormMsg').hidden = true;
     var v = e || { env: 'day', starts_at: '', title_es: '', title_en: '', desc_es: '', desc_en: '', place_es: '', place_en: '', price_cents: 0, price_label_es: '', duration_h: 2, capacity: 30, max_per_order: 6, published: false, id: '' };
     $('fEnv').value = v.env; $('fStart').value = asCopy || !v.starts_at ? '' : toInputValue(v.starts_at);
+    $('fDinner').checked = !!v.dinner_access; $('fDrink').checked = !!v.drink_included;
+    var vt = (v.dinner_times || []).map(function (x) { return String(x).slice(0, 5); });
+    [].forEach.call($('fTimes').querySelectorAll('input'), function (i) { i.checked = vt.indexOf(i.value) !== -1 || vt.indexOf('0' + i.value) !== -1; });
+    syncDinner();
     $('fTitleEs').value = v.title_es; $('fTitleEn').value = v.title_en; $('fDescEs').value = v.desc_es; $('fDescEn').value = v.desc_en;
     $('fFloor').value = floorKey(v.place_es);
     $('fPrice').value = v.price_cents / 100; $('fVat').value = v.vat_percent == null ? 10 : v.vat_percent; $('fDur').value = v.duration_h; $('fCap').value = v.capacity; $('fMax').value = v.max_per_order;
@@ -857,6 +886,12 @@
       price_cents: Math.round(Number($('fPrice').value) * 100), vat_percent: Number($('fVat').value), price_label_es: $('fLabelEs').value.trim(), price_label_en: '',
       capacity: Math.round(Number($('fCap').value)), max_per_order: Math.round(Number($('fMax').value)), published: $('fPub').checked
     };
+    // Cena que regala la entrada: solo se envía si la base de datos ya tiene las columnas (supabase/eventos_acceso_cena.sql) o si se activa.
+    var night = $('fEnv').value === 'night', dOn = night && $('fDinner').checked, dDrink = night && $('fDrink').checked;
+    if (dOn || dDrink || events.some(function (x) { return 'dinner_access' in x; })) {
+      row.dinner_access = dOn; row.drink_included = dDrink;
+      row.dinner_times = dOn ? [].map.call($('fTimes').querySelectorAll('input:checked'), function (i) { return i.value; }) : [];
+    }
     if (!row.title_es) return fail('Falta el título.');
     if (!$('fStart').value) return fail('Falta la fecha y hora.');
     if (editing && row.capacity < taken(editing.id)) return fail('Ya hay ' + taken(editing.id) + ' plazas reservadas: no puedes bajar el aforo por debajo.');
