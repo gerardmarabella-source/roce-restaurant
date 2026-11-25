@@ -216,6 +216,21 @@
     };
     var MAPS = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent('ROCE Marqués del Túria 16 Valencia');
 
+    // ¿Quedan mesas para cenar ese día? Si la cena está llena (o ese día no hay cena), no se ofrece «Reservar cena · incluye acceso»:
+    // solo queda comprar la entrada. null = sin comprobar o sin conexión (entonces se ofrece como siempre).
+    var dinnerOpen = null;
+    function checkDinner() {
+      var B = window.ROCE_BACKEND || {};
+      if (e.env !== 'night' || !(e.price_cents > 0) || !B.url || !B.anonKey) return;
+      fetch(B.url + '/rest/v1/rpc/dining_grid', {
+        method: 'POST', headers: { apikey: B.anonKey, Authorization: 'Bearer ' + B.anonKey, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ p_date: e.date, p_party: 2, p_ambience: 'night' })
+      }).then(function (r) { return r.ok ? r.json() : null; }).then(function (rows) {
+        if (!Array.isArray(rows)) return;
+        var open = rows.some(function (x) { return x.o_service !== 'night-lunch' && x.o_free; });
+        if (open !== dinnerOpen) { dinnerOpen = open; paint(); }
+      }).catch(function () {});
+    }
     function paint() {
       var l = lang(), title = e.title[l], when = U.fmt(e, l, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) + ' · ' + U.range(e), floor = U.floor(e, l);
       document.title = title + ' — ROCE Valencia';
@@ -240,7 +255,7 @@
       var sold = e.left <= 0;
       $('evdPrice').textContent = e.price_cents > 0 ? U.money(e.price_cents, l) : t('evd_free', 'Entrada libre');
       $('evdPriceNote').innerHTML = ICON.ticket + '<span>' + esc(e.price[l]) + '</span>';
-      var cfgPk = (window.ROCE_DINNER_ACCESS || {})[e.id] || {}, perk = e.env === 'night' && e.price_cents > 0 ? { date: e.date, drink: !!cfgPk.drink } : null, dn = $('evdDinner');   // cualquier evento de noche de pago: reservar cena da el acceso
+      var cfgPk = (window.ROCE_DINNER_ACCESS || {})[e.id] || {}, perk = e.env === 'night' && e.price_cents > 0 && dinnerOpen !== false ? { date: e.date, drink: !!cfgPk.drink } : null, dn = $('evdDinner');   // cualquier evento de noche de pago: reservar cena da el acceso
       $('evdBar').classList.toggle('has-perk', !!perk); dn.hidden = !perk;
       if (perk) { dn.textContent = t('evd_dinner', 'Reservar cena · incluye acceso'); dn.href = '/reservas/?d=' + encodeURIComponent(perk.date) + '#restaurant-cocktails'; }
       var buy = $('evdBuy'); buy.textContent = sold ? t('tk_soldout', 'Agotado') : perk ? t('evd_party', 'Solo fiesta · {price} con copa').replace('{price}', U.money(e.price_cents, l)).replace(/ con copa$| with a drink$/, perk.drink ? '$&' : '') : t('ev_cta', 'Comprar entrada');
@@ -363,6 +378,7 @@
     });
     document.addEventListener('roce:lang', function () { paint(); story.file = null; if (!$('evdShareModal').hidden) openShare(); });
     paint();
+    checkDinner();
   });
 </script>
 </body>
