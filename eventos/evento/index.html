@@ -228,7 +228,7 @@
       }).then(function (r) { return r.ok ? r.json() : null; }).then(function (rows) {
         if (!Array.isArray(rows)) return;
         // Solo cuentan las horas de cena que regalan la entrada (si el evento no marca ninguna, valen todas).
-        var open = rows.some(function (x) { return x.o_service !== 'night-lunch' && x.o_free && (!e.dinner.times || e.dinner.times.indexOf(String(x.o_time).slice(0, 5)) !== -1); });
+        var open = rows.some(function (x) { return x.o_service !== 'night-lunch' && x.o_free && (!e.dinner.times || e.dinner.times.indexOf(String(x.o_time).slice(0, 3) + (+String(x.o_time).slice(3, 5) < 30 ? '00' : '30')) !== -1); });
         if (open !== dinnerOpen) { dinnerOpen = open; paint(); }
       }).catch(function () {});
     }

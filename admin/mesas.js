@@ -1716,7 +1716,9 @@
         '<div class="ad-field full"><span>' + esc(s.name_es) + ' · días</span><div class="mt-days">' + DOW.map(function (d, i) { return '<label><input type="checkbox" data-day="' + (i + 1) + '"' + (s.days.indexOf(i + 1) !== -1 ? ' checked' : '') + '> ' + d + '</label>'; }).join('') + '</div></div>' +
         '<label class="ad-field"><span>Primera mesa</span><input data-f="start" type="time" value="' + mm(s.start_min) + '"></label>' +
         '<label class="ad-field"><span>Última mesa</span><input data-f="last" type="time" value="' + mm(s.last_min) + '"></label>' +
-        '<label class="ad-field"><span>Cada (min)</span><input data-f="slot_min" type="number" min="5" step="5" value="' + s.slot_min + '"></label>' +
+        '<label class="ad-field"><span>Hora de llegada cada (min)</span><input data-f="slot_min" type="number" min="5" step="5" value="' + s.slot_min + '"></label>' +
+        ('pace_covers' in s ? '<label class="ad-field"><span>Máx. comensales por hora de llegada (vacío = sin límite)</span><input data-f="pace_covers" type="number" min="1" max="500" value="' + (s.pace_covers || '') + '"></label>' : '') +
+        ('max_covers' in s ? '<label class="ad-field"><span>Máx. comensales del turno en total (vacío = sin límite)</span><input data-f="max_covers" type="number" min="1" max="2000" value="' + (s.max_covers || '') + '"></label>' : '') +
         '<label class="ad-field"><span>La mesa se ocupa (min)</span><input data-f="duration_min" type="number" min="15" step="5" value="' + s.duration_min + '"></label>' +
         '<label class="ad-field"><span>Máx. personas</span><input data-f="max_party" type="number" min="1" value="' + s.max_party + '"></label>' +
         '<label class="ad-field"><span>Antelación mínima (min)</span><input data-f="notice_min" type="number" min="0" step="15" value="' + s.notice_min + '"></label>' +
@@ -1876,7 +1878,7 @@
       else if (el.dataset.szone) { var zs = [].map.call(sr.querySelectorAll('[data-szone]:checked'), function (i) { return i.dataset.szone; }); b.zone_ids = zs.length === S.zones.length ? null : zs; }
       else if (f === 'start') b.start_min = toMin(el.value);
       else if (f === 'last') b.last_min = toMin(el.value, +sr.querySelector('[data-f="start"]').value.slice(0, 2) * 60 + 1);
-      else if (el.type === 'checkbox') b[f] = el.checked; else if (f === 'end_note_es' || f === 'end_note_en') b[f] = el.value.trim(); else b[f] = +el.value;
+      else if (el.type === 'checkbox') b[f] = el.checked; else if (f === 'end_note_es' || f === 'end_note_en') b[f] = el.value.trim(); else if (f === 'pace_covers' || f === 'max_covers') b[f] = +el.value >= 1 ? Math.min(f === 'pace_covers' ? 500 : 2000, Math.round(+el.value)) : null; else b[f] = +el.value;
       if (b.last_min != null && sr.querySelector('[data-f="start"]')) { var st = toMin(sr.querySelector('[data-f="start"]').value); if (b.last_min < st) b.last_min += 1440; }
       queue('dining_services?id=eq.' + sid, b);
     } else if (tr && f) {
