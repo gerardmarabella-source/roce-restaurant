@@ -36,7 +36,14 @@
       place: { es: r.place_es, en: r.place_en || r.place_es },
       title: { es: r.title_es, en: r.title_en || r.title_es },
       desc: { es: r.desc_es, en: r.desc_en || r.desc_es },
-      price: label(r.price_label_es, r.price_label_en)
+      price: label(r.price_label_es, r.price_label_en),
+      // Reservar cena regala la entrada: on = sí; times = horas de reserva que la regalan (null = todas las de cena); drink = la entrada suelta lleva copa.
+      // Mientras la base de datos no tenga las columnas nuevas (supabase/eventos_acceso_cena.sql) se mantiene lo de siempre: todo evento de noche de pago.
+      dinner: {
+        on: r.dinner_access === undefined ? (r.env === 'night' && r.price_cents > 0) : !!r.dinner_access,
+        times: Array.isArray(r.dinner_times) && r.dinner_times.length ? r.dinner_times.map(function (x) { return String(x).slice(0, 5); }) : null,
+        drink: r.drink_included === undefined ? !!(((window.ROCE_DINNER_ACCESS || {})[r.id]) || {}).drink : !!r.drink_included
+      }
     };
   }
 

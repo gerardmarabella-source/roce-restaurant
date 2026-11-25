@@ -20,7 +20,7 @@
       dows: ['L', 'M', 'X', 'J', 'V', 'S', 'D'],
       prev: 'Mes anterior', next: 'Mes siguiente', meal_lunch: 'Comida', meal_dinner: 'Cena', cal_closed: 'Cerrado', cal_full: 'Completo', cal_partial: 'Algún turno completo o cerrado', cal_full_in: 'Completo: {n}', cal_closed_in: 'Cerrado: {n}',
       pick_date: 'Elige un día para ver las horas disponibles.',
-      first_avail: 'Primera disponibilidad: {d}', perk_dinner: 'Incluye acceso a {ev}: no necesitas comprar entrada.',
+      first_avail: 'Primera disponibilidad: {d}', perk_dinner: 'Incluye acceso a {ev}: no necesitas comprar entrada.', perk_dinner_some: 'Las horas con ★ incluyen acceso a {ev}: no necesitas comprar entrada.', stub_incl: 'Incluye', stub_incl_v: 'Entrada a {ev}',
       loading: 'Buscando mesas…', none: 'No quedan mesas ese día para {n}. Prueba otro día o escríbenos por {wa}.', wa_msg: 'Hola, quería reservar mesa para {n} el {date}.',
       err_load: 'No hemos podido consultar las mesas. Inténtalo de nuevo en un momento.',
       day: 'Coffee, Bakery & Kitchen', night: 'Restaurant & Cocktails',
@@ -56,7 +56,7 @@
       dows: ['M', 'T', 'W', 'T', 'F', 'S', 'S'],
       prev: 'Previous month', next: 'Next month', meal_lunch: 'Lunch', meal_dinner: 'Dinner', cal_closed: 'Closed', cal_full: 'Fully booked', cal_partial: 'A service is full or closed', cal_full_in: 'Fully booked: {n}', cal_closed_in: 'Closed: {n}',
       pick_date: 'Pick a day to see the available times.',
-      first_avail: 'First availability: {d}', perk_dinner: 'Includes access to {ev}: no ticket needed.',
+      first_avail: 'First availability: {d}', perk_dinner: 'Includes access to {ev}: no ticket needed.', perk_dinner_some: 'Times marked ★ include access to {ev}: no ticket needed.', stub_incl: 'Includes', stub_incl_v: 'Entry to {ev}',
       loading: 'Looking for tables…', none: 'No tables left that day for {n}. Try another day or message us on {wa}.', wa_msg: 'Hi, I would like to book a table for {n} on {date}.',
       err_load: "We couldn't check the tables. Please try again in a moment.",
       day: 'Coffee, Bakery & Kitchen', night: 'Restaurant & Cocktails',
@@ -214,11 +214,13 @@
   // Cualquier día con un evento de noche: quien reserva cena tiene el acceso incluido. Los eventos vienen de events.js (misma fuente que la agenda).
   var evs = [];
   if (window.ROCE_EVENTS_READY) window.ROCE_EVENTS_READY.then(function (l) { evs = l || []; render(); }).catch(function () {});
+  // Evento de noche de ese día cuya entrada regala la reserva de cena: name = título; times = horas de reserva que la regalan (null = todas las de cena).
   function perkFor(date) {
     var out = null;
-    evs.forEach(function (e) { if (e.env === 'night' && e.date === date) out = { name: e.title }; });
+    evs.forEach(function (e) { if (e.env === 'night' && e.date === date && e.dinner && e.dinner.on) out = { name: e.title, times: e.dinner.times || null }; });
     return out;
   }
+  function perkHas(pk, time) { return !!pk && (!pk.times || pk.times.indexOf(String(time).slice(0, 5)) !== -1); }
   function firstNoteHtml() {
     if (!st.firstNote || st.firstNote !== st.date) return '';
     return '<p class="mz-first">' + ICON_CLOCK + '<span>' + esc(t('first_avail', { d: dateLabel(st.date) })) + '</span></p>';
@@ -243,16 +245,18 @@
         (gnote ? '<span class="mz-group-note">' + gnote + '</span>' : '') + '</div>' : '') + '<div class="mz-slots">';
       // En Restaurant & Cocktails las horas se separan en Comida y Cena (cada turno tiene su cuadrícula).
       var svcs = []; rows.forEach(function (r) { if (svcs.indexOf(r.o_service) === -1) svcs.push(r.o_service); });
-      var split = a === 'night';
+      var split = a === 'night', pk = null;
       svcs.forEach(function (sv) {
         if (split) {
           h += '</div><p class="mz-meal">' + (sv === 'night-lunch' ? ICON_SUN : ICON_MOON) + '<span>' + esc(t(sv === 'night-lunch' ? 'meal_lunch' : 'meal_dinner')) + '</span></p>';
-          var pk = sv !== 'night-lunch' ? perkFor(st.date) : null;   // la cena es el turno de noche (todo lo que no es la comida)
-          if (pk) h += '<p class="mz-perk">' + ICON_STAR + '<span>' + esc(t('perk_dinner', { ev: pk.name[lang() === 'en' ? 'en' : 'es'] })) + '</span></p>';
+          pk = sv !== 'night-lunch' ? perkFor(st.date) : null;   // la cena es el turno de noche (todo lo que no es la comida)
+          // Con horas concretas solo se avisa si alguna de ellas sigue libre, y esas horas llevan una estrella.
+          var pkFree = pk && rows.some(function (r) { return r.o_service === sv && r.o_free && perkHas(pk, r.o_time); });
+          if (pkFree) h += '<p class="mz-perk">' + ICON_STAR + '<span>' + esc(t(pk.times ? 'perk_dinner_some' : 'perk_dinner', { ev: pk.name[lang() === 'en' ? 'en' : 'es'] })) + '</span></p>';
           h += '<div class="mz-slots">';
         }
         rows.filter(function (r) { return r.o_service === sv; }).forEach(function (s) {
-          if (s.o_free) h += '<button type="button" class="mz-slot' + (st.chosen && st.chosen.o_starts_at === s.o_starts_at ? ' is-on' : '') + '" data-start="' + esc(s.o_starts_at) + '" aria-pressed="' + (st.chosen && st.chosen.o_starts_at === s.o_starts_at ? 'true' : 'false') + '"><span>' + esc(s.o_time) + '</span>' + (st.chosen && st.chosen.o_starts_at === s.o_starts_at ? ICON_CHECK : '') + '</button>';
+          if (s.o_free) h += '<button type="button" class="mz-slot' + (pk && pk.times && perkHas(pk, s.o_time) ? ' is-perk' : '') + (st.chosen && st.chosen.o_starts_at === s.o_starts_at ? ' is-on' : '') + '" data-start="' + esc(s.o_starts_at) + '" aria-pressed="' + (st.chosen && st.chosen.o_starts_at === s.o_starts_at ? 'true' : 'false') + '"><span>' + esc(s.o_time) + '</span>' + (st.chosen && st.chosen.o_starts_at === s.o_starts_at ? ICON_CHECK : '') + (pk && pk.times && perkHas(pk, s.o_time) ? ICON_STAR : '') + '</button>';
           else h += '<button type="button" class="mz-slot is-full" data-wl="' + esc(s.o_time) + '" data-amb="' + esc(s.o_ambience) + '" title="' + esc(t('wl_cta')) + '"><span>' + esc(s.o_time) + '</span><small>' + esc(t('full')) + '</small></button>';
         });
       });
@@ -303,12 +307,17 @@
     return '<p class="mz-info">' + esc(t('info_dur', { d: fmtDur(c.o_duration) })) + ' ' + esc(t('info_grace', { g: c.o_grace || 15 })) + (end ? ' ' + esc(end) : '') + '</p>';
   }
   function field(label, input, cls) { return '<label class="mz-field' + (cls ? ' ' + cls : '') + '"><span class="mz-fl">' + esc(label) + '</span>' + input + '</label>'; }
+  // Si la hora elegida regala la entrada a un evento, el ticket de la reserva lo dice.
+  function perkRow(c, row) {
+    var pk = c.o_service !== 'night-lunch' ? perkFor(st.date) : null;
+    return pk && perkHas(pk, c.o_time) ? row(t('stub_incl'), t('stub_incl_v', { ev: pk.name[lang() === 'en' ? 'en' : 'es'] })) : '';
+  }
   function stubHtml(c) {
     var row = function (k, v) { return '<div class="mz-stub-r"><span>' + esc(k) + '</span><b>' + esc(v) + '</b></div>'; };
     return '<div class="mz-stub" role="group" aria-label="' + esc(t('stub_h')) + '">' +
       '<div class="mz-stub-top"><button type="button" class="mz-stub-change" data-goto="mzStepDate">' + esc(t('change')) + '</button></div>' +
       '<p class="mz-stub-h">' + esc(t('stub_h')) + '</p><span class="mz-stub-sep"></span>' +
-      row(t('stub_day'), dateLabel(st.date).replace(/^./, function (ch) { return ch.toUpperCase(); })) + row(t('stub_time'), c.o_time) + row(t('stub_party'), partyLabel(st.party)) + row(t('stub_where'), t('stub_where_v')) + '</div>';
+      row(t('stub_day'), dateLabel(st.date).replace(/^./, function (ch) { return ch.toUpperCase(); })) + row(t('stub_time'), c.o_time) + row(t('stub_party'), partyLabel(st.party)) + row(t('stub_where'), t('stub_where_v')) + perkRow(c, row) + '</div>';
   }
   function formHtml() {
     var c = st.chosen; if (!c) return '';

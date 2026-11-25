@@ -14,7 +14,7 @@
 <link rel="icon" type="image/png" href="/assets/meta/favicon-32.png" sizes="32x32">
 <link rel="apple-touch-icon" href="/assets/meta/apple-touch-icon.png">
 <script src="/eventos/config.js?v=3"></script>
-<script src="/eventos/events.js?v=15"></script>
+<script src="/eventos/events.js?v=16"></script>
 <script>
   // El color de la página es el del ambiente del evento: Day claro, Night oscuro.
   window.ROCE_EVENTS_READY.then(function () {
@@ -221,13 +221,14 @@
     var dinnerOpen = null;
     function checkDinner() {
       var B = window.ROCE_BACKEND || {};
-      if (e.env !== 'night' || !(e.price_cents > 0) || !B.url || !B.anonKey) return;
+      if (e.env !== 'night' || !(e.price_cents > 0) || !(e.dinner && e.dinner.on) || !B.url || !B.anonKey) return;
       fetch(B.url + '/rest/v1/rpc/dining_grid', {
         method: 'POST', headers: { apikey: B.anonKey, Authorization: 'Bearer ' + B.anonKey, 'Content-Type': 'application/json' },
         body: JSON.stringify({ p_date: e.date, p_party: 2, p_ambience: 'night' })
       }).then(function (r) { return r.ok ? r.json() : null; }).then(function (rows) {
         if (!Array.isArray(rows)) return;
-        var open = rows.some(function (x) { return x.o_service !== 'night-lunch' && x.o_free; });
+        // Solo cuentan las horas de cena que regalan la entrada (si el evento no marca ninguna, valen todas).
+        var open = rows.some(function (x) { return x.o_service !== 'night-lunch' && x.o_free && (!e.dinner.times || e.dinner.times.indexOf(String(x.o_time).slice(0, 5)) !== -1); });
         if (open !== dinnerOpen) { dinnerOpen = open; paint(); }
       }).catch(function () {});
     }
@@ -255,7 +256,7 @@
       var sold = e.left <= 0;
       $('evdPrice').textContent = e.price_cents > 0 ? U.money(e.price_cents, l) : t('evd_free', 'Entrada libre');
       $('evdPriceNote').innerHTML = ICON.ticket + '<span>' + esc(e.price[l]) + '</span>';
-      var cfgPk = (window.ROCE_DINNER_ACCESS || {})[e.id] || {}, perk = e.env === 'night' && e.price_cents > 0 ? { date: e.date, drink: !!cfgPk.drink } : null, dn = $('evdDinner');   // cualquier evento de noche de pago: reservar cena da el acceso
+      var perk = e.env === 'night' && e.price_cents > 0 && e.dinner && e.dinner.on ? { date: e.date, drink: !!e.dinner.drink } : null, dn = $('evdDinner');   // cualquier evento de noche de pago: reservar cena da el acceso
       $('evdBar').classList.toggle('has-perk', !!perk); dn.hidden = !perk || dinnerOpen === false;   // la copa del «solo fiesta» no depende de la cena (la cena es arriba y el evento abajo): solo se esconde el botón de cenar
       if (perk) { dn.textContent = t('evd_dinner', 'Reservar cena · incluye acceso'); dn.href = '/reservas/?d=' + encodeURIComponent(perk.date) + '#restaurant-cocktails'; }
       var buy = $('evdBuy'); buy.textContent = sold ? t('tk_soldout', 'Agotado') : perk ? t('evd_party', 'Comprar entrada · {price} con copa').replace('{price}', U.money(e.price_cents, l)).replace(/ con copa$| with a drink$/, perk.drink ? '$&' : '') : t('ev_cta', 'Comprar entrada');
