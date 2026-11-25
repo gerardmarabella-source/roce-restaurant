@@ -38,4 +38,4 @@ Todos se pueden ejecutar más de una vez. Si se vuelve a ejecutar `mesas.sql` o 
 34. `app_precios_cafes_tes.sql` — nuevos precios de cafés, tés e infusiones y del suplemento «Vegetal barista» (0,50 €) en la app; la carta de roce.es también
 35. `app_precios_platos.sql` — nuevos precios de platos, tostadas 003 y 004, sándwiches, açaí y extras de «Más proteína» (la carta de roce.es también)
 36. `mesas_ritmo.sql` — máximo de comensales por hora de llegada y por turno (se configura en RoceCover); si se vuelve a ejecutar `mesas_extras.sql` o `mesas_espera.sql`, ejecutar este de nuevo
-37. `mesas_ritmo_cena.sql` — valores de la cena (20:00–22:50 cada 10 min, 6 por hora de llegada, 100 por noche); ejecutar una sola vez
+37. `mesas_ritmo_cena.sql` — valores de la cena (20:00–22:50 cada 10 min, 8 por hora de llegada, 100 por noche); ejecutar una sola vez
