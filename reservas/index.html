@@ -307,6 +307,11 @@
   /* Ticket de brunch (ticket.js, variante en diagonal): fijo en la esquina inferior derecha, entero a la vista, aunque se haga scroll; el pie deja hueco abajo para no tapar los enlaces legales. */
   .roce-ticket { position: fixed; right: 1.1rem; bottom: max(1.3rem, env(safe-area-inset-bottom)); z-index: 80; }
   .site-footer { padding-bottom: 5.5rem; }
+  /* Móvil: el ticket cerrado, más pequeño y más bajo, pegado a los márgenes inferiores; abierto vuelve a su tamaño para poder leerse. */
+  @media (max-width: 640px) {
+    .roce-ticket { right: 0.9rem; bottom: max(0.4rem, calc(env(safe-area-inset-bottom, 0px) - 1rem)); }
+    .roce-ticket.is-side:not(.is-open) .rt-paper { transform: translateX(22%) rotate(-8deg) scale(0.78); }
+  }
   .pe-details > summary {
     display: flex;
     align-items: center;
@@ -438,7 +443,7 @@
   </div>
 </div>
 <script src="/cookies.js?v=6"></script>
-<script src="/i18n.js?v=123"></script>
+<script src="/i18n.js?v=124"></script>
 <script src="/agegate.js?v=12"></script>
 <script src="/ticket.js?v=5"></script>
 <script src="/eventos/config.js?v=3"></script>

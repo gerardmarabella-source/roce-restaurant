@@ -195,7 +195,7 @@
   </div>
 </div>
 <script src="/cookies.js?v=6"></script>
-<script src="/i18n.js?v=123"></script>
+<script src="/i18n.js?v=124"></script>
 <script>
   window.ROCE_EVENTS_READY.then(function () {
     var U = window.ROCE_EVENT_UTIL, id = new URLSearchParams(location.search).get('e'), e = U.find(id);
@@ -217,7 +217,7 @@
     var MAPS = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent('ROCE Marqués del Túria 16 Valencia');
 
     // ¿Quedan mesas para cenar ese día? Si la cena está llena (o ese día no hay cena), no se ofrece «Reservar cena · incluye acceso»;
-    // queda «Solo fiesta · precio con copa». null = sin comprobar o sin conexión (entonces se ofrece como siempre).
+    // queda «Comprar entrada · precio con copa». null = sin comprobar o sin conexión (entonces se ofrece como siempre).
     var dinnerOpen = null;
     function checkDinner() {
       var B = window.ROCE_BACKEND || {};
@@ -259,7 +259,7 @@
       var perk = e.env === 'night' && e.price_cents > 0 && e.dinner && e.dinner.on ? { date: e.date, drink: !!e.dinner.drink } : null, dn = $('evdDinner');   // cualquier evento de noche de pago: reservar cena da el acceso
       $('evdBar').classList.toggle('has-perk', !!perk); dn.hidden = !perk || dinnerOpen === false;   // la copa del «solo fiesta» no depende de la cena (la cena es arriba y el evento abajo): solo se esconde el botón de cenar
       if (perk) { dn.textContent = t('evd_dinner', 'Reservar cena · incluye acceso'); dn.href = '/reservas/?d=' + encodeURIComponent(perk.date) + '#restaurant-cocktails'; }
-      var buy = $('evdBuy'); buy.textContent = sold ? t('tk_soldout', 'Agotado') : perk ? t('evd_party', 'Solo fiesta · {price} con copa').replace('{price}', U.money(e.price_cents, l)).replace(/ con copa$| with a drink$/, perk.drink ? '$&' : '') : t('ev_cta', 'Comprar entrada');
+      var buy = $('evdBuy'); buy.textContent = sold ? t('tk_soldout', 'Agotado') : perk ? t('evd_party', 'Comprar entrada · {price} con copa').replace('{price}', U.money(e.price_cents, l)).replace(/ con copa$| with a drink$/, perk.drink ? '$&' : '') : t('ev_cta', 'Comprar entrada');
       buy.classList.toggle('is-soldout', sold); buy.href = sold ? '#' : '/eventos/entradas/?e=' + encodeURIComponent(e.id);
       var low = $('evdLow'); low.hidden = sold || !(e.low || /[?&]demo=low/.test(location.search)); low.innerHTML = '<span class="evd-low-t"><i aria-hidden="true"></i>' + esc(t('ev_few', 'Quedan pocas unidades')) + '</span>';
       $('evd').hidden = false; $('evdBar').hidden = false;

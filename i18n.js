@@ -170,7 +170,7 @@
     evd_place: { es: 'Lugar', en: 'Venue' },
     evd_poster: { es: 'Ver el cartel', en: 'View the poster' },
     evd_dinner: { es: 'Reservar cena · incluye acceso', en: 'Book dinner · access included' },
-    evd_party: { es: 'Solo fiesta · {price} con copa', en: 'Party only · {price} with a drink' },
+    evd_party: { es: 'Comprar entrada · {price} con copa', en: 'Buy ticket · {price} with a drink' },
     evd_dinner_note: { es: 'Si reservas cena ya tienes el acceso: no necesitas comprar entrada.', en: "If you book dinner you're already in: no ticket needed." },
     evd_age: { es: 'Evento solo para mayores de 18 años.', en: 'This is an 18+ event.' },
     evd_qr: { es: 'Recibirás tu entrada con QR por email al comprar. Es personal: enséñala en la puerta.', en: 'You will receive your QR ticket by email after buying. It is personal: show it at the door.' },
