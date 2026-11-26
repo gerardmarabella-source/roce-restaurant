@@ -185,3 +185,8 @@ input.cfg-sw:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; 
   .cfg-c input:not([type]), .cfg-c input[type="text"], .cfg-c select { width: 100%; max-width: 100%; }
 }
 @media (prefers-reduced-motion: reduce) { .ad-btn, input.cfg-sw, input.cfg-sw::after { transition: none; } }
+
+/* ── Misma forma de botón que en la web: cápsula; círculo para los de un solo icono ── */
+.ad-btn, .ad-tabs, .ad-tabs .ad-tab, .ad-tabs .ad-group, .mt-vtoggle, .mt-vtoggle .ck-chip, .ck-main, .cfg-nav button, .mt-al-new, .mt-al span, .mt-pick { border-radius: 999px; }
+.ck-step, .mt-zoom button { border-radius: 50%; }
+.ad-sheet-inline .ad-btn, .ad-login .ad-btn { border-radius: 999px; }
