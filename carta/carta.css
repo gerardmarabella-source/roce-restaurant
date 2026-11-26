@@ -1,27 +1,27 @@
 /* La carta: portadas de cuero que asoman por la izquierda y el libro abierto. */
 
-/* ── El libro, casi escondido ──
-   Alto, pegado al borde izquierdo y enseñando solo el lomo con «Menú» escrito; el ticket del brunch asoma por la derecha. */
-.cm-books { --peek: clamp(2.2rem, 3.4vw, 3.2rem); --top: clamp(4.4rem, 14vh, 8rem); position: absolute; z-index: 3; left: 0; top: var(--top); width: var(--peek); height: min(34vh, calc(100vh - var(--top) - 17rem)); padding: 0; border: 0; background: none; cursor: pointer; -webkit-tap-highlight-color: transparent; }
-@supports (height: 100dvh) { .cm-books { height: min(34dvh, calc(100dvh - var(--top) - 17rem)); } }
-.cm-book { position: absolute; top: 0; right: 0; display: block; height: 100%; aspect-ratio: 560 / 952; border-radius: 0 5px 5px 0; overflow: hidden; box-shadow: 5px 8px 18px rgba(0, 0, 0, 0.5); transition: transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1.1); }
+/* ── El libro, asomando por la derecha ──
+   Alto y estrecho, pegado al borde derecho, con «Menú» escrito; el ticket del brunch queda debajo. */
+.cm-books { --peek: clamp(3.6rem, 5.6vw, 5.4rem); --top: clamp(4.4rem, 14vh, 8rem); position: absolute; z-index: 3; right: 0; top: var(--top); width: var(--peek); height: min(36vh, calc(100vh - var(--top) - 17rem)); padding: 0; border: 0; background: none; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+@supports (height: 100dvh) { .cm-books { height: min(36dvh, calc(100dvh - var(--top) - 17rem)); } }
+.cm-book { position: absolute; top: 0; left: 0; display: block; height: 100%; aspect-ratio: 560 / 952; border-radius: 6px 0 0 6px; overflow: hidden; box-shadow: -5px 8px 18px rgba(0, 0, 0, 0.5); transition: transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1.1); }
 .cm-cover { display: block; width: 100%; height: 100%; object-fit: cover; }
-.cm-book::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(0, 0, 0, 0.25) 60%, rgba(255, 255, 255, 0.1) 88%, rgba(0, 0, 0, 0.3)); pointer-events: none; }
-.cm-bar { transform: translate(0.35rem, 0.45rem) rotate(1.6deg); }
-.cm-letter { position: absolute; z-index: 2; right: calc(var(--peek) / 2); top: 50%; width: calc(var(--peek) * 1.9); height: auto; max-width: none; transform: translate(50%, -50%) rotate(-90deg); filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.55)); pointer-events: none; }
+.cm-book::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(0, 0, 0, 0.35), rgba(255, 255, 255, 0.12) 5%, rgba(0, 0, 0, 0.05) 12%, rgba(0, 0, 0, 0) 40%); pointer-events: none; }
+.cm-bar { transform: translate(-0.35rem, 0.45rem) rotate(-1.6deg); }
+.cm-letter { position: absolute; z-index: 2; left: calc(var(--peek) / 2); top: 50%; width: calc(var(--peek) * 2.1); height: auto; max-width: none; transform: translate(-50%, -50%) rotate(-90deg); filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.55)); pointer-events: none; }
 @media (hover: hover) {
-  .cm-books:hover .cm-food { transform: translateX(0.8rem); }
-  .cm-books:hover .cm-bar { transform: translate(1.4rem, 0.55rem) rotate(2.6deg); }
+  .cm-books:hover .cm-food { transform: translateX(-0.8rem); }
+  .cm-books:hover .cm-bar { transform: translate(-1.4rem, 0.55rem) rotate(-2.6deg); }
 }
-.cm-books:active .cm-food { transform: translateX(0.8rem); }
+.cm-books:active .cm-food { transform: translateX(-0.45rem); }
 .cm-books:focus-visible { outline: 2px solid #ecd9c2; outline-offset: 3px; }
 /* Un pequeño gesto de vez en cuando para que se note que se puede tocar */
 .cm-food { animation: cmPeek 7s ease-in-out 2.5s infinite; }
-@keyframes cmPeek { 0%, 86%, 100% { transform: translateX(0); } 91% { transform: translateX(0.45rem); } 96% { transform: translateX(0.05rem); } }
+@keyframes cmPeek { 0%, 86%, 100% { transform: translateX(0); } 91% { transform: translateX(-0.45rem); } 96% { transform: translateX(-0.05rem); } }
 @media (hover: hover) { .cm-books:hover .cm-food { animation: none; } }
 /* Con el newsletter abierto el libro se quita de en medio */
 .teaser-page:has(.newsletter-widget:not(.is-collapsed)) .cm-books { opacity: 0; pointer-events: none; }
-@media (max-height: 520px) { .cm-books { --peek: 2rem; --top: 3.4rem; height: 36vh; } }
+@media (max-height: 520px) { .cm-books { --peek: 2.6rem; --top: 3.4rem; height: 36vh; } }
 
 /* ── El libro abierto ── */
 html.cm-on, html.cm-on body { overflow: hidden; }
@@ -31,7 +31,7 @@ html.cm-on, html.cm-on body { overflow: hidden; }
 .cm-paper, .cm-flip { width: min(34rem, 100%); height: 100%; border-radius: 4px 12px 12px 4px; }
 .cm-paper { position: relative; display: flex; flex-direction: column; overflow: hidden; background: #fbfaf6; box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6); border-left: 10px solid #3f230f; }
 .cm-paper[data-tone="bar"] { border-left-color: #1c2c14; }
-.cm-flip { position: absolute; overflow: hidden; transform-origin: 0 50%; transform: rotateY(0deg); backface-visibility: hidden; -webkit-backface-visibility: hidden; box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55); pointer-events: none; transition: transform 0.9s cubic-bezier(0.55, 0.05, 0.25, 1) 0.25s, opacity 0.35s ease 0.85s, visibility 0s linear 1.2s; }
+.cm-flip { position: absolute; overflow: hidden; transform-origin: 0 50%; transform: rotateY(0deg); backface-visibility: hidden; -webkit-backface-visibility: hidden; box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55); pointer-events: none; transition: transform 0.9s cubic-bezier(0.55, 0.05, 0.25, 1) 0.75s, opacity 0.35s ease 1.35s, visibility 0s linear 1.7s; }
 .cm-flip img { display: block; width: 100%; height: 100%; object-fit: cover; }
 .cm-flip.is-open { transform: rotateY(-128deg); opacity: 0; visibility: hidden; }
 .cm-flip:not(.is-open) { transition: none; }

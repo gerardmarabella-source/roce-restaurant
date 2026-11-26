@@ -3,7 +3,7 @@
    Los datos están en carta-data.js y solo se descargan al abrirla. Enlaces directos: /#carta, /#carta-cocteles… */
 (function () {
   'use strict';
-  var V = '3', BASE = '/carta/', dlg = null, cur = 'menu', loading = null, lastFocus = null;
+  var V = '4', BASE = '/carta/', dlg = null, cur = 'menu', loading = null, lastFocus = null;
   /* Medidas de los títulos: reservan su hueco para que la hoja no salte mientras cargan. */
   var DIM = { 't-celebracion': [900, 378], 't-menu': [900, 420], 't-desserts': [676, 329], 't-drinks': [900, 471], 't-cocktails': [900, 424], 't-wines': [769, 377], 't-spirits': [757, 531] };
   var AL = {
@@ -91,7 +91,7 @@
     if (dlg.open) { if (id) go(id); return; }
     cur = id || 'menu'; lastFocus = document.activeElement;
     var flip = dlg.querySelector('.cm-flip');
-    flip.querySelector('img').src = BASE + 'img/' + (cover || (cur === 'celebracion' ? 'cover-fiesta' : ['cocteles', 'vinos', 'destilados'].indexOf(cur) !== -1 ? 'cover-bar' : 'cover-menu')) + '.webp?v=2';
+    flip.querySelector('img').src = BASE + 'img/' + (cover || (cur === 'celebracion' ? 'cover-fiesta' : ['cocteles', 'vinos', 'destilados'].indexOf(cur) !== -1 ? 'cover-bar-logo' : 'cover-menu-logo')) + '.webp';
     flip.classList.remove('is-open');
     if (dlg.showModal) dlg.showModal(); else dlg.setAttribute('open', '');
     document.documentElement.classList.add('cm-on');
