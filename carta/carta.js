@@ -3,7 +3,7 @@
    Los datos están en carta-data.js y solo se descargan al abrirla. Enlaces directos: /#carta, /#carta-cocteles… */
 (function () {
   'use strict';
-  var V = '4', BASE = '/carta/', dlg = null, cur = 'menu', loading = null, lastFocus = null;
+  var V = '5', BASE = '/carta/', dlg = null, cur = 'menu', loading = null, lastFocus = null, byKeyboard = false;
   /* Medidas de los títulos: reservan su hueco para que la hoja no salte mientras cargan. */
   var DIM = { 't-celebracion': [900, 378], 't-menu': [900, 420], 't-desserts': [676, 329], 't-drinks': [900, 471], 't-cocktails': [900, 424], 't-wines': [769, 377], 't-spirits': [757, 531] };
   var AL = {
@@ -104,7 +104,9 @@
     if (!dlg || !dlg.open) return;
     dlg.close ? dlg.close() : dlg.removeAttribute('open');
     document.documentElement.classList.remove('cm-on');
-    if (lastFocus && lastFocus.focus) lastFocus.focus({ preventScroll: true });
+    // Solo con teclado se devuelve el foco al libro; con dedo o ratón quedaría un marco alrededor.
+    if (byKeyboard && lastFocus && lastFocus.focus) lastFocus.focus({ preventScroll: true });
+    else if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
   }
   function close() {
     hide();
@@ -118,6 +120,7 @@
   document.addEventListener('click', function (e) {
     var b = e.target.closest && e.target.closest('[data-carta]'); if (!b) return;
     e.preventDefault();
+    byKeyboard = e.detail === 0;
     var c = e.target.closest('[data-book]');                       // la portada verde abre directamente en cócteles
     open(c ? c.dataset.book : 'menu');
   });
