@@ -623,6 +623,13 @@
       '<p class="ad-meta mt-legend"><span class="mt-dot is-booked"></span>Reservada <span class="mt-dot is-pending"></span>Pendiente <span class="mt-dot is-seated"></span>En mesa <span class="mt-dot is-bill"></span>Cuenta pedida <span class="mt-dot is-blocked"></span>Bloqueada · en cada barra: personas/plazas de la mesa. Toca un hueco para reservar, una barra para editarla.</p>';
   }
 
+  // A la vista solo lo que se usa en el servicio (llegada, sentar, cuenta, terminar y editar); el resto, en «Más».
+  function bookingActions(list) {
+    var main = [], rest = [];
+    list.forEach(function (h) { (/data-act="(arrive|seat|bill|done|clean|edit)"/.test(h) ? main : rest).push(h); });
+    return main.join('') + (rest.length ? '<details class="mt-menu"><summary class="ad-btn is-small is-ghost">Más</summary><div>' + rest.join('') + '</div></details>' : '');
+  }
+  document.addEventListener('click', function (e) { [].forEach.call(root.querySelectorAll('.mt-menu[open]'), function (d) { if (!d.contains(e.target)) d.open = false; }); });
   function plainText(x) { return String(x || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim(); }
   // Filtra la lista sin volver a pintar la pantalla (así no se pierde el foco al escribir).
   function applySearch() {
@@ -717,7 +724,7 @@
         '<div class="ad-meta">' + esc(zoneName(b.zone_id)) + (tn ? ' · mesa ' + esc(tn) + ' (' + seatsOf(b) + ' plazas' + (b.party > seatsOf(b) ? ' · faltan ' + (b.party - seatsOf(b)) : '') + ')' : '') + ' · ' + esc(b.ambience === 'night' ? 'Restaurant & Cocktails' : 'Coffee, Bakery & Kitchen') + (b.source === 'admin' ? ' · creada en el panel' : '') + '</div>' +
         '<div class="ad-meta">' + esc(b.phone) + (b.email ? ' · ' + esc(b.email) : '') + ' · ' + esc(b.ref) + '</div>' +
         (b.notes ? '<div class="ad-meta">“' + esc(b.notes) + '”</div>' : '') + (noteOf(b) && noteOf(b).note ? '<div class="ad-meta">Nota del cliente: ' + esc(noteOf(b).note) + '</div>' : '') + '</div>' +
-        '<div class="ad-actions">' + a.join('') + '</div></li>';
+        '<div class="ad-actions">' + bookingActions(a) + '</div></li>';
     }).join('') : '<li class="ad-empty">No hay reservas este día.</li>';
 
     body.innerHTML =
@@ -725,7 +732,7 @@
       '<input type="date" id="mtDate" value="' + S.date + '"><button class="ad-btn is-ghost is-small" data-dayn="1" aria-label="Día siguiente">→</button>' +
       '<button class="ad-btn is-ghost is-small" data-dayn="0">Hoy</button></div>' +
       '<span class="mt-topbtns">' + (can('tables_blocks') ? '<button class="ad-btn is-ghost" id="mtHold" type="button">Bloquear mesa</button>' : '') + '<button class="ad-btn is-ghost" id="mtPrint" type="button">Imprimir día</button><button class="ad-btn" id="mtNew" type="button">+ Nueva reserva</button></span></div>' +
-      '<p class="ad-meta mt-sum"><b>' + esc(dayLabel(S.date)) + '</b> · ' + live.length + ' reservas · ' + covers + ' comensales' + (deposits ? ' · fianzas cobradas ' + eur(deposits) : '') + '</p>' +
+      '<h2 class="mt-date">' + esc(dayLabel(S.date)) + '</h2><div class="mt-kpis"><div><b>' + live.length + '</b><span>' + (live.length === 1 ? 'reserva' : 'reservas') + '</span></div><div><b>' + covers + '</b><span>comensales</span></div>' + (deposits ? '<div><b>' + eur(deposits) + '</b><span>fianzas cobradas</span></div>' : '') + '</div>' +
       '<div class="mt-vtoggle" role="group"><button type="button" class="ck-chip" data-mode="timeline" aria-pressed="' + (S.mode === 'timeline') + '">Línea de tiempo</button><button type="button" class="ck-chip" data-mode="map" aria-pressed="' + (S.mode === 'map') + '">Mapa</button></div>' +
       '<div class="ad-bar mt-mapbar"><div class="mt-zones" role="group">' + zones.map(function (z) { return '<button type="button" class="ck-chip" data-zone="' + z.id + '" aria-pressed="' + (z.id === S.zone) + '">' + esc(z.name_es) + '</button>'; }).join('') + '</div>' +
       '<button type="button" class="ad-btn is-small ' + (S.join ? '' : 'is-ghost') + '" id="mtJoin">' + (S.join ? 'Terminar de juntar' : 'Juntar mesas') + '</button>' +
@@ -973,6 +980,7 @@
   function liveBlocked() {
     if (document.hidden || S.view !== 'day' || S.busy || S.edit || !root.offsetParent) return true;
     if (document.querySelector('.ad-modal')) return true;
+    if (root.querySelector('.mt-menu[open]')) return true;
     if (typeof tdrag !== 'undefined' && tdrag) return true;
     var ae = document.activeElement; if (ae && ae.id !== 'mtQ' && root.contains(ae) && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName)) return true;
     return false;
@@ -1795,36 +1803,69 @@
   var DOW = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
   function mm(min) { var h = Math.floor(min / 60) % 24; return ('0' + h).slice(-2) + ':' + ('0' + (min % 60)).slice(-2); }
   function toMin(v, ref) { var m = +v.slice(0, 2) * 60 + +v.slice(3, 5); return m < (ref || 0) && +v.slice(0, 2) < 6 ? m + 1440 : m; }
+  /* Piezas del panel de ajustes: cada ajuste es una fila (qué es y para qué a la izquierda, el control a la derecha). */
+  function cfgRow(title, control, help, stack) { var tag = stack ? 'div' : 'label'; return '<' + tag + ' class="cfg-row' + (stack ? ' is-stack' : '') + '"><span class="cfg-l"><b>' + title + '</b>' + (help ? '<small>' + help + '</small>' : '') + '</span><span class="cfg-c">' + control + '</span></' + tag + '>'; }
+  function cfgNum(f, v, attrs, unit) { return '<input data-f="' + f + '" type="number" inputmode="numeric" value="' + (v == null ? '' : v) + '" ' + (attrs || '') + '>' + (unit ? '<i>' + unit + '</i>' : ''); }
+  function cfgSwitch(attrs, on) { return '<input type="checkbox" class="cfg-sw" role="switch" ' + attrs + (on ? ' checked' : '') + '>'; }
+  function cfgPills(list) { return '<span class="cfg-pills">' + list.map(function (x) { return '<label><input type="checkbox" ' + x.attrs + (x.on ? ' checked' : '') + '><span>' + x.text + '</span></label>'; }).join('') + '</span>'; }
+  function cfgGroup(title, rows) { return '<h4 class="cfg-gh">' + title + '</h4><div class="cfg-group">' + rows.join('') + '</div>'; }
+  var DOW_LONG = ['lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado', 'domingo'];
+  function daysText(days) {
+    var d = days.slice().sort(function (a, b) { return a - b; });
+    if (!d.length) return 'ningún día'; if (d.length === 7) return 'todos los días';
+    var run = d.every(function (x, i) { return !i || x === d[i - 1] + 1; });
+    return run && d.length > 2 ? DOW_LONG[d[0] - 1] + ' a ' + DOW_LONG[d[d.length - 1] - 1] : d.map(function (x) { return DOW_LONG[x - 1]; }).join(', ');
+  }
+  // Resumen en una frase de lo que hace el turno, con lo que hay escrito ahora mismo en la tarjeta.
+  function svcSummary(card) {
+    var v = function (f) { var el = card.querySelector('[data-f="' + f + '"]'); return el ? el.value : ''; };
+    var days = [].map.call(card.querySelectorAll('[data-day]:checked'), function (i) { return +i.dataset.day; });
+    var txt = daysText(days) + ' · ' + v('start') + '–' + v('last') + ' · cada ' + v('slot_min') + ' min';
+    if (+v('pace_covers')) txt += ' · ' + v('pace_covers') + ' por hora de llegada';
+    if (+v('max_covers')) txt += ' · ' + v('max_covers') + ' por turno';
+    var on = card.querySelector('[data-f="active"]');
+    card.querySelector('.cfg-sum').textContent = (on && !on.checked ? 'Sin reservas web · ' : '') + txt.charAt(0).toUpperCase() + txt.slice(1);
+    card.classList.toggle('is-off', !!(on && !on.checked));
+  }
+  var CFG_SECS = [['svc', 'Turnos y aforo'], ['zones', 'Zonas y fianzas'], ['tables', 'Mesas'], ['dates', 'Cierres y aperturas'], ['pres', 'Prescriptores'], ['clients', 'Clientes']];
+
   function renderConfig(body) {
     S.pend = {};
     var zones = S.zones.map(function (z) {
-      return '<li class="ad-card mt-cfg" data-zone-row="' + z.id + '"><div class="ad-grid">' +
-        '<label class="ad-field"><span>Nombre</span><input data-f="name_es" value="' + esc(z.name_es) + '"></label>' +
-        '<label class="ad-field"><span>Cómo se garantiza</span><select data-f="payment_mode"><option value="none"' + (z.payment_mode === 'none' ? ' selected' : '') + '>Sin pago</option><option value="card"' + (z.payment_mode === 'card' ? ' selected' : '') + '>Tarjeta de garantía (no se cobra, solo si no viene)</option><option value="deposit"' + (z.payment_mode === 'deposit' ? ' selected' : '') + '>Fianza cobrada al reservar</option></select></label>' +
-        '<label class="ad-field"><span>Importe (€)</span><input data-f="deposit" type="number" min="0" step="0.5" value="' + z.deposit_cents / 100 + '"></label>' +
-        '<label class="ad-field"><span>Sin coste si anula con (h) de antelación</span><input data-f="free_cancel_hours" type="number" min="0" value="' + z.free_cancel_hours + '"></label>' +
-        '<label class="mt-check"><input data-f="deposit_per_person" type="checkbox"' + (z.deposit_per_person ? ' checked' : '') + '> Importe por persona</label>' +
-        '<label class="mt-check"><input data-f="active" type="checkbox"' + (z.active ? ' checked' : '') + '> Visible en la web</label></div></li>';
+      return '<section class="cfg-card" data-zone-row="' + z.id + '"><header class="cfg-head"><div><h3>' + esc(z.name_es) + '</h3></div><label class="cfg-on">Visible en la web ' + cfgSwitch('data-f="active"', z.active) + '</label></header><div class="cfg-group">' +
+        cfgRow('Nombre', '<input data-f="name_es" value="' + esc(z.name_es) + '">') +
+        cfgRow('Cómo se garantiza', '<select data-f="payment_mode"><option value="none"' + (z.payment_mode === 'none' ? ' selected' : '') + '>Sin pago</option><option value="card"' + (z.payment_mode === 'card' ? ' selected' : '') + '>Tarjeta de garantía</option><option value="deposit"' + (z.payment_mode === 'deposit' ? ' selected' : '') + '>Fianza cobrada al reservar</option></select>', 'La tarjeta de garantía no cobra nada salvo que no vengan.') +
+        cfgRow('Importe', '<input data-f="deposit" type="number" min="0" step="0.5" value="' + z.deposit_cents / 100 + '"><i>€</i>') +
+        cfgRow('Importe por persona', cfgSwitch('data-f="deposit_per_person"', z.deposit_per_person)) +
+        cfgRow('Anulación sin coste hasta', cfgNum('free_cancel_hours', z.free_cancel_hours, 'min="0"', 'h antes')) +
+        '</div></section>';
     }).join('');
     var services = S.services.map(function (s) {
-      return '<li class="ad-card mt-cfg" data-svc-row="' + s.id + '"><div class="ad-grid">' +
-        '<div class="ad-field full"><span>' + esc(s.name_es) + ' · días</span><div class="mt-days">' + DOW.map(function (d, i) { return '<label><input type="checkbox" data-day="' + (i + 1) + '"' + (s.days.indexOf(i + 1) !== -1 ? ' checked' : '') + '> ' + d + '</label>'; }).join('') + '</div></div>' +
-        '<label class="ad-field"><span>Primera mesa</span><input data-f="start" type="time" value="' + mm(s.start_min) + '"></label>' +
-        '<label class="ad-field"><span>Última mesa</span><input data-f="last" type="time" value="' + mm(s.last_min) + '"></label>' +
-        '<label class="ad-field"><span>Hora de llegada cada (min)</span><input data-f="slot_min" type="number" min="5" step="5" value="' + s.slot_min + '"></label>' +
-        ('pace_covers' in s ? '<label class="ad-field"><span>Máx. comensales por hora de llegada (vacío = sin límite)</span><input data-f="pace_covers" type="number" min="1" max="500" value="' + (s.pace_covers || '') + '"></label>' : '') +
-        ('max_covers' in s ? '<label class="ad-field"><span>Máx. comensales del turno en total (vacío = sin límite)</span><input data-f="max_covers" type="number" min="1" max="2000" value="' + (s.max_covers || '') + '"></label>' : '') +
-        '<label class="ad-field"><span>La mesa se ocupa (min)</span><input data-f="duration_min" type="number" min="15" step="5" value="' + s.duration_min + '"></label>' +
-        '<label class="ad-field"><span>Máx. personas</span><input data-f="max_party" type="number" min="1" value="' + s.max_party + '"></label>' +
-        '<label class="ad-field"><span>Antelación mínima (min)</span><input data-f="notice_min" type="number" min="0" step="15" value="' + s.notice_min + '"></label>' +
-        '<label class="ad-field"><span>Días vista</span><input data-f="days_ahead" type="number" min="1" value="' + s.days_ahead + '"></label>' +
-        '<div class="ad-field"><span>Zonas que usa</span><div class="mt-days">' + S.zones.map(function (z) { return '<label><input type="checkbox" data-szone="' + z.id + '"' + (!s.zone_ids || s.zone_ids.indexOf(z.id) !== -1 ? ' checked' : '') + '> ' + esc(z.name_es) + '</label>'; }).join('') + '</div></div>' +
-        '<label class="ad-field"><span>Cortesía de llegada (min)</span><input data-f="grace_min" type="number" min="0" step="5" value="' + s.grace_min + '"></label>' +
-        '<label class="ad-field"><span>Grupos grandes desde (personas; 0 = no)</span><input data-f="big_party_from" type="number" min="0" value="' + s.big_party_from + '"></label>' +
-        '<label class="ad-field"><span>…minutos extra de mesa</span><input data-f="big_party_extra_min" type="number" min="0" step="5" value="' + s.big_party_extra_min + '"></label>' +
-        '<label class="ad-field full"><span>Aviso final en el email (ES)</span><input data-f="end_note_es" maxlength="200" value="' + esc(s.end_note_es) + '" placeholder="p. ej. A las 00:30 te invitamos a bajar a la planta baja…"></label>' +
-        '<label class="ad-field full"><span>Aviso final en el email (EN)</span><input data-f="end_note_en" maxlength="200" value="' + esc(s.end_note_en) + '"></label>' +
-        '<label class="mt-check"><input data-f="active" type="checkbox"' + (s.active ? ' checked' : '') + '> Aceptar reservas web</label></div></li>';
+      return '<section class="cfg-card" data-svc-row="' + s.id + '"><header class="cfg-head"><div><h3>' + esc(s.name_es) + '</h3><p class="cfg-sum"></p></div><label class="cfg-on">Reservas web ' + cfgSwitch('data-f="active"', s.active) + '</label></header>' +
+        cfgGroup('Horario', [
+          cfgRow('Días', cfgPills(DOW.map(function (d, i) { return { text: d, attrs: 'data-day="' + (i + 1) + '" aria-label="' + DOW_LONG[i] + '"', on: s.days.indexOf(i + 1) !== -1 }; })), '', true),
+          cfgRow('Primera llegada', '<input data-f="start" type="time" value="' + mm(s.start_min) + '">'),
+          cfgRow('Última llegada', '<input data-f="last" type="time" value="' + mm(s.last_min) + '">'),
+          cfgRow('Horas de llegada cada', cfgNum('slot_min', s.slot_min, 'min="5" step="5"', 'min'), 'Con 10 se ofrece 20:00, 20:10, 20:20…')
+        ]) +
+        cfgGroup('Aforo', [].concat(
+          'pace_covers' in s ? cfgRow('Comensales por hora de llegada', cfgNum('pace_covers', s.pace_covers, 'min="1" max="500" placeholder="Sin límite"'), 'Si metéis a mano más de este número, lo que sobra se resta a la hora siguiente.') : [],
+          'max_covers' in s ? cfgRow('Comensales en todo el turno', cfgNum('max_covers', s.max_covers, 'min="1" max="2000" placeholder="Sin límite"'), 'Al llegar a esta cifra, la web marca el turno como completo.') : [],
+          cfgRow('Personas máximas por reserva', cfgNum('max_party', s.max_party, 'min="1"'), 'Por la web. Los grupos mayores os escriben.'),
+          cfgRow('La mesa se ocupa', cfgNum('duration_min', s.duration_min, 'min="15" step="5"', 'min')),
+          cfgRow('Grupos grandes desde', cfgNum('big_party_from', s.big_party_from, 'min="0"', 'pers.'), '0 = no distinguir.'),
+          cfgRow('Tiempo extra para grupos grandes', cfgNum('big_party_extra_min', s.big_party_extra_min, 'min="0" step="5"', 'min'))
+        )) +
+        cfgGroup('Reserva por la web', [
+          cfgRow('Antelación mínima', cfgNum('notice_min', s.notice_min, 'min="0" step="15"', 'min')),
+          cfgRow('Se puede reservar con', cfgNum('days_ahead', s.days_ahead, 'min="1"', 'días vista')),
+          cfgRow('Cortesía de llegada', cfgNum('grace_min', s.grace_min, 'min="0" step="5"', 'min'), 'Cuánto se guarda la mesa si llegan tarde.'),
+          cfgRow('Zonas que usa', cfgPills(S.zones.map(function (z) { return { text: esc(z.name_es), attrs: 'data-szone="' + z.id + '"', on: !s.zone_ids || s.zone_ids.indexOf(z.id) !== -1 }; })), '', true)
+        ]) +
+        cfgGroup('Aviso al final del email', [
+          cfgRow('En español', '<input data-f="end_note_es" maxlength="200" value="' + esc(s.end_note_es) + '" placeholder="p. ej. A las 00:30 te invitamos a bajar a la planta baja…">', '', true),
+          cfgRow('En inglés', '<input data-f="end_note_en" maxlength="200" value="' + esc(s.end_note_en) + '">', '', true)
+        ]) + '</section>';
     }).join('');
     var tables = S.zones.map(function (z) {
       var ts = S.tables.filter(function (t) { return t.zone_id === z.id; });
@@ -1848,16 +1889,29 @@
       '<label class="ad-field"><span>Zona</span><select id="clZone"><option value="">Todas</option>' + S.zones.map(function (z) { return '<option value="' + z.id + '">' + esc(z.name_es) + '</option>'; }).join('') + '</select></label>' +
       '<label class="ad-field"><span>Desde las</span><input type="time" id="clT0"></label><label class="ad-field"><span>Hasta las</span><input type="time" id="clT1"></label></div></details>' +
       '<button class="ad-btn" type="submit">Aplicar en la web</button></form>';
-    body.innerHTML = '<p class="ad-meta" style="margin-bottom:1rem">Cambia lo que necesites y pulsa <b>Guardar cambios</b> (abajo) cuando termines. Afectan solo a reservas nuevas.</p>' +
-      '<h2 class="ad-sub">Zonas y fianzas</h2><ul class="ad-list">' + zones + '</ul>' +
-      '<h2 class="ad-sub" style="margin-top:1.75rem">Turnos y horarios</h2><ul class="ad-list">' + services + '</ul>' +
-      '<h2 class="ad-sub" style="margin-top:1.75rem">Mesas</h2><p class="ad-meta" style="margin-bottom:0.6rem">Las mesas con el mismo “grupo de unión” (en la misma zona) se pueden juntar para grupos grandes.</p>' + tables +
-      '<h2 class="ad-sub" style="margin-top:1.75rem">Prescriptores</h2>' + prescribersHtml() +
-      '<h2 class="ad-sub" style="margin-top:1.75rem">Etiquetas de cliente</h2>' + tagsCfgHtml() +
-      '<h2 class="ad-sub" style="margin-top:1.75rem">Fidelización de clientes</h2>' + loyaltyCfgHtml() +
-      '<h2 class="ad-sub" style="margin-top:1.75rem">Abrir un día que normalmente está cerrado</h2>' + openingsHtml() +
-      '<h2 class="ad-sub" style="margin-top:1.75rem">Cierres por día</h2>' + closures +
-      '<div class="ad-permbar" id="cfgBar" hidden><span id="cfgCount">Cambios sin guardar</span><button class="ad-btn" type="button" id="cfgSave">Guardar cambios</button><button class="ad-btn is-ghost" type="button" id="cfgReset">Descartar</button></div>';
+    if (!CFG_SECS.some(function (x) { return x[0] === S.cfgSec; })) S.cfgSec = 'svc';
+    var intro = {
+      svc: 'Cuándo se reserva y cuánta gente entra en cada turno.', zones: 'Qué se pide para garantizar la mesa en cada planta.',
+      tables: 'Las mesas con el mismo «grupo de unión», en la misma zona, se pueden juntar para grupos grandes.', dates: 'Días que cambian respecto al horario normal.',
+      pres: 'Quién trae o recomienda reservas.', clients: 'Etiquetas y niveles de fidelización.'
+    };
+    var content = {
+      svc: services, zones: zones, tables: '<section class="cfg-card">' + tables + '</section>',
+      dates: '<section class="cfg-card">' + closures + '</section><section class="cfg-card"><header class="cfg-head"><div><h3>Abrir un día normalmente cerrado</h3></div></header>' + openingsHtml() + '</section>',
+      pres: '<section class="cfg-card">' + prescribersHtml() + '</section>',
+      clients: '<section class="cfg-card"><header class="cfg-head"><div><h3>Etiquetas de cliente</h3></div></header>' + tagsCfgHtml() + '</section><section class="cfg-card"><header class="cfg-head"><div><h3>Fidelización</h3></div></header>' + loyaltyCfgHtml() + '</section>'
+    };
+    body.innerHTML = '<div class="cfg"><nav class="cfg-nav" aria-label="Apartados de configuración">' + CFG_SECS.map(function (x) { return '<button type="button" data-cfgsec="' + x[0] + '" aria-current="' + (x[0] === S.cfgSec) + '">' + x[1] + '</button>'; }).join('') + '</nav><div class="cfg-main">' +
+      CFG_SECS.map(function (x) { return '<div class="cfg-sec" data-sec="' + x[0] + '"' + (x[0] === S.cfgSec ? '' : ' hidden') + '><h2 class="cfg-title">' + x[1] + '</h2><p class="cfg-intro">' + intro[x[0]] + '</p>' + content[x[0]] + '</div>'; }).join('') +
+      '</div></div><div class="ad-permbar cfg-bar" id="cfgBar" hidden><span id="cfgCount">Cambios sin guardar</span><button class="ad-btn is-ghost" type="button" id="cfgReset">Descartar</button><button class="ad-btn" type="button" id="cfgSave">Guardar</button></div>';
+    [].forEach.call(body.querySelectorAll('[data-svc-row]'), function (card) { svcSummary(card); card.addEventListener('input', function () { svcSummary(card); }); card.addEventListener('change', function () { svcSummary(card); }); });
+    // Cambiar de apartado no repinta: así no se pierde lo que aún no se ha guardado.
+    body.querySelector('.cfg-nav').addEventListener('click', function (e) {
+      var b = e.target.closest('[data-cfgsec]'); if (!b) return; S.cfgSec = b.dataset.cfgsec;
+      [].forEach.call(body.querySelectorAll('[data-cfgsec]'), function (x) { x.setAttribute('aria-current', String(x === b)); });
+      [].forEach.call(body.querySelectorAll('.cfg-sec'), function (x) { x.hidden = x.dataset.sec !== S.cfgSec; });
+      b.scrollIntoView({ block: 'nearest', inline: 'center' });
+    });
     var pf = document.getElementById('prForm');
     if (pf) pf.addEventListener('submit', function (e) {
       e.preventDefault();
