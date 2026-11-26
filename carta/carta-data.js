@@ -44,14 +44,6 @@ window.ROCE_CARTA = (function () {
         D('Puerro a la brasa · queso azul', '13,50', 'Puerro a la brasa con crema de queso azul, yema curada, avellana tostada y limón quemado.', 'Chargrilled leek with blue cheese cream, cured egg yolk, toasted hazelnut and burnt lemon.', 'huevo frutos leche'),
         D('Setas · parmesano · miso', '13,50', 'Setas a la brasa con crema de parmesano y miso, yema curada, cebolla crujiente y aceite verde.', 'Chargrilled mushrooms with parmesan and miso cream, cured egg yolk, crispy onion and green oil.', 'huevo soja leche')
       ] },
-      { h: 'para-acompanar', t: 'Para acompañar', items: [
-        D('Boniato asado a la brasa', '5,50', 'Boniato asado a la brasa con crema de yogur y lima, aceite de hierbas y especias.', 'Chargrilled roast sweet potato with yoghurt and lime cream, herb oil and spices.', 'leche'),
-        D('Patatas rojas crujientes', '5,00', 'Patata confitada ligeramente aplastada y terminada al horno con ajo, romero y sal en escamas.', 'Confit potatoes, lightly crushed and oven-finished with garlic, rosemary and sea salt flakes.'),
-        D('Piquillos caramelizados', '6,00', 'Pimientos del piquillo salteados y caramelizados con mantequilla, vinagre de Jerez y un toque de agave.', 'Piquillo peppers sautéed and caramelised with butter, sherry vinegar and a touch of agave.', 'leche'),
-        D('Espárragos con parmesano', '5,50', 'Espárragos verdes con rúcula, parmesano laminado y vinagreta de limón.', 'Green asparagus with rocket, shaved Parmesan and lemon vinaigrette.', 'leche'),
-        D('Ensalada verde', '6,00', 'Canónigos, espinaca baby, rúcula, escarola, edamame y manzana verde con vinagreta cítrica.', 'Lamb’s lettuce, baby spinach, rocket, endive, edamame and green apple with citrus vinaigrette.', 'soja'),
-        D('Pan de masa madre con AOVE', '3,50', 'Para acompañar tus platos.', 'To accompany your dishes.', 'gluten')
-      ] },
       { h: 'del-mar', t: 'Del mar', items: [
         D('Salmón marinado en miso', '17,50', 'Lomo de salmón marinado en miso con verduras a la brasa, salsa cítrica, sésamo y cebolla encurtida.', 'Miso-marinated salmon fillet with chargrilled vegetables, citrus sauce, sesame and pickled onion.', 'pescado soja sesamo'),
         D('Tartar de atún rojo · crujiente · granada', '19,50', 'Atún rojo cortado a cuchillo con aguacate, mango, granada, ponzu de lima, huevas y chips de boniato.', 'Hand-cut bluefin tuna with avocado, mango, pomegranate, lime ponzu, roe and sweet potato crisps.', 'pescado soja'),
@@ -64,6 +56,14 @@ window.ROCE_CARTA = (function () {
         D('Entrecot madurado', '32,50', 'Entrecot madurado a la brasa con chimichurri verde, ajo negro y patata crujiente.', 'Chargrilled dry-aged entrecôte with green chimichurri, black garlic and crispy potatoes.'),
         D('Costilla de ternera 12 h', '30,00', 'Costilla glaseada a baja temperatura, crema de boniato ahumado y su propio jugo.', 'Slow-cooked glazed beef rib with smoked sweet potato cream and its own jus.'),
         D('Tomahawk', '80,00/kg', 'Vaca madurada a la brasa (aprox. 1,5kg) con patatas asadas y chimichurri verde.', 'Chargrilled dry-aged beef (approx. 1.5kg) with roast potatoes and green chimichurri.', '', 'para 4 personas')
+      ] },
+      { h: 'para-acompanar', t: 'Para acompañar', items: [
+        D('Boniato asado a la brasa', '5,50', 'Boniato asado a la brasa con crema de yogur y lima, aceite de hierbas y especias.', 'Chargrilled roast sweet potato with yoghurt and lime cream, herb oil and spices.', 'leche'),
+        D('Patatas rojas crujientes', '5,00', 'Patata confitada ligeramente aplastada y terminada al horno con ajo, romero y sal en escamas.', 'Confit potatoes, lightly crushed and oven-finished with garlic, rosemary and sea salt flakes.'),
+        D('Piquillos caramelizados', '6,00', 'Pimientos del piquillo salteados y caramelizados con mantequilla, vinagre de Jerez y un toque de agave.', 'Piquillo peppers sautéed and caramelised with butter, sherry vinegar and a touch of agave.', 'leche'),
+        D('Espárragos con parmesano', '5,50', 'Espárragos verdes con rúcula, parmesano laminado y vinagreta de limón.', 'Green asparagus with rocket, shaved Parmesan and lemon vinaigrette.', 'leche'),
+        D('Ensalada verde', '6,00', 'Canónigos, espinaca baby, rúcula, escarola, edamame y manzana verde con vinagreta cítrica.', 'Lamb’s lettuce, baby spinach, rocket, endive, edamame and green apple with citrus vinaigrette.', 'soja'),
+        D('Pan de masa madre con AOVE', '3,50', 'Para acompañar tus platos.', 'To accompany your dishes.', 'gluten')
       ] }
     ] },
 
