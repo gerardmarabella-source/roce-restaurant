@@ -8,7 +8,7 @@
 .cm-cover { display: block; width: 100%; height: 100%; object-fit: cover; }
 .cm-book::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(0, 0, 0, 0.35), rgba(255, 255, 255, 0.12) 5%, rgba(0, 0, 0, 0.05) 12%, rgba(0, 0, 0, 0) 40%); pointer-events: none; }
 .cm-bar { transform: translate(-0.35rem, 0.45rem) rotate(-1.6deg); }
-.cm-letter { position: absolute; z-index: 2; left: calc(var(--peek) / 2 + 0.1rem); top: 40%; width: calc(var(--peek) * 0.72); height: auto; max-width: none; transform: translate(-50%, -50%); filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.55)); pointer-events: none; }
+.cm-letter { position: absolute; z-index: 2; left: calc(var(--peek) / 2); top: 50%; width: calc(var(--peek) * 0.72); height: auto; max-width: none; transform: translate(-50%, -50%) rotate(-90deg); filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.55)); pointer-events: none; }
 @media (hover: hover) {
   .cm-books:hover .cm-food { transform: translateX(-0.8rem); }
   .cm-books:hover .cm-bar { transform: translate(-1.4rem, 0.55rem) rotate(-2.6deg); }
