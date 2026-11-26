@@ -8,6 +8,12 @@
 .mt-time { display: flex; align-items: center; gap: 0.4rem; font-size: 0.85rem; }
 .mt-time label { display: flex; align-items: center; gap: 0.5rem; }
 .mt-time select { padding: 0.45rem 0.6rem; border: 1px solid var(--fg); background: transparent; }
+.mt-q { display: block; width: 100%; max-width: 28rem; margin: 0 0 0.8rem; padding: 0.65rem 0.75rem; border: 1px solid var(--fg); border-radius: 0; background: transparent; font-size: 1rem; }
+.mt-bk[hidden] { display: none; }
+.mt-time { flex-wrap: wrap; }
+.mt-band { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr) auto; gap: 0.5rem; align-items: end; margin-bottom: 0.6rem; }
+@media (max-width: 560px) { .mt-band { grid-template-columns: 1fr 1fr; border-bottom: 1px solid var(--line); padding-bottom: 0.6rem; } .mt-band .ad-field:first-child { grid-column: 1 / -1; } }
+@media (max-width: 640px) { .mt-t i.mt-th { display: none; } }   /* en el móvil las mesas son muy pequeñas: la hora se ve al tocar */
 
 .mt-map-wrap { margin-bottom: 1.5rem; }
 .mt-viewport { position: relative; width: 100%; overflow: hidden; border: 1px dashed var(--fg); touch-action: pan-y; background: var(--bg); }

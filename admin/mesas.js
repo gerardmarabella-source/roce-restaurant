@@ -90,7 +90,7 @@
       api('dining_accounts?select=*&order=name').catch(function () { return []; }),
       api('dining_account_moves?select=*&order=created_at.desc&limit=2000').catch(function () { return []; }),
       api('dining_settings?select=*').catch(function () { return []; })
-    ]).then(function (r) { (r[9] || []).forEach(function (x) { if (x.key === 'loyalty') S.loyalty = x.value; if (x.key === 'plan_ctx') S.planCtx = x.value; }); S.tags = r[5] || []; S.openings = r[6] || []; S.accounts = r[7] || []; S.accMoves = r[8] || []; S.zones = r[0] || []; S.tables = r[1] || []; S.services = r[2] || []; S.prescribers = r[3] || []; S.team = r[4] || []; S.loadedCfg = true; });
+    ]).then(function (r) { (r[9] || []).forEach(function (x) { if (x.key === 'loyalty') S.loyalty = x.value; if (x.key === 'plan_ctx') S.planCtx = x.value; if (x.key === 'map_bands') S.bandsCfg = x.value; }); S.tags = r[5] || []; S.openings = r[6] || []; S.accounts = r[7] || []; S.accMoves = r[8] || []; S.zones = r[0] || []; S.tables = r[1] || []; S.services = r[2] || []; S.prescribers = r[3] || []; S.team = r[4] || []; S.loadedCfg = true; });
   }
   function loadDay() {
     var from = A.madridToISO(S.date + 'T05:00'), to = A.madridToISO(addDays(S.date, 1) + 'T05:00');
@@ -110,8 +110,8 @@
   // Gente del equipo que todavía no es prescriptor.
   function teamFree() { return (S.team || []).filter(function (m) { return !S.prescribers.some(function (x) { return (x.email || '').toLowerCase() === String(m.email).toLowerCase(); }); }); }
   // Opciones del desplegable de prescriptor: los de la lista, la gente del equipo y crear uno nuevo a mano.
-  function presOptions(sel) {
-    var h = '<option value="">—</option>' + S.prescribers.filter(function (x) { return x.active || x.code === sel; }).map(function (x) { return '<option value="' + esc(x.code) + '"' + (x.code === sel ? ' selected' : '') + '>' + esc(x.name) + '</option>'; }).join('');
+  function presOptions(sel, empty) {
+    var h = '<option value="">' + (empty || '—') + '</option>' + S.prescribers.filter(function (x) { return x.active || x.code === sel; }).map(function (x) { return '<option value="' + esc(x.code) + '"' + (x.code === sel ? ' selected' : '') + '>' + esc(x.name) + '</option>'; }).join('');
     var tf = teamFree();
     if (tf.length) h += '<optgroup label="Equipo ROCE">' + tf.map(function (m) { return '<option value="team:' + esc(m.email) + '">' + esc(personName(m)) + '</option>'; }).join('') + '</optgroup>';
     return h + '<option value="__new">＋ Crear prescriptor a mano…</option>';
@@ -217,7 +217,7 @@
     }).join('') + '</ul>';
   }
   A.logHtml = logHtml;
-  function dayLabel(iso) { return new Intl.DateTimeFormat('es-ES', { timeZone: TZ, weekday: 'long', day: 'numeric', month: 'long' }).format(new Date(iso)) + ' a las ' + hm(iso); }
+  function dayTimeLabel(iso) { return new Intl.DateTimeFormat('es-ES', { timeZone: TZ, weekday: 'long', day: 'numeric', month: 'long' }).format(new Date(iso)) + ' a las ' + hm(iso); }
   function presName(code) { var p = S.prescribers.filter(function (x) { return x.code === code; })[0]; return p ? p.name : code; }
   var AL = { gluten: 'Gluten / celiaquía', lactosa: 'Lácteos / lactosa', 'frutos-secos': 'Frutos secos', cacahuetes: 'Cacahuetes', huevo: 'Huevo', pescado: 'Pescado', marisco: 'Crustáceos / marisco', moluscos: 'Moluscos', soja: 'Soja', sesamo: 'Sésamo', apio: 'Apio', mostaza: 'Mostaza', altramuz: 'Altramuz', sulfitos: 'Sulfitos', vegetariano: 'Vegetariano', vegano: 'Vegano', otras: 'Otras alergias' };
   var LB = { transferencia: 'Pago por transferencia' };   // etiquetas que no son alergias
@@ -461,13 +461,6 @@
     });
     return Object.keys(set).sort(function (a, b) { return set[a] - set[b]; });
   }
-  function defaultTime(opts) {
-    if (S.date === today()) {
-      var now = hm(new Date().toISOString()), pick = opts.filter(function (t) { return t >= now; })[0];
-      if (pick) return pick;
-    }
-    return opts[0] || '13:00';
-  }
   // Mesas juntas en el plano: las mesas de una misma reserva (a esta hora) se unen con una barra del color de su estado.
   // Las barras se trazan entre mesas vecinas (árbol de distancia mínima), así que valen para dos mesas o para un grupo de cuatro.
   function joinLinks(boxes, iso, minx, PAD, oy, bw, bh) {
@@ -492,16 +485,96 @@
     });
     return svg ? '<svg class="mt-links" viewBox="0 0 ' + bw.toFixed(1) + ' ' + bh.toFixed(1) + '" preserveAspectRatio="none" aria-hidden="true">' + svg + '</svg>' : '';
   }
+  // El mapa se mira por franjas: una mesa cuenta como ocupada si algo la ocupa en cualquier momento de la franja elegida.
   function occupancy(t, iso) {
-    var ts = new Date(iso).getTime(), r = { state: 'free', booking: null, block: null };
-    S.bookings.forEach(function (b) {
-      if (!holds(b) || !(b.table_booking_tables || []).some(function (x) { return x.table_id === t.id; })) return;
-      if (new Date(b.starts_at).getTime() <= ts && ts < new Date(b.ends_at).getTime()) { r.state = b.status === 'seated' ? (b.bill_at ? 'bill' : 'seated') : b.status === 'pending' ? 'pending' : 'booked'; r.booking = b; }
-    });
-    if (r.state === 'free') S.blocks.forEach(function (k) {
-      if (k.zone_id === t.zone_id && (!k.table_ids || k.table_ids.indexOf(t.id) !== -1) && new Date(k.starts_at).getTime() <= ts && ts < new Date(k.ends_at).getTime()) { r.state = 'blocked'; r.block = k; }
+    var from = new Date(iso).getTime(), to = from + (S.bandLen || 60) * 60000, r = { state: 'free', booking: null, block: null, list: [] };
+    var hits = function (x) { return new Date(x.starts_at).getTime() < to && new Date(x.ends_at).getTime() > from; };
+    r.list = S.bookings.filter(function (b) { return holds(b) && (b.table_booking_tables || []).some(function (x) { return x.table_id === t.id; }) && hits(b); })
+      .sort(function (a, b) { return new Date(a.starts_at) - new Date(b.starts_at); });
+    var b = r.list.filter(function (x) { return x.status === 'seated'; })[0] || r.list[0];
+    if (b) { r.state = b.status === 'seated' ? (b.bill_at ? 'bill' : 'seated') : b.status === 'pending' ? 'pending' : 'booked'; r.booking = b; }
+    else S.blocks.forEach(function (k) {
+      if (k.zone_id === t.zone_id && (!k.table_ids || k.table_ids.indexOf(t.id) !== -1) && hits(k)) { r.state = 'blocked'; r.block = k; }
     });
     return r;
+  }
+  // Franjas de la zona elegida: las que haya definido el equipo («Personalizar franjas») o, si no, una por hora
+  // en la que algún turno tiene mesas (más las de reservas fuera de turno). a y b son minutos desde las 00:00 del día.
+  function customBands() { return ((S.bandsCfg || {})[S.zone] || []).slice().sort(function (x, y) { return x.a - y.a || x.b - y.b; }); }
+  function zoneServices() { return S.services.filter(function (s) { return s.active && (!s.zone_ids || s.zone_ids.indexOf(S.zone) !== -1); }); }
+  function bandList() {
+    var custom = customBands(); if (custom.length) return custom;
+    var set = {}, base = new Date(A.madridToISO(S.date + 'T00:00')).getTime();
+    var add = function (a, b) { for (var h = Math.floor(a / 60) * 60; h < b; h += 60) set[h] = 1; };
+    zoneServices().forEach(function (s) { add(s.start_min, s.last_min + s.duration_min); });
+    S.bookings.forEach(function (b) { if (b.zone_id === S.zone && holds(b)) add((new Date(b.starts_at).getTime() - base) / 60000, (new Date(b.ends_at).getTime() - base) / 60000); });
+    var out = Object.keys(set).map(Number).sort(function (a, b) { return a - b; }).map(function (m) { return { a: m, b: m + 60 }; });
+    return out.length ? out : [{ a: 780, b: 840 }];
+  }
+  function bandKey(x) { return x.a + '-' + x.b; }
+  function bandText(x) { return (x.n ? x.n + ' · ' : '') + hhmm(x.a) + ' – ' + hhmm(x.b); }
+  function bandStart(x) { return new Date(A.madridToISO(S.date + 'T00:00')).getTime() + x.a * 60000; }
+  // La franja elegida; si no hay (o es otro día), la de ahora si es hoy y, si no, la primera de la noche.
+  function curBand() {
+    var list = bandList(), found = list.filter(function (x) { return bandKey(x) === S.band; })[0];
+    if (found && S.bandDate === S.date) return found;
+    var now = Date.now(), pick = S.date === today() ? list.filter(function (x) { return bandStart(x) + (x.b - x.a) * 60000 > now; })[0] : null;
+    return pick || found || list.filter(function (x) { return x.a >= 1200; })[0] || list[0];
+  }
+  function useBand(x) { S.band = bandKey(x); S.bandDate = S.date; S.time = hhmm(x.a); S.bandLen = x.b - x.a; }
+  // Hora que se propone al reservar: la primera hora de llegada de la franja (si es hoy, que no haya pasado).
+  function formTime() {
+    if (!S.time) return '';
+    var from = new Date(at(S.date, S.time)).getTime(), to = from + (S.bandLen || 60) * 60000, min = S.date === today() ? Math.max(from, Date.now()) : from;
+    return timeOptions().filter(function (t) { var x = new Date(at(S.date, t)).getTime(); return x >= min && x < to; })[0] || S.time;
+  }
+  function editBands() {
+    var zone = S.zone, own = customBands();
+    var start = own.length ? own : zoneServices().sort(function (a, b) { return a.start_min - b.start_min; }).map(function (s) { return { n: s.name_es, a: s.start_min, b: s.last_min + s.duration_min }; });
+    var row = function (x) {
+      return '<div class="mt-band"><label class="ad-field"><span>Nombre (opcional)</span><input class="bdN" maxlength="40" value="' + esc(x.n || '') + '" placeholder="p. ej. Primer turno"></label>' +
+        '<label class="ad-field"><span>Desde</span><input type="time" class="bdA" step="300" value="' + (x.a == null ? '' : hhmm(x.a)) + '"></label>' +
+        '<label class="ad-field"><span>Hasta</span><input type="time" class="bdB" step="300" value="' + (x.b == null ? '' : hhmm(x.b)) + '"></label>' +
+        '<button type="button" class="ad-btn is-small is-danger" data-bddel aria-label="Quitar franja">Quitar</button></div>';
+    };
+    modal('<h2>Franjas del mapa · ' + esc(zoneName(zone)) + '</h2><p class="ad-meta">Define los tramos que quieres ver en el mapa. Se guardan para todo el equipo.</p><p class="ad-msg is-error" id="bdMsg" hidden></p>' +
+      '<div id="bdList">' + (start.length ? start : [{}]).map(row).join('') + '</div>' +
+      '<button type="button" class="ad-btn is-small is-ghost" id="bdAdd">+ Añadir franja</button>' +
+      '<div class="mt-foot"><button type="button" class="ad-btn is-ghost" data-close>Cancelar</button>' + (own.length ? '<button type="button" class="ad-btn is-ghost" id="bdAuto">Volver a franjas de 1 hora</button>' : '') + '<button type="button" class="ad-btn" id="bdSave">Guardar franjas</button></div>', function (m) {
+      var msg = m.querySelector('#bdMsg'), fail = function (t) { msg.textContent = t; msg.hidden = false; };
+      var save = function (rows) {
+        var all = Object.assign({}, S.bandsCfg || {}); if (rows.length) all[zone] = rows; else delete all[zone];
+        api('dining_settings?on_conflict=key', { method: 'POST', body: { key: 'map_bands', value: all }, prefer: 'resolution=merge-duplicates,return=minimal' })
+          .then(function () { S.bandsCfg = all; S.band = ''; m.remove(); render(); flash(rows.length ? 'Franjas guardadas.' : 'El mapa vuelve a las franjas de 1 hora.', 'ok'); })
+          .catch(function (x) { fail('No se han podido guardar: ' + errText(x)); });
+      };
+      m.addEventListener('click', function (e) {
+        if (e.target.closest('[data-bddel]')) return void e.target.closest('.mt-band').remove();
+        if (e.target.closest('#bdAdd')) return void m.querySelector('#bdList').insertAdjacentHTML('beforeend', row({}));
+        if (e.target.closest('#bdAuto')) return void save([]);
+        if (!e.target.closest('#bdSave')) return;
+        msg.hidden = true;
+        var mins = function (v) { return +v.slice(0, 2) * 60 + +v.slice(3, 5); }, rows = [], bad = false;
+        [].forEach.call(m.querySelectorAll('.mt-band'), function (el) {
+          var n = el.querySelector('.bdN').value.trim(), va = el.querySelector('.bdA').value, vb = el.querySelector('.bdB').value;
+          if (!va && !vb && !n) return;
+          if (!va || !vb) { bad = true; return; }
+          var a = mins(va), b = mins(vb); if (a < 360) a += 1440;   // antes de las 6:00 es la madrugada de esa noche
+          while (b <= a) b += 1440;
+          rows.push(n ? { n: n, a: a, b: b } : { a: a, b: b });
+        });
+        if (bad) return void fail('Cada franja necesita la hora de inicio y la de fin.');
+        if (!rows.length) return void fail('Añade al menos una franja.');
+        save(rows);
+      });
+    });
+  }
+  function chooseBooking(tb, o) {
+    modal('<h2>Mesa ' + esc(tb.name) + ' · ' + esc(bandText(curBand())) + '</h2><ul class="ad-list">' + o.list.map(function (b) {
+      return '<li class="ad-card"><div class="ad-date"><b>' + hm(b.starts_at) + '</b><span>' + b.party + ' p.</span></div><div><div class="ad-name">' + (b.name ? esc(b.name) : '<i>Sin nombre</i>') + '</div><div class="ad-meta">hasta ' + hm(b.ends_at) + '</div></div><div class="ad-actions"><button type="button" class="ad-btn is-small" data-pickbk="' + b.id + '">Abrir</button></div></li>';
+    }).join('') + '</ul><div class="mt-foot"><button type="button" class="ad-btn is-ghost" data-close>Cerrar</button></div>', function (m) {
+      m.addEventListener('click', function (e) { var p = e.target.closest('[data-pickbk]'); if (!p) return; var b = bk(p.dataset.pickbk); m.remove(); if (b) openEdit(b); });
+    });
   }
 
   // ─── Línea de tiempo: una fila por mesa, las horas en columnas ──────
@@ -550,9 +623,25 @@
       '<p class="ad-meta mt-legend"><span class="mt-dot is-booked"></span>Reservada <span class="mt-dot is-pending"></span>Pendiente <span class="mt-dot is-seated"></span>En mesa <span class="mt-dot is-bill"></span>Cuenta pedida <span class="mt-dot is-blocked"></span>Bloqueada · en cada barra: personas/plazas de la mesa. Toca un hueco para reservar, una barra para editarla.</p>';
   }
 
+  function plainText(x) { return String(x || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim(); }
+  // Filtra la lista sin volver a pintar la pantalla (así no se pierde el foco al escribir).
+  function applySearch() {
+    var list = document.getElementById('mtList'), none = document.getElementById('mtQNone'); if (!list || !none) return;
+    var q = plainText(S.dayQ), words = q.split(/\s+/).filter(Boolean), shown = 0, rows = list.querySelectorAll('li[data-q]');
+    [].forEach.call(rows, function (li) {
+      var ok = words.length ? words.every(function (w) { return li.dataset.q.indexOf(w) !== -1; }) : (!li.dataset.cx || !!S.showCancelled);
+      li.hidden = !ok; if (ok) shown++;
+    });
+    none.hidden = !(rows.length && !shown);
+    none.textContent = words.length ? 'Ninguna reserva de este día coincide con «' + S.dayQ.trim() + '».' : 'No hay reservas activas este día.';
+  }
+  root.addEventListener('input', function (e) { if (e.target.id === 'mtQ') { S.dayQ = e.target.value; applySearch(); } });
+
   function renderDay(body) {
     var prevEl = root.querySelector('.mt-tl'), prevScroll = prevEl ? prevEl.scrollLeft : null;
-    var opts = timeOptions(); if (!S.time || opts.indexOf(S.time) === -1) S.time = defaultTime(opts);
+    var ae = document.activeElement, qSel = ae && ae.id === 'mtQ' ? [ae.selectionStart, ae.selectionEnd] : null;
+    if (S.dayQDate !== S.date) { S.dayQ = ''; S.dayQDate = S.date; qSel = null; }
+    var bands = bandList(), band = curBand(); useBand(band);
     var iso = at(S.date, S.time);
     var live = S.bookings.filter(function (b) { return b.status !== 'cancelled'; });
     var covers = live.filter(holds).reduce(function (n, b) { return n + b.party; }, 0);
@@ -589,15 +678,15 @@
       joinLinks(boxes, iso, minx, PAD, oy, bw, bh) +
       boxes.map(function (b) {
         var t = b.t, o = occupancy(t, iso);
-        var tip = t.name + ' · ' + t.seats_max + ' p.' + (o.booking ? ' · ' + o.booking.name + ' (' + o.booking.party + ')' + (o.state === 'bill' ? ' · cuenta pedida' : '') : o.block ? ' · bloqueada' + (o.block.note ? ': ' + o.block.note : '') : '');
+        var tip = t.name + ' · ' + t.seats_max + ' p.' + (o.booking ? o.list.map(function (x) { return ' · ' + hm(x.starts_at) + ' ' + (x.name || 'Sin nombre') + ' (' + x.party + ')'; }).join('') + (o.state === 'bill' ? ' · cuenta pedida' : '') : o.block ? ' · bloqueada' + (o.block.note ? ': ' + o.block.note : '') : '');
         return '<button type="button" class="mt-t is-' + o.state + (S.sel.indexOf(t.id) !== -1 ? ' is-sel' : '') + (E && E.sel === t.id ? ' is-esel' : '') + ' sh-' + esc(t.shape) + '" data-table="' + t.id + '" title="' + esc(tip) + '" style="--rot:' + b.r + 'deg;left:' + ((b.cx - minx + PAD) / bw * 100).toFixed(2) + '%;top:' + ((b.cy - oy) / bh * 100).toFixed(2) + '%;width:' + (b.w / bw * 100).toFixed(2) + '%;height:' + (b.h / bh * 100).toFixed(2) + '%">' +
-          '<b>' + esc(t.name) + '</b>' + (o.booking ? '<i>' + esc(o.booking.name.split(' ')[0]) + '</i>' : '') + '</button>';
+          '<b>' + esc(t.name) + '</b>' + (o.booking ? '<i>' + esc(String(o.booking.name || '').split(' ')[0]) + (o.list.length > 1 ? ' +' + (o.list.length - 1) : '') + '</i><i class="mt-th">' + hm(o.booking.starts_at) + '</i>' : '') + '</button>';
       }).join('') + '</div></div>' +
       editBar(E) +
-      '<p class="ad-meta mt-legend"><span class="mt-dot is-free"></span>Libre <span class="mt-dot is-booked"></span>Reservada <span class="mt-dot is-pending"></span>Pendiente de pago <span class="mt-dot is-seated"></span>En mesa <span class="mt-dot is-bill"></span>Cuenta pedida <span class="mt-dot is-blocked"></span>Bloqueada</p></div>';
+      '<p class="ad-meta mt-legend"><span class="mt-dot is-free"></span>Libre <span class="mt-dot is-booked"></span>Reservada <span class="mt-dot is-pending"></span>Pendiente de pago <span class="mt-dot is-seated"></span>En mesa <span class="mt-dot is-bill"></span>Cuenta pedida <span class="mt-dot is-blocked"></span>Bloqueada · cada mesa muestra lo que la ocupa en algún momento de la franja (+1 = hay otra reserva).</p></div>';
 
     /* Las anuladas no salen en la lista del día (solo ensucian); un botón las muestra si hace falta */
-    var cxN = S.bookings.filter(function (b) { return b.status === 'cancelled'; }).length, shownBk = S.showCancelled ? S.bookings : S.bookings.filter(function (b) { return b.status !== 'cancelled'; });
+    var cxN = S.bookings.filter(function (b) { return b.status === 'cancelled'; }).length, shownBk = S.bookings;   // las anuladas se ocultan en applySearch (al buscar sí salen)
     var list = shownBk.length ? shownBk.map(function (b) {
       var tn = bookingTables(b).map(function (t) { return t.name; }).join(' + ');
       var cancelled = b.status === 'cancelled' || b.status === 'no_show';
@@ -622,8 +711,8 @@
       if (can('tables_charge') && b.payment_status === 'guaranteed' && (b.status === 'no_show' || b.late_cancel || (b.status === 'confirmed' && new Date(b.starts_at).getTime() < Date.now()))) a.push('<button class="ad-btn is-small is-danger" data-act="charge" data-id="' + b.id + '">Cobrar ' + eur(b.deposit_cents) + ' a la tarjeta</button>');
       if ((b.payment_status === 'paid' || b.payment_status === 'retained' || b.payment_status === 'charged') && b.deposit_cents > 0) a.push('<button class="ad-btn is-small is-ghost" data-act="refund" data-id="' + b.id + '">Devolver fianza</button>');
       if (!cancelled && b.phone) a.push('<a class="ad-btn is-small is-ghost" href="tel:' + esc(String(b.phone).replace(/[^0-9+]/g, '')) + '">Llamar</a>');
-      if (!cancelled && b.email) a.push('<a class="ad-btn is-small is-ghost" href="mailto:' + esc(b.email) + '?subject=' + encodeURIComponent('Tu reserva en ROCE · ' + b.ref) + '&body=' + encodeURIComponent('Hola ' + String(b.name || '').split(' ')[0] + ',\n\nSobre tu reserva ' + b.ref + ' (' + dayLabel(b.starts_at) + ', ' + b.party + ' personas):\n\n') + '">Escribir email</a>');
-      return '<li class="ad-card mt-bk' + (cancelled ? ' is-past' : '') + '"><div class="ad-date"><b>' + hm(b.starts_at) + '</b><span>' + b.party + ' p.</span></div>' +
+      if (!cancelled && b.email) a.push('<a class="ad-btn is-small is-ghost" href="mailto:' + esc(b.email) + '?subject=' + encodeURIComponent('Tu reserva en ROCE · ' + b.ref) + '&body=' + encodeURIComponent('Hola ' + String(b.name || '').split(' ')[0] + ',\n\nSobre tu reserva ' + b.ref + ' (' + dayTimeLabel(b.starts_at) + ', ' + b.party + ' personas):\n\n') + '">Escribir email</a>');
+      return '<li class="ad-card mt-bk' + (cancelled ? ' is-past' : '') + '"' + (b.status === 'cancelled' ? ' data-cx="1"' : '') + ' data-q="' + esc(plainText([b.name, b.email, b.ref, b.phone].join(' ')) + ' ' + String(b.phone || '').replace(/\D/g, '')) + '"><div class="ad-date"><b>' + hm(b.starts_at) + '</b><span>' + b.party + ' p.</span></div>' +
         '<div><div class="ad-name">' + (b.name ? esc(b.name) : '<i>Sin nombre</i>') + ' <span class="ad-tag ' + (b.status === 'seated' ? 'is-green' : b.status === 'cancelled' || b.status === 'no_show' ? 'is-red' : '') + '">' + esc(ST[b.status] || b.status) + '</span>' + (b.kind && b.kind !== 'normal' ? '<span class="ad-tag">' + esc(BK_KIND[b.kind] || b.kind) + '</span>' : '') + trTag(b) + tierTag(tierOf((S.crmMap[ckey(b)] || {}).visits, (S.crmMap[ckey(b)] || {}).spend_cents)) + (b.reconfirmed_at && b.status !== 'cancelled' ? '<span class="ad-tag is-green">Reconfirmada</span>' : '') + (b.bar_at && b.status === 'confirmed' ? '<span class="ad-tag">En la barra ' + hm(b.bar_at) + '</span>' : '') + (b.bill_at && b.status === 'seated' ? '<span class="ad-tag">Cuenta pedida ' + hm(b.bill_at) + '</span>' : '') + (b.status === 'completed' && !b.cleaned_at ? '<span class="ad-tag is-red">Limpiar mesa</span>' : '') + (b.arrived_at && b.status !== 'cancelled' ? '<span class="ad-tag is-green">Llegó ' + hm(b.arrived_at) + '</span>' : '') + (b.dessert_at && b.status === 'seated' ? '<span class="ad-tag">Postre ' + hm(b.dessert_at) + '</span>' : '') + (b.prescriber ? '<span class="ad-tag">Prescriptor: ' + esc(presName(b.prescriber)) + '</span>' : '') + (b.spend_cents != null ? '<span class="ad-tag">Gasto ' + eur(b.spend_cents) + '</span>' : '') + (noteOf(b) && noteOf(b).blocked ? '<span class="ad-tag is-red">Cliente bloqueado</span>' : '') + (noteOf(b) && noteOf(b).customer_type === 'empresa' ? '<span class="ad-tag">Empresa' + (noteOf(b).company ? ': ' + esc(noteOf(b).company) : '') + (noteOf(b).balance_cents ? ' · saldo ' + eur(noteOf(b).balance_cents) : '') + '</span>' : '') + (noteOf(b) && noteOf(b).customer_type === 'grupo' ? '<span class="ad-tag">Consumo interno</span>' : '') + tagsOf(b).map(tagHtml).join('') + pay + '</div>' +
         '<div class="ad-meta">' + esc(zoneName(b.zone_id)) + (tn ? ' · mesa ' + esc(tn) + ' (' + seatsOf(b) + ' plazas' + (b.party > seatsOf(b) ? ' · faltan ' + (b.party - seatsOf(b)) : '') + ')' : '') + ' · ' + esc(b.ambience === 'night' ? 'Restaurant & Cocktails' : 'Coffee, Bakery & Kitchen') + (b.source === 'admin' ? ' · creada en el panel' : '') + '</div>' +
         '<div class="ad-meta">' + esc(b.phone) + (b.email ? ' · ' + esc(b.email) : '') + ' · ' + esc(b.ref) + '</div>' +
@@ -640,8 +729,10 @@
       '<div class="mt-vtoggle" role="group"><button type="button" class="ck-chip" data-mode="timeline" aria-pressed="' + (S.mode === 'timeline') + '">Línea de tiempo</button><button type="button" class="ck-chip" data-mode="map" aria-pressed="' + (S.mode === 'map') + '">Mapa</button></div>' +
       '<div class="ad-bar mt-mapbar"><div class="mt-zones" role="group">' + zones.map(function (z) { return '<button type="button" class="ck-chip" data-zone="' + z.id + '" aria-pressed="' + (z.id === S.zone) + '">' + esc(z.name_es) + '</button>'; }).join('') + '</div>' +
       '<button type="button" class="ad-btn is-small ' + (S.join ? '' : 'is-ghost') + '" id="mtJoin">' + (S.join ? 'Terminar de juntar' : 'Juntar mesas') + '</button>' +
-      (S.mode === 'map' ? '<span class="mt-time"><button type="button" class="ad-btn is-ghost is-small" data-tstep="-1" aria-label="Hora anterior">‹</button><label>Mapa a las <select id="mtTime">' + opts.map(function (t) { return '<option' + (t === S.time ? ' selected' : '') + '>' + t + '</option>'; }).join('') + '</select></label><button type="button" class="ad-btn is-ghost is-small" data-tstep="1" aria-label="Hora siguiente">›</button></span>' : '') + '</div>' +
-      (S.join ? joinBar() : '') + (S.mode === 'map' ? map : timeline()) + '<h2 class="ad-sub">Reservas del día</h2>' + (cxN ? '<p class="mt-cx"><button type="button" class="ad-btn is-small is-ghost" id="mtShowCx">' + (S.showCancelled ? 'Ocultar anuladas' : 'Mostrar anuladas (' + cxN + ')') + '</button></p>' : '') + '<ul class="ad-list" id="mtList">' + list + '</ul>' + appDayBox();
+      (S.mode === 'map' ? '<span class="mt-time"><button type="button" class="ad-btn is-ghost is-small" data-tstep="-1" aria-label="Franja anterior">‹</button><label>Franja <select id="mtTime">' + bands.map(function (x) { return '<option value="' + bandKey(x) + '"' + (bandKey(x) === S.band ? ' selected' : '') + '>' + esc(bandText(x)) + '</option>'; }).join('') + '</select></label><button type="button" class="ad-btn is-ghost is-small" data-tstep="1" aria-label="Franja siguiente">›</button>' + (can('tables_config') ? '<button type="button" class="ad-btn is-ghost is-small" id="mtBands">Personalizar franjas</button>' : '') + '</span>' : '') + '</div>' +
+      (S.join ? joinBar() : '') + (S.mode === 'map' ? map : timeline()) + '<h2 class="ad-sub">Reservas del día</h2><input type="search" id="mtQ" class="mt-q" placeholder="Buscar por nombre, teléfono o email" aria-label="Buscar en las reservas del día" autocomplete="off" value="' + esc(S.dayQ || '') + '"><p class="ad-empty" id="mtQNone" hidden></p>' + (cxN ? '<p class="mt-cx"><button type="button" class="ad-btn is-small is-ghost" id="mtShowCx">' + (S.showCancelled ? 'Ocultar anuladas' : 'Mostrar anuladas (' + cxN + ')') + '</button></p>' : '') + '<ul class="ad-list" id="mtList">' + list + '</ul>' + appDayBox();
+    applySearch();
+    if (qSel) { var qi = document.getElementById('mtQ'); qi.focus({ preventScroll: true }); try { qi.setSelectionRange(qSel[0], qSel[1]); } catch (x) { /* sin selección */ } }
     var tlEl = body.querySelector('.mt-tl');
     if (tlEl) {
       var key = S.date + S.zone;
@@ -671,7 +762,7 @@
   }
   root.addEventListener('change', function (e) {
     if (e.target.id === 'mtDate' && e.target.value) { S.date = e.target.value; S.time = ''; enter(); }
-    else if (e.target.id === 'mtTime') { S.time = e.target.value; render(); }
+    else if (e.target.id === 'mtTime') { var pickB = bandList().filter(function (x) { return bandKey(x) === e.target.value; })[0]; if (pickB) { useBand(pickB); render(); } }
   });
 
 
@@ -734,7 +825,7 @@
       return;
     }
     var st = e.target.closest('[data-tstep]');
-    if (st) { var o = timeOptions(), i = o.indexOf(S.time) + (+st.dataset.tstep); if (i >= 0 && i < o.length) { S.time = o[i]; render(); } }
+    if (st) { var o = bandList(), i = o.map(bandKey).indexOf(S.band) + (+st.dataset.tstep); if (i >= 0 && i < o.length) { useBand(o[i]); render(); } }
   });
 
   // Acciones sobre las reservas
@@ -883,7 +974,7 @@
     if (document.hidden || S.view !== 'day' || S.busy || S.edit || !root.offsetParent) return true;
     if (document.querySelector('.ad-modal')) return true;
     if (typeof tdrag !== 'undefined' && tdrag) return true;
-    var ae = document.activeElement; if (ae && root.contains(ae) && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName)) return true;
+    var ae = document.activeElement; if (ae && ae.id !== 'mtQ' && root.contains(ae) && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName)) return true;
     return false;
   }
   function liveRefresh(force) {
@@ -1001,6 +1092,7 @@
     }
     if (t.dataset.rot != null && S.edit && S.edit.sel) { var cr = tcur(S.edit.sel).rot, dd = +t.dataset.rot, nr = t.dataset.rot === '0' ? 0 : (((cr + dd) % 360) + 360) % 360; setCh(S.edit.sel, { rot: nr }); return void render(); }
     if (t.id === 'mtHold') return void openHold({});
+    if (t.id === 'mtBands') return void editBands();
     if (t.id === 'mtShowCx') { S.showCancelled = !S.showCancelled; return void render(); }
     if (t.id === 'mtNew') return void openNew({});
     if (t.id === 'mtPrint') return void printDay();
@@ -1008,11 +1100,12 @@
     if (t.dataset.table) {
       var tb = tableById(t.dataset.table), o = occupancy(tb, at(S.date, S.time));
       if (S.join) {
-        if (o.state !== 'free') return void flash('Esa mesa no está libre a esa hora.', 'error');
+        if (o.state !== 'free') return void flash('Esa mesa no está libre en esa franja.', 'error');
         var ix = S.sel.indexOf(tb.id); if (ix === -1) S.sel.push(tb.id); else S.sel.splice(ix, 1);
         return void render();
       }
       if (o.state === 'free') return void openNew({ table: tb });
+      if (o.list.length > 1) return void chooseBooking(tb, o);
       if (o.booking) return void openEdit(o.booking);
       if (o.block) {
         if (can('tables_blocks') && o.block.id) { if (confirm('Mesa bloqueada: ' + (o.block.note || 'sin motivo') + '.\n\n¿Quitar el bloqueo? Volverá a poder reservarse.')) api('dining_blocks?id=eq.' + o.block.id, { method: 'DELETE', prefer: 'return=minimal' }).then(function () { return done('Bloqueo quitado.'); }).catch(fail); return; }
@@ -1150,7 +1243,7 @@
     var zone = pre.zone || (pre.table ? pre.table.zone_id : S.zone), preIds = pre.tables || (pre.table ? [pre.table.id] : []);
     var html = '<h2>Bloquear mesa</h2><p class="ad-meta">Retén una mesa mientras esperas a que se confirme una reserva: nadie podrá reservarla (tampoco desde la web) hasta que pase el tiempo o quites el bloqueo.</p><p class="ad-msg is-error" id="hdMsg" hidden></p><form id="hdForm"><div class="ad-grid">' +
       '<label class="ad-field"><span>Día</span><input type="date" id="hdDate" value="' + (pre.date || S.date) + '" required></label>' +
-      '<label class="ad-field"><span>Desde</span><input type="time" id="hdTime" step="300" value="' + esc(pre.time || S.time || timeOptions()[0] || '13:00') + '" required></label>' +
+      '<label class="ad-field"><span>Desde</span><input type="time" id="hdTime" step="300" value="' + esc(pre.time || formTime() || timeOptions()[0] || '13:00') + '" required></label>' +
       '<label class="ad-field"><span>Durante</span><select id="hdDur"><option value="60">1 hora</option><option value="90">1 h 30</option><option value="120" selected>2 horas</option><option value="180">3 horas</option><option value="240">4 horas</option></select></label>' +
       '<label class="ad-field"><span>Zona</span><select id="hdZone">' + S.zones.map(function (z) { return '<option value="' + z.id + '"' + (z.id === zone ? ' selected' : '') + '>' + esc(z.name_es) + '</option>'; }).join('') + '</select></label></div>' +
       '<div class="ad-field"><span>Mesas</span><div class="mt-picks" id="hdPicks"></div></div>' +
@@ -1183,7 +1276,7 @@
     var optsT = timeOptions();
     var html = '<h2>Nueva reserva</h2><p class="ad-msg is-error" id="nwMsg" hidden></p><form id="nwForm"><div class="ad-grid">' +
       '<label class="ad-field"><span>Día</span><input type="date" id="nwDate" value="' + S.date + '" required></label>' +
-      '<label class="ad-field"><span>Hora</span><input type="time" id="nwTime" step="300" value="' + esc(pre.time || S.time || optsT[0] || '13:00') + '" required></label>' +
+      '<label class="ad-field"><span>Hora</span><input type="time" id="nwTime" step="300" value="' + esc(pre.time || formTime() || optsT[0] || '13:00') + '" required></label>' +
       '<label class="ad-field"><span>Personas</span><input type="number" id="nwParty" min="1" max="60" value="' + (pre.tables && pre.tables.length > 1 ? pre.tables.reduce(function (n, t) { return n + t.seats_max; }, 0) : pre.table ? Math.min(pre.table.seats_max, 2) : 2) + '" required></label>' +
       '<label class="ad-field"><span>Zona</span><select id="nwZone">' + S.zones.map(function (z) { return '<option value="' + z.id + '"' + (z.id === zone ? ' selected' : '') + '>' + esc(z.name_es) + (z.deposit_cents && z.payment_mode !== 'none' ? (z.payment_mode === 'card' ? ' · garantía ' : ' · fianza ') + eur(z.deposit_cents) : '') + '</option>'; }).join('') + '</select></label>' +
       '<div class="ad-field"><span>Turno (según zona y hora)</span><div class="mt-svcname" id="nwSvcName">—</div><input type="hidden" id="nwSvc"></div>' +
@@ -1205,9 +1298,9 @@
       '<div class="ad-field"><span>Alergias, intolerancias y etiquetas</span>' + chips('nwAl', []) + '</div>' +
       '<label class="ad-field"><span>Notas</span><textarea id="nwNotes" maxlength="500" placeholder="Ocasión, detalles…"></textarea></label>' +
       '</details>' +
-      '<details class="mt-more"><summary>Duración y prescriptor</summary><div class="ad-grid">' +
-      '<label class="ad-field"><span>Duración de la mesa (min)</span><input type="number" id="nwDur" min="15" max="600" step="5" placeholder="la del turno"></label>' +
-      '<label class="ad-field"><span>Prescriptor</span><select id="nwPres">' + presOptions('') + '</select></label></div></details>' +
+      '<details class="mt-more" open><summary>Prescriptor y duración</summary><div class="ad-grid">' +
+      '<label class="ad-field"><span>Prescriptor <b style="color:var(--red)">(obligatorio)</b></span><select id="nwPres" required>' + presOptions('', 'Elige prescriptor…') + '</select></label>' +
+      '<label class="ad-field"><span>Duración de la mesa (min)</span><input type="number" id="nwDur" min="15" max="600" step="5" placeholder="la del turno"></label></div></details>' +
       '<label class="mt-check"><input type="checkbox" id="nwSeated"> Sentar ahora (cliente que ya está aquí)</label>' +
       '<div class="mt-foot"><button type="button" class="ad-btn is-ghost" data-close>Cancelar</button>' + (can('tables_blocks') ? '<button type="button" class="ad-btn is-ghost" id="nwHold" title="Retener la mesa sin crear la reserva">Bloquear mesa</button>' : '') + '<button type="submit" class="ad-btn" id="nwGo">Crear reserva</button></div></form>';
     modal(html, function (m) {
@@ -1291,6 +1384,8 @@
         var tables = manual ? [].map.call(q('nwPicks').querySelectorAll('input:checked'), function (i) { return i.value; }) : null;
         var msg = q('nwMsg'); msg.hidden = true;
         if (manual && !tables.length) { msg.textContent = 'Elige al menos una mesa o deja la asignación automática.'; msg.hidden = false; return; }
+        var pres = q('nwPres').value;
+        if (!pres || pres === '__new' || pres.indexOf('team:') === 0) { msg.textContent = 'Elige el prescriptor para crear la reserva.'; msg.hidden = false; q('nwPres').focus(); return; }
         var ty = q('nwType').value, wantPay = ty !== 'free' && ty !== 'transfer', isTr = ty === 'transfer';
         if (isTr) { var _a = q('nwAmt').value; if (_a === '' || !(+_a >= 0)) { msg.textContent = 'Indica el importe de la transferencia.'; msg.hidden = false; return; } if (q('nwTrSt').value === 'paid' && !q('nwTrFile').files[0]) { msg.textContent = 'Para marcar la transferencia como pagada hay que adjuntar el comprobante de pago.'; msg.hidden = false; return; } }
         if (wantPay && !q('nwEmail').value.trim()) { msg.textContent = 'Para pedir la tarjeta o el cobro hace falta el email del cliente.'; msg.hidden = false; return; }
