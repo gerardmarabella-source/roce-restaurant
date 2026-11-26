@@ -1,30 +1,4 @@
-/* La carta: portadas de cuero que asoman por la izquierda y el libro abierto. */
-
-/* ── El libro, asomando por la derecha ──
-   Alto y estrecho, pegado al borde derecho, con «Menú» escrito; el ticket del brunch queda debajo. */
-.cm-books { --peek: clamp(5.6rem, 9vw, 8.4rem); --top: clamp(4.4rem, 14vh, 8rem); position: absolute; z-index: 3; right: 0; top: var(--top); width: var(--peek); height: min(36vh, calc(100vh - var(--top) - 17rem)); padding: 0; border: 0; background: none; cursor: pointer; -webkit-tap-highlight-color: transparent; transform: rotate(var(--tilt, -12deg)); transform-origin: 0 50%; }
-@supports (height: 100dvh) { .cm-books { height: min(36dvh, calc(100dvh - var(--top) - 17rem)); } }
-.cm-book { position: absolute; top: 0; left: 0; display: block; height: 100%; aspect-ratio: 560 / 952; border-radius: 6px; overflow: hidden; box-shadow: -5px 8px 18px rgba(0, 0, 0, 0.5); transition: transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1.1); }
-.cm-cover { display: block; width: 100%; height: 100%; object-fit: cover; }
-.cm-book::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(0, 0, 0, 0.35), rgba(255, 255, 255, 0.12) 5%, rgba(0, 0, 0, 0.05) 12%, rgba(0, 0, 0, 0) 40%); pointer-events: none; }
-.cm-bar { transform: translate(-0.45rem, 0.2rem) rotate(-6deg); }
-.cm-letter { position: absolute; z-index: 2; left: calc(var(--peek) / 2); top: 50%; width: calc(var(--peek) * 0.72); height: auto; max-width: none; transform: translate(-50%, -50%) rotate(-90deg); filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.55)); pointer-events: none; }
-@media (hover: hover) {
-  .cm-books:hover .cm-food { transform: translateX(-0.8rem); }
-  .cm-books:hover .cm-bar { transform: translate(-1.5rem, 0.3rem) rotate(-9deg); }
-}
-.cm-books:active .cm-food { transform: translateX(-0.45rem); }
-.cm-books:focus-visible { outline: 2px solid #ecd9c2; outline-offset: 3px; }
-/* Un pequeño gesto de vez en cuando para que se note que se puede tocar */
-.cm-food { animation: cmPeek 7s ease-in-out 2.5s infinite; }
-@keyframes cmPeek { 0%, 86%, 100% { transform: translateX(0); } 91% { transform: translateX(-0.45rem); } 96% { transform: translateX(-0.05rem); } }
-@media (hover: hover) { .cm-books:hover .cm-food { animation: none; } }
-/* Con el newsletter abierto el libro se quita de en medio */
-.teaser-page:has(.newsletter-widget:not(.is-collapsed)) .cm-books { opacity: 0; pointer-events: none; }
-/* En el móvil sale bajo el logo para no pisarlo; en los móviles bajitos no hay sitio y se queda más recogido, arriba */
-@media (max-width: 640px) and (min-height: 701px) { .cm-books { --peek: 5.4rem; --top: 15.2rem; } }
-@media (max-width: 640px) and (max-height: 700px) { .cm-books { --peek: 4.1rem; --top: 6rem; --tilt: -8deg; } }
-@media (max-height: 520px) { .cm-books { --peek: 3.4rem; --top: 3.4rem; height: 36vh; } }
+/* La carta abierta (se llega desde «Menú» en la portada). */
 
 /* ── El libro abierto ── */
 html.cm-on, html.cm-on body { overflow: hidden; }
@@ -103,4 +77,4 @@ html.cm-on, html.cm-on body { overflow: hidden; }
 .cm-paper[data-tone="fiesta"] .cm-cta { border-top-color: rgba(123, 46, 46, 0.3); }
 .cm-paper[data-tone="fiesta"] .cm-book-cta { background: #7b2e2e; color: #d9d0c1; }
 
-@media (prefers-reduced-motion: reduce) { .cm-food, .cm-body.is-next, .cm-body.is-prev { animation: none; } .cm-flip { display: none; } .cm-book { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .cm-body.is-next, .cm-body.is-prev { animation: none; } .cm-flip { display: none; } }
