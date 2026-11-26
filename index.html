@@ -132,6 +132,7 @@
 <link rel="preload" as="image" href="/assets/logo/newsletter-plate.webp" fetchpriority="low">
 <link rel="preload" as="image" href="/assets/logo/newsletter-plate-broken.webp" fetchpriority="low">
 <link rel="stylesheet" href="/styles.css?v=79">
+<link rel="stylesheet" href="/carta/carta.css?v=10">
 <style>
   html, body {
     height: 100%;
@@ -543,6 +544,7 @@
 </style>
 <script src="/vh.js?v=1"></script>
 <script src="/brand.js?v=1" defer></script>
+<link rel="stylesheet" href="/botones.css?v=1">
 </head>
 <body>
 
@@ -599,6 +601,12 @@
       <span class="teaser-live-time"></span>
     </a>
   </div>
+
+  <!-- La carta de Restaurant & Cocktails: el libro de cuero asoma por la derecha; al tocarlo se abre -->
+  <button type="button" class="cm-books" data-carta aria-haspopup="dialog" aria-label="Ver la carta de Restaurant &amp; Cocktails">
+    <span class="cm-book cm-bar" data-book="cocteles"><img class="cm-cover" src="/carta/img/cover-bar.webp?v=2" alt=""></span>
+    <span class="cm-book cm-food"><img class="cm-cover" src="/carta/img/cover-menu.webp?v=2" alt=""><img class="cm-letter" src="/carta/img/lettering-menu.webp?v=3" alt="Menú" width="440" height="206"></span>
+  </button>
 
   <div class="teaser-bottom">
     <div class="teaser-cta-row">
@@ -793,5 +801,6 @@
 </script>
 
 <script src="/ticket.js?v=5"></script>
+<script src="/carta/carta.js?v=5" defer></script>
 </body>
 </html>

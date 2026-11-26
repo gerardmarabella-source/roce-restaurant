@@ -1,0 +1,106 @@
+/* La carta: portadas de cuero que asoman por la izquierda y el libro abierto. */
+
+/* ── El libro, asomando por la derecha ──
+   Alto y estrecho, pegado al borde derecho, con «Menú» escrito; el ticket del brunch queda debajo. */
+.cm-books { --peek: clamp(5.6rem, 9vw, 8.4rem); --top: clamp(4.4rem, 14vh, 8rem); position: absolute; z-index: 3; right: 0; top: var(--top); width: var(--peek); height: min(36vh, calc(100vh - var(--top) - 17rem)); padding: 0; border: 0; background: none; cursor: pointer; -webkit-tap-highlight-color: transparent; transform: rotate(var(--tilt, -12deg)); transform-origin: 0 50%; }
+@supports (height: 100dvh) { .cm-books { height: min(36dvh, calc(100dvh - var(--top) - 17rem)); } }
+.cm-book { position: absolute; top: 0; left: 0; display: block; height: 100%; aspect-ratio: 560 / 952; border-radius: 6px; overflow: hidden; box-shadow: -5px 8px 18px rgba(0, 0, 0, 0.5); transition: transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1.1); }
+.cm-cover { display: block; width: 100%; height: 100%; object-fit: cover; }
+.cm-book::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(0, 0, 0, 0.35), rgba(255, 255, 255, 0.12) 5%, rgba(0, 0, 0, 0.05) 12%, rgba(0, 0, 0, 0) 40%); pointer-events: none; }
+.cm-bar { transform: translate(-0.45rem, 0.2rem) rotate(-6deg); }
+.cm-letter { position: absolute; z-index: 2; left: calc(var(--peek) / 2); top: 50%; width: calc(var(--peek) * 0.72); height: auto; max-width: none; transform: translate(-50%, -50%) rotate(-90deg); filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.55)); pointer-events: none; }
+@media (hover: hover) {
+  .cm-books:hover .cm-food { transform: translateX(-0.8rem); }
+  .cm-books:hover .cm-bar { transform: translate(-1.5rem, 0.3rem) rotate(-9deg); }
+}
+.cm-books:active .cm-food { transform: translateX(-0.45rem); }
+.cm-books:focus-visible { outline: 2px solid #ecd9c2; outline-offset: 3px; }
+/* Un pequeño gesto de vez en cuando para que se note que se puede tocar */
+.cm-food { animation: cmPeek 7s ease-in-out 2.5s infinite; }
+@keyframes cmPeek { 0%, 86%, 100% { transform: translateX(0); } 91% { transform: translateX(-0.45rem); } 96% { transform: translateX(-0.05rem); } }
+@media (hover: hover) { .cm-books:hover .cm-food { animation: none; } }
+/* Con el newsletter abierto el libro se quita de en medio */
+.teaser-page:has(.newsletter-widget:not(.is-collapsed)) .cm-books { opacity: 0; pointer-events: none; }
+/* En el móvil sale bajo el logo para no pisarlo; en los móviles bajitos no hay sitio y se queda más recogido, arriba */
+@media (max-width: 640px) and (min-height: 701px) { .cm-books { --peek: 5.4rem; --top: 15.2rem; } }
+@media (max-width: 640px) and (max-height: 700px) { .cm-books { --peek: 4.1rem; --top: 6rem; --tilt: -8deg; } }
+@media (max-height: 520px) { .cm-books { --peek: 3.4rem; --top: 3.4rem; height: 36vh; } }
+
+/* ── El libro abierto ── */
+html.cm-on, html.cm-on body { overflow: hidden; }
+.cm-dlg { width: 100%; max-width: 100%; height: 100%; max-height: 100%; margin: 0; padding: 0; border: 0; background: transparent; color: #0a0a0a; overflow: hidden; }
+.cm-dlg::backdrop { background: rgba(6, 5, 4, 0.82); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+.cm-stage { position: relative; display: flex; justify-content: center; align-items: center; width: 100%; height: 100%; padding: 1.2rem; box-sizing: border-box; perspective: 1800px; }
+.cm-paper, .cm-flip { width: min(34rem, 100%); height: 100%; border-radius: 4px 12px 12px 4px; }
+.cm-paper { position: relative; display: flex; flex-direction: column; overflow: hidden; background: #fbfaf6; box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6); border-left: 10px solid #3f230f; }
+.cm-paper[data-tone="bar"] { border-left-color: #1c2c14; }
+.cm-flip { position: absolute; overflow: hidden; transform-origin: 0 50%; transform: rotateY(0deg); backface-visibility: hidden; -webkit-backface-visibility: hidden; box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55); pointer-events: none; transition: transform 0.9s cubic-bezier(0.55, 0.05, 0.25, 1) 0.75s, opacity 0.35s ease 1.35s, visibility 0s linear 1.7s; }
+.cm-flip img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.cm-flip.is-open { transform: rotateY(-128deg); opacity: 0; visibility: hidden; }
+.cm-flip:not(.is-open) { transition: none; }
+
+.cm-head { display: flex; align-items: center; gap: 0.4rem; padding: 0.55rem 0.55rem 0.55rem 0.4rem; border-bottom: 1px solid rgba(10, 10, 10, 0.14); }
+.cm-tabs { display: flex; flex: 1 1 auto; gap: 0.15rem; min-width: 0; overflow-x: auto; scrollbar-width: none; }
+.cm-tabs::-webkit-scrollbar { display: none; }
+.cm-tabs button { flex: 0 0 auto; padding: 0.5rem 0.75rem; border: 0; border-radius: 999px; background: transparent; color: #0a0a0a; font-family: var(--display); font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; white-space: nowrap; }
+.cm-tabs button[aria-selected="true"] { background: #0a0a0a; color: #fbfaf6; font-weight: 700; }
+.cm-close { flex: 0 0 auto; width: 2.5rem; height: 2.5rem; border: 0; border-radius: 50%; background: rgba(10, 10, 10, 0.07); color: #0a0a0a; font-size: 1rem; cursor: pointer; }
+
+.cm-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 0.6rem clamp(1rem, 5vw, 2.1rem) 2rem; -webkit-overflow-scrolling: touch; }
+.cm-body:focus { outline: none; }
+.cm-body.is-next { animation: cmNext 0.35s ease both; }
+.cm-body.is-prev { animation: cmPrev 0.35s ease both; }
+@keyframes cmNext { from { opacity: 0; transform: translateX(2.2rem); } to { opacity: 1; transform: none; } }
+@keyframes cmPrev { from { opacity: 0; transform: translateX(-2.2rem); } to { opacity: 1; transform: none; } }
+.cm-script { display: block; width: auto; max-width: min(78%, 19rem); max-height: 9.5rem; margin: 0.8rem auto 1.2rem; }
+.cm-sec { margin: 0 0 1.8rem; }
+.cm-sec h3 { margin: 0 0 0.7rem; padding: 0.65rem 0 0.55rem; border-top: 1.5px solid #0a0a0a; border-bottom: 1.5px solid #0a0a0a; line-height: 0; }
+.cm-sec h3 img { height: 1.45rem; width: auto; max-width: 100%; object-fit: contain; object-position: left; }
+.cm-sec h3 img[data-h="para-acompanar"] { height: 1.8rem; }
+.cm-sec h3 img[data-h^="cocteles"] { height: 1.55rem; }
+.cm-list { list-style: none; margin: 0; padding: 0; }
+.cm-item { padding: 0.5rem 0; }
+.cm-line { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; }
+.cm-n { min-width: 0; font-family: var(--display); font-weight: 700; font-size: 0.95rem; line-height: 1.25; text-transform: uppercase; overflow-wrap: anywhere; }
+.cm-n small { font-weight: 400; font-size: 0.76rem; text-transform: none; }
+.cm-p { flex: 0 0 auto; font-family: var(--display); font-weight: 700; font-size: 0.95rem; font-variant-numeric: tabular-nums; }
+.cm-d { margin: 0.2rem 3rem 0 0; font-size: 0.86rem; line-height: 1.4; opacity: 0.72; }
+.cm-al { display: flex; flex-wrap: wrap; gap: 0.25rem; margin: 0.35rem 0 0; }
+.cm-al > span:not(.cm-sr) { padding: 0.1rem 0.5rem; border: 1px solid rgba(10, 10, 10, 0.3); border-radius: 999px; font-size: 0.64rem; letter-spacing: 0.04em; text-transform: uppercase; opacity: 0.75; }
+.cm-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+.cm-grape { margin: 0.9rem 0 0.1rem; font-style: italic; font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.04em; opacity: 0.65; }
+.cm-grape:first-child { margin-top: 0; }
+.cm-spirit { display: grid; grid-template-columns: minmax(0, 1fr) 4rem; gap: 0.5rem; align-items: baseline; padding: 0.32rem 0; border-bottom: 1px dotted rgba(10, 10, 10, 0.18); }
+.cm-list.is-two .cm-spirit { grid-template-columns: minmax(0, 1fr) 4rem 4rem; }
+.cm-spirit .cm-p, .cm-cols span { text-align: right; }
+.cm-cols { display: grid; grid-template-columns: minmax(0, 1fr) 4rem; gap: 0.5rem; font-size: 0.66rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.6; }
+.cm-cols:has(span:nth-child(3)) { grid-template-columns: minmax(0, 1fr) 4rem 4rem; }
+.cm-script { height: auto; width: min(78%, 19rem); object-fit: contain; }
+.cm-foot-note { margin: 1rem 0 0; padding: 0.8rem 0.9rem; border: 1.5px solid #0a0a0a; font-size: 0.85rem; text-align: center; }
+.cm-cta { padding: 0.7rem 1rem calc(0.7rem + env(safe-area-inset-bottom)); border-top: 1px solid rgba(10, 10, 10, 0.14); }
+.cm-book-cta { display: block; padding: 0.85rem; border-radius: 999px; background: #0a0a0a; color: #fbfaf6; text-align: center; text-decoration: none; font-family: var(--display); font-weight: 700; font-size: 0.9rem; letter-spacing: 0.1em; text-transform: uppercase; }
+
+@media (max-width: 640px) {
+  .cm-stage { padding: 0; }
+  .cm-paper, .cm-flip { width: 100%; border-radius: 0; }
+  .cm-paper { border-left-width: 6px; }
+}
+/* Menú de celebración: su propio papel beige y tinta granate, con los platos centrados */
+.cm-tabs button[data-tone="fiesta"] { color: #7b2e2e; font-weight: 700; }
+.cm-tabs button[data-tone="fiesta"][aria-selected="true"] { background: #7b2e2e; color: #d9d0c1; }
+.cm-paper[data-tone="fiesta"] { background: #d9d0c1; color: #7b2e2e; border-left-color: #7b2e2e; }
+.cm-paper[data-tone="fiesta"] .cm-tabs button:not([data-tone="fiesta"]), .cm-paper[data-tone="fiesta"] .cm-close { color: #7b2e2e; }
+.cm-paper[data-tone="fiesta"] .cm-script { width: 100%; max-width: 27rem; max-height: none; margin-top: 0.4rem; }
+.cm-paper[data-tone="fiesta"] .cm-sec h3 { border-color: #7b2e2e; text-align: center; }
+.cm-paper[data-tone="fiesta"] .cm-sec h3 img { height: 1.7rem; object-position: center; }
+.cm-paper[data-tone="fiesta"] .cm-item { text-align: center; padding: 0.55rem 0; }
+.cm-paper[data-tone="fiesta"] .cm-line { justify-content: center; }
+.cm-paper[data-tone="fiesta"] .cm-n { font-weight: 400; }
+.cm-paper[data-tone="fiesta"] .cm-d { margin: 0.2rem auto 0; max-width: 25rem; opacity: 0.9; }
+.cm-lead { margin: 0 0 0.5rem; text-align: center; font-family: var(--display); font-weight: 700; font-size: 0.86rem; text-transform: uppercase; }
+.cm-paper[data-tone="fiesta"] .cm-foot-note { border: 0; font-size: 1.05rem; font-weight: 700; }
+.cm-small-note { margin: 0.6rem 0 0; text-align: center; font-size: 0.78rem; opacity: 0.75; }
+.cm-paper[data-tone="fiesta"] .cm-cta { border-top-color: rgba(123, 46, 46, 0.3); }
+.cm-paper[data-tone="fiesta"] .cm-book-cta { background: #7b2e2e; color: #d9d0c1; }
+
+@media (prefers-reduced-motion: reduce) { .cm-food, .cm-body.is-next, .cm-body.is-prev { animation: none; } .cm-flip { display: none; } .cm-book { transition: none; } }
