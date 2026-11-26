@@ -190,3 +190,6 @@ input.cfg-sw:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; 
 .ad-btn, .ad-tabs, .ad-tabs .ad-tab, .ad-tabs .ad-group, .mt-vtoggle, .mt-vtoggle .ck-chip, .ck-main, .cfg-nav button, .mt-al-new, .mt-al span, .mt-pick { border-radius: 999px; }
 .ck-step, .mt-zoom button { border-radius: 50%; }
 .ad-sheet-inline .ad-btn, .ad-login .ad-btn { border-radius: 999px; }
+
+/* Lo que quedaba cuadrado: escáner de entradas, horas del evento, sugerencias de clientes y subida de imagen */
+.sc-actions button, .ad-time, .ad-field .ad-time, .mt-sg, .sc-manual input, .ad-img-actions label { border-radius: 999px; }
