@@ -24,7 +24,8 @@ input:not([type="radio"]):not([type="checkbox"]), select, textarea { border-radi
 button.ev-chip[aria-pressed="true"] { background: #ece7dd; border-color: #ece7dd; color: #0a0a0a; }
 .age-actions .age-no { border: 1px solid rgba(236, 231, 221, 0.3); }
 .mz-stub button.mz-stub-change { padding: 0.35rem 0.8rem; border: 1px solid #0a0a0a; text-decoration: none; }
-.pe-details > summary { padding-left: 1.4rem; padding-right: 1.4rem; border: 1px solid rgba(236, 231, 221, 0.35); }
-body.zone-day .pe-details > summary { border-color: rgba(10, 10, 10, 0.25); }
+/* «Alquila el espacio» no es un botón con caja: solo una línea debajo */
+.pe-details > summary { border-top: 0; border-bottom: 1px solid rgba(236, 231, 221, 0.35); }
+body.zone-day .pe-details > summary { border-bottom-color: rgba(10, 10, 10, 0.25); }
 /* Los días del calendario, en cuadro */
 .mz-day { aspect-ratio: 1; width: 100%; min-height: 0; }
