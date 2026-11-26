@@ -1,4 +1,4 @@
-/* La carta de Restaurant & Cocktails: se abre desde «Menú» en la portada, con la tapa de cuero que se pasa.
+/* La carta de Restaurant & Cocktails: se abre desde «Carta» en la portada, con la tapa de cuero que se pasa.
    El menú de celebración está dentro, en su pestaña.
    Los datos están en carta-data.js y solo se descargan al abrirla. Enlaces directos: /#carta, /#carta-cocteles… */
 (function () {
