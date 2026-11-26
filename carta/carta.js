@@ -1,9 +1,9 @@
-/* La carta de Restaurant & Cocktails como un libro: las portadas de cuero asoman en la portada y al tocarlas se abre.
-   El menú de celebración no asoma fuera: está dentro, en su pestaña.
+/* La carta de Restaurant & Cocktails: se abre desde «Carta» en la portada, con la tapa de cuero que se pasa.
+   El menú de celebración está dentro, en su pestaña.
    Los datos están en carta-data.js y solo se descargan al abrirla. Enlaces directos: /#carta, /#carta-cocteles… */
 (function () {
   'use strict';
-  var V = '5', BASE = '/carta/', dlg = null, cur = 'menu', loading = null, lastFocus = null, byKeyboard = false;
+  var V = '6', BASE = '/carta/', dlg = null, cur = 'menu', loading = null, lastFocus = null, byKeyboard = false;
   /* Medidas de los títulos: reservan su hueco para que la hoja no salte mientras cargan. */
   var DIM = { 't-celebracion': [900, 378], 't-menu': [900, 420], 't-desserts': [676, 329], 't-drinks': [900, 471], 't-cocktails': [900, 424], 't-wines': [769, 377], 't-spirits': [757, 531] };
   var AL = {
