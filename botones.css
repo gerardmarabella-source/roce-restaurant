@@ -1,46 +1,30 @@
-/* ROCE · Una sola forma de botón en toda la web: redondeada (cápsula), como la «O» del logo.
-   · Botones de acción: píldora. · Botones de un solo icono o cifra (flechas, + y −, días): círculo.
-   · Campos de texto: esquinas suaves, para que acompañen.
-   Se carga la última en cada página. Cualquier botón nuevo se añade aquí, no con su propia forma. */
-:root { --btn-radius: 999px; --field-radius: 0.8rem; }
+/* ROCE · Una sola forma de botón en toda roce.es: CUADRADA (esquinas rectas), como las líneas de la carta impresa.
+   La app (app.roce.es) es aparte y va redondeada: este archivo no la toca.
+   Se carga la última en cada página. Lleva !important porque algunos componentes (cookies, aviso +18) inyectan su CSS después.
+   Cualquier botón nuevo hecho con <button> ya nace cuadrado; si es un enlace con aspecto de botón, se añade a la lista. */
 
-/* Cualquier botón, aunque sea nuevo, nace redondeado (las reglas de abajo y las propias de cada página mandan sobre esta) */
-:where(button, input[type="submit"], input[type="button"], summary) { border-radius: var(--btn-radius); }
+button, input[type="submit"], input[type="button"], summary, [role="button"],
+/* enlaces con aspecto de botón */
+.nav-cta, .footer-instagram, .nf-btn, .tc-btn, .gl-btn, .tk-btn, .evd-buy, .cm-book-cta, .teaser-live, .teaser-live::before, .teaser-live-now,
+/* reservas */
+.mz-day, .mz-slot, .mz-chip, .mz-yn-b, .mz-bar-i, .mz-al, .mz-al span, .mz-stepper, .mz-pm, .mz-nav, .reserve-zone, .pe-details > summary,
+/* eventos y entradas: filtros, tarjetas e imágenes que se tocan, iconos de compartir */
+.ev-chip, a.ev-card, .evd-poster, .tk-poster, .tk-qty button, .evd-opt i,
+/* cookies, aviso +18, newsletter, carta */
+html body .cookie-accept, html body .cookie-reject, html body .age-actions button, .newsletter-submit, .newsletter-body .newsletter-submit,
+.newsletter-confirm-actions button, .cm-tabs button, .cm-close, .cm-al > span {
+  border-radius: 0 !important;
+}
 
-/* ── Píldoras ── */
-.nav-cta, .nf-btn, .tc-btn, .gl-btn, .tk-btn, .evd-buy, .evd-copy, .ev-chip, .pe-send, .newsletter-submit,
-.mz-go, .mz-slot, .mz-chip, .mz-yn-b, .mz-bar-i, .mz-al, .mz-al span, .mz-stepper,
-html body .cookie-accept, html body .cookie-reject, .age-actions button,
-.cm-book-cta, .cm-tabs button { border-radius: var(--btn-radius); }
+/* Campos de texto, a juego */
+input:not([type="radio"]):not([type="checkbox"]), select, textarea { border-radius: 0 !important; }
 
-/* Con dos líneas dentro (p. ej. «21:00 · completo»), la píldora no corta el texto */
-.mz-slot.is-full { border-radius: 1.6rem; }
-
-/* ── Círculos ── */
-.mz-pm, .mz-nav, .evd-x, .tk-qty button, .cm-close { border-radius: 50%; }
-.mz-day { border-radius: 50%; aspect-ratio: 1; width: 100%; max-width: 3.1rem; min-height: 0; justify-self: center; }
-
-/* ── Reservas: el desplegable de alquiler y la tarjeta de zona ── */
-.pe-details > summary { border-radius: var(--btn-radius); padding-left: 1.4rem; padding-right: 1.4rem; border: 1px solid rgba(236, 231, 221, 0.35); }
-body.zone-day .pe-details > summary { border-color: rgba(10, 10, 10, 0.25); }
-.reserve-zone { border-radius: 1.4rem; }
-
-/* ── Campos ── */
-.mz-form input:not([type="checkbox"]):not([type="radio"]), .mz-form select, .mz-form textarea,
-.pe-form input:not([type="checkbox"]):not([type="radio"]), .pe-form select, .pe-form textarea,
-.newsletter-input, .gl-card input, .evd-linkrow input { border-radius: var(--field-radius); }
-
-/* Newsletter de la portada */
-.newsletter-body .newsletter-submit { border-radius: var(--btn-radius); }
-.newsletter-body .newsletter-input { border-radius: var(--btn-radius); }
-
-/* ── Confirmaciones, avisos y filtros ── */
-.newsletter-confirm-actions button, .gl-guest button, .age-actions .age-no, html body .teaser-live[data-env] { border-radius: var(--btn-radius); }
-.age-actions .age-no { border: 1px solid rgba(236, 231, 221, 0.3); }
+/* ── Detalles que dan forma de botón a algunos textos que se pulsan ── */
 .ev-chips .ev-chip, button.ev-chip { padding: 0.45rem 1.05rem; border: 1px solid rgba(236, 231, 221, 0.3); }
 button.ev-chip[aria-pressed="true"] { background: #ece7dd; border-color: #ece7dd; color: #0a0a0a; }
+.age-actions .age-no { border: 1px solid rgba(236, 231, 221, 0.3); }
 .mz-stub button.mz-stub-change { padding: 0.35rem 0.8rem; border: 1px solid #0a0a0a; text-decoration: none; }
-
-/* ── Tarjetas e imágenes que se pueden tocar ── */
-a.ev-card, button.evd-poster, button.tk-poster { border-radius: 1.4rem; overflow: hidden; }
-button.tk-poster { border-radius: 0.9rem; }
+.pe-details > summary { padding-left: 1.4rem; padding-right: 1.4rem; border: 1px solid rgba(236, 231, 221, 0.35); }
+body.zone-day .pe-details > summary { border-color: rgba(10, 10, 10, 0.25); }
+/* Los días del calendario, en cuadro */
+.mz-day { aspect-ratio: 1; width: 100%; min-height: 0; }

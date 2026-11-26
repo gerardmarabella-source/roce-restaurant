@@ -186,10 +186,9 @@ input.cfg-sw:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; 
 }
 @media (prefers-reduced-motion: reduce) { .ad-btn, input.cfg-sw, input.cfg-sw::after { transition: none; } }
 
-/* ── Misma forma de botón que en la web: cápsula; círculo para los de un solo icono ── */
-.ad-btn, .ad-tabs, .ad-tabs .ad-tab, .ad-tabs .ad-group, .mt-vtoggle, .mt-vtoggle .ck-chip, .ck-main, .cfg-nav button, .mt-al-new, .mt-al span, .mt-pick { border-radius: 999px; }
-.ck-step, .mt-zoom button { border-radius: 50%; }
-.ad-sheet-inline .ad-btn, .ad-login .ad-btn { border-radius: 999px; }
-
-/* Lo que quedaba cuadrado: escáner de entradas, horas del evento, sugerencias de clientes y subida de imagen */
-.sc-actions button, .ad-time, .ad-field .ad-time, .mt-sg, .sc-manual input, .ad-img-actions label { border-radius: 999px; }
+/* ── Botones cuadrados, como en toda roce.es ──
+   (las mesas del plano conservan su forma real, y los interruptores de encendido siguen siendo interruptores) */
+button:not(.mt-t), .ad-btn, .ad-tabs, .ad-tabs .ad-tab, .ad-tabs .ad-group, .ad-tab.is-sub, .ck-chip, .mt-nav .ck-chip, .mt-vtoggle, .mt-vtoggle .ck-chip, .ck-main, .ck-step,
+.cfg-nav button, .mt-al-new, .mt-al span, .mt-pick, .cfg-pills span, .mt-zoom button, .sc-actions button, .ad-time, .ad-field .ad-time, .mt-sg, .ad-img-actions label,
+.mt-menu > summary, .mt-menu > div, .mt-menu > div .ad-btn, .mt-kpis div, .ad-tag { border-radius: 0 !important; }
+input:not([type="radio"]):not([type="checkbox"]), select, textarea { border-radius: 0 !important; }
