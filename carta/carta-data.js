@@ -7,24 +7,6 @@ window.ROCE_CARTA = (function () {
   var S = function (n, copa, shot) { return { n: n, p: copa, p2: shot || '' }; };    // destilado: copa y chupito
 
   return [
-    { id: 'celebracion', title: 't-celebracion', tone: 'fiesta', label: { es: 'Celebración', en: 'Celebration' },
-      foot: { es: '60€ Incluye dos bebidas y una botella de vino para 4 personas', en: '60€ Incluye dos bebidas y una botella de vino para 4 personas' },
-      note: { es: 'Consulta los alérgenos con nuestro equipo.', en: 'Please ask our team about allergens.' },
-      sections: [
-      { h: 'entrantes', t: 'Entrantes', lead: 'Al centro de la mesa', items: [
-        D('Croqueta de carrillera ibérica y ajo negro', '', 'Cremosa, crujiente y acompañada de un toque de jugo reducido.'),
-        D('Puerro a la brasa, romesco de avellana y Jerez', '', 'Dulzor vegetal, tostado y acidez.'),
-        D('Langostino a la brasa, mantequilla tostada y cítricos', '', 'Sabor concentrado y acabado brillante.'),
-        D('Vieiras a la brasa, crema de coliflor tostada, avellana y manzana verde', '', 'Vieiras marcadas a la plancha, crema sedosa de coliflor asada, avellana tostada y un toque de manzana verde.'),
-        D('Tartaleta de setas de temporada, castaña y jugo de hongos', '', 'Un bocado cálido y elegante, con contrastes de textura y un intenso sabor umami.')
-      ] },
-      { h: 'principal', t: 'Principal', lead: 'A elegir uno', items: [
-        D('Bacalao a la brasa', '', 'Crema de cebolla tostada, mejillones, aceite de perejil y jugo marino.'),
-        D('Pluma ibérica', '', 'Manzana ahumada, cebolla tostada y jugo de Oloroso.'),
-        D('Opción vegana · Milhojas crujiente de patata, setas y trufa', '', 'Capas finas de patata, duxelle de setas, crema de trufa y jugo de setas.')
-      ] }
-    ] },
-
     { id: 'menu', title: 't-menu', tone: 'food', label: { es: 'Menú', en: 'Menu' }, sections: [
       { h: 'starters', t: 'Starters', items: [
         D('Burrata Rocher', '14,50', 'Burrata cremosa, tomate confitado, coulis de granada, pesto de albahaca y almendra crujiente.', 'Creamy burrata with confit tomato, pomegranate coulis, basil pesto and crunchy almond.', 'leche sesamo frutos'),
@@ -64,6 +46,24 @@ window.ROCE_CARTA = (function () {
         D('Espárragos con parmesano', '5,50', 'Espárragos verdes con rúcula, parmesano laminado y vinagreta de limón.', 'Green asparagus with rocket, shaved Parmesan and lemon vinaigrette.', 'leche'),
         D('Ensalada verde', '6,00', 'Canónigos, espinaca baby, rúcula, escarola, edamame y manzana verde con vinagreta cítrica.', 'Lamb’s lettuce, baby spinach, rocket, endive, edamame and green apple with citrus vinaigrette.', 'soja'),
         D('Pan de masa madre con AOVE', '3,50', 'Para acompañar tus platos.', 'To accompany your dishes.', 'gluten')
+      ] }
+    ] },
+
+    { id: 'celebracion', title: 't-celebracion', tone: 'fiesta', label: { es: 'Celebración', en: 'Celebration' },
+      foot: { es: '60€ Incluye postre, dos bebidas y una botella de vino para 4 personas', en: '60€ Incluye postre, dos bebidas y una botella de vino para 4 personas' },
+      note: { es: 'Consulta los alérgenos con nuestro equipo.', en: 'Please ask our team about allergens.' },
+      sections: [
+      { h: 'entrantes', t: 'Entrantes', lead: 'Al centro de la mesa', items: [
+        D('Croqueta de carrillera ibérica y ajo negro', '', 'Cremosa, crujiente y acompañada de un toque de jugo reducido.'),
+        D('Puerro a la brasa, romesco de avellana y Jerez', '', 'Dulzor vegetal, tostado y acidez.'),
+        D('Langostino a la brasa, mantequilla tostada y cítricos', '', 'Sabor concentrado y acabado brillante.'),
+        D('Vieiras a la brasa, crema de coliflor tostada, avellana y manzana verde', '', 'Vieiras marcadas a la plancha, crema sedosa de coliflor asada, avellana tostada y un toque de manzana verde.'),
+        D('Tartaleta de setas de temporada, castaña y jugo de hongos', '', 'Un bocado cálido y elegante, con contrastes de textura y un intenso sabor umami.')
+      ] },
+      { h: 'principal', t: 'Principal', lead: 'A elegir uno', items: [
+        D('Bacalao a la brasa', '', 'Crema de cebolla tostada, mejillones, aceite de perejil y jugo marino.'),
+        D('Pluma ibérica', '', 'Manzana ahumada, cebolla tostada y jugo de Oloroso.'),
+        D('Opción vegana · Milhojas crujiente de patata, setas y trufa', '', 'Capas finas de patata, duxelle de setas, crema de trufa y jugo de setas.')
       ] }
     ] },
 
