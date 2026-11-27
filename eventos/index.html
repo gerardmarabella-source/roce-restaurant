@@ -104,6 +104,10 @@
   .ev-card-date b { display: block; font-weight: 400; font-size: clamp(5rem, 22vw, 7.5rem); letter-spacing: -0.03em; }
   .ev-card-date span { display: block; font-size: 1.1rem; letter-spacing: 0.08em; opacity: 0.7; }
   .ev-card-body { display: block; padding: 1.1rem 1.25rem 1.25rem; }
+  /* Con cartel, la tarjeta no repite título, fecha, sala ni precio (se ven al entrar); el texto queda para lectores de pantalla y buscadores.
+     Si el evento no tiene foto, sí se muestran: es lo único que lo identifica. */
+  .ev-card.has-img .ev-card-top { margin-bottom: 0; }
+  .ev-card.has-img .ev-card-info { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
   .ev-card-kicker { display: block; font-size: 0.78rem; letter-spacing: 0.14em; text-transform: uppercase; opacity: 0.8; }
   .ev-card-name { margin-top: 0.4rem; font-family: var(--display); font-weight: 400; font-size: clamp(1.7rem, 4.6vw, 2.2rem); line-height: 1; letter-spacing: -0.005em; text-transform: uppercase; }
   .ev-card-meta { display: block; margin-top: 0.6rem; font-size: 0.95rem; opacity: 0.9; }
@@ -212,11 +216,12 @@
           '<span class="ev-card-media">' + (e.image ? '<img class="ev-card-img" src="' + esc(e.image) + '" alt="">' : '<span class="ev-card-date"><b>' + esc(day) + '</b><span>' + esc(mon) + '</span></span>') + '</span>' +
           '<span class="ev-card-body">' +
             '<span class="ev-card-top">' + tag + right + '</span>' +
+            '<span class="ev-card-info">' +
             '<span class="ev-card-kicker">' + esc(wd) + ' • ' + esc(U.range(e)) + '</span>' +
             '<h2 class="ev-card-name">' + esc(e.title[l]) + '</h2>' +
             '<span class="ev-card-meta">' + esc(wd + ', ' + day + ' ' + mon) + ' · ROCE' + (U.floor(e, l) ? ' · ' + esc(U.floor(e, l)) : '') + '</span>' +
             '<span class="ev-card-price">' + esc(e.price[l]) + '</span>' +
-          '</span></a></li>';
+          '</span></span></a></li>';
       }).join('');
       // Si una foto no carga (p. ej. se cambió en RoceCover y la copia guardada apunta a la antigua), la tarjeta pasa a mostrar la fecha en grande en vez de quedarse en negro.
       [].forEach.call(list.querySelectorAll('img.ev-card-img'), function (img) {
