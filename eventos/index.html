@@ -80,30 +80,30 @@
   .ev-chip:hover { opacity: 0.6; }
   .ev-chip[aria-pressed="true"] { opacity: 1; }
 
-  /* Lista de eventos en tarjetas: el cartel ocupa toda la tarjeta y el texto va encima. */
+  /* Lista de eventos en tarjetas: el cartel se ve entero, sin nada encima; la etiqueta de día o noche y el texto van debajo. */
   .ev-list { list-style: none; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 19rem), 1fr)); gap: 1.25rem; align-items: start; }
   .ev-month { grid-column: 1 / -1; margin-top: 1.25rem; padding-bottom: 0.6rem; font-family: var(--display); font-size: 1rem; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.65; border-bottom: 1px solid rgba(128, 128, 128, 0.45); }
   .ev-month:first-child { margin-top: 0.5rem; }
 
-  .ev-card { position: relative; display: flex; flex-direction: column; justify-content: flex-end; aspect-ratio: 4 / 5; overflow: hidden; color: #ffffff; text-decoration: none; background: #0a0a0a; border: 1px solid rgba(255, 255, 255, 0.35); isolation: isolate; }
+  .ev-card { display: flex; flex-direction: column; overflow: hidden; color: #ffffff; text-decoration: none; background: #0a0a0a; border: 1px solid rgba(255, 255, 255, 0.35); }
   .ev-card[data-env="day"].no-img { background: #ffffff; color: #0a0a0a; border-color: #0a0a0a; }
-  .ev-card-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: -2; transition: transform 0.4s ease; }
-  .ev-card.has-img::after { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(to top, rgba(0, 0, 0, 0.92) 0%, rgba(0, 0, 0, 0.62) 34%, rgba(0, 0, 0, 0) 62%); }
-  .ev-card:hover .ev-card-img { transform: scale(1.03); }
+  .ev-card-media { display: block; }
+  .ev-card-img { display: block; width: 100%; height: auto; }
+  .ev-card.no-img .ev-card-media { display: flex; align-items: flex-end; min-height: 13rem; padding: 1.25rem 1.25rem 0; }
   .ev-card:focus-visible { outline: 3px solid var(--fg); outline-offset: 3px; }
-  .ev-card-top { position: absolute; top: 1rem; left: 1rem; right: 1rem; display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
-  .ev-tag { display: inline-flex; align-items: center; gap: 0.45rem; padding: 0.3rem 0.65rem; background: rgba(10, 10, 10, 0.72); color: #ffffff; font-family: var(--display); font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase; }
-  .ev-card[data-env="day"].no-img .ev-tag { background: rgba(10, 10, 10, 0.08); color: #0a0a0a; }
+  .ev-card-top { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin-bottom: 0.9rem; }
+  .ev-tag { display: inline-flex; align-items: center; gap: 0.45rem; padding: 0.3rem 0.65rem; border: 1px solid rgba(255, 255, 255, 0.45); color: #ffffff; font-family: var(--display); font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase; }
+  .ev-card[data-env="day"].no-img .ev-tag { border-color: rgba(10, 10, 10, 0.45); color: #0a0a0a; }
   .ev-tag .age-badge { width: 1.35rem; height: 1.35rem; flex-shrink: 0; }
   .ev-now { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.3rem 0.65rem; background: #ffffff; color: #0a0a0a; font-family: var(--display); font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase; }
   .ev-now::before { content: ""; width: 0.5rem; height: 0.5rem; border-radius: 50%; background: #ff1f1f; animation: evLive 1.3s ease-in-out infinite; }
   .ev-sold { padding: 0.3rem 0.65rem; background: #ffffff; color: #0a0a0a; font-family: var(--display); font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase; }
   @keyframes evLive { 0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(255, 31, 31, 0.6); } 50% { opacity: 0.25; box-shadow: 0 0 0 5px rgba(255, 31, 31, 0); } }
-  @media (prefers-reduced-motion: reduce) { .ev-now::before { animation: none; } .ev-card-img { transition: none; } }
-  .ev-card-date { position: absolute; top: 4.2rem; left: 1rem; font-family: var(--display); text-transform: uppercase; line-height: 0.9; }
+  @media (prefers-reduced-motion: reduce) { .ev-now::before { animation: none; } }
+  .ev-card-date { display: block; font-family: var(--display); text-transform: uppercase; line-height: 0.9; }
   .ev-card-date b { display: block; font-weight: 400; font-size: clamp(5rem, 22vw, 7.5rem); letter-spacing: -0.03em; }
   .ev-card-date span { display: block; font-size: 1.1rem; letter-spacing: 0.08em; opacity: 0.7; }
-  .ev-card-body { padding: 1.25rem; }
+  .ev-card-body { display: block; padding: 1.1rem 1.25rem 1.25rem; }
   .ev-card-kicker { display: block; font-size: 0.78rem; letter-spacing: 0.14em; text-transform: uppercase; opacity: 0.8; }
   .ev-card-name { margin-top: 0.4rem; font-family: var(--display); font-weight: 400; font-size: clamp(1.7rem, 4.6vw, 2.2rem); line-height: 1; letter-spacing: -0.005em; text-transform: uppercase; }
   .ev-card-meta { display: block; margin-top: 0.6rem; font-size: 0.95rem; opacity: 0.9; }
@@ -209,10 +209,9 @@
         var head = '';
         if (monthLabel !== lastMonth) { lastMonth = monthLabel; head = '<li class="ev-month" role="presentation">' + esc(monthLabel) + '</li>'; }
         return head + '<li><a class="ev-card ' + (e.image ? 'has-img' : 'no-img') + '" data-env="' + e.env + '" href="/eventos/evento/?e=' + encodeURIComponent(e.id) + '">' +
-          (e.image ? '<img class="ev-card-img" src="' + esc(e.image) + '" alt="">' : '') +
-          '<span class="ev-card-top">' + tag + right + '</span>' +
-          (e.image ? '' : '<span class="ev-card-date"><b>' + esc(day) + '</b><span>' + esc(mon) + '</span></span>') +
+          '<span class="ev-card-media">' + (e.image ? '<img class="ev-card-img" src="' + esc(e.image) + '" alt="">' : '<span class="ev-card-date"><b>' + esc(day) + '</b><span>' + esc(mon) + '</span></span>') + '</span>' +
           '<span class="ev-card-body">' +
+            '<span class="ev-card-top">' + tag + right + '</span>' +
             '<span class="ev-card-kicker">' + esc(wd) + ' • ' + esc(U.range(e)) + '</span>' +
             '<h2 class="ev-card-name">' + esc(e.title[l]) + '</h2>' +
             '<span class="ev-card-meta">' + esc(wd + ', ' + day + ' ' + mon) + ' · ROCE' + (U.floor(e, l) ? ' · ' + esc(U.floor(e, l)) : '') + '</span>' +
@@ -225,7 +224,7 @@
           var card = img.closest('.ev-card'); if (!card) return;
           var ev = upcoming.filter(function (e) { return card.getAttribute('href').indexOf(encodeURIComponent(e.id)) !== -1; })[0];
           card.classList.remove('has-img'); card.classList.add('no-img'); img.remove();
-          if (ev) card.querySelector('.ev-card-top').insertAdjacentHTML('afterend', '<span class="ev-card-date"><b>' + esc(U.fmt(ev, l, { day: 'numeric' })) + '</b><span>' + esc(U.fmt(ev, l, { month: 'short' }).replace('.', '')) + '</span></span>');
+          if (ev) card.querySelector('.ev-card-media').insertAdjacentHTML('beforeend', '<span class="ev-card-date"><b>' + esc(U.fmt(ev, l, { day: 'numeric' })) + '</b><span>' + esc(U.fmt(ev, l, { month: 'short' }).replace('.', '')) + '</span></span>');
         });
       });
       var showEmpty = loaded && upcoming.length === 0;
