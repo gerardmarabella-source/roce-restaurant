@@ -34,11 +34,12 @@ async function staffRecipients(key: string): Promise<string[]> {
     return [...new Set((data ?? []).map((r: any) => String(r.email ?? "").trim().toLowerCase()).filter((e: string) => e && e !== base))];
   } catch (e) { console.error("no se han podido leer los avisos del equipo:", String(e)); return []; }
 }
+// Los avisos al equipo llevan la misma cabecera con el logo que los emails de clientes (mailShell).
 // Envía un aviso al equipo y deja constancia en los registros de la función si Brevo lo rechaza (antes un fallo pasaba en silencio).
 async function mailStaff(subject: string, htmlContent: string, key = ""): Promise<void> {
   try {
     const bcc = (await staffRecipients(key)).map((email) => ({ email }));
-    const r = await fetch("https://api.brevo.com/v3/smtp/email", { method: "POST", headers: brevoHeaders, body: JSON.stringify({ sender: { name: "ROCE", email: FROM }, to: [{ email: STAFF_EMAIL }], ...(bcc.length ? { bcc } : {}), subject, htmlContent }) });
+    const r = await fetch("https://api.brevo.com/v3/smtp/email", { method: "POST", headers: brevoHeaders, body: JSON.stringify({ sender: { name: "ROCE", email: FROM }, to: [{ email: STAFF_EMAIL }], ...(bcc.length ? { bcc } : {}), subject, htmlContent: mailShell(`<tr><td style="padding:24px 24px 32px;color:#ddd;font:15px/1.6 Arial,sans-serif">${htmlContent}</td></tr>`) }) });
     if (!r.ok) console.error("aviso al equipo no enviado:", r.status, (await r.text()).slice(0, 300), "·", subject);
   } catch (e) { console.error("aviso al equipo no enviado:", String(e), "·", subject); }
 }
