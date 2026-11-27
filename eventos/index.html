@@ -80,7 +80,7 @@
   .ev-chip:hover { opacity: 0.6; }
   .ev-chip[aria-pressed="true"] { opacity: 1; }
 
-  /* Lista de eventos en tarjetas: el cartel se ve entero, sin nada encima; la etiqueta de día o noche y el texto van debajo. */
+  /* Lista de eventos en tarjetas: solo el cartel, entero y sin nada encima. Debajo solo sale «Agotado» o «Ahora» cuando toca. */
   .ev-list { list-style: none; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 19rem), 1fr)); gap: 1.25rem; align-items: start; }
   .ev-month { grid-column: 1 / -1; margin-top: 1.25rem; padding-bottom: 0.6rem; font-family: var(--display); font-size: 1rem; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.65; border-bottom: 1px solid rgba(128, 128, 128, 0.45); }
   .ev-month:first-child { margin-top: 0.5rem; }
@@ -92,9 +92,6 @@
   .ev-card.no-img .ev-card-media { display: flex; align-items: flex-end; min-height: 13rem; padding: 1.25rem 1.25rem 0; }
   .ev-card:focus-visible { outline: 3px solid var(--fg); outline-offset: 3px; }
   .ev-card-top { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin-bottom: 0.9rem; }
-  .ev-tag { display: inline-flex; align-items: center; gap: 0.45rem; padding: 0.3rem 0.65rem; border: 1px solid rgba(255, 255, 255, 0.45); color: #ffffff; font-family: var(--display); font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase; }
-  .ev-card[data-env="day"].no-img .ev-tag { border-color: rgba(10, 10, 10, 0.45); color: #0a0a0a; }
-  .ev-tag .age-badge { width: 1.35rem; height: 1.35rem; flex-shrink: 0; }
   .ev-now { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.3rem 0.65rem; background: #ffffff; color: #0a0a0a; font-family: var(--display); font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase; }
   .ev-now::before { content: ""; width: 0.5rem; height: 0.5rem; border-radius: 50%; background: #ff1f1f; animation: evLive 1.3s ease-in-out infinite; }
   .ev-sold { padding: 0.3rem 0.65rem; background: #ffffff; color: #0a0a0a; font-family: var(--display); font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase; }
@@ -107,6 +104,8 @@
   /* Con cartel, la tarjeta no repite título, fecha, sala ni precio (se ven al entrar); el texto queda para lectores de pantalla y buscadores.
      Si el evento no tiene foto, sí se muestran: es lo único que lo identifica. */
   .ev-card.has-img .ev-card-top { margin-bottom: 0; }
+  /* Sin «Agotado» ni «Ahora» no queda nada debajo: la tarjeta es solo el cartel. */
+  .ev-card.has-img:not(.has-badge) .ev-card-body { padding: 0; }
   .ev-card.has-img .ev-card-info { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
   .ev-card-kicker { display: block; font-size: 0.78rem; letter-spacing: 0.14em; text-transform: uppercase; opacity: 0.8; }
   .ev-card-name { margin-top: 0.4rem; font-family: var(--display); font-weight: 400; font-size: clamp(1.7rem, 4.6vw, 2.2rem); line-height: 1; letter-spacing: -0.005em; text-transform: uppercase; }
@@ -208,14 +207,13 @@
         var day = U.fmt(e, l, { day: 'numeric' });
         var monthLabel = U.fmt(e, l, { month: 'long', year: 'numeric' });
         var sold = e.left <= 0;
-        var tag = '<span class="ev-tag">' + (e.env === 'night' ? esc(t('ev_night', 'Noche')) : esc(t('ev_day', 'Día'))) + '</span>';
         var right = sold ? '<span class="ev-sold">' + esc(t('tk_soldout', 'Agotado')) + '</span>' : (U.isLive(e) ? '<span class="ev-now">' + esc(t('choose_now', 'Ahora')) + '</span>' : '');
         var head = '';
         if (monthLabel !== lastMonth) { lastMonth = monthLabel; head = '<li class="ev-month" role="presentation">' + esc(monthLabel) + '</li>'; }
-        return head + '<li><a class="ev-card ' + (e.image ? 'has-img' : 'no-img') + '" data-env="' + e.env + '" href="/eventos/evento/?e=' + encodeURIComponent(e.id) + '">' +
+        return head + '<li><a class="ev-card ' + (e.image ? 'has-img' : 'no-img') + (right ? ' has-badge' : '') + '" aria-label="' + esc(e.title[l] + ', ' + wd + ' ' + day + ' ' + mon) + '" data-env="' + e.env + '" href="/eventos/evento/?e=' + encodeURIComponent(e.id) + '">' +
           '<span class="ev-card-media">' + (e.image ? '<img class="ev-card-img" src="' + esc(e.image) + '" alt="">' : '<span class="ev-card-date"><b>' + esc(day) + '</b><span>' + esc(mon) + '</span></span>') + '</span>' +
           '<span class="ev-card-body">' +
-            '<span class="ev-card-top">' + tag + right + '</span>' +
+            '<span class="ev-card-top">' + right + '</span>' +
             '<span class="ev-card-info">' +
             '<span class="ev-card-kicker">' + esc(wd) + ' • ' + esc(U.range(e)) + '</span>' +
             '<h2 class="ev-card-name">' + esc(e.title[l]) + '</h2>' +
