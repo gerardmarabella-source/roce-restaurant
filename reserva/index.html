@@ -40,6 +40,13 @@
   .tc-err { margin-top: 1rem; color: var(--red); font-size: 0.95rem; line-height: 1.45; }
   .tc-confirm { margin-top: 1rem; padding: 1rem; border: 1px solid var(--red); font-size: 0.92rem; line-height: 1.5; }
   .tc-confirm .tc-btn { margin-top: 0.7rem; }
+  .tc-grow { margin-top: 1rem; padding: 1rem; border: 1px solid var(--fg); font-size: 0.92rem; line-height: 1.5; }
+  .tc-grow .tc-btn { margin-top: 0.7rem; }
+  .tc-grow-n { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.8rem; }
+  .tc-grow-n button { min-width: 3rem; min-height: 3rem; border: 1px solid var(--fg); background: transparent; color: var(--fg); font-family: var(--display); font-size: 1.05rem; cursor: pointer; }
+  .tc-grow-n button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
+  .tc-accept { display: flex; gap: 0.6rem; align-items: flex-start; margin-top: 0.8rem; cursor: pointer; }
+  .tc-accept input { width: 1.2rem; height: 1.2rem; flex: 0 0 auto; margin-top: 0.15rem; }
   [hidden] { display: none !important; }
   .gl-foot { padding: 1.5rem 1rem 2rem; text-align: center; font-size: 0.68rem; line-height: 1.35; letter-spacing: 0.03em; opacity: 0.6; }
   .gl-foot a { color: inherit; text-decoration: none; }
@@ -61,9 +68,11 @@
     <div class="tc-state" id="rvState"></div>
     <div class="tc-rows" id="rvRows"></div>
     <p class="tc-hint" id="rvThanks" hidden></p>
+    <div class="tc-grow" id="rvGrowBox" hidden></div>
     <p class="tc-hint" id="rvHint"></p>
     <p class="tc-err" id="rvErr" hidden></p>
     <button type="button" class="tc-btn" id="rvPay" hidden></button>
+    <button type="button" class="tc-btn alt" id="rvGrow" hidden></button>
     <a class="tc-btn alt" id="rvCal" href="#" hidden></a>
     <a class="tc-btn alt" id="rvMap" target="_blank" rel="noopener" hidden></a>
     <button type="button" class="tc-btn alt" id="rvCancel" hidden></button>
@@ -114,6 +123,11 @@
       sure_free: '¿Seguro que quieres anular esta reserva?', sure_in_time: '¿Seguro que quieres anular? Como faltan más de {h} h, te devolvemos la fianza de {m}.',
       sure_late: '¿Seguro que quieres anular? Faltan menos de {h} h, así que la fianza de {m} no se devuelve.',
       yes_cancel: 'Sí, anular', no_cancel: 'No, mantener',
+      grow: 'Añadir personas', grow_h: '¿Cuántas personas vais a ser?', grow_none: 'Ahora mismo no queda sitio en la web para ampliar esta reserva. Si lo necesitas, escríbenos a reservas@roce.es.',
+      grow_from_to: 'Pasáis de {a} a {b} personas.', grow_guar: 'La garantía pasa de {x} a {y}. No se cobra nada ahora: solo si no venís o anuláis con menos de {h} h de antelación se cobrarán {y} a tu tarjeta.',
+      grow_ok_card: 'Acepto la garantía de {y}', grow_yes: 'Confirmar {b} personas', grow_no: 'Dejarlo como está',
+      grow_offer: 'Falta tu confirmación para ser {b} personas. Mientras no aceptes, la reserva sigue siendo para {a}.', grow_offer_yes: 'Aceptar y ser {b}', grow_offer_no: 'Seguir siendo {a}',
+      grow_done: 'Reserva ampliada a {b} personas.', grow_e_table: 'Ya no queda sitio para ese número de personas.', grow_e_amount: 'El importe de la garantía ha cambiado. Revísalo y vuelve a aceptarlo.',
       e_generic: 'No hemos podido completarlo. Inténtalo de nuevo.', e_pay: 'No hemos podido abrir el pago. Inténtalo de nuevo en un momento.',
       ko: 'El pago no se ha completado. Puedes intentarlo otra vez mientras tu mesa siga guardada.', slow: 'El banco tarda en confirmar el pago. Te avisaremos por email en cuanto llegue.',
       day: 'Coffee, Bakery & Kitchen', night: 'Restaurant & Cocktails',
@@ -141,6 +155,11 @@
       sure_free: 'Are you sure you want to cancel this booking?', sure_in_time: 'Are you sure? Since there are more than {h} h to go, we refund the {m} deposit.',
       sure_late: 'Are you sure? There are less than {h} h to go, so the {m} deposit is not refunded.',
       yes_cancel: 'Yes, cancel', no_cancel: 'No, keep it',
+      grow: 'Add guests', grow_h: 'How many of you will there be?', grow_none: 'There is no room online to enlarge this booking right now. If you need it, write to reservas@roce.es.',
+      grow_from_to: 'You go from {a} to {b} guests.', grow_guar: 'The guarantee goes from {x} to {y}. Nothing is charged now: only if you do not show up or cancel less than {h} h in advance will {y} be charged to your card.',
+      grow_ok_card: 'I accept the {y} guarantee', grow_yes: 'Confirm {b} guests', grow_no: 'Leave it as it is',
+      grow_offer: 'We need your confirmation for {b} guests. Until you accept, the booking stays for {a}.', grow_offer_yes: 'Accept {b} guests', grow_offer_no: 'Stay at {a}',
+      grow_done: 'Booking enlarged to {b} guests.', grow_e_table: 'There is no room left for that many guests.', grow_e_amount: 'The guarantee amount has changed. Please check it and accept again.',
       e_generic: "We couldn't complete it. Please try again.", e_pay: "We couldn't open the payment. Please try again in a moment.",
       ko: "The payment wasn't completed. You can try again while your table is still held.", slow: 'The bank is slow to confirm the payment. We will email you as soon as it arrives.',
       day: 'Coffee, Bakery & Kitchen', night: 'Restaurant & Cocktails',
@@ -214,12 +233,80 @@
     $('rvCal').hidden = !live; $('rvCal').textContent = t('cal');
     $('rvMap').hidden = !live; $('rvMap').textContent = t('map'); $('rvMap').href = 'https://maps.google.com/?q=' + encodeURIComponent('ROCE, Gran Vía Marqués del Túria 16, Valencia');
     $('rvCancel').hidden = !data.can_cancel || waiting; $('rvCancel').textContent = t('cancel');
+    paintGrow();
   }
+  // ─── Añadir personas ───────────────────────────────────────────────
+  // Las opciones las da el servidor con las mismas reglas que la web (bloqueos, aforo, tope y ritmo de la cena).
+  var grow = null, growOpen = false, growPick = 0, growOk = false, growBusy = false, growMsg = '';
+  function el(tag, cls, text) { var n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; }
+  function btn(cls, text, onClick, disabled) { var b = el('button', 'tc-btn' + (cls ? ' ' + cls : ''), text); b.type = 'button'; b.disabled = !!disabled; b.addEventListener('click', onClick); return b; }
+  function loadGrow() {
+    if (!data || data.status !== 'confirmed') { grow = null; paintGrow(); return Promise.resolve(); }
+    return rpc('table_booking_grow_info', { p_token: token }).then(function (g) { grow = g; paintGrow(); }).catch(function () { grow = null; paintGrow(); });
+  }
+  function sendGrow(party, cents) {
+    growBusy = true; growMsg = ''; paintGrow();
+    rpc('table_booking_grow', { p_token: token, p_party: party, p_accept_cents: cents }).then(function (r) {
+      if (!r || !r.ok) { var code = r && r.error; growMsg = code === 'no_table' ? 'grow_e_table' : code === 'amount_changed' ? 'grow_e_amount' : 'e_generic'; growBusy = false; growOk = false; return loadGrow(); }
+      growBusy = false; growOpen = false; growPick = 0; growOk = false;
+      return load().then(function () { $('rvThanks').textContent = t('grow_done', { b: party }); $('rvThanks').hidden = false; });
+    }).catch(function () { growBusy = false; growMsg = 'e_generic'; paintGrow(); });
+  }
+  function paintGrow() {
+    var box = $('rvGrowBox'), open = $('rvGrow');
+    box.textContent = ''; box.hidden = true; open.hidden = true;
+    if (!grow || !grow.can_ask || waiting) return;
+    var h = grow.free_cancel_hours, party = grow.party;
+    if (grow.pending_party) {                       // propuesta del equipo: pendiente de que acepte
+      box.hidden = false;
+      box.appendChild(el('div', '', t('grow_offer', { a: party, b: grow.pending_party })));
+      var y = grow.pending_deposit_cents;
+      if (grow.card && y) box.appendChild(el('p', 'tc-hint', t('grow_guar', { x: money(grow.deposit_cents), y: money(y), h: h })));
+      if (growMsg) box.appendChild(el('p', 'tc-err', t(growMsg)));
+      box.appendChild(btn('', t('grow_offer_yes', { b: grow.pending_party }), function () { sendGrow(grow.pending_party, grow.card ? y : 0); }, growBusy));
+      box.appendChild(btn('alt', t('grow_offer_no', { a: party }), function () {
+        growBusy = true; paintGrow();
+        rpc('table_booking_grow_reject', { p_token: token }).then(function () { growBusy = false; growOpen = false; growMsg = ''; return loadGrow(); }).catch(function () { growBusy = false; growMsg = 'e_generic'; paintGrow(); });
+      }, growBusy));
+      return;
+    }
+    if (!growOpen) { open.hidden = false; open.textContent = t('grow'); return; }
+    box.hidden = false;
+    var options = grow.options || [];
+    if (!options.length) {
+      box.appendChild(el('div', '', t('grow_none')));
+    } else {
+      box.appendChild(el('div', '', t('grow_h')));
+      var row = el('div', 'tc-grow-n');
+      options.forEach(function (o) {
+        var b = el('button', '', String(o.party)); b.type = 'button'; b.setAttribute('aria-pressed', o.party === growPick ? 'true' : 'false');
+        b.addEventListener('click', function () { growPick = o.party; growOk = false; growMsg = ''; paintGrow(); });
+        row.appendChild(b);
+      });
+      box.appendChild(row);
+    }
+    var pick = options.filter(function (o) { return o.party === growPick; })[0];
+    if (pick) {
+      box.appendChild(el('p', 'tc-hint', t('grow_from_to', { a: party, b: pick.party })));
+      var needs = grow.card && pick.deposit_cents > grow.deposit_cents;
+      if (needs) {
+        box.appendChild(el('p', 'tc-hint', t('grow_guar', { x: money(grow.deposit_cents), y: money(pick.deposit_cents), h: h })));
+        var lab = el('label', 'tc-accept'), chk = el('input'); chk.type = 'checkbox'; chk.checked = growOk;
+        chk.addEventListener('change', function () { growOk = chk.checked; paintGrow(); });
+        lab.appendChild(chk); lab.appendChild(el('span', '', t('grow_ok_card', { y: money(pick.deposit_cents) })));
+        box.appendChild(lab);
+      }
+    }
+    if (growMsg) box.appendChild(el('p', 'tc-err', t(growMsg)));
+    if (pick) box.appendChild(btn('', t('grow_yes', { b: pick.party }), function () { sendGrow(pick.party, grow.card ? pick.deposit_cents : 0); }, growBusy || (grow.card && pick.deposit_cents > grow.deposit_cents && !growOk)));
+    box.appendChild(btn('alt', t('grow_no'), function () { growOpen = false; growPick = 0; growOk = false; growMsg = ''; paintGrow(); }, growBusy));
+  }
+  $('rvGrow').addEventListener('click', function () { growOpen = true; growMsg = ''; loadGrow(); });
   function show(k) { ['rvLoading', 'rvNotFound', 'rvCard'].forEach(function (id) { $(id).hidden = id !== k; }); }
   function load() {
     return rpc('table_booking_get', { p_token: token }).then(function (d) {
       if (!d) { $('rvNotFound').textContent = t('notfound'); show('rvNotFound'); return null; }
-      data = d; show('rvCard'); paint(); return d;
+      data = d; show('rvCard'); paint(); return loadGrow().then(function () { return d; });
     });
   }
 

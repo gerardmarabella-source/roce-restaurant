@@ -41,3 +41,4 @@ Todos se pueden ejecutar más de una vez. Si se vuelve a ejecutar `mesas.sql` o 
 37. `mesas_ritmo_cena.sql` — valores de la cena (20:00–22:50 cada 10 min, 8 por hora de llegada, 100 por noche); ejecutar una sola vez
 38. `app_tostadas_1230.sql` — las tostadas de la app se piden hasta las 12:30 (antes 12:00)
 39. `app_brunch_1230.sql` — toda la comida de brunch de la app se pide hasta las 12:30
+40. `mesas_ampliar.sql` — ampliar reservas confirmadas: desde el enlace del cliente solo si la web tiene sitio, y aceptando la garantía nueva; las ampliaciones del equipo quedan pendientes hasta que el cliente acepta. Después, desplegar la función «booking-email»
