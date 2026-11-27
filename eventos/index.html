@@ -80,7 +80,7 @@
   .ev-chip:hover { opacity: 0.6; }
   .ev-chip[aria-pressed="true"] { opacity: 1; }
 
-  /* Lista de eventos en tarjetas: solo el cartel, entero y sin nada encima. Debajo solo sale «Agotado» o «Ahora» cuando toca. */
+  /* Lista de eventos en tarjetas: el cartel, entero y sin nada encima, y debajo «Ver más» (con «Agotado» o «Ahora» cuando toca). */
   .ev-list { list-style: none; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 19rem), 1fr)); gap: 1.25rem; align-items: start; }
   .ev-month { grid-column: 1 / -1; margin-top: 1.25rem; padding-bottom: 0.6rem; font-family: var(--display); font-size: 1rem; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.65; border-bottom: 1px solid rgba(128, 128, 128, 0.45); }
   .ev-month:first-child { margin-top: 0.5rem; }
@@ -103,9 +103,12 @@
   .ev-card-body { display: block; padding: 1.1rem 1.25rem 1.25rem; }
   /* Con cartel, la tarjeta no repite título, fecha, sala ni precio (se ven al entrar); el texto queda para lectores de pantalla y buscadores.
      Si el evento no tiene foto, sí se muestran: es lo único que lo identifica. */
+  .ev-card.has-img .ev-card-body { padding: 0.75rem; }
   .ev-card.has-img .ev-card-top { margin-bottom: 0; }
-  /* Sin «Agotado» ni «Ahora» no queda nada debajo: la tarjeta es solo el cartel. */
-  .ev-card.has-img:not(.has-badge) .ev-card-body { padding: 0; }
+  .ev-card.has-img.has-badge .ev-card-top { margin-bottom: 0.75rem; }
+  .ev-more { display: block; padding: 0.95rem 0.5rem; background: #ffffff; color: #0a0a0a; font-family: var(--display); font-weight: 700; font-size: 0.95rem; letter-spacing: 0.1em; text-align: center; text-transform: uppercase; }
+  .ev-card.no-img .ev-more { margin-top: 1rem; }
+  .ev-card[data-env="day"].no-img .ev-more { background: #0a0a0a; color: #ffffff; }
   .ev-card.has-img .ev-card-info { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
   .ev-card-kicker { display: block; font-size: 0.78rem; letter-spacing: 0.14em; text-transform: uppercase; opacity: 0.8; }
   .ev-card-name { margin-top: 0.4rem; font-family: var(--display); font-weight: 400; font-size: clamp(1.7rem, 4.6vw, 2.2rem); line-height: 1; letter-spacing: -0.005em; text-transform: uppercase; }
@@ -219,7 +222,7 @@
             '<h2 class="ev-card-name">' + esc(e.title[l]) + '</h2>' +
             '<span class="ev-card-meta">' + esc(wd + ', ' + day + ' ' + mon) + ' · ROCE' + (U.floor(e, l) ? ' · ' + esc(U.floor(e, l)) : '') + '</span>' +
             '<span class="ev-card-price">' + esc(e.price[l]) + '</span>' +
-          '</span></span></a></li>';
+          '</span><span class="ev-more" aria-hidden="true">' + (l === 'en' ? 'See more' : 'Ver más') + '</span></span></a></li>';
       }).join('');
       // Si una foto no carga (p. ej. se cambió en RoceCover y la copia guardada apunta a la antigua), la tarjeta pasa a mostrar la fecha en grande en vez de quedarse en negro.
       [].forEach.call(list.querySelectorAll('img.ev-card-img'), function (img) {
