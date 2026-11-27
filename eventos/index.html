@@ -80,7 +80,7 @@
   .ev-chip:hover { opacity: 0.6; }
   .ev-chip[aria-pressed="true"] { opacity: 1; }
 
-  /* Lista de eventos: el cartel, entero y sin nada encima, y debajo «Ver más» (con «Agotado» o «Ahora» cuando toca). */
+  /* Lista de eventos: el cartel, entero y sin nada encima, y debajo «+ Info» (con «Agotado» o «Ahora» cuando toca). */
   .ev-list { list-style: none; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 19rem), 1fr)); gap: 1.25rem; align-items: start; }
   .ev-month { grid-column: 1 / -1; margin-top: 1.25rem; padding-bottom: 0.6rem; font-family: var(--display); font-size: 1rem; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.65; border-bottom: 1px solid rgba(128, 128, 128, 0.45); }
   .ev-month:first-child { margin-top: 0.5rem; }
@@ -103,7 +103,7 @@
   .ev-card-body { display: block; padding: 1.1rem 1.25rem 1.25rem; }
   /* Con cartel, la tarjeta no repite título, fecha, sala ni precio (se ven al entrar); el texto queda para lectores de pantalla y buscadores.
      Si el evento no tiene foto, sí se muestran: es lo único que lo identifica. */
-  /* Con cartel no hay caja ni fondo: la foto y, debajo, «Ver más» como texto con una línea. */
+  /* Con cartel no hay caja ni fondo: la foto y, debajo, «+ Info» como texto con una línea. */
   .ev-card.has-img { background: none; border: 0; color: var(--fg); text-align: center; }
   .ev-card.has-img .ev-card-body { padding: 0.8rem 0 0.2rem; }
   .ev-card.has-img .ev-card-top { justify-content: center; margin-bottom: 0; }
@@ -224,7 +224,7 @@
             '<h2 class="ev-card-name">' + esc(e.title[l]) + '</h2>' +
             '<span class="ev-card-meta">' + esc(wd + ', ' + day + ' ' + mon) + ' · ROCE' + (U.floor(e, l) ? ' · ' + esc(U.floor(e, l)) : '') + '</span>' +
             '<span class="ev-card-price">' + esc(e.price[l]) + '</span>' +
-          '</span><span class="ev-more" aria-hidden="true">' + (l === 'en' ? 'See more' : 'Ver más') + '</span></span></a></li>';
+          '</span><span class="ev-more" aria-hidden="true">' + '+ Info' + '</span></span></a></li>';
       }).join('');
       // Si una foto no carga (p. ej. se cambió en RoceCover y la copia guardada apunta a la antigua), la tarjeta pasa a mostrar la fecha en grande en vez de quedarse en negro.
       [].forEach.call(list.querySelectorAll('img.ev-card-img'), function (img) {
