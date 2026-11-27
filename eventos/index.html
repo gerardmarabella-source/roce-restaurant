@@ -224,7 +224,7 @@
             '<h2 class="ev-card-name">' + esc(e.title[l]) + '</h2>' +
             '<span class="ev-card-meta">' + esc(wd + ', ' + day + ' ' + mon) + ' · ROCE' + (U.floor(e, l) ? ' · ' + esc(U.floor(e, l)) : '') + '</span>' +
             '<span class="ev-card-price">' + esc(e.price[l]) + '</span>' +
-          '</span><span class="ev-more" aria-hidden="true">' + '+ Info' + '</span></span></a></li>';
+          '</span><span class="ev-more" aria-hidden="true">+ Info</span></span></a></li>';
       }).join('');
       // Si una foto no carga (p. ej. se cambió en RoceCover y la copia guardada apunta a la antigua), la tarjeta pasa a mostrar la fecha en grande en vez de quedarse en negro.
       [].forEach.call(list.querySelectorAll('img.ev-card-img'), function (img) {
