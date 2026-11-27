@@ -586,7 +586,10 @@ const TT = {
     okSubject: (a: string, w: string) => `Reserva confirmada · ROCE ${a} · ${w}`, okTitle: "¡Mesa reservada!", okIntro: "Tu reserva está confirmada. Te esperamos.",
     payTitle: "Confirma tu reserva", paySubject: (a: string, w: string) => `Confirma tu reserva · ROCE ${a} · ${w}`,
     payIntro: (m: string, until: string) => `Hemos guardado tu mesa. Para confirmarla, paga la fianza de ${m} con tarjeta antes del ${until}. Si no, la mesa se liberará.`,
-    payBtn: "Pagar fianza y confirmar", manageBtn: "Ver o anular mi reserva",
+    payBtn: "Pagar fianza y confirmar", manageBtn: "Ver, ampliar o anular mi reserva",
+    growSubject: (w: string) => `Confirma tu ampliación · ROCE · ${w}`, growTitle: "Confirma tu ampliación", growBtn: "Revisar y aceptar",
+    growIntro: (p: number, n: number, m: string, h: number) => `Hemos apuntado que seréis ${n}. Para confirmarlo, acepta la nueva garantía de ${m} desde el botón. No se cobra nada ahora: solo si no venís o anuláis con menos de ${h} h de antelación. Mientras no aceptes, la reserva sigue siendo para ${p}.`,
+    updSubject: (w: string) => `Reserva actualizada · ROCE · ${w}`, updTitle: "Reserva actualizada",
     depTxt: (m: string, h: number) => `La fianza de ${m} es a cuenta de tu consumición. Si anulas con al menos ${h} h de antelación te la devolvemos; si no, no se devuelve.`,
     age: "Zona solo para mayores de 18 años.", late: "Si vas a llegar tarde o no puedes venir, avísanos en reservas@roce.es o anula desde el enlace.",
     cxSubject: (w: string) => `Reserva anulada · ROCE · ${w}`, cxTitle: "Reserva anulada", cxIntro: "Hemos anulado tu reserva.",
@@ -606,7 +609,10 @@ const TT = {
     okSubject: (a: string, w: string) => `Booking confirmed · ROCE ${a} · ${w}`, okTitle: "Table booked!", okIntro: "Your booking is confirmed. See you soon.",
     payTitle: "Confirm your booking", paySubject: (a: string, w: string) => `Confirm your booking · ROCE ${a} · ${w}`,
     payIntro: (m: string, until: string) => `We are holding your table. To confirm it, pay the ${m} deposit by card before ${until}. Otherwise the table will be released.`,
-    payBtn: "Pay deposit and confirm", manageBtn: "View or cancel my booking",
+    payBtn: "Pay deposit and confirm", manageBtn: "View, enlarge or cancel my booking",
+    growSubject: (w: string) => `Confirm your extra guests · ROCE · ${w}`, growTitle: "Confirm your extra guests", growBtn: "Review and accept",
+    growIntro: (p: number, n: number, m: string, h: number) => `We have noted that there will be ${n} of you. To confirm it, accept the new ${m} guarantee from the button. Nothing is charged now: only if you do not show up or cancel less than ${h} h in advance. Until you accept, the booking stays for ${p}.`,
+    updSubject: (w: string) => `Booking updated · ROCE · ${w}`, updTitle: "Booking updated",
     depTxt: (m: string, h: number) => `The ${m} deposit goes towards your bill. If you cancel at least ${h} h in advance we refund it; otherwise it is not refunded.`,
     age: "This area is for guests aged 18 or over.", late: "If you'll be late or can't come, tell us at reservas@roce.es or cancel from the link.",
     cxSubject: (w: string) => `Booking cancelled · ROCE · ${w}`, cxTitle: "Booking cancelled", cxIntro: "We have cancelled your booking.",
@@ -626,7 +632,7 @@ const TT = {
 const btnHtml = (href: string, label: string) =>
   `<tr><td align="center" style="padding:20px 24px 4px"><a href="${href}" style="display:block;background:#fff;color:#0a0a0a;text-decoration:none;font:bold 15px Arial,sans-serif;text-transform:uppercase;letter-spacing:1px;padding:16px 12px">${esc(label)}</a></td></tr>`;
 
-async function sendTableEmail(kind: "ok" | "pay" | "cancel" | "refund" | "charge", b: any): Promise<Response> {
+async function sendTableEmail(kind: "ok" | "pay" | "cancel" | "refund" | "charge" | "grow" | "updated", b: any): Promise<Response> {
   if (!b.email) return new Response("no email");
   const l = b.lang === "en" ? "en" : "es";
   const t = TT[l];
@@ -649,7 +655,11 @@ async function sendTableEmail(kind: "ok" | "pay" | "cancel" | "refund" | "charge
   const fmtD = (m: number) => { const h = Math.floor(m / 60), r = m % 60; return (h ? `${h} h` : "") + (h && r ? " " : "") + (r ? `${r} min` : ""); };
   let rows: string[][] = [[t.ref, b.ref], [t.date, day], [t.time, hm], [t.party, String(b.party)], ...(zone ? [[t.zone, zone]] : []), ...(dep > 0 ? [card ? [t.guarantee, t.guaranteeVal(money(dep))] : [t.deposit, money(dep)]] : []), ...(durMin > 0 ? [[t.duration, fmtD(durMin)]] : [])];
   let title = t.okTitle, intro: string = t.okIntro, subject = t.okSubject(amb, when), extra = "", button = btnHtml(page, t.manageBtn);
-  if (kind === "pay") {
+  if (kind === "grow") {
+    title = t.growTitle; intro = t.growIntro(Number(b.party), Number(b.grow_party), money(Number(b.grow_deposit_cents ?? 0)), hours); subject = t.growSubject(when); button = btnHtml(page, t.growBtn);
+  } else if (kind === "updated") {
+    title = t.updTitle; subject = t.updSubject(when);
+  } else if (kind === "pay") {
     title = t.payTitle; intro = card ? t.cardPayIntro(money(dep), until, hours) : t.payIntro(money(dep), until); subject = t.paySubject(amb, when); button = btnHtml(page, card ? t.cardPayBtn : t.payBtn);
   } else if (kind === "cancel") {
     title = t.cxTitle; subject = t.cxSubject(when);
@@ -666,7 +676,7 @@ async function sendTableEmail(kind: "ok" | "pay" | "cancel" | "refund" | "charge
     const fee = Number(b.fee_charged_cents || dep);
     rows = rows.flatMap((r) => r[0] !== t.guarantee ? [r] : kind === "charge" ? [[t.charged, money(fee)]] : (b.late_cancel && b.payment_status !== "released" ? [[t.penalty, money(dep)]] : []));
   }
-  if (kind === "ok" || kind === "pay") {
+  if (kind === "ok" || kind === "pay" || kind === "updated") {
     if (durMin > 0) extra += `<tr><td style="padding:14px 24px 0;color:#ddd;font:13px/1.5 Arial,sans-serif">${esc(t.durTxt(fmtD(durMin), sv?.grace_min ?? 15) + ((l === "en" ? sv?.end_note_en : sv?.end_note_es) ? " " + (l === "en" ? sv?.end_note_en : sv?.end_note_es) : ""))}</td></tr>`;
     if (dep > 0) extra += `<tr><td style="padding:14px 24px 0;color:#ddd;font:13px/1.5 Arial,sans-serif">${esc(card ? t.cardTxt(money(dep), hours) : t.depTxt(money(dep), hours))}</td></tr>`;
     if (b.ambience === "night") extra += `<tr><td style="padding:10px 24px 0;color:#e5453a;font:14px Arial,sans-serif">${esc(t.age)}</td></tr>`;
@@ -811,6 +821,10 @@ async function handleTableBooking(p: any): Promise<Response> {
       const fm = (iso: string) => new Intl.DateTimeFormat("es-ES", { timeZone: "Europe/Madrid", weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" }).format(new Date(iso));
       await notifyTableStaff(n, "Reserva de mesa modificada", "table_changed", `<p>Antes: ${esc(fm(o.starts_at))} · ${esc(String(o.party))} persona(s)<br>Ahora: ${esc(fm(n.starts_at))} · ${esc(String(n.party))} persona(s)</p>`);
     }
+    // Ampliación propuesta por el equipo: se le pide al cliente que acepte la nueva garantía.
+    if (n.status === "confirmed" && n.grow_party && (n.grow_party !== o.grow_party || n.grow_deposit_cents !== o.grow_deposit_cents)) return await sendTableEmail("grow", n);
+    // El cliente ha aceptado una garantía mayor: confirmación con los datos nuevos.
+    if (n.status === "confirmed" && n.deposit_accepted_at && n.deposit_accepted_at !== o.deposit_accepted_at) return await sendTableEmail("updated", n);
     if (n.payment_status === "paid" && o.payment_status !== "paid" && n.status === "confirmed") {
       await notifyTableStaff(n, "Reserva de mesa (fianza pagada)");
       return await sendTableEmail("ok", n);
